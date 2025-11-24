@@ -95,59 +95,61 @@ const CruiseBookings = () => {
             ) : (
               <div className="table-responsive">
                 <Table striped hover className="mb-0">
-                  <thead className="bg-light">
-                    <tr>
-                      <th>Booking ID</th>
-                      <th>Customer Name</th>
-                      <th>Email</th>
-                      <th>Phone</th>
-                      <th>Cruise</th>
-                      <th>Departure Date</th>
-                      <th>Passengers</th>
-                      <th>Total Amount</th>
-                      <th>Status</th>
-                      <th>Booking Date</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {bookings.map((booking) => (
-                      <tr key={booking.id}>
-                        <td>
-                          <strong>#{booking.id}</strong>
-                        </td>
-                        <td>{booking.customer_name || 'N/A'}</td>
-                        <td>{booking.email || 'N/A'}</td>
-                        <td>{booking.phone || 'N/A'}</td>
-                        <td>{booking.cruise_name || 'N/A'}</td>
-                        <td>
-                          {booking.departure_date 
-                            ? formatDate(booking.departure_date)
-                            : 'N/A'
-                          }
-                        </td>
-                        <td className="text-center">
-                          {booking.number_of_passengers || '0'}
-                        </td>
-                        <td>
-                          ${booking.total_amount 
-                            ? parseFloat(booking.total_amount).toFixed(2)
-                            : '0.00'
-                          }
-                        </td>
-                        <td>
-                          <Badge bg={getStatusVariant(booking.status)}>
-                            {booking.status || 'Unknown'}
-                          </Badge>
-                        </td>
-                        <td>
-                          {booking.created_at 
-                            ? formatDate(booking.created_at)
-                            : 'N/A'
-                          }
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
+                 <thead className="bg-light">
+  <tr>
+    <th>ID</th>
+    <th>Name</th>
+    <th>Email</th>
+    <th>Phone</th>
+    <th>Total People</th>
+    <th>Adults</th>
+    <th>Children</th>
+    <th>Infants</th>
+    <th>Cruise Name</th>
+    <th>Boarding Port</th>
+    <th>Exit Port</th>
+    <th>Departure Date</th>
+    <th>Cabin Type</th>
+    <th>Sailing Days</th>
+    <th>Remarks</th>
+    <th>Copy Email</th>
+    <th>Created At</th>
+  </tr>
+</thead>
+
+<tbody>
+  {bookings.map((b) => (
+    <tr key={b.id}>
+      <td><strong>#{b.id}</strong></td>
+      <td>{b.name || "N/A"}</td>
+      <td>{b.email_id || "N/A"}</td>
+      <td>{b.cell_no || "N/A"}</td>
+
+      <td className="text-center">{b.no_of_people || 0}</td>
+      <td className="text-center">{b.no_of_adult || 0}</td>
+      <td className="text-center">{b.no_of_child || 0}</td>
+      <td className="text-center">{b.no_of_infant || 0}</td>
+
+      <td>{b.cruise_name || "N/A"}</td>
+      <td>{b.boarding_port || "N/A"}</td>
+      <td>{b.exit_port || "N/A"}</td>
+
+      <td>
+        {b.departure_date ? formatDate(b.departure_date) : "N/A"}
+      </td>
+
+      <td>{b.cabin_type || "N/A"}</td>
+      <td>{b.sailing_days || "N/A"}</td>
+      <td>{b.remarks || "—"}</td>
+      <td>{b.copy_email || "N/A"}</td>
+
+      <td>
+        {b.created_at ? formatDate(b.created_at) : "N/A"}
+      </td>
+    </tr>
+  ))}
+</tbody>
+
                 </Table>
               </div>
             )}

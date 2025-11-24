@@ -134,8 +134,14 @@ const Navbar = ({ children }) => {
    {
     label: "Cruise Bookings",
     path: "/cruise-bookings",
-    icon: <FiArchive className="sidebar-icon" />, // records/bookings
+    
     matchPaths: ["/cruise-bookings"],
+  },
+   {
+    label: "Advanced CruiseBookings",
+    path: "/advanced-cruise-bookings",
+  
+    matchPaths: ["/advanced-cruise-bookings"],
   },
 ];
   const handleNavClick = (label, path) => {
