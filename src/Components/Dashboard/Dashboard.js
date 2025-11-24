@@ -1,5 +1,5 @@
 import React from 'react'
-import AdminLayout from '../../Shared/Sidebar/Sidebar'
+import AdminLayout from '../../Shared/Navbar/Navbar';
 import './Dashboard.css'
 
 const Dashboard = () => {
