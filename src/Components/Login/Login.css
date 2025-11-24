@@ -1,0 +1,283 @@
+.signin-wrapper-main {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f5f5f5;
+    padding: 20px;
+}
+
+.signin-card-container {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    padding: 48px 40px;
+    width: 100%;
+    max-width: 400px;
+}
+
+.signin-header-title {
+    font-size: 28px;
+    font-weight: 600;
+    color: #1a1a1a;
+    text-align: center;
+    margin-bottom: 8px;
+}
+
+.signin-header-subtitle {
+    font-size: 14px;
+    color: #6b7280;
+    text-align: center;
+    margin-bottom: 32px;
+}
+
+.signin-input-group {
+    margin-bottom: 20px;
+}
+
+.signin-input-label {
+    display: block;
+    font-size: 14px;
+    color: #4b5563;
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+
+.signin-input-field {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: all 0.2s;
+    background-color: #ffffff;
+}
+
+.signin-input-field:focus {
+    outline: none;
+    border-color: #5b7cee;
+    box-shadow: 0 0 0 3px rgba(91, 124, 238, 0.1);
+}
+
+.signin-input-field::placeholder {
+    color: #9ca3af;
+}
+
+.signin-password-wrapper {
+    position: relative;
+}
+
+.signin-password-toggle {
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #9ca3af;
+    cursor: pointer;
+    padding: 0;
+    display: flex;
+    align-items: center;
+}
+
+.signin-password-toggle:hover {
+    color: #6b7280;
+}
+
+.signin-options-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.signin-remember-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.signin-remember-checkbox input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    accent-color: #5b7cee;
+}
+
+.signin-remember-label {
+    font-size: 14px;
+    color: #4b5563;
+    cursor: pointer;
+    margin: 0;
+}
+
+.signin-forgot-link {
+    font-size: 14px;
+    color: #5b7cee;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.signin-forgot-link:hover {
+    text-decoration: underline;
+}
+
+.signin-submit-button {
+    width: 100%;
+    padding: 12px;
+    background-color: #5b7cee;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    margin-bottom: 20px;
+}
+
+.signin-submit-button:hover {
+    background-color: #4c6ad8;
+}
+
+.signin-submit-button:active {
+    background-color: #3d5bc7;
+}
+
+.signin-footer-text {
+    text-align: center;
+    font-size: 14px;
+    color: #6b7280;
+}
+
+.signin-create-link {
+    color: #5b7cee;
+    text-decoration: none;
+    font-weight: 500;
+    margin-left: 4px;
+}
+
+.signin-create-link:hover {
+    text-decoration: underline;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+    .signin-card-container {
+        padding: 32px 24px;
+        max-width: 100%;
+    }
+
+    .signin-header-title {
+        font-size: 24px;
+    }
+
+    .signin-options-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .signin-wrapper-main {
+        padding: 16px;
+    }
+
+    .signin-card-container {
+        padding: 24px 20px;
+    }
+
+    .signin-header-title {
+        font-size: 22px;
+    }
+}
+
+
+.signin-logo-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.signin-logo {
+  max-width: 150px;
+  height: auto;
+}
+
+/* Error message styling */
+.alert-danger {
+  margin-bottom: 15px;
+  padding: 10px;
+  border-radius: 4px;
+  text-align: center;
+}
+
+@media (max-width: 768px) {
+    .signin-options-row {
+        flex-direction: row;    
+        justify-content: space-between; 
+        align-items: center;     
+        gap: 0;                  
+    }
+}
+
+/* ----------------------------- */
+/* iPad Portrait (768px–834px)   */
+/* ----------------------------- */
+@media screen and (min-width: 768px) and (max-width: 834px) and (orientation: portrait) {
+    .signin-card-container {
+        max-width: 500px;
+        padding: 40px 32px;
+    }
+
+    .signin-header-subtitle {
+        font-size: 15px;
+    }
+
+    .signin-input-field {
+        padding: 14px 18px;
+        font-size: 15px;
+    }
+
+    .signin-options-row {
+        flex-direction: row !important;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .signin-forgot-link {
+        font-size: 15px;
+    }
+}
+
+
+/* ----------------------------- */
+/* iPad Landscape (1024px–1366px) */
+/* ----------------------------- */
+@media screen and (min-width: 1024px) and (max-width: 1366px) and (orientation: landscape) {
+    .signin-wrapper-main {
+        padding: 40px;
+    }
+
+    .signin-card-container {
+        max-width: 420px;
+    }
+
+    .signin-input-field {
+        font-size: 15px;
+        padding: 14px 18px;
+    }
+
+    .signin-options-row {
+        flex-direction: row !important;
+        justify-content: space-between;
+        gap: 0;
+    }
+
+    .signin-forgot-link {
+        font-size: 15px;
+        white-space: nowrap;
+    }
+}
