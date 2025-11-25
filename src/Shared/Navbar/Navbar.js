@@ -111,6 +111,13 @@ const Navbar = ({ children }) => {
     matchPaths: ["/tours"],
   },
 
+   {
+    label: "Tours-categories",
+    path: "/categories-tours",
+    icon: <FiMap className="sidebar-icon" />,   // tours = map routes
+    matchPaths: ["/tours-categories"],
+  },
+
   {
     label: "Promotions",
     path: "/promotions",
@@ -149,6 +156,7 @@ const Navbar = ({ children }) => {
     icon: <FiMapPin className="sidebar-icon" />,
     matchPaths: ["/visa-appointments"],
   },
+  
 ];
   const handleNavClick = (label, path) => {
     if (path) {
