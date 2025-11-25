@@ -6,6 +6,8 @@ import AdvancedCruiseBookings from "./Components/Cruisebookings/AdvancedCruisebo
 import Visaappointments from "./Components/Cruisebookings/Visaappointments";
 import TourCategoriesTable from "./Components/ToursCategories/TourCategoriesTable";
 import AddTourCategory from "./Components/ToursCategories/ToursCategoriesForm"; // Add this import
+import Countries from "./Components/Countries/Countries";
+import Destinations from "./Components/Destinations/Destinations";
 
 function App() {
   return (
@@ -20,6 +22,8 @@ function App() {
         <Route path="/visa-appointments" element={<Visaappointments />} />
          <Route path="/categories-tours" element={<TourCategoriesTable />} />
         <Route path="/add-tour-category" element={<AddTourCategory />} /> {/* Add this route */}
+         <Route path="/countries" element={<Countries />} />
+         <Route path="/destinations" element={<Destinations />} />
         {/* Catch-all Route */}
         
 
