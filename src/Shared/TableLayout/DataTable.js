@@ -15,15 +15,18 @@ const ReusableTable = ({
   const [entriesPerPage, setEntriesPerPage] = useState(initialEntriesPerPage);
   const [currentPage, setCurrentPage] = useState(1);
 
-  // Filter data based on search term
-  const filteredData = data.filter(item => {
-    return Object.keys(item).some(key => {
-      if (typeof item[key] === 'string') {
-        return item[key].toLowerCase().includes(searchTerm.toLowerCase());
-      }
-      return false;
-    });
+  // Ensure data is always an array
+const safeData = Array.isArray(data) ? data : [];
+
+// Filter based on search
+const filteredData = safeData.filter(item => {
+  return Object.keys(item).some(key => {
+    const value = item[key];
+    return typeof value === "string" &&
+           value.toLowerCase().includes(searchTerm.toLowerCase());
   });
+});
+
 
   // Clear search term
   const handleClearSearch = () => {

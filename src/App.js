@@ -8,6 +8,8 @@ import TourCategoriesTable from "./Components/ToursCategories/TourCategoriesTabl
 import AddTourCategory from "./Components/ToursCategories/ToursCategoriesForm"; // Add this import
 import Countries from "./Components/Countries/Countries";
 import Destinations from "./Components/Destinations/Destinations";
+import Tours from "./Components/Tours/Tours";
+import AddTour from "./Components/Tours/AddTour";
 
 function App() {
   return (
@@ -24,6 +26,8 @@ function App() {
         <Route path="/add-tour-category" element={<AddTourCategory />} /> {/* Add this route */}
          <Route path="/countries" element={<Countries />} />
          <Route path="/destinations" element={<Destinations />} />
+           <Route path="/tours" element={<Tours />} />
+               <Route path="/add-tour" element={<AddTour />} />
         {/* Catch-all Route */}
         
 
