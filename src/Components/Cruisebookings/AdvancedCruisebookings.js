@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Table, Card, Alert, Spinner, Badge } from 'react-bootstrap';
-import Navbar from '../../Shared/Navbar/Navbar'; // Adjust the path as needed
+import { Container, Card, Alert, Spinner } from 'react-bootstrap';
+import Navbar from '../../Shared/Navbar/Navbar';
 import { baseurl } from '../../Api/Baseurl';
+import ReusableTable from '../../Shared/TableLayout/ReusableTable'; // Adjust the path to your ReusableTable component
 
 const AdvancedCruiseBookings = () => {
   const [bookings, setBookings] = useState([]);
@@ -35,6 +36,7 @@ const AdvancedCruiseBookings = () => {
 
   // Format date for display
   const formatDate = (dateString) => {
+    if (!dateString) return "N/A";
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
@@ -44,25 +46,77 @@ const AdvancedCruiseBookings = () => {
     });
   };
 
-  // Get status badge variant
-  const getStatusVariant = (status) => {
-    switch (status?.toLowerCase()) {
-      case 'confirmed':
-        return 'success';
-      case 'pending':
-        return 'warning';
-      case 'cancelled':
-        return 'danger';
-      default:
-        return 'secondary';
-    }
+  // Format currency
+  const formatCurrency = (amount) => {
+    if (!amount) return "₹0.00";
+    return `₹${parseFloat(amount).toFixed(2)}`;
   };
+
+  // Define columns for the reusable table
+  const columns = [
+    {
+      key: 'id',
+      title: 'Booking ID',
+      render: (item) => <strong>#{item.id}</strong>
+    },
+    {
+      key: 'name',
+      title: 'Customer Name',
+      render: (item) => item.name || "N/A"
+    },
+    {
+      key: 'email_id',
+      title: 'Email',
+      render: (item) => item.email_id || "N/A"
+    },
+    {
+      key: 'cell_no',
+      title: 'Phone',
+      render: (item) => item.cell_no || "N/A"
+    },
+    {
+      key: 'cruise_name',
+      title: 'Cruise',
+      render: (item) => item.cruise_name || "N/A"
+    },
+    {
+      key: 'departure_date',
+      title: 'Departure Date',
+      render: (item) => formatDate(item.departure_date)
+    },
+    {
+      key: 'no_of_people',
+      title: 'Passengers',
+      render: (item) => item.no_of_people || 0,
+      style: { textAlign: 'center' }
+    },
+    {
+      key: 'cabin_type',
+      title: 'Cabin Type',
+      render: (item) => item.cabin_type || "N/A"
+    },
+    {
+      key: 'sailing_days',
+      title: 'Sailing Days',
+      render: (item) => item.sailing_days || "N/A"
+    },
+    {
+      key: 'booking_amount',
+      title: 'Total Amount',
+      render: (item) => formatCurrency(item.booking_amount)
+    },
+    {
+      key: 'created_at',
+      title: 'Booking Date',
+      render: (item) => formatDate(item.created_at)
+    }
+  ];
 
   return (
     <Navbar>
-      <Container fluid>
+      <Container>
         <div className="d-flex justify-content-between align-items-center mb-4">
-          <h2 className="mb-0">Cruise Bookings</h2>
+          <h2 className="mb-0">Advance Cruise Bookings</h2>
           <button 
             className="btn btn-primary"
             onClick={fetchCruiseBookings}
@@ -78,88 +132,28 @@ const AdvancedCruiseBookings = () => {
           </Alert>
         )}
 
-    <Card>
-  <Card.Header>
-    <h5 className="mb-0">All Cruise Bookings</h5>
-  </Card.Header>
-
-  <Card.Body className="p-0">
-    {loading ? (
-      <div className="text-center py-5">
-        <Spinner animation="border" role="status" className="me-2" />
-        Loading cruise bookings...
-      </div>
-    ) : bookings.length === 0 ? (
-      <div className="text-center py-5 text-muted">
-        No cruise bookings found.
-      </div>
-    ) : (
-      <div className="table-responsive">
-        <Table striped hover className="mb-0">
-          <thead className="bg-light">
-            <tr>
-              <th>Booking ID</th>
-              <th>Customer Name</th>
-              <th>Email</th>
-              <th>Phone</th>
-              <th>Cruise</th>
-              <th>Departure Date</th>
-              <th>Passengers</th>
-              <th>Cabin Type</th>
-              <th>Sailing Days</th>
-              <th>Total Amount</th>
-              <th>Booking Date</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {bookings.map((booking) => (
-              <tr key={booking.id}>
-                <td><strong>#{booking.id}</strong></td>
-
-                <td>{booking.name || "N/A"}</td>
-
-                <td>{booking.email_id || "N/A"}</td>
-
-                <td>{booking.cell_no || "N/A"}</td>
-
-                <td>{booking.cruise_name || "N/A"}</td>
-
-                <td>
-                  {booking.departure_date
-                    ? formatDate(booking.departure_date)
-                    : "N/A"}
-                </td>
-
-                <td className="text-center">
-                  {booking.no_of_people || 0}
-                </td>
-
-                <td>{booking.cabin_type || "N/A"}</td>
-
-                <td>{booking.sailing_days || "N/A"}</td>
-
-                <td>
-                  ₹
-                  {booking.booking_amount
-                    ? parseFloat(booking.booking_amount).toFixed(2)
-                    : "0.00"}
-                </td>
-
-                <td>
-                  {booking.created_at
-                    ? formatDate(booking.created_at)
-                    : "N/A"}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </Table>
-      </div>
-    )}
-  </Card.Body>
-</Card>
-
+        <Card>
+          <Card.Body className="p-0">
+            {loading ? (
+              <div className="text-center py-5">
+                <Spinner animation="border" role="status" className="me-2" />
+                Loading cruise bookings...
+              </div>
+            ) : (
+              <ReusableTable
+                title=""
+                data={bookings}
+                columns={columns}
+                initialEntriesPerPage={5}
+                searchPlaceholder="Search Advance bookings..."
+                showSearch={true}
+                showEntriesSelector={true}
+                showPagination={true}
+                searchPosition="left"
+              />
+            )}
+          </Card.Body>
+        </Card>
       </Container>
     </Navbar>
   );

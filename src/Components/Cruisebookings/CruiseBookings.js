@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Table, Card, Alert, Spinner, Badge } from 'react-bootstrap';
-import Navbar from '../../Shared/Navbar/Navbar'; // Adjust the path as needed
+import { Container, Card, Alert, Spinner } from 'react-bootstrap';
+import Navbar from '../../Shared/Navbar/Navbar';
 import { baseurl } from '../../Api/Baseurl';
+import ReusableTable from '../../Shared/TableLayout/DataTable'; // Adjust the path to your ReusableTable component
 
 const CruiseBookings = () => {
   const [bookings, setBookings] = useState([]);
@@ -35,6 +36,7 @@ const CruiseBookings = () => {
 
   // Format date for display
   const formatDate = (dateString) => {
+    if (!dateString) return "N/A";
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
@@ -44,23 +46,102 @@ const CruiseBookings = () => {
     });
   };
 
-  // Get status badge variant
-  const getStatusVariant = (status) => {
-    switch (status?.toLowerCase()) {
-      case 'confirmed':
-        return 'success';
-      case 'pending':
-        return 'warning';
-      case 'cancelled':
-        return 'danger';
-      default:
-        return 'secondary';
+  // Define columns for the reusable table
+  const columns = [
+    {
+      key: 'id',
+      title: 'ID',
+      style: { fontWeight: 'bold' }
+    },
+    {
+      key: 'name',
+      title: 'Name',
+      render: (item) => item.name || "N/A"
+    },
+    {
+      key: 'email_id',
+      title: 'Email',
+      render: (item) => item.email_id || "N/A"
+    },
+    {
+      key: 'cell_no',
+      title: 'Phone',
+      render: (item) => item.cell_no || "N/A"
+    },
+    {
+      key: 'no_of_people',
+      title: 'Total People',
+      render: (item) => item.no_of_people || 0,
+      style: { textAlign: 'center' }
+    },
+    {
+      key: 'no_of_adult',
+      title: 'Adults',
+      render: (item) => item.no_of_adult || 0,
+      style: { textAlign: 'center' }
+    },
+    {
+      key: 'no_of_child',
+      title: 'Children',
+      render: (item) => item.no_of_child || 0,
+      style: { textAlign: 'center' }
+    },
+    {
+      key: 'no_of_infant',
+      title: 'Infants',
+      render: (item) => item.no_of_infant || 0,
+      style: { textAlign: 'center' }
+    },
+    {
+      key: 'cruise_name',
+      title: 'Cruise Name',
+      render: (item) => item.cruise_name || "N/A"
+    },
+    {
+      key: 'boarding_port',
+      title: 'Boarding Port',
+      render: (item) => item.boarding_port || "N/A"
+    },
+    {
+      key: 'exit_port',
+      title: 'Exit Port',
+      render: (item) => item.exit_port || "N/A"
+    },
+    {
+      key: 'departure_date',
+      title: 'Departure Date',
+      render: (item) => formatDate(item.departure_date)
+    },
+    {
+      key: 'cabin_type',
+      title: 'Cabin Type',
+      render: (item) => item.cabin_type || "N/A"
+    },
+    {
+      key: 'sailing_days',
+      title: 'Sailing Days',
+      render: (item) => item.sailing_days || "N/A"
+    },
+    {
+      key: 'remarks',
+      title: 'Remarks',
+      render: (item) => item.remarks || "—"
+    },
+    {
+      key: 'copy_email',
+      title: 'Copy Email',
+      render: (item) => item.copy_email || "N/A"
+    },
+    {
+      key: 'created_at',
+      title: 'Created At',
+      render: (item) => formatDate(item.created_at)
     }
-  };
+  ];
 
   return (
     <Navbar>
-      <Container fluid>
+      <Container>
         <div className="d-flex justify-content-between align-items-center mb-4">
           <h2 className="mb-0">Cruise Bookings</h2>
           <button 
@@ -79,79 +160,23 @@ const CruiseBookings = () => {
         )}
 
         <Card>
-          <Card.Header>
-            <h5 className="mb-0">All Cruise Bookings</h5>
-          </Card.Header>
           <Card.Body className="p-0">
             {loading ? (
               <div className="text-center py-5">
                 <Spinner animation="border" role="status" className="me-2" />
                 Loading cruise bookings...
               </div>
-            ) : bookings.length === 0 ? (
-              <div className="text-center py-5 text-muted">
-                No cruise bookings found.
-              </div>
             ) : (
-              <div className="table-responsive">
-                <Table striped hover className="mb-0">
-                 <thead className="bg-light">
-  <tr>
-    <th>ID</th>
-    <th>Name</th>
-    <th>Email</th>
-    <th>Phone</th>
-    <th>Total People</th>
-    <th>Adults</th>
-    <th>Children</th>
-    <th>Infants</th>
-    <th>Cruise Name</th>
-    <th>Boarding Port</th>
-    <th>Exit Port</th>
-    <th>Departure Date</th>
-    <th>Cabin Type</th>
-    <th>Sailing Days</th>
-    <th>Remarks</th>
-    <th>Copy Email</th>
-    <th>Created At</th>
-  </tr>
-</thead>
-
-<tbody>
-  {bookings.map((b) => (
-    <tr key={b.id}>
-      <td><strong>#{b.id}</strong></td>
-      <td>{b.name || "N/A"}</td>
-      <td>{b.email_id || "N/A"}</td>
-      <td>{b.cell_no || "N/A"}</td>
-
-      <td className="text-center">{b.no_of_people || 0}</td>
-      <td className="text-center">{b.no_of_adult || 0}</td>
-      <td className="text-center">{b.no_of_child || 0}</td>
-      <td className="text-center">{b.no_of_infant || 0}</td>
-
-      <td>{b.cruise_name || "N/A"}</td>
-      <td>{b.boarding_port || "N/A"}</td>
-      <td>{b.exit_port || "N/A"}</td>
-
-      <td>
-        {b.departure_date ? formatDate(b.departure_date) : "N/A"}
-      </td>
-
-      <td>{b.cabin_type || "N/A"}</td>
-      <td>{b.sailing_days || "N/A"}</td>
-      <td>{b.remarks || "—"}</td>
-      <td>{b.copy_email || "N/A"}</td>
-
-      <td>
-        {b.created_at ? formatDate(b.created_at) : "N/A"}
-      </td>
-    </tr>
-  ))}
-</tbody>
-
-                </Table>
-              </div>
+              <ReusableTable
+                title="Cruise Bookings"
+                data={bookings}
+                columns={columns}
+                initialEntriesPerPage={5}
+                searchPlaceholder="Search bookings..."
+                showSearch={true}
+                showEntriesSelector={true}
+                showPagination={true}
+              />
             )}
           </Card.Body>
         </Card>

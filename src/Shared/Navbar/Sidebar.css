@@ -303,12 +303,12 @@
 }
 
 .sidebar-open {
-  width: 220px;
+  width: 230px;
   transform: translateX(0);
 }
 
 .sidebar-closed {
-  width: 220px;
+  width: 200px;
   transform: translateX(-100%);
 }
 

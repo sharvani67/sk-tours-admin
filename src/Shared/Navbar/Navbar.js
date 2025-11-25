@@ -9,7 +9,7 @@ import {
   Badge,
 } from "react-bootstrap";
 import {
-  FiMenu,FiHome,FiUsers,FiUser, FiLogOut,FiX, FiBell,FiClock,FiFlag,FiMap,FiMapPin,FiGift,FiArchive,
+  FiMenu,FiHome,FiUsers,FiUser, FiLogOut,FiX, FiBell,FiClock,FiFlag,FiMap,FiMapPin,FiGift,FiArchive,FiAnchor,FiSettings
 } from "react-icons/fi";
 
 import { useNavigate, useLocation } from "react-router-dom";
@@ -134,14 +134,20 @@ const Navbar = ({ children }) => {
    {
     label: "Cruise Bookings",
     path: "/cruise-bookings",
-    
+    icon: <FiAnchor className="sidebar-icon" />,
     matchPaths: ["/cruise-bookings"],
   },
    {
-    label: "Advanced CruiseBookings",
+    label: "Advance Cruise Booking",
     path: "/advanced-cruise-bookings",
-  
+    icon: <FiSettings className="sidebar-icon" />,
     matchPaths: ["/advanced-cruise-bookings"],
+  },
+  {
+    label: "Visa Appointments",
+    path: "/visa-appointments",
+    icon: <FiMapPin className="sidebar-icon" />,
+    matchPaths: ["/visa-appointments"],
   },
 ];
   const handleNavClick = (label, path) => {
