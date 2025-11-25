@@ -4,6 +4,8 @@ import Login from "./Components/Login/Login";
 import CruiseBookings from "./Components/Cruisebookings/CruiseBookings";
 import AdvancedCruiseBookings from "./Components/Cruisebookings/AdvancedCruisebookings";
 import Visaappointments from "./Components/Cruisebookings/Visaappointments";
+import Countries from "./Components/Countries/Countries";
+import Destinations from "./Components/Destinations/Destinations";
 
 function App() {
   return (
@@ -16,6 +18,9 @@ function App() {
         <Route path="/cruise-bookings" element={<CruiseBookings />} />
         <Route path="/advanced-cruise-bookings" element={<AdvancedCruiseBookings />} />
         <Route path="/visa-appointments" element={<Visaappointments />} />
+
+         <Route path="/countries" element={<Countries />} />
+         <Route path="/destinations" element={<Destinations />} />
         
 
         {/* Catch-all Route */}
