@@ -4,13 +4,13 @@ import Navbar from '../../Shared/Navbar/Navbar';
 import { baseurl } from '../../Api/Baseurl';
 import ReusableTable from '../../Shared/TableLayout/DataTable';
 import { useNavigate } from 'react-router-dom';
+import { Eye } from 'react-bootstrap-icons';
 
 const Tours = () => {
   const [tours, setTours] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const navigate = useNavigate();
-
 
   // Fetch Tours
   const fetchTours = async () => {
@@ -33,6 +33,11 @@ const Tours = () => {
   useEffect(() => {
     fetchTours();
   }, []);
+
+  // Handle view tour details
+  const handleViewTour = (tourId) => {
+    navigate(`/tour-details/${tourId}`);
+  };
 
   // Columns for ReusableTable
   const columns = [
@@ -73,7 +78,7 @@ const Tours = () => {
       title: 'Overview',
       render: (item) => item.overview || '—'
     },
-     {
+    {
       key: 'is_international',
       title: 'International?',
       render: (item) => item.is_international ? "Yes" : "No",
@@ -86,23 +91,37 @@ const Tours = () => {
         item.created_at
           ? new Date(item.created_at).toLocaleDateString('en-US')
           : 'N/A'
+    },
+    {
+      key: 'actions',
+      title: 'Actions',
+      render: (item) => (
+        <div className="d-flex gap-2">
+          <button
+            className="btn btn-outline-primary btn-sm"
+            onClick={() => handleViewTour(item.tour_id)}
+            title="View Tour Details"
+          >
+            <Eye size={16} />
+          </button>
+        </div>
+      ),
+      style: { textAlign: 'center' }
     }
   ];
 
   return (
     <Navbar>
       <Container>
-       <div className="d-flex justify-content-between align-items-center mb-4">
-  <h2 className="mb-0">Tours</h2>
-
-  <button
-    className="btn btn-success"
-    onClick={() => navigate('/add-tour')}
-  >
-    + Add Tour
-  </button>
-</div>
-
+        <div className="d-flex justify-content-between align-items-center mb-4">
+          <h2 className="mb-0">Tours</h2>
+          <button
+            className="btn btn-success"
+            onClick={() => navigate('/add-tour')}
+          >
+            + Add Tour
+          </button>
+        </div>
 
         {error && (
           <Alert variant="danger" className="mb-4">
@@ -122,7 +141,7 @@ const Tours = () => {
                 title="Tours"
                 data={tours}
                 columns={columns}
-                initialEntriesPerPage={10}
+                initialEntriesPerPage={5}
                 searchPlaceholder="Search tours..."
                 showSearch={true}
                 showEntriesSelector={true}

@@ -12,6 +12,7 @@ import Destinations from "./Components/Destinations/DestinationsTable";
 import AddDestination from './Components/Destinations/AddDestinationsForm';
 import Tours from "./Components/Tours/Tours";
 import AddTour from "./Components/Tours/AddTour";
+import TourDetails from "./Components/Tours/TourDetails";
 
 function App() {
   return (
@@ -32,6 +33,8 @@ function App() {
          <Route path="/add-destination" element={<AddDestination />} />
          <Route path="/tours" element={<Tours />} />
           <Route path="/add-tour" element={<AddTour />} />
+
+          <Route path="/tour-details/:tourId" element={<TourDetails />} />
         {/* Catch-all Route */}
         
 
