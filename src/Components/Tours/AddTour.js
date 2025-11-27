@@ -8,7 +8,8 @@ import {
   Row,
   Col,
   Tabs,
-  Tab
+  Tab,
+  Table
 } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../../Shared/Navbar/Navbar';
@@ -48,14 +49,16 @@ const AddTour = () => {
     is_international: 0
   });
 
-  // DEPARTURE (single)
-  const [departureData, setDepartureData] = useState({
+  // DEPARTURES (multiple)
+  const [departureForm, setDepartureForm] = useState({
     departure_date: '',
     return_date: '',
     adult_price: '',
     child_price: '',
+    infant_price: '',
     total_seats: 40
   });
+  const [departures, setDepartures] = useState([]);
 
   // EXCLUSIONS
   const [exclusionText, setExclusionText] = useState('');
@@ -75,9 +78,12 @@ const AddTour = () => {
     day: '',
     title: '',
     description: '',
-    meals: ''
+    meals: {
+      breakfast: false,
+      lunch: false,
+      dinner: false
+    }
   });
-
   const [itineraries, setItineraries] = useState([]);
 
   // Load dropdowns
@@ -101,7 +107,7 @@ const AddTour = () => {
 
   // BASIC DETAILS CHANGE
   const handleBasicChange = (e) => {
-    const { name, value, type } = e.target;
+    const { name, value } = e.target;
 
     const numericFields = [
       'duration_days',
@@ -121,17 +127,41 @@ const AddTour = () => {
     }));
   };
 
-  // DEPARTURE CHANGE
+  // DEPARTURE FORM CHANGE
   const handleDepartureChange = (e) => {
     const { name, value } = e.target;
-    const numericFields = ['adult_price', 'child_price', 'total_seats'];
+    const numericFields = ['adult_price', 'child_price', 'total_seats', 'infant_price'];
 
-    setDepartureData((prev) => ({
+    setDepartureForm((prev) => ({
       ...prev,
       [name]: numericFields.includes(name)
         ? value === '' ? '' : Number(value)
         : value
     }));
+  };
+
+  const handleAddDeparture = () => {
+    const { departure_date, adult_price } = departureForm;
+
+    if (!departure_date || !adult_price) return;
+
+    setDepartures((prev) => [
+      ...prev,
+      { ...departureForm }
+    ]);
+
+    setDepartureForm({
+      departure_date: '',
+      return_date: '',
+      adult_price: '',
+      child_price: '',
+      infant_price: '',
+      total_seats: 40
+    });
+  };
+
+  const handleRemoveDeparture = (idx) => {
+    setDepartures((prev) => prev.filter((_, i) => i !== idx));
   };
 
   // EXCLUSIONS
@@ -183,9 +213,27 @@ const AddTour = () => {
     }));
   };
 
+  const handleMealsCheckboxChange = (e) => {
+    const { name, checked } = e.target;
+    setItineraryItem((prev) => ({
+      ...prev,
+      meals: {
+        ...prev.meals,
+        [name]: checked
+      }
+    }));
+  };
+
   const handleAddItinerary = () => {
     const { day, title, description, meals } = itineraryItem;
     if (!day || !title.trim()) return;
+
+    const selectedMeals = [];
+    if (meals.breakfast) selectedMeals.push('Breakfast');
+    if (meals.lunch) selectedMeals.push('Lunch');
+    if (meals.dinner) selectedMeals.push('Dinner');
+
+    const mealsString = selectedMeals.join(', ');
 
     setItineraries((prev) => [
       ...prev,
@@ -193,7 +241,7 @@ const AddTour = () => {
         day: Number(day),
         title: title.trim(),
         description: description.trim(),
-        meals: meals.trim()
+        meals: mealsString
       }
     ]);
 
@@ -201,7 +249,11 @@ const AddTour = () => {
       day: '',
       title: '',
       description: '',
-      meals: ''
+      meals: {
+        breakfast: false,
+        lunch: false,
+        dinner: false
+      }
     });
   };
 
@@ -264,27 +316,22 @@ const AddTour = () => {
       const tourId =
         tourData.tour_id || tourData.id || tourData.insertId;
 
-      // 2) DEPARTURE
-      if (departureData.departure_date && departureData.adult_price) {
-        const depData = {
+      // 2) DEPARTURES BULK
+      if (departures.length > 0) {
+        const depBody = {
           tour_id: tourId,
-          departure_date: departureData.departure_date,
-          return_date: departureData.return_date || null,
-          adult_price: departureData.adult_price,
-          child_price: departureData.child_price || null,
-          total_seats:
-            departureData.total_seats === '' ? 40 : departureData.total_seats
+          departures
         };
 
-        const depRes = await fetch(`${baseurl}/api/departures`, {
+        const depRes = await fetch(`${baseurl}/api/departures/bulk`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(depData)
+          body: JSON.stringify(depBody)
         });
 
         if (!depRes.ok) {
           const err = await depRes.json().catch(() => ({}));
-          throw new Error(err.error || 'Failed to save departure');
+          throw new Error(err.error || 'Failed to save departures');
         }
       }
 
@@ -377,6 +424,29 @@ const AddTour = () => {
       goNext();
     }
   };
+
+  const handleDepartureDateSelect = (e) => {
+  const departureDate = e.target.value;
+  const duration = formData.duration_days;
+
+  if (!departureDate || !duration) {
+    setDepartureForm(prev => ({ ...prev, departure_date: departureDate }));
+    return;
+  }
+
+  // Add days
+  const dateObj = new Date(departureDate);
+  dateObj.setDate(dateObj.getDate() + Number(duration));
+
+  const returnISO = dateObj.toISOString().split("T")[0];
+
+  setDepartureForm(prev => ({
+    ...prev,
+    departure_date: departureDate,
+    return_date: returnISO
+  }));
+};
+
 
   return (
     <Navbar>
@@ -508,68 +578,142 @@ const AddTour = () => {
               {/* ======== TAB 2: DEPARTURES ======== */}
               <Tab eventKey="departures" title="Departures">
                 <Row>
-                  <Col md={4}>
-                    <Form.Group className="mb-3">
-                      <Form.Label>Departure Date</Form.Label>
-                      <Form.Control
-                        type="date"
-                        name="departure_date"
-                        value={departureData.departure_date}
-                        onChange={handleDepartureChange}
-                      />
-                    </Form.Group>
-                  </Col>
 
-                  <Col md={4}>
+                  <Col md={3}>
+    <Form.Group className="mb-3">
+      <Form.Label>Duration (Days)</Form.Label>
+      <Form.Control
+        type="number"
+        value={formData.duration_days}
+        readOnly
+         style={{
+    backgroundColor: "#e9ecef",
+    cursor: "not-allowed"
+  }}
+      />
+    </Form.Group>
+  </Col>
+
+                  <Col md={3}>
+    <Form.Group className="mb-3">
+      <Form.Label>Departure Date</Form.Label>
+      <Form.Control
+        type="date"
+        name="departure_date"
+        value={departureForm.departure_date}
+        onChange={handleDepartureDateSelect}  /* <-- NEW FUNCTION */
+      />
+    </Form.Group>
+  </Col>
+
+                  <Col md={3}>
                     <Form.Group className="mb-3">
                       <Form.Label>Return Date</Form.Label>
                       <Form.Control
-                        type="date"
-                        name="return_date"
-                        value={departureData.return_date}
-                        onChange={handleDepartureChange}
-                      />
+  type="date"
+  name="return_date"
+  value={departureForm.return_date}
+  readOnly
+   style={{
+    backgroundColor: "#e9ecef",
+    cursor: "not-allowed"
+  }}
+/>
+
                     </Form.Group>
                   </Col>
 
-                  <Col md={4}>
+                  <Col md={2}>
                     <Form.Group className="mb-3">
                       <Form.Label>Total Seats</Form.Label>
                       <Form.Control
                         type="number"
                         name="total_seats"
-                        value={departureData.total_seats}
+                        value={departureForm.total_seats}
                         onChange={handleDepartureChange}
                       />
                     </Form.Group>
                   </Col>
-                </Row>
 
-                <Row>
-                  <Col md={4}>
+                  <Col md={2}>
                     <Form.Group className="mb-3">
                       <Form.Label>Adult Price</Form.Label>
                       <Form.Control
                         type="number"
                         name="adult_price"
-                        value={departureData.adult_price}
+                        value={departureForm.adult_price}
                         onChange={handleDepartureChange}
                       />
                     </Form.Group>
                   </Col>
 
-                  <Col md={4}>
+                  <Col md={2}>
                     <Form.Group className="mb-3">
                       <Form.Label>Child Price</Form.Label>
                       <Form.Control
                         type="number"
                         name="child_price"
-                        value={departureData.child_price}
+                        value={departureForm.child_price}
+                        onChange={handleDepartureChange}
+                      />
+                    </Form.Group>
+                  </Col>
+
+                    <Col md={2}>
+                    <Form.Group className="mb-3">
+                      <Form.Label>Infant Price</Form.Label>
+                      <Form.Control
+                        type="number"
+                        name="infant_price"
+                        value={departureForm.infant_price}
                         onChange={handleDepartureChange}
                       />
                     </Form.Group>
                   </Col>
                 </Row>
+
+                <Button size="sm" className="mb-3" onClick={handleAddDeparture}>
+                  + Add Departure
+                </Button>
+
+                {departures.length > 0 && (
+                  <Table striped bordered hover size="sm">
+                    <thead>
+                      <tr>
+                        <th>#</th>
+                        <th>Departure Date</th>
+                        <th>Return Date</th>
+                        <th>Adult Price</th>
+                        <th>Child Price</th>
+                        <th>Infant Price</th>
+                        <th>Total Seats</th>
+                        <th>Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {departures.map((dep, idx) => (
+                        <tr key={idx}>
+                          <td>{idx + 1}</td>
+                          <td>{dep.departure_date}</td>
+                          <td>{dep.return_date || '-'}</td>
+                          <td>{dep.adult_price}</td>
+                          <td>{dep.child_price || '-'}</td>
+                           <td>{dep.infant_price || '-'}</td>
+                          <td>{dep.total_seats}</td>
+                          <td>
+                            <Button
+                              variant="link"
+                              size="sm"
+                              onClick={() => handleRemoveDeparture(idx)}
+                            >
+                              remove
+                            </Button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </Table>
+                )}
               </Tab>
 
               {/* ======== TAB 3: EXCLUSIONS ======== */}
@@ -589,20 +733,32 @@ const AddTour = () => {
                 </Form.Group>
 
                 {exclusions.length > 0 && (
-                  <ul>
-                    {exclusions.map((item, idx) => (
-                      <li key={idx}>
-                        {item}{' '}
-                        <Button
-                          variant="link"
-                          size="sm"
-                          onClick={() => handleRemoveExclusion(idx)}
-                        >
-                          remove
-                        </Button>
-                      </li>
-                    ))}
-                  </ul>
+                  <Table striped bordered hover size="sm">
+                    <thead>
+                      <tr>
+                        <th>#</th>
+                        <th>Exclusion</th>
+                        <th>Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {exclusions.map((item, idx) => (
+                        <tr key={idx}>
+                          <td>{idx + 1}</td>
+                          <td>{item}</td>
+                          <td>
+                            <Button
+                              variant="link"
+                              size="sm"
+                              onClick={() => handleRemoveExclusion(idx)}
+                            >
+                              remove
+                            </Button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </Table>
                 )}
               </Tab>
 
@@ -658,20 +814,32 @@ const AddTour = () => {
                 </Form.Group>
 
                 {inclusions.length > 0 && (
-                  <ul>
-                    {inclusions.map((item, idx) => (
-                      <li key={idx}>
-                        {item}{' '}
-                        <Button
-                          variant="link"
-                          size="sm"
-                          onClick={() => handleRemoveInclusion(idx)}
-                        >
-                          remove
-                        </Button>
-                      </li>
-                    ))}
-                  </ul>
+                  <Table striped bordered hover size="sm">
+                    <thead>
+                      <tr>
+                        <th>#</th>
+                        <th>Inclusion</th>
+                        <th>Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {inclusions.map((item, idx) => (
+                        <tr key={idx}>
+                          <td>{idx + 1}</td>
+                          <td>{item}</td>
+                          <td>
+                            <Button
+                              variant="link"
+                              size="sm"
+                              onClick={() => handleRemoveInclusion(idx)}
+                            >
+                              remove
+                            </Button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </Table>
                 )}
               </Tab>
 
@@ -705,13 +873,29 @@ const AddTour = () => {
                   <Col md={6}>
                     <Form.Group className="mb-3">
                       <Form.Label>Meals</Form.Label>
-                      <Form.Control
-                        type="text"
-                        name="meals"
-                        value={itineraryItem.meals}
-                        onChange={handleItineraryChange}
-                        placeholder="Breakfast, Lunch..."
-                      />
+                      <div className="d-flex gap-3">
+                        <Form.Check
+                          type="checkbox"
+                          label="Breakfast"
+                          name="breakfast"
+                          checked={itineraryItem.meals.breakfast}
+                          onChange={handleMealsCheckboxChange}
+                        />
+                        <Form.Check
+                          type="checkbox"
+                          label="Lunch"
+                          name="lunch"
+                          checked={itineraryItem.meals.lunch}
+                          onChange={handleMealsCheckboxChange}
+                        />
+                        <Form.Check
+                          type="checkbox"
+                          label="Dinner"
+                          name="dinner"
+                          checked={itineraryItem.meals.dinner}
+                          onChange={handleMealsCheckboxChange}
+                        />
+                      </div>
                     </Form.Group>
                   </Col>
                 </Row>
@@ -732,24 +916,40 @@ const AddTour = () => {
                 </Button>
 
                 {itineraries.length > 0 && (
-                  <ul className="mt-3">
-                    {itineraries
-                      .sort((a, b) => a.day - b.day)
-                      .map((item, idx) => (
-                        <li key={idx}>
-                          <strong>Day {item.day}:</strong> {item.title}{' '}
-                          {item.meals && <em>({item.meals})</em>}
-                          {item.description && ` - ${item.description}`}{' '}
-                          <Button
-                            variant="link"
-                            size="sm"
-                            onClick={() => handleRemoveItinerary(idx)}
-                          >
-                            remove
-                          </Button>
-                        </li>
-                      ))}
-                  </ul>
+                  <Table striped bordered hover size="sm" className="mt-3">
+                    <thead>
+                      <tr>
+                        <th>#</th>
+                        <th>Day</th>
+                        <th>Title</th>
+                        <th>Meals</th>
+                        <th>Description</th>
+                        <th>Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {itineraries
+                        .sort((a, b) => a.day - b.day)
+                        .map((item, idx) => (
+                          <tr key={idx}>
+                            <td>{idx + 1}</td>
+                            <td>{item.day}</td>
+                            <td>{item.title}</td>
+                            <td>{item.meals || '-'}</td>
+                            <td>{item.description || '-'}</td>
+                            <td>
+                              <Button
+                                variant="link"
+                                size="sm"
+                                onClick={() => handleRemoveItinerary(idx)}
+                              >
+                                remove
+                              </Button>
+                            </td>
+                          </tr>
+                        ))}
+                    </tbody>
+                  </Table>
                 )}
               </Tab>
             </Tabs>
