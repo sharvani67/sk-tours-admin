@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Card, Alert, Spinner } from 'react-bootstrap';
-import Navbar from '../../Shared/Navbar/Navbar';
-import { baseurl } from '../../Api/Baseurl';
-import ReusableTable from '../../Shared/TableLayout/DataTable'; // Adjust the path to your ReusableTable component
+import { useNavigate } from 'react-router-dom';
+import { FaEye } from 'react-icons/fa';
+import Navbar from '../../../Shared/Navbar/Navbar';
+import { baseurl } from '../../../Api/Baseurl';
+import ReusableTable from '../../../Shared/TableLayout/DataTable';
 
 const CruiseBookings = () => {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const navigate = useNavigate();
 
   const fetchCruiseBookings = async () => {
     try {
@@ -46,11 +49,16 @@ const CruiseBookings = () => {
     });
   };
 
+  // Handle view details
+  const handleViewDetails = (booking) => {
+    navigate('/cruise-booking-details', { state: { booking } });
+  };
+
   // Define columns for the reusable table
   const columns = [
     {
       key: 'id',
-      title: 'ID',
+      title: 'S.No',
       style: { fontWeight: 'bold' }
     },
     {
@@ -136,6 +144,22 @@ const CruiseBookings = () => {
       key: 'created_at',
       title: 'Created At',
       render: (item) => formatDate(item.created_at)
+    },
+    {
+      key: 'actions',
+      title: 'Actions',
+      render: (item) => (
+        <div className="d-flex gap-2">
+          <button
+            className="btn btn-outline-primary btn-sm"
+            onClick={() => handleViewDetails(item)}
+            title="View Details"
+          >
+            <FaEye size={16} />
+          </button>
+        </div>
+      ),
+      style: { textAlign: 'center' }
     }
   ];
 

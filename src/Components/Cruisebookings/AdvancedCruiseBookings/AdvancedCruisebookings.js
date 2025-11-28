@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Card, Alert, Spinner } from 'react-bootstrap';
-import Navbar from '../../Shared/Navbar/Navbar';
-import { baseurl } from '../../Api/Baseurl';
-import ReusableTable from '../../Shared/TableLayout/ReusableTable'; // Adjust the path to your ReusableTable component
+import { useNavigate } from 'react-router-dom';
+import { FaEye } from 'react-icons/fa';
+import Navbar from '../../../Shared/Navbar/Navbar';
+import { baseurl } from '../../../Api/Baseurl';
+import ReusableTable from '../../../Shared/TableLayout/DataTable';
 
 const AdvancedCruiseBookings = () => {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const navigate = useNavigate();
 
   const fetchCruiseBookings = async () => {
     try {
@@ -18,7 +21,12 @@ const AdvancedCruiseBookings = () => {
       const result = await response.json();
       
       if (result.success) {
-        setBookings(result.data);
+        // Add serial numbers to the data
+        const bookingsWithSerialNo = result.data.map((item, index) => ({
+          ...item,
+          serial_no: index + 1
+        }));
+        setBookings(bookingsWithSerialNo);
       } else {
         setError('Failed to fetch cruise bookings');
       }
@@ -52,12 +60,23 @@ const AdvancedCruiseBookings = () => {
     return `₹${parseFloat(amount).toFixed(2)}`;
   };
 
+  // Handle view details
+  const handleViewDetails = (booking) => {
+    navigate('/advanced-cruise-booking-details', { state: { booking } });
+  };
+
   // Define columns for the reusable table
   const columns = [
     {
-      key: 'id',
-      title: 'Booking ID',
-      render: (item) => <strong>#{item.id}</strong>
+      key: 'serial_no',
+      title: 'S.No',
+      render: (item, index) => {
+        // Multiple fallback methods to ensure serial number is displayed
+        if (item.serial_no) return item.serial_no;
+        if (index !== undefined) return index + 1;
+        return 'N/A';
+      },
+      style: { fontWeight: 'bold', textAlign: 'center', width: '80px' }
     },
     {
       key: 'name',
@@ -109,6 +128,22 @@ const AdvancedCruiseBookings = () => {
       key: 'created_at',
       title: 'Booking Date',
       render: (item) => formatDate(item.created_at)
+    },
+    {
+      key: 'actions',
+      title: 'Actions',
+      render: (item) => (
+        <div className="d-flex gap-2">
+          <button
+            className="btn btn-outline-primary btn-sm"
+            onClick={() => handleViewDetails(item)}
+            title="View Details"
+          >
+            <FaEye size={16} />
+          </button>
+        </div>
+      ),
+      style: { textAlign: 'center' }
     }
   ];
 

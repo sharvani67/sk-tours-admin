@@ -1,9 +1,12 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Dashboard from "./Components/Dashboard/Dashboard";
 import Login from "./Components/Login/Login";
-import CruiseBookings from "./Components/Cruisebookings/CruiseBookings";
-import AdvancedCruiseBookings from "./Components/Cruisebookings/AdvancedCruisebookings";
-import Visaappointments from "./Components/Cruisebookings/Visaappointments";
+import CruiseBookings from "./Components/Cruisebookings/CruiseBookings/CruiseBookings";
+import CruiseBookingDetails from "./Components/Cruisebookings/CruiseBookings/CruiseBookingsDetails";
+import AdvancedCruiseBookings from "./Components/Cruisebookings/AdvancedCruiseBookings/AdvancedCruisebookings";
+import AdvancedCruiseBookingDetails from "./Components/Cruisebookings/AdvancedCruiseBookings/AdvanceCruiseBookingDetails";
+import Visaappointments from "./Components/Cruisebookings/Visaappoinments/Visaappointments";
+import VisaAppointmentDetails from "./Components/Cruisebookings/Visaappoinments/VisaappoinmentsDetails";
 import TourCategoriesTable from "./Components/ToursCategories/TourCategoriesTable";
 import AddTourCategory from "./Components/ToursCategories/ToursCategoriesForm"; // Add this import
 import Countries from "./Components/Countries/CountriesTable";
@@ -23,8 +26,11 @@ function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/" element={<Login />} />
         <Route path="/cruise-bookings" element={<CruiseBookings />} />
+        <Route path="/cruise-booking-details" element={<CruiseBookingDetails />} />
         <Route path="/advanced-cruise-bookings" element={<AdvancedCruiseBookings />} />
+        <Route path="/advanced-cruise-booking-details" element={<AdvancedCruiseBookingDetails />} />
         <Route path="/visa-appointments" element={<Visaappointments />} />
+        <Route path="/visa-appointment-details" element={<VisaAppointmentDetails />} />
          <Route path="/categories-tours" element={<TourCategoriesTable />} />
         <Route path="/add-tour-category" element={<AddTourCategory />} /> {/* Add this route */}
          <Route path="/countries" element={<Countries />} />

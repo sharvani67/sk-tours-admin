@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Card, Alert, Spinner } from 'react-bootstrap';
-import Navbar from '../../Shared/Navbar/Navbar'; // Adjust the path as needed
-import { baseurl } from '../../Api/Baseurl';
-import ReusableTable from '../../Shared/TableLayout/DataTable'; // Adjust the path to your ReusableTable component
+import { useNavigate } from 'react-router-dom';
+import { FaEye } from 'react-icons/fa';
+import Navbar from '../../../Shared/Navbar/Navbar';
+import { baseurl } from '../../../Api/Baseurl';
+import ReusableTable from '../../../Shared/TableLayout/DataTable';
 
 const Visaappointments = () => {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const navigate = useNavigate();
 
   const fetchVisaAppointments = async () => {
     try {
@@ -18,7 +21,12 @@ const Visaappointments = () => {
       const result = await response.json();
       
       if (result.success) {
-        setBookings(result.data);
+        // Add serial numbers to the data
+        const appointmentsWithSerialNo = result.data.map((item, index) => ({
+          ...item,
+          serial_no: index + 1
+        }));
+        setBookings(appointmentsWithSerialNo);
       } else {
         setError('Failed to fetch visa appointments');
       }
@@ -46,48 +54,43 @@ const Visaappointments = () => {
     });
   };
 
+  // Handle view details
+  const handleViewDetails = (appointment) => {
+    navigate('/visa-appointment-details', { state: { appointment } });
+  };
+
   // Define columns for the reusable table
   const columns = [
     {
-      key: 'id',
-      title: 'ID',
-      style: { fontWeight: 'bold' }
+      key: 'serial_no',
+      title: 'S.No',
+      render: (item, index) => {
+        // Multiple fallback methods to ensure serial number is displayed
+        if (item.serial_no) return item.serial_no;
+        if (index !== undefined) return index + 1;
+        return 'N/A';
+      },
+      style: { fontWeight: 'bold', textAlign: 'center', width: '80px' }
     },
     {
       key: 'name',
-      title: 'Name'
+      title: 'Name',
+      render: (item) => item.name || "N/A"
     },
     {
       key: 'email_id',
-      title: 'Email'
+      title: 'Email',
+      render: (item) => item.email_id || "N/A"
     },
     {
       key: 'cell_no',
-      title: 'Phone'
-    },
-    {
-      key: 'address',
-      title: 'Address'
-    },
-    {
-      key: 'city',
-      title: 'City'
-    },
-    {
-      key: 'pin_code',
-      title: 'Pincode'
-    },
-    {
-      key: 'state',
-      title: 'State'
-    },
-    {
-      key: 'country',
-      title: 'Country'
+      title: 'Phone',
+      render: (item) => item.cell_no || "N/A"
     },
     {
       key: 'consultancy_country',
-      title: 'Consultancy Country'
+      title: 'Consultancy Country',
+      render: (item) => item.consultancy_country || "N/A"
     },
     {
       key: 'convenient_date',
@@ -96,11 +99,13 @@ const Visaappointments = () => {
     },
     {
       key: 'convenient_time',
-      title: 'Convenient Time'
+      title: 'Convenient Time',
+      render: (item) => item.convenient_time || "N/A"
     },
     {
       key: 'no_of_people',
       title: 'No. of People',
+      render: (item) => item.no_of_people || 0,
       style: { textAlign: 'center' }
     },
     {
@@ -116,6 +121,22 @@ const Visaappointments = () => {
       key: 'created_at',
       title: 'Created At',
       render: (item) => formatDate(item.created_at)
+    },
+    {
+      key: 'actions',
+      title: 'Actions',
+      render: (item) => (
+        <div className="d-flex gap-2">
+          <button
+            className="btn btn-outline-primary btn-sm"
+            onClick={() => handleViewDetails(item)}
+            title="View Details"
+          >
+            <FaEye size={16} />
+          </button>
+        </div>
+      ),
+      style: { textAlign: 'center' }
     }
   ];
 
