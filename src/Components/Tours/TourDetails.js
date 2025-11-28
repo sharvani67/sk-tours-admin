@@ -261,6 +261,7 @@ const TourDetails = () => {
                     <th>Available Seats</th>
                     <th>Adult Price</th>
                     <th>Child Price</th>
+                    <th>Infant Price</th>
                     <th>Status</th>
                   </tr>
                 </thead>
@@ -278,6 +279,7 @@ const TourDetails = () => {
                       </td>
                       <td>₹{departure.adult_price}</td>
                       <td>{departure.child_price ? `₹${departure.child_price}` : 'N/A'}</td>
+                      <td>{departure.infant_price ? `₹${departure.infant_price}` : 'N/A'}</td>
                       <td>
                         <Badge bg={departure.status === 'Available' ? 'success' : 'warning'}>
                           {departure.status || 'Available'}
