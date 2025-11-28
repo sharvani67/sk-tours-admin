@@ -1,0 +1,47 @@
+/* Overview.css */
+.action-btn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.action-btn:hover {
+  transform: scale(1.05);
+}
+
+.info-item {
+  padding: 0.5rem 0;
+}
+
+.info-item:not(:last-child) {
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.overview-content {
+  background-color: #f8f9fa;
+  border-left: 4px solid #007bff;
+}
+
+.italic {
+  font-style: italic;
+}
+
+/* Optional: Add hover effects for info items */
+.info-item:hover {
+  background-color: #fafbfc;
+  margin: 0 -1rem;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+/* Card header styling */
+.card-header {
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #dee2e6;
+}

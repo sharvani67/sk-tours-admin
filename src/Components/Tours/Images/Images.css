@@ -1,0 +1,98 @@
+.image-container {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+}
+
+.image-overlay {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  opacity: 1; /* Always visible */
+  transition: all 0.2s ease;
+  z-index: 10; /* Ensure buttons are above the image */
+}
+
+.action-buttons {
+  display: flex;
+  gap: 4px;
+}
+
+.delete-btn, .edit-btn {
+  border-radius: 50%;
+  width: 32px; /* Increased size for better visibility */
+  height: 32px; /* Increased size for better visibility */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3); /* Darker shadow for better contrast */
+  opacity: 1; /* Always visible */
+  border: 2px solid white; /* White border for better contrast */
+  z-index: 20; /* Ensure buttons are above everything */
+}
+
+.delete-btn {
+  background-color: #dc3545;
+  border-color: #dc3545;
+}
+
+.delete-btn:hover {
+  background-color: #c82333;
+  border-color: #bd2130;
+  transform: scale(1.1);
+}
+
+.edit-btn {
+  background-color: #ffc107;
+  border-color: #ffc107;
+  color: #000 !important; /* Force black color for better visibility */
+  font-weight: bold;
+}
+
+.edit-btn:hover {
+  background-color: #e0a800;
+  border-color: #d39e00;
+  color: #000 !important;
+  transform: scale(1.1);
+}
+
+/* Ensure the pencil icon is clearly visible */
+.edit-btn svg {
+  color: #000 !important;
+  stroke-width: 1.5; /* Make the icon bolder */
+}
+
+.add-image-btn {
+  display: flex;
+  align-items: center;
+}
+
+.tour-image {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+}
+
+.cover-badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 5; /* Below the action buttons */
+}
+
+/* Optional: Add some animation on hover for the image container */
+.image-container:hover .tour-image {
+  transform: scale(1.02);
+  transition: transform 0.2s ease;
+}
+
+/* Force visibility of action buttons at all times */
+.image-container .action-buttons,
+.image-overlay,
+.delete-btn,
+.edit-btn {
+  opacity: 1 !important;
+  visibility: visible !important;
+  display: flex !important;
+}

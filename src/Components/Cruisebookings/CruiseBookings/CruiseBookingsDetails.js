@@ -90,7 +90,7 @@ const CruiseBookingDetails = () => {
           <Col md={6} className="mb-4">
             <Card>
               <Card.Header className="bg-primary text-white">
-                <h5 className="mb-0">
+                <h5 className="mb-0" style={{color: "black"}}>
                   <FaUser className="me-2" />
                   Passenger Information
                 </h5>

@@ -21,7 +21,12 @@ const Tours = () => {
       const response = await fetch(`${baseurl}/api/tours`);
       const result = await response.json();
 
-      setTours(result); // backend returns rows directly
+      // Add serial numbers to the data like in the visa appointments example
+      const toursWithSerialNo = result.map((item, index) => ({
+        ...item,
+        serial_no: index + 1
+      }));
+      setTours(toursWithSerialNo);
     } catch (err) {
       console.error('Error fetching tours:', err);
       setError('Error fetching tours. Please try again.');
@@ -42,9 +47,15 @@ const Tours = () => {
   // Columns for ReusableTable
   const columns = [
     {
-      key: 'tour_id',
-      title: 'ID',
-      style: { fontWeight: 'bold' }
+      key: 'serial_no',
+      title: 'S.No',
+      render: (item, index) => {
+        // Multiple fallback methods to ensure serial number is displayed
+        if (item.serial_no) return item.serial_no;
+        if (index !== undefined) return index + 1;
+        return 'N/A';
+      },
+      style: { fontWeight: 'bold', textAlign: 'center', width: '80px' }
     },
     {
       key: 'title',
@@ -76,7 +87,10 @@ const Tours = () => {
     {
       key: 'overview',
       title: 'Overview',
-      render: (item) => item.overview || '—'
+      render: (item) => {
+        const overview = item.overview || '';
+        return overview.length > 50 ? `${overview.substring(0, 50)}...` : overview || '—';
+      }
     },
     {
       key: 'is_international',
@@ -110,17 +124,39 @@ const Tours = () => {
     }
   ];
 
+  // Transform the data to handle null/undefined values
+  const tableData = tours.map(tour => ({
+    ...tour,
+    title: tour.title || "N/A",
+    category_name: tour.category_name || "N/A",
+    primary_destination_name: tour.primary_destination_name || "N/A",
+    duration_days: tour.duration_days || "N/A",
+    base_price_adult: tour.base_price_adult || 0,
+    overview: tour.overview || "",
+    is_international: tour.is_international || false,
+    created_at: tour.created_at || ""
+  }));
+
   return (
     <Navbar>
       <Container>
         <div className="d-flex justify-content-between align-items-center mb-4">
           <h2 className="mb-0">Tours</h2>
-          <button
-            className="btn btn-success"
-            onClick={() => navigate('/add-tour')}
-          >
-            + Add Tour
-          </button>
+          <div className="d-flex gap-2">
+            {/* <button 
+              className="btn btn-primary"
+              onClick={fetchTours}
+              disabled={loading}
+            >
+              {loading ? 'Refreshing...' : 'Refresh'}
+            </button> */}
+            <button
+              className="btn btn-success"
+              onClick={() => navigate('/add-tour')}
+            >
+              + Add Tour
+            </button>
+          </div>
         </div>
 
         {error && (
@@ -139,7 +175,7 @@ const Tours = () => {
             ) : (
               <ReusableTable
                 title="Tours"
-                data={tours}
+                data={tableData}
                 columns={columns}
                 initialEntriesPerPage={5}
                 searchPlaceholder="Search tours..."

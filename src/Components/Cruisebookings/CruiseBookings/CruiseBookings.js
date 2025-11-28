@@ -82,67 +82,67 @@ const CruiseBookings = () => {
       render: (item) => item.no_of_people || 0,
       style: { textAlign: 'center' }
     },
-    {
-      key: 'no_of_adult',
-      title: 'Adults',
-      render: (item) => item.no_of_adult || 0,
-      style: { textAlign: 'center' }
-    },
-    {
-      key: 'no_of_child',
-      title: 'Children',
-      render: (item) => item.no_of_child || 0,
-      style: { textAlign: 'center' }
-    },
-    {
-      key: 'no_of_infant',
-      title: 'Infants',
-      render: (item) => item.no_of_infant || 0,
-      style: { textAlign: 'center' }
-    },
+    // {
+    //   key: 'no_of_adult',
+    //   title: 'Adults',
+    //   render: (item) => item.no_of_adult || 0,
+    //   style: { textAlign: 'center' }
+    // },
+    // {
+    //   key: 'no_of_child',
+    //   title: 'Children',
+    //   render: (item) => item.no_of_child || 0,
+    //   style: { textAlign: 'center' }
+    // },
+    // {
+    //   key: 'no_of_infant',
+    //   title: 'Infants',
+    //   render: (item) => item.no_of_infant || 0,
+    //   style: { textAlign: 'center' }
+    // },
     {
       key: 'cruise_name',
       title: 'Cruise Name',
       render: (item) => item.cruise_name || "N/A"
     },
-    {
-      key: 'boarding_port',
-      title: 'Boarding Port',
-      render: (item) => item.boarding_port || "N/A"
-    },
-    {
-      key: 'exit_port',
-      title: 'Exit Port',
-      render: (item) => item.exit_port || "N/A"
-    },
-    {
-      key: 'departure_date',
-      title: 'Departure Date',
-      render: (item) => formatDate(item.departure_date)
-    },
-    {
-      key: 'cabin_type',
-      title: 'Cabin Type',
-      render: (item) => item.cabin_type || "N/A"
-    },
-    {
-      key: 'sailing_days',
-      title: 'Sailing Days',
-      render: (item) => item.sailing_days || "N/A"
-    },
-    {
-      key: 'remarks',
-      title: 'Remarks',
-      render: (item) => item.remarks || "—"
-    },
-    {
-      key: 'copy_email',
-      title: 'Copy Email',
-      render: (item) => item.copy_email || "N/A"
-    },
+    // {
+    //   key: 'boarding_port',
+    //   title: 'Boarding Port',
+    //   render: (item) => item.boarding_port || "N/A"
+    // },
+    // {
+    //   key: 'exit_port',
+    //   title: 'Exit Port',
+    //   render: (item) => item.exit_port || "N/A"
+    // },
+    // {
+    //   key: 'departure_date',
+    //   title: 'Departure Date',
+    //   render: (item) => formatDate(item.departure_date)
+    // },
+    // {
+    //   key: 'cabin_type',
+    //   title: 'Cabin Type',
+    //   render: (item) => item.cabin_type || "N/A"
+    // },
+    // {
+    //   key: 'sailing_days',
+    //   title: 'Sailing Days',
+    //   render: (item) => item.sailing_days || "N/A"
+    // },
+    // {
+    //   key: 'remarks',
+    //   title: 'Remarks',
+    //   render: (item) => item.remarks || "—"
+    // },
+    // {
+    //   key: 'copy_email',
+    //   title: 'Copy Email',
+    //   render: (item) => item.copy_email || "N/A"
+    // },
     {
       key: 'created_at',
-      title: 'Created At',
+      title: 'Date',
       render: (item) => formatDate(item.created_at)
     },
     {

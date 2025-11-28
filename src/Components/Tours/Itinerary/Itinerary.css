@@ -1,0 +1,25 @@
+.action-btn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.action-btn:hover {
+  transform: scale(1.05);
+}
+
+/* Style for itinerary cards */
+.card .card-header {
+  background-color: #f8f9fa !important;
+  border-bottom: 1px solid #dee2e6;
+}
+
+/* Ensure proper spacing between itinerary days */
+.mb-3:last-child {
+  margin-bottom: 0 !important;
+}

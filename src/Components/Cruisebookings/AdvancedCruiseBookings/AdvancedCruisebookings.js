@@ -98,27 +98,27 @@ const AdvancedCruiseBookings = () => {
       title: 'Cruise',
       render: (item) => item.cruise_name || "N/A"
     },
-    {
-      key: 'departure_date',
-      title: 'Departure Date',
-      render: (item) => formatDate(item.departure_date)
-    },
+    // {
+    //   key: 'departure_date',
+    //   title: 'Departure Date',
+    //   render: (item) => formatDate(item.departure_date)
+    // },
     {
       key: 'no_of_people',
       title: 'Passengers',
       render: (item) => item.no_of_people || 0,
       style: { textAlign: 'center' }
     },
-    {
-      key: 'cabin_type',
-      title: 'Cabin Type',
-      render: (item) => item.cabin_type || "N/A"
-    },
-    {
-      key: 'sailing_days',
-      title: 'Sailing Days',
-      render: (item) => item.sailing_days || "N/A"
-    },
+    // {
+    //   key: 'cabin_type',
+    //   title: 'Cabin Type',
+    //   render: (item) => item.cabin_type || "N/A"
+    // },
+    // {
+    //   key: 'sailing_days',
+    //   title: 'Sailing Days',
+    //   render: (item) => item.sailing_days || "N/A"
+    // },
     {
       key: 'booking_amount',
       title: 'Total Amount',

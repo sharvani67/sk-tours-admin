@@ -92,34 +92,34 @@ const Visaappointments = () => {
       title: 'Consultancy Country',
       render: (item) => item.consultancy_country || "N/A"
     },
-    {
-      key: 'convenient_date',
-      title: 'Convenient Date',
-      render: (item) => formatDate(item.convenient_date)
-    },
-    {
-      key: 'convenient_time',
-      title: 'Convenient Time',
-      render: (item) => item.convenient_time || "N/A"
-    },
+    // {
+    //   key: 'convenient_date',
+    //   title: 'Convenient Date',
+    //   render: (item) => formatDate(item.convenient_date)
+    // },
+    // {
+    //   key: 'convenient_time',
+    //   title: 'Convenient Time',
+    //   render: (item) => item.convenient_time || "N/A"
+    // },
     {
       key: 'no_of_people',
       title: 'No. of People',
       render: (item) => item.no_of_people || 0,
       style: { textAlign: 'center' }
     },
-    {
-      key: 'agreed_terms',
-      title: 'Agreed',
-      render: (item) => (
-        item.agreed_terms === 1 ? 
-          <span className="badge bg-success">Yes</span> : 
-          <span className="badge bg-danger">No</span>
-      )
-    },
+    // {
+    //   key: 'agreed_terms',
+    //   title: 'Agreed',
+    //   render: (item) => (
+    //     item.agreed_terms === 1 ? 
+    //       <span className="badge bg-success">Yes</span> : 
+    //       <span className="badge bg-danger">No</span>
+    //   )
+    // },
     {
       key: 'created_at',
-      title: 'Created At',
+      title: 'Date',
       render: (item) => formatDate(item.created_at)
     },
     {
