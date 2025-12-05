@@ -18,14 +18,21 @@ import { baseurl } from '../../Api/Baseurl';
 const AddTour = () => {
   const navigate = useNavigate();
 
-  const TAB_LIST = [
+ const TAB_LIST = [
     'basic',
     'departures',
+    'costs',
+    'hotels',
+    'transport',
+    'bookingPoi',
+    'cancellation',
+    'instructions',
     'exclusions',
     'images',
     'inclusions',
     'itineraries'
-  ];
+];
+
 
   const [activeTab, setActiveTab] = useState('basic');
 
@@ -72,6 +79,171 @@ const AddTour = () => {
   const [imageFiles, setImageFiles] = useState([]);
   const [imagePreviews, setImagePreviews] = useState([]);
   const [imageCaption, setImageCaption] = useState('');
+
+  // =======================
+// TOUR COST
+// =======================
+const [tourCostItem, setTourCostItem] = useState({
+  pax: '',
+  standard_hotel: '',
+  deluxe_hotel: '',
+  executive_hotel: '',
+  child_with_bed: '',
+  child_no_bed: ''
+});
+const [tourCosts, setTourCosts] = useState([]);
+
+const handleCostChange = (e) => {
+  const { name, value } = e.target;
+  setTourCostItem(prev => ({ ...prev, [name]: value }));
+};
+
+const addCostRow = () => {
+  if (!tourCostItem.pax) return;
+  setTourCosts(prev => [...prev, { ...tourCostItem }]);
+  setTourCostItem({
+    pax: '',
+    standard_hotel: '',
+    deluxe_hotel: '',
+    executive_hotel: '',
+    child_with_bed: '',
+    child_no_bed: ''
+  });
+};
+
+const removeCostRow = (idx) => {
+  setTourCosts(prev => prev.filter((_, i) => i !== idx));
+};
+
+
+// =======================
+// HOTELS
+// =======================
+const [hotelItem, setHotelItem] = useState({
+  city: '',
+  hotel_name: '',
+  room_type: '',
+  nights: ''
+});
+const [hotelRows, setHotelRows] = useState([]);
+
+const handleHotelChange = (e) => {
+  const { name, value } = e.target;
+  setHotelItem(prev => ({ ...prev, [name]: value }));
+};
+
+const addHotelRow = () => {
+  if (!hotelItem.city.trim() || !hotelItem.hotel_name.trim()) return;
+  setHotelRows(prev => [...prev, { ...hotelItem }]);
+  setHotelItem({ city: '', hotel_name: '', room_type: '', nights: '' });
+};
+
+const removeHotelRow = (idx) => {
+  setHotelRows(prev => prev.filter((_, i) => i !== idx));
+};
+
+
+// =======================
+// TRANSPORT
+// =======================
+const [transportItem, setTransportItem] = useState({
+  mode: 'Flight',
+  from_city: '',
+  to_city: '',
+  carrier: '',
+  number_code: '',
+  departure_datetime: '',
+  arrival_datetime: '',
+  description: ''
+});
+const [transports, setTransports] = useState([]);
+
+const handleTransportChange = (e) => {
+  const { name, value } = e.target;
+  setTransportItem(prev => ({ ...prev, [name]: value }));
+};
+
+const addTransportRow = () => {
+  if (!transportItem.from_city || !transportItem.to_city) return;
+  setTransports(prev => [...prev, { ...transportItem }]);
+  setTransportItem({
+    mode: 'Flight',
+    from_city: '',
+    to_city: '',
+    carrier: '',
+    number_code: '',
+    departure_datetime: '',
+    arrival_datetime: '',
+    description: ''
+  });
+};
+
+const removeTransportRow = (idx) => {
+  setTransports(prev => prev.filter((_, i) => i !== idx));
+};
+
+
+// =======================
+// BOOKING POI
+// =======================
+const [poiText, setPoiText] = useState('');
+const [bookingPois, setBookingPois] = useState([]);
+
+const addPoi = () => {
+  const txt = poiText.trim();
+  if (!txt) return;
+  setBookingPois(prev => [...prev, txt]);
+  setPoiText('');
+};
+
+const removePoi = (idx) => {
+  setBookingPois(prev => prev.filter((_, i) => i !== idx));
+};
+
+
+// =======================
+// CANCELLATION
+// =======================
+const [cancelItem, setCancelItem] = useState({
+  days_min: '',
+  days_max: '',
+  charge_percentage: ''
+});
+const [cancelPolicies, setCancelPolicies] = useState([]);
+
+const handleCancelChange = (e) => {
+  const { name, value } = e.target;
+  setCancelItem(prev => ({ ...prev, [name]: value }));
+};
+
+const addCancelRow = () => {
+  if (!cancelItem.charge_percentage) return;
+  setCancelPolicies(prev => [...prev, { ...cancelItem }]);
+  setCancelItem({ days_min: '', days_max: '', charge_percentage: '' });
+};
+
+const removeCancelRow = (idx) => {
+  setCancelPolicies(prev => prev.filter((_, i) => i !== idx));
+};
+
+
+// =======================
+// INSTRUCTIONS
+// =======================
+const [instructionText, setInstructionText] = useState('');
+const [instructions, setInstructions] = useState([]);
+
+const addInstruction = () => {
+  const txt = instructionText.trim();
+  if (!txt) return;
+  setInstructions(prev => [...prev, txt]);
+  setInstructionText('');
+};
+
+const removeInstruction = (idx) => {
+  setInstructions(prev => prev.filter((_, i) => i !== idx));
+};
+
 
   // ITINERARIES
   const [itineraryItem, setItineraryItem] = useState({
@@ -334,6 +506,79 @@ const AddTour = () => {
           throw new Error(err.error || 'Failed to save departures');
         }
       }
+
+      // 7) TOUR COSTS BULK
+if (tourCosts.length > 0) {
+  await fetch(`${baseurl}/api/tour-costs/bulk`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      tour_id: tourId,
+      costs: tourCosts
+    })
+  });
+}
+
+// 8) HOTELS BULK
+if (hotelRows.length > 0) {
+  await fetch(`${baseurl}/api/tour-hotels/bulk`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      tour_id: tourId,
+      hotels: hotelRows
+    })
+  });
+}
+
+// 9) TRANSPORT BULK
+if (transports.length > 0) {
+  await fetch(`${baseurl}/api/tour-transports/bulk`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      tour_id: tourId,
+      items: transports
+    })
+  });
+}
+
+// 10) BOOKING POI BULK
+if (bookingPois.length > 0) {
+  await fetch(`${baseurl}/api/tour-booking-poi/bulk`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      tour_id: tourId,
+      items: bookingPois
+    })
+  });
+}
+
+// 11) CANCELLATION BULK
+if (cancelPolicies.length > 0) {
+  await fetch(`${baseurl}/api/tour-cancellation/bulk`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      tour_id: tourId,
+      policies: cancelPolicies
+    })
+  });
+}
+
+// 12) INSTRUCTIONS BULK
+if (instructions.length > 0) {
+  await fetch(`${baseurl}/api/tour-instructions/bulk`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      tour_id: tourId,
+      items: instructions
+    })
+  });
+}
+
 
       // 3) EXCLUSIONS
       if (exclusions.length > 0) {
@@ -715,6 +960,494 @@ const AddTour = () => {
                   </Table>
                 )}
               </Tab>
+
+              <Tab eventKey="costs" title="Tour Cost">
+  <Row className="align-items-end">
+    <Col md={2}>
+      <Form.Group>
+        <Form.Label>Pax *</Form.Label>
+        <Form.Control
+          type="number"
+          name="pax"
+          value={tourCostItem.pax}
+          onChange={handleCostChange}
+        />
+      </Form.Group>
+    </Col>
+
+    <Col md={2}>
+      <Form.Group>
+        <Form.Label>Standard Hotel</Form.Label>
+        <Form.Control
+          type="number"
+          name="standard_hotel"
+          value={tourCostItem.standard_hotel}
+          onChange={handleCostChange}
+        />
+      </Form.Group>
+    </Col>
+
+    <Col md={2}>
+      <Form.Group>
+        <Form.Label>Deluxe Hotel</Form.Label>
+        <Form.Control
+          type="number"
+          name="deluxe_hotel"
+          value={tourCostItem.deluxe_hotel}
+          onChange={handleCostChange}
+        />
+      </Form.Group>
+    </Col>
+
+    <Col md={2}>
+      <Form.Group>
+        <Form.Label>Executive Hotel</Form.Label>
+        <Form.Control
+          type="number"
+          name="executive_hotel"
+          value={tourCostItem.executive_hotel}
+          onChange={handleCostChange}
+        />
+      </Form.Group>
+    </Col>
+
+    <Col md={2}>
+      <Form.Group>
+        <Form.Label>Child With Bed</Form.Label>
+        <Form.Control
+          type="number"
+          name="child_with_bed"
+          value={tourCostItem.child_with_bed}
+          onChange={handleCostChange}
+        />
+      </Form.Group>
+    </Col>
+
+    <Col md={2}>
+      <Form.Group>
+        <Form.Label>Child No Bed</Form.Label>
+        <Form.Control
+          type="number"
+          name="child_no_bed"
+          value={tourCostItem.child_no_bed}
+          onChange={handleCostChange}
+        />
+      </Form.Group>
+    </Col>
+
+    <Col md={12} className="mt-3">
+      <Button size="sm" onClick={addCostRow}>+ Add Cost Row</Button>
+    </Col>
+  </Row>
+
+  {tourCosts.length > 0 && (
+    <Table striped bordered hover size="sm" className="mt-3">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Pax</th>
+          <th>Standard</th>
+          <th>Deluxe</th>
+          <th>Executive</th>
+          <th>Chd Bed</th>
+          <th>Chd NoBed</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {tourCosts.map((c, idx) => (
+          <tr key={idx}>
+            <td>{idx + 1}</td>
+            <td>{c.pax}</td>
+            <td>{c.standard_hotel || 'NA'}</td>
+            <td>{c.deluxe_hotel || 'NA'}</td>
+            <td>{c.executive_hotel || 'NA'}</td>
+            <td>{c.child_with_bed || 'NA'}</td>
+            <td>{c.child_no_bed || 'NA'}</td>
+            <td>
+              <Button variant="link" size="sm" onClick={() => removeCostRow(idx)}>remove</Button>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </Table>
+  )}
+</Tab>
+
+<Tab eventKey="hotels" title="Hotels">
+  <Row className="align-items-end">
+    <Col md={3}>
+      <Form.Group>
+        <Form.Label>City *</Form.Label>
+        <Form.Control
+          type="text"
+          name="city"
+          value={hotelItem.city}
+          onChange={handleHotelChange}
+        />
+      </Form.Group>
+    </Col>
+
+    <Col md={3}>
+      <Form.Group>
+        <Form.Label>Hotel Name *</Form.Label>
+        <Form.Control
+          type="text"
+          name="hotel_name"
+          value={hotelItem.hotel_name}
+          onChange={handleHotelChange}
+        />
+      </Form.Group>
+    </Col>
+
+    <Col md={3}>
+      <Form.Group>
+        <Form.Label>Room Type</Form.Label>
+        <Form.Control
+          type="text"
+          name="room_type"
+          value={hotelItem.room_type}
+          onChange={handleHotelChange}
+        />
+      </Form.Group>
+    </Col>
+
+    <Col md={2}>
+      <Form.Group>
+        <Form.Label>Nights</Form.Label>
+        <Form.Control
+          type="number"
+          name="nights"
+          value={hotelItem.nights}
+          onChange={handleHotelChange}
+        />
+      </Form.Group>
+    </Col>
+
+    <Col md={1}>
+      <Button size="sm" className="mt-4" onClick={addHotelRow}>+ Add</Button>
+    </Col>
+  </Row>
+
+  {hotelRows.length > 0 && (
+    <Table striped bordered hover size="sm" className="mt-3">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>City</th>
+          <th>Hotel</th>
+          <th>Room</th>
+          <th>Nights</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {hotelRows.map((h, idx) => (
+          <tr key={idx}>
+            <td>{idx + 1}</td>
+            <td>{h.city}</td>
+            <td>{h.hotel_name}</td>
+            <td>{h.room_type}</td>
+            <td>{h.nights}</td>
+            <td>
+              <Button variant="link" size="sm" onClick={() => removeHotelRow(idx)}>remove</Button>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </Table>
+  )}
+</Tab>
+
+<Tab eventKey="transport" title="Transport">
+  <Row className="align-items-end">
+    <Col md={2}>
+      <Form.Group>
+        <Form.Label>Mode</Form.Label>
+        <Form.Select name="mode" value={transportItem.mode} onChange={handleTransportChange}>
+          <option>Flight</option>
+          <option>Train</option>
+          <option>Bus</option>
+          <option>Ferry</option>
+          <option>Cruise</option>
+          <option>Car</option>
+        </Form.Select>
+      </Form.Group>
+    </Col>
+
+    <Col md={3}>
+      <Form.Group>
+        <Form.Label>From City *</Form.Label>
+        <Form.Control
+          type="text"
+          name="from_city"
+          value={transportItem.from_city}
+          onChange={handleTransportChange}
+        />
+      </Form.Group>
+    </Col>
+
+    <Col md={3}>
+      <Form.Group>
+        <Form.Label>To City *</Form.Label>
+        <Form.Control
+          type="text"
+          name="to_city"
+          value={transportItem.to_city}
+          onChange={handleTransportChange}
+        />
+      </Form.Group>
+    </Col>
+
+    <Col md={2}>
+      <Form.Group>
+        <Form.Label>Carrier</Form.Label>
+        <Form.Control
+          type="text"
+          name="carrier"
+          value={transportItem.carrier}
+          onChange={handleTransportChange}
+        />
+      </Form.Group>
+    </Col>
+
+    <Col md={2}>
+      <Form.Group>
+        <Form.Label>Number</Form.Label>
+        <Form.Control
+          type="text"
+          name="number_code"
+          value={transportItem.number_code}
+          onChange={handleTransportChange}
+        />
+      </Form.Group>
+    </Col>
+  </Row>
+
+  <Row className="mt-3 align-items-end">
+    <Col md={3}>
+      <Form.Group>
+        <Form.Label>Departure</Form.Label>
+        <Form.Control
+          type="datetime-local"
+          name="departure_datetime"
+          value={transportItem.departure_datetime}
+          onChange={handleTransportChange}
+        />
+      </Form.Group>
+    </Col>
+
+    <Col md={3}>
+      <Form.Group>
+        <Form.Label>Arrival</Form.Label>
+        <Form.Control
+          type="datetime-local"
+          name="arrival_datetime"
+          value={transportItem.arrival_datetime}
+          onChange={handleTransportChange}
+        />
+      </Form.Group>
+    </Col>
+
+    <Col md={5}>
+      <Form.Group>
+        <Form.Label>Description</Form.Label>
+        <Form.Control
+          type="text"
+          name="description"
+          value={transportItem.description}
+          onChange={handleTransportChange}
+        />
+      </Form.Group>
+    </Col>
+
+    <Col md={1}>
+      <Button size="sm" className="mt-4" onClick={addTransportRow}>+ Add</Button>
+    </Col>
+  </Row>
+
+  {transports.length > 0 && (
+    <Table striped bordered hover size="sm" className="mt-3">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Mode</th>
+          <th>From</th>
+          <th>To</th>
+          <th>Carrier</th>
+          <th>Number</th>
+          <th>Departure</th>
+          <th>Arrival</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {transports.map((t, idx) => (
+          <tr key={idx}>
+            <td>{idx + 1}</td>
+            <td>{t.mode}</td>
+            <td>{t.from_city}</td>
+            <td>{t.to_city}</td>
+            <td>{t.carrier}</td>
+            <td>{t.number_code}</td>
+            <td>{t.departure_datetime}</td>
+            <td>{t.arrival_datetime}</td>
+            <td>
+              <Button variant="link" size="sm" onClick={() => removeTransportRow(idx)}>remove</Button>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </Table>
+  )}
+</Tab>
+
+<Tab eventKey="bookingPoi" title="Booking POI">
+  <Form.Group className="mb-3">
+    <Form.Label>Add POI Item</Form.Label>
+    <Form.Control
+      as="textarea"
+      rows={3}
+      value={poiText}
+      onChange={(e) => setPoiText(e.target.value)}
+      placeholder="Type and click Add"
+    />
+    <Button size="sm" className="mt-2" onClick={addPoi}>+ Add</Button>
+  </Form.Group>
+
+  {bookingPois.length > 0 && (
+    <Table striped bordered hover size="sm">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Item</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {bookingPois.map((p, idx) => (
+          <tr key={idx}>
+            <td>{idx + 1}</td>
+            <td>{p}</td>
+            <td>
+              <Button variant="link" size="sm" onClick={() => removePoi(idx)}>remove</Button>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </Table>
+  )}
+</Tab>
+
+<Tab eventKey="cancellation" title="Cancellation Policy">
+  <Row className="align-items-end">
+    <Col md={3}>
+      <Form.Group>
+        <Form.Label>Days Min</Form.Label>
+        <Form.Control
+          type="number"
+          name="days_min"
+          value={cancelItem.days_min}
+          onChange={handleCancelChange}
+        />
+      </Form.Group>
+    </Col>
+
+    <Col md={3}>
+      <Form.Group>
+        <Form.Label>Days Max</Form.Label>
+        <Form.Control
+          type="number"
+          name="days_max"
+          value={cancelItem.days_max}
+          onChange={handleCancelChange}
+        />
+      </Form.Group>
+    </Col>
+
+    <Col md={3}>
+      <Form.Group>
+        <Form.Label>Charge (%) *</Form.Label>
+        <Form.Control
+          type="number"
+          name="charge_percentage"
+          value={cancelItem.charge_percentage}
+          onChange={handleCancelChange}
+        />
+      </Form.Group>
+    </Col>
+
+    <Col md={1}>
+      <Button size="sm" className="mt-4" onClick={addCancelRow}>+ Add</Button>
+    </Col>
+  </Row>
+
+  {cancelPolicies.length > 0 && (
+    <Table striped bordered hover className="mt-3" size="sm">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Days Min</th>
+          <th>Days Max</th>
+          <th>Charge %</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {cancelPolicies.map((c, idx) => (
+          <tr key={idx}>
+            <td>{idx + 1}</td>
+            <td>{c.days_min || '-'}</td>
+            <td>{c.days_max || '-'}</td>
+            <td>{c.charge_percentage}</td>
+            <td>
+              <Button variant="link" size="sm" onClick={() => removeCancelRow(idx)}>remove</Button>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </Table>
+  )}
+</Tab>
+
+<Tab eventKey="instructions" title="Instructions">
+  <Form.Group className="mb-3">
+    <Form.Label>Add Instruction</Form.Label>
+    <Form.Control
+      as="textarea"
+      rows={3}
+      value={instructionText}
+      onChange={(e) => setInstructionText(e.target.value)}
+      placeholder="Type instruction and click Add"
+    />
+    <Button size="sm" className="mt-2" onClick={addInstruction}>+ Add</Button>
+  </Form.Group>
+
+  {instructions.length > 0 && (
+    <Table striped bordered hover size="sm">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Instruction</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {instructions.map((item, idx) => (
+          <tr key={idx}>
+            <td>{idx + 1}</td>
+            <td>{item}</td>
+            <td>
+              <Button variant="link" size="sm" onClick={() => removeInstruction(idx)}>remove</Button>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </Table>
+  )}
+</Tab>
+
+
 
               {/* ======== TAB 3: EXCLUSIONS ======== */}
               <Tab eventKey="exclusions" title="Exclusions">
