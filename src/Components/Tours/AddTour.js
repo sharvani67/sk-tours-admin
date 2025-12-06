@@ -63,7 +63,8 @@ const AddTour = () => {
     adult_price: '',
     child_price: '',
     infant_price: '',
-    total_seats: 40
+    description: '',
+    total_seats: ''
   });
   const [departures, setDepartures] = useState([]);
 
@@ -89,7 +90,8 @@ const [tourCostItem, setTourCostItem] = useState({
   deluxe_hotel: '',
   executive_hotel: '',
   child_with_bed: '',
-  child_no_bed: ''
+  child_no_bed: '',
+  remarks: ''
 });
 const [tourCosts, setTourCosts] = useState([]);
 
@@ -107,7 +109,8 @@ const addCostRow = () => {
     deluxe_hotel: '',
     executive_hotel: '',
     child_with_bed: '',
-    child_no_bed: ''
+    child_no_bed: '',
+    remarks: ''
   });
 };
 
@@ -123,7 +126,8 @@ const [hotelItem, setHotelItem] = useState({
   city: '',
   hotel_name: '',
   room_type: '',
-  nights: ''
+  nights: '',
+  remarks: ''
 });
 const [hotelRows, setHotelRows] = useState([]);
 
@@ -135,7 +139,7 @@ const handleHotelChange = (e) => {
 const addHotelRow = () => {
   if (!hotelItem.city.trim() || !hotelItem.hotel_name.trim()) return;
   setHotelRows(prev => [...prev, { ...hotelItem }]);
-  setHotelItem({ city: '', hotel_name: '', room_type: '', nights: '' });
+  setHotelItem({ city: '', hotel_name: '', room_type: '', nights: '', remarks: '' });
 };
 
 const removeHotelRow = (idx) => {
@@ -154,7 +158,8 @@ const [transportItem, setTransportItem] = useState({
   number_code: '',
   departure_datetime: '',
   arrival_datetime: '',
-  description: ''
+  description: '',
+  remarks: ''
 });
 const [transports, setTransports] = useState([]);
 
@@ -313,10 +318,6 @@ const removeInstruction = (idx) => {
   };
 
   const handleAddDeparture = () => {
-    const { departure_date, adult_price } = departureForm;
-
-    if (!departure_date || !adult_price) return;
-
     setDepartures((prev) => [
       ...prev,
       { ...departureForm }
@@ -328,7 +329,8 @@ const removeInstruction = (idx) => {
       adult_price: '',
       child_price: '',
       infant_price: '',
-      total_seats: 40
+      description: '',
+      total_seats: ''
     });
   };
 
@@ -915,6 +917,18 @@ if (instructions.length > 0) {
                       />
                     </Form.Group>
                   </Col>
+                                      <Col md={6}>
+                    <Form.Group className="mb-3">
+                      <Form.Label>Free Flow Description</Form.Label>
+                       <Form.Control
+                        as="textarea"
+                        rows={4}
+                        name="description"
+                        value={departureForm.description}
+                        onChange={handleDepartureChange}
+                      />
+                    </Form.Group>
+                  </Col>
                 </Row>
 
                 <Button size="sm" className="mb-3" onClick={handleAddDeparture}>
@@ -931,6 +945,7 @@ if (instructions.length > 0) {
                         <th>Adult Price</th>
                         <th>Child Price</th>
                         <th>Infant Price</th>
+                        <th>Description</th>
                         <th>Total Seats</th>
                         <th>Action</th>
                       </tr>
@@ -944,6 +959,7 @@ if (instructions.length > 0) {
                           <td>{dep.adult_price}</td>
                           <td>{dep.child_price || '-'}</td>
                            <td>{dep.infant_price || '-'}</td>
+                           <td>{dep.description || '-'}</td>
                           <td>{dep.total_seats}</td>
                           <td>
                             <Button
@@ -1035,6 +1051,19 @@ if (instructions.length > 0) {
       </Form.Group>
     </Col>
 
+<Col md={12}>
+      <Form.Group>
+        <Form.Label>Remarks</Form.Label>
+        <Form.Control
+           as="textarea"
+            rows={3}
+          name="remarks"
+          value={tourCostItem.remarks}
+          onChange={handleCostChange}
+        />
+      </Form.Group>
+    </Col>
+
     <Col md={12} className="mt-3">
       <Button size="sm" onClick={addCostRow}>+ Add Cost Row</Button>
     </Col>
@@ -1051,6 +1080,7 @@ if (instructions.length > 0) {
           <th>Executive</th>
           <th>Chd Bed</th>
           <th>Chd NoBed</th>
+          <th>Remarks</th>
           <th></th>
         </tr>
       </thead>
@@ -1064,6 +1094,7 @@ if (instructions.length > 0) {
             <td>{c.executive_hotel || 'NA'}</td>
             <td>{c.child_with_bed || 'NA'}</td>
             <td>{c.child_no_bed || 'NA'}</td>
+            <td>{c.remarks || 'NA'}</td>
             <td>
               <Button variant="link" size="sm" onClick={() => removeCostRow(idx)}>remove</Button>
             </td>
@@ -1124,6 +1155,20 @@ if (instructions.length > 0) {
       </Form.Group>
     </Col>
 
+    <Col md={12}>
+  <Form.Group className="mt-2">
+    <Form.Label>Remarks</Form.Label>
+    <Form.Control
+      as="textarea"
+      rows={3}
+      name="remarks"
+      value={hotelItem.remarks}
+      onChange={handleHotelChange}
+    />
+  </Form.Group>
+</Col>
+
+
     <Col md={1}>
       <Button size="sm" className="mt-4" onClick={addHotelRow}>+ Add</Button>
     </Col>
@@ -1138,6 +1183,8 @@ if (instructions.length > 0) {
           <th>Hotel</th>
           <th>Room</th>
           <th>Nights</th>
+          <th>Remarks</th>
+
           <th></th>
         </tr>
       </thead>
@@ -1149,6 +1196,8 @@ if (instructions.length > 0) {
             <td>{h.hotel_name}</td>
             <td>{h.room_type}</td>
             <td>{h.nights}</td>
+            <td>{h.remarks || 'NA'}</td>
+
             <td>
               <Button variant="link" size="sm" onClick={() => removeHotelRow(idx)}>remove</Button>
             </td>
@@ -1261,6 +1310,20 @@ if (instructions.length > 0) {
       </Form.Group>
     </Col>
 
+    <Col md={12} className="mt-2">
+  <Form.Group>
+    <Form.Label>Remarks</Form.Label>
+    <Form.Control
+      as="textarea"
+      rows={3}
+      name="remarks"
+      value={transportItem.remarks}
+      onChange={handleTransportChange}
+    />
+  </Form.Group>
+</Col>
+
+
     <Col md={1}>
       <Button size="sm" className="mt-4" onClick={addTransportRow}>+ Add</Button>
     </Col>
@@ -1278,6 +1341,8 @@ if (instructions.length > 0) {
           <th>Number</th>
           <th>Departure</th>
           <th>Arrival</th>
+          <th>Remarks</th>
+
           <th></th>
         </tr>
       </thead>
@@ -1292,6 +1357,8 @@ if (instructions.length > 0) {
             <td>{t.number_code}</td>
             <td>{t.departure_datetime}</td>
             <td>{t.arrival_datetime}</td>
+            <td>{t.remarks || 'NA'}</td>
+
             <td>
               <Button variant="link" size="sm" onClick={() => removeTransportRow(idx)}>remove</Button>
             </td>
