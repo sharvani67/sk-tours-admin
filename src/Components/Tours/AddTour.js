@@ -51,7 +51,10 @@ const AddTour = () => {
     duration_days: '',
     overview: '',
     base_price_adult: '',
-    is_international: 0
+    is_international: 0,
+     cost_remarks: "",
+  hotel_remarks: "",
+  transport_remarks: ""
   });
 
   // DEPARTURES (multiple)
@@ -147,7 +150,7 @@ const AddTour = () => {
   // TRANSPORT
   // =======================
   const [transportItem, setTransportItem] = useState({
-    mode: 'Flight',
+    mode: '',
     from_city: '',
     to_city: '',
     carrier: '',
@@ -165,10 +168,10 @@ const AddTour = () => {
   };
 
   const addTransportRow = () => {
-    if (!transportItem.from_city || !transportItem.to_city) return;
+    // if (!transportItem.from_city || !transportItem.to_city) return;
     setTransports(prev => [...prev, { ...transportItem }]);
     setTransportItem({
-      mode: 'Flight',
+      mode: '',
       from_city: '',
       to_city: '',
       carrier: '',
@@ -763,6 +766,17 @@ const AddTour = () => {
                         ))}
                       </Form.Select>
                     </Form.Group>
+                       <Form.Group className="mb-3">
+                      <Form.Label>International Tour?</Form.Label>
+                      <Form.Select
+                        name="is_international"
+                        value={formData.is_international}
+                        onChange={handleBasicChange}
+                      >
+                        <option value={0}>No</option>
+                        <option value={1}>Yes</option>
+                      </Form.Select>
+                    </Form.Group>
                   </Col>
 
                   <Col md={6}>
@@ -805,17 +819,7 @@ const AddTour = () => {
                       />
                     </Form.Group>
 
-                    <Form.Group className="mb-3">
-                      <Form.Label>International Tour?</Form.Label>
-                      <Form.Select
-                        name="is_international"
-                        value={formData.is_international}
-                        onChange={handleBasicChange}
-                      >
-                        <option value={0}>No</option>
-                        <option value={1}>Yes</option>
-                      </Form.Select>
-                    </Form.Group>
+                 
                   </Col>
 
                   <Col md={12}>
@@ -830,13 +834,52 @@ const AddTour = () => {
                       />
                     </Form.Group>
                   </Col>
+                  <Col md={12}>
+  <Form.Group className="mb-3">
+    <Form.Label>Cost Remarks</Form.Label>
+    <Form.Control
+      as="textarea"
+      rows={3}
+      name="cost_remarks"
+      value={formData.cost_remarks}
+      onChange={handleBasicChange}
+    />
+  </Form.Group>
+</Col>
+
+<Col md={12}>
+  <Form.Group className="mb-3">
+    <Form.Label>Hotel Remarks</Form.Label>
+    <Form.Control
+      as="textarea"
+      rows={3}
+      name="hotel_remarks"
+      value={formData.hotel_remarks}
+      onChange={handleBasicChange}
+    />
+  </Form.Group>
+</Col>
+
+<Col md={12}>
+  <Form.Group className="mb-3">
+    <Form.Label>Transport Remarks</Form.Label>
+    <Form.Control
+      as="textarea"
+      rows={3}
+      name="transport_remarks"
+      value={formData.transport_remarks}
+      onChange={handleBasicChange}
+    />
+  </Form.Group>
+</Col>
+
                 </Row>
               </Tab>
 
               {/* ======== TAB 2: DEPARTURES ======== */}
               <Tab eventKey="departures" title="Departures">
                 <Row>
-                  <Col md={3}>
+                  {/* <Col md={3}>
                     <Form.Group className="mb-3">
                       <Form.Label>Duration (Days)</Form.Label>
                       <Form.Control
@@ -925,8 +968,8 @@ const AddTour = () => {
                         onChange={handleDepartureChange}
                       />
                     </Form.Group>
-                  </Col>
-                  <Col md={6}>
+                  </Col> */}
+                  <Col md={12}>
                     <Form.Group className="mb-3">
                       <Form.Label>Free Flow Description</Form.Label>
                       <Form.Control
@@ -949,13 +992,13 @@ const AddTour = () => {
                     <thead>
                       <tr>
                         <th>#</th>
-                        <th>Departure Date</th>
+                        {/* <th>Departure Date</th>
                         <th>Return Date</th>
                         <th>Adult Price</th>
                         <th>Child Price</th>
-                        <th>Infant Price</th>
+                        <th>Infant Price</th> */}
                         <th>Description</th>
-                        <th>Total Seats</th>
+                        {/* <th>Total Seats</th> */}
                         <th>Action</th>
                       </tr>
                     </thead>
@@ -963,13 +1006,13 @@ const AddTour = () => {
                       {departures.map((dep, idx) => (
                         <tr key={idx}>
                           <td>{idx + 1}</td>
-                          <td>{dep.departure_date}</td>
+                          {/* <td>{dep.departure_date}</td>
                           <td>{dep.return_date || '-'}</td>
                           <td>{dep.adult_price}</td>
                           <td>{dep.child_price || '-'}</td>
-                          <td>{dep.infant_price || '-'}</td>
+                          <td>{dep.infant_price || '-'}</td> */}
                           <td>{dep.description || '-'}</td>
-                          <td>{dep.total_seats}</td>
+                          {/* <td>{dep.total_seats}</td> */}
                           <td>
                             <Button
                               variant="link"
@@ -1060,7 +1103,7 @@ const AddTour = () => {
                     </Form.Group>
                   </Col>
 
-                  <Col md={12}>
+                  {/* <Col md={12}>
                     <Form.Group>
                       <Form.Label>Remarks</Form.Label>
                       <Form.Control
@@ -1071,7 +1114,7 @@ const AddTour = () => {
                         onChange={handleCostChange}
                       />
                     </Form.Group>
-                  </Col>
+                  </Col> */}
 
                   <Col md={12} className="mt-3">
                     <Button size="sm" onClick={addCostRow}>+ Add Cost Row</Button>
@@ -1089,7 +1132,7 @@ const AddTour = () => {
                         <th>Executive</th>
                         <th>Chd Bed</th>
                         <th>Chd NoBed</th>
-                        <th>Remarks</th>
+                        {/* <th>Remarks</th> */}
                         <th></th>
                       </tr>
                     </thead>
@@ -1103,7 +1146,7 @@ const AddTour = () => {
                           <td>{c.executive_hotel || 'NA'}</td>
                           <td>{c.child_with_bed || 'NA'}</td>
                           <td>{c.child_no_bed || 'NA'}</td>
-                          <td>{c.remarks || 'NA'}</td>
+                          {/* <td>{c.remarks || 'NA'}</td> */}
                           <td>
                             <Button variant="link" size="sm" onClick={() => removeCostRow(idx)}>remove</Button>
                           </td>
@@ -1164,7 +1207,7 @@ const AddTour = () => {
                     </Form.Group>
                   </Col>
 
-                  <Col md={12}>
+                  {/* <Col md={12}>
                     <Form.Group className="mt-2">
                       <Form.Label>Remarks</Form.Label>
                       <Form.Control
@@ -1175,9 +1218,9 @@ const AddTour = () => {
                         onChange={handleHotelChange}
                       />
                     </Form.Group>
-                  </Col>
+                  </Col> */}
 
-                  <Col md={1}>
+                  <Col md={2}>
                     <Button size="sm" className="mt-4" onClick={addHotelRow}>+ Add</Button>
                   </Col>
                 </Row>
@@ -1191,7 +1234,7 @@ const AddTour = () => {
                         <th>Hotel</th>
                         <th>Room</th>
                         <th>Nights</th>
-                        <th>Remarks</th>
+                        {/* <th>Remarks</th> */}
                         <th></th>
                       </tr>
                     </thead>
@@ -1203,7 +1246,7 @@ const AddTour = () => {
                           <td>{h.hotel_name}</td>
                           <td>{h.room_type}</td>
                           <td>{h.nights}</td>
-                          <td>{h.remarks || 'NA'}</td>
+                          {/* <td>{h.remarks || 'NA'}</td> */}
                           <td>
                             <Button variant="link" size="sm" onClick={() => removeHotelRow(idx)}>remove</Button>
                           </td>
@@ -1215,7 +1258,7 @@ const AddTour = () => {
               </Tab>
 
               <Tab eventKey="transport" title="Transport">
-                <Row className="align-items-end">
+                {/* <Row className="align-items-end">
                   <Col md={2}>
                     <Form.Group>
                       <Form.Label>Mode</Form.Label>
@@ -1277,10 +1320,10 @@ const AddTour = () => {
                       />
                     </Form.Group>
                   </Col>
-                </Row>
+                </Row> */}
 
                 <Row className="mt-3 align-items-end">
-                  <Col md={3}>
+                  {/* <Col md={3}>
                     <Form.Group>
                       <Form.Label>Departure</Form.Label>
                       <Form.Control
@@ -1302,13 +1345,14 @@ const AddTour = () => {
                         onChange={handleTransportChange}
                       />
                     </Form.Group>
-                  </Col>
+                  </Col> */}
 
-                  <Col md={5}>
+                  <Col md={12}>
                     <Form.Group>
                       <Form.Label>Description</Form.Label>
                       <Form.Control
-                        type="text"
+                        as="textarea"
+                        rows={4}
                         name="description"
                         value={transportItem.description}
                         onChange={handleTransportChange}
@@ -1316,7 +1360,7 @@ const AddTour = () => {
                     </Form.Group>
                   </Col>
 
-                  <Col md={12} className="mt-2">
+                  {/* <Col md={12} className="mt-2">
                     <Form.Group>
                       <Form.Label>Remarks</Form.Label>
                       <Form.Control
@@ -1327,7 +1371,7 @@ const AddTour = () => {
                         onChange={handleTransportChange}
                       />
                     </Form.Group>
-                  </Col>
+                  </Col> */}
 
                   <Col md={1}>
                     <Button size="sm" className="mt-4" onClick={addTransportRow}>+ Add</Button>
@@ -1339,14 +1383,15 @@ const AddTour = () => {
                     <thead>
                       <tr>
                         <th>#</th>
-                        <th>Mode</th>
+                        {/* <th>Mode</th>
                         <th>From</th>
                         <th>To</th>
                         <th>Carrier</th>
                         <th>Number</th>
                         <th>Departure</th>
                         <th>Arrival</th>
-                        <th>Remarks</th>
+                        <th>Remarks</th> */}
+                        <th>Description</th>
                         <th></th>
                       </tr>
                     </thead>
@@ -1354,14 +1399,15 @@ const AddTour = () => {
                       {transports.map((t, idx) => (
                         <tr key={idx}>
                           <td>{idx + 1}</td>
-                          <td>{t.mode}</td>
+                          {/* <td>{t.mode}</td>
                           <td>{t.from_city}</td>
                           <td>{t.to_city}</td>
                           <td>{t.carrier}</td>
                           <td>{t.number_code}</td>
                           <td>{t.departure_datetime}</td>
-                          <td>{t.arrival_datetime}</td>
-                          <td>{t.remarks || 'NA'}</td>
+                          <td>{t.arrival_datetime}</td> */}
+                          {/* <td>{t.remarks || 'NA'}</td> */}
+                           <td>{t.description || 'NA'}</td>
                           <td>
                             <Button variant="link" size="sm" onClick={() => removeTransportRow(idx)}>remove</Button>
                           </td>
