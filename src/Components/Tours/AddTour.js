@@ -190,13 +190,18 @@ const AddTour = () => {
   // BOOKING POI
   // =======================
   const [poiText, setPoiText] = useState('');
+  const [poiAmount, setPoiAmount] = useState("");
   const [bookingPois, setBookingPois] = useState([]);
 
   const addPoi = () => {
     const txt = poiText.trim();
     if (!txt) return;
-    setBookingPois(prev => [...prev, txt]);
+    setBookingPois([
+    ...bookingPois,
+    { item: poiText, amount_details: poiAmount }
+  ]);
     setPoiText('');
+    setPoiAmount("");
   };
 
   const removePoi = (idx) => {
@@ -209,7 +214,8 @@ const AddTour = () => {
   const [cancelItem, setCancelItem] = useState({
     days_min: '',
     days_max: '',
-    charge_percentage: ''
+    charge_percentage: '',
+    charges: ''
   });
   const [cancelPolicies, setCancelPolicies] = useState([]);
 
@@ -221,7 +227,7 @@ const AddTour = () => {
   const addCancelRow = () => {
     if (!cancelItem.charge_percentage) return;
     setCancelPolicies(prev => [...prev, { ...cancelItem }]);
-    setCancelItem({ days_min: '', days_max: '', charge_percentage: '' });
+    setCancelItem({ days_min: '', days_max: '', charge_percentage: '', charges: '' });
   };
 
   const removeCancelRow = (idx) => {
@@ -1418,113 +1424,147 @@ const AddTour = () => {
                 )}
               </Tab>
 
-              <Tab eventKey="bookingPoi" title="Booking POI">
-                <Form.Group className="mb-3">
-                  <Form.Label>Add POI Item</Form.Label>
-                  <Form.Control
-                    as="textarea"
-                    rows={3}
-                    value={poiText}
-                    onChange={(e) => setPoiText(e.target.value)}
-                    placeholder="Type and click Add"
-                  />
-                  <Button size="sm" className="mt-2" onClick={addPoi}>+ Add</Button>
-                </Form.Group>
+             <Tab eventKey="bookingPoi" title="Booking POI">
+  <Form.Group className="mb-3">
+    <Form.Label>Add POI Item</Form.Label>
+    <Form.Control
+      as="textarea"
+      rows={3}
+      value={poiText}
+      onChange={(e) => setPoiText(e.target.value)}
+      placeholder="Type and click Add"
+    />
 
-                {bookingPois.length > 0 && (
-                  <Table striped bordered hover size="sm">
-                    <thead>
-                      <tr>
-                        <th>#</th>
-                        <th>Item</th>
-                        <th></th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {bookingPois.map((p, idx) => (
-                        <tr key={idx}>
-                          <td>{idx + 1}</td>
-                          <td>{p}</td>
-                          <td>
-                            <Button variant="link" size="sm" onClick={() => removePoi(idx)}>remove</Button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </Table>
-                )}
-              </Tab>
+    {/* NEW FIELD: amount details */}
+    <Form.Label className="mt-2">Amount Details</Form.Label>
+    <Form.Control
+      type="text"
+      value={poiAmount}
+      onChange={(e) => setPoiAmount(e.target.value)}
+      placeholder="Enter amount details"
+    />
 
-              <Tab eventKey="cancellation" title="Cancellation Policy">
-                <Row className="align-items-end">
-                  <Col md={3}>
-                    <Form.Group>
-                      <Form.Label>Days Min</Form.Label>
-                      <Form.Control
-                        type="number"
-                        name="days_min"
-                        value={cancelItem.days_min}
-                        onChange={handleCancelChange}
-                      />
-                    </Form.Group>
-                  </Col>
+    <Button size="sm" className="mt-2" onClick={addPoi}>+ Add</Button>
+  </Form.Group>
 
-                  <Col md={3}>
-                    <Form.Group>
-                      <Form.Label>Days Max</Form.Label>
-                      <Form.Control
-                        type="number"
-                        name="days_max"
-                        value={cancelItem.days_max}
-                        onChange={handleCancelChange}
-                      />
-                    </Form.Group>
-                  </Col>
+  {bookingPois.length > 0 && (
+    <Table striped bordered hover size="sm">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Item</th>
+          <th>Amount Details</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {bookingPois.map((p, idx) => (
+          <tr key={idx}>
+            <td>{idx + 1}</td>
+            <td>{p.item}</td>
+            <td>{p.amount_details}</td>
+            <td>
+              <Button variant="link" size="sm" onClick={() => removePoi(idx)}>
+                remove
+              </Button>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </Table>
+  )}
+</Tab>
 
-                  <Col md={3}>
-                    <Form.Group>
-                      <Form.Label>Charge (%) *</Form.Label>
-                      <Form.Control
-                        type="number"
-                        name="charge_percentage"
-                        value={cancelItem.charge_percentage}
-                        onChange={handleCancelChange}
-                      />
-                    </Form.Group>
-                  </Col>
 
-                  <Col md={1}>
-                    <Button size="sm" className="mt-4" onClick={addCancelRow}>+ Add</Button>
-                  </Col>
-                </Row>
+             <Tab eventKey="cancellation" title="Cancellation Policy">
+  <Row className="align-items-end">
+    <Col md={3}>
+      <Form.Group>
+        <Form.Label>Days Min</Form.Label>
+        <Form.Control
+          type="number"
+          name="days_min"
+          value={cancelItem.days_min}
+          onChange={handleCancelChange}
+        />
+      </Form.Group>
+    </Col>
 
-                {cancelPolicies.length > 0 && (
-                  <Table striped bordered hover className="mt-3" size="sm">
-                    <thead>
-                      <tr>
-                        <th>#</th>
-                        <th>Days Min</th>
-                        <th>Days Max</th>
-                        <th>Charge %</th>
-                        <th></th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {cancelPolicies.map((c, idx) => (
-                        <tr key={idx}>
-                          <td>{idx + 1}</td>
-                          <td>{c.days_min || '-'}</td>
-                          <td>{c.days_max || '-'}</td>
-                          <td>{c.charge_percentage}</td>
-                          <td>
-                            <Button variant="link" size="sm" onClick={() => removeCancelRow(idx)}>remove</Button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </Table>
-                )}
-              </Tab>
+    <Col md={3}>
+      <Form.Group>
+        <Form.Label>Days Max</Form.Label>
+        <Form.Control
+          type="number"
+          name="days_max"
+          value={cancelItem.days_max}
+          onChange={handleCancelChange}
+        />
+      </Form.Group>
+    </Col>
+
+    <Col md={3}>
+      <Form.Group>
+        <Form.Label>Charge (%) *</Form.Label>
+        <Form.Control
+          type="number"
+          name="charge_percentage"
+          value={cancelItem.charge_percentage}
+          onChange={handleCancelChange}
+        />
+      </Form.Group>
+    </Col>
+
+    {/* NEW FIELD: charges (varchar) */}
+    <Col md={3}>
+      <Form.Group>
+        <Form.Label>Charges (Description)</Form.Label>
+        <Form.Control
+          type="text"
+          name="charges"
+          value={cancelItem.charges}
+          onChange={handleCancelChange}
+          placeholder="Example: No refund / 50% retained"
+        />
+      </Form.Group>
+    </Col>
+
+    <Col md={1}>
+      <Button size="sm" className="mt-4" onClick={addCancelRow}>+ Add</Button>
+    </Col>
+  </Row>
+
+  {cancelPolicies.length > 0 && (
+    <Table striped bordered hover className="mt-3" size="sm">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Days Min</th>
+          <th>Days Max</th>
+          <th>Charge %</th>
+          <th>Charges (Desc)</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {cancelPolicies.map((c, idx) => (
+          <tr key={idx}>
+            <td>{idx + 1}</td>
+            <td>{c.days_min || '-'}</td>
+            <td>{c.days_max || '-'}</td>
+            <td>{c.charge_percentage}</td>
+            <td>{c.charges || "-"}</td>
+            <td>
+              <Button variant="link" size="sm" onClick={() => removeCancelRow(idx)}>
+                remove
+              </Button>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </Table>
+  )}
+</Tab>
+
 
               <Tab eventKey="instructions" title="Instructions">
                 <Form.Group className="mb-3">

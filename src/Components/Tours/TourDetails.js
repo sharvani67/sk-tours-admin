@@ -85,7 +85,7 @@ const TourDetails = () => {
                 <th>Child Price</th>
                 <th>Infant</th>
                 <th>Available Seats</th>
-                 <th>Description</th>
+                <th>Description</th>
               </tr>
             </thead>
             <tbody>
@@ -97,7 +97,7 @@ const TourDetails = () => {
                   <td>₹{d.child_price}</td>
                   <td>₹{d.infant_price}</td>
                   <td>{d.available_seats}</td>
-                   <td>{d.description}</td>
+                  <td>{d.description}</td>
                 </tr>
               ))}
             </tbody>
@@ -119,7 +119,7 @@ const TourDetails = () => {
               <th>Executive</th>
               <th>Child Bed</th>
               <th>Child No Bed</th>
-               <th>Remarks</th>
+              <th>Remarks</th>
             </tr>
           </thead>
           <tbody>
@@ -131,11 +131,20 @@ const TourDetails = () => {
                 <td>{c.executive_hotel || "-"}</td>
                 <td>{c.child_with_bed || "-"}</td>
                 <td>{c.child_no_bed || "-"}</td>
-                 <td>{c.remarks || "-"}</td>
+                <td>{c.remarks || "-"}</td>
               </tr>
             ))}
           </tbody>
         </Table>
+
+        {/* ======================== COST REMARKS ======================== */}
+        {t.basic_details?.cost_remarks && (
+          <>
+            <hr />
+            <h4>Cost Remarks</h4>
+            <p>{t.basic_details.cost_remarks}</p>
+          </>
+        )}
 
         <hr />
 
@@ -149,7 +158,7 @@ const TourDetails = () => {
                 <th>Hotel</th>
                 <th>Room Type</th>
                 <th>Nights</th>
-                 <th>Remarks</th>
+                <th>Remarks</th>
               </tr>
             </thead>
             <tbody>
@@ -159,13 +168,22 @@ const TourDetails = () => {
                   <td>{h.hotel_name}</td>
                   <td>{h.room_type}</td>
                   <td>{h.nights}</td>
-                   <td>{h.remarks}</td>
+                  <td>{h.remarks}</td>
                 </tr>
               ))}
             </tbody>
           </Table>
         ) : (
           <p>No hotel data</p>
+        )}
+
+        {/* ======================== HOTEL REMARKS ======================== */}
+        {t.basic_details?.hotel_remarks && (
+          <>
+            <hr />
+            <h4>Hotel Remarks</h4>
+            <p>{t.basic_details.hotel_remarks}</p>
+          </>
         )}
 
         <hr />
@@ -184,7 +202,7 @@ const TourDetails = () => {
                 <th>Departure</th>
                 <th>Arrival</th>
                 <th>Description</th>
-                 <th>Remarks</th>
+                <th>Remarks</th>
               </tr>
             </thead>
             <tbody>
@@ -198,13 +216,22 @@ const TourDetails = () => {
                   <td>{tr.departure_datetime}</td>
                   <td>{tr.arrival_datetime}</td>
                   <td>{tr.description}</td>
-                   <td>{tr.remarks}</td>
+                  <td>{tr.remarks}</td>
                 </tr>
               ))}
             </tbody>
           </Table>
         ) : (
           <p>No transport info</p>
+        )}
+
+        {/* ======================== TRANSPORT REMARKS ======================== */}
+        {t.basic_details?.transport_remarks && (
+          <>
+            <hr />
+            <h4>Transport Remarks</h4>
+            <p>{t.basic_details.transport_remarks}</p>
+          </>
         )}
 
         <hr />
@@ -227,6 +254,7 @@ const TourDetails = () => {
               <th>From (Days)</th>
               <th>To (Days)</th>
               <th>Charge (%)</th>
+              <th>Charges Description</th>
             </tr>
           </thead>
           <tbody>
@@ -235,6 +263,7 @@ const TourDetails = () => {
                 <td>{c.days_min ?? "-"}</td>
                 <td>{c.days_max ?? "-"}</td>
                 <td>{c.charge_percentage}%</td>
+                <td>{c.charges ?? "-"}</td>
               </tr>
             ))}
           </tbody>
@@ -290,6 +319,7 @@ const TourDetails = () => {
 };
 
 export default TourDetails;
+
 
 
 
