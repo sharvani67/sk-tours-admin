@@ -236,13 +236,30 @@ const TourDetails = () => {
 
         <hr />
 
-        {/* ======================== BOOKING POI ======================== */}
+        {/* ======================== BOOKING POI (FIXED) ======================== */}
         <h4>Booking Information</h4>
-        <ul>
-          {t.booking_poi?.map((item, idx) => (
-            <li key={idx}>{item}</li>
-          ))}
-        </ul>
+        {t.booking_poi?.length > 0 ? (
+          <Table bordered hover>
+            <thead>
+              <tr>
+                <th>POI ID</th>
+                <th>Item</th>
+                <th>Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              {t.booking_poi.map((p) => (
+                <tr key={p.poi_id}>
+                  <td>{p.poi_id}</td>
+                  <td>{p.item}</td>
+                  <td>{p.amount_details}</td>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
+        ) : (
+          <p>No booking information</p>
+        )}
 
         <hr />
 
@@ -319,6 +336,7 @@ const TourDetails = () => {
 };
 
 export default TourDetails;
+
 
 
 
