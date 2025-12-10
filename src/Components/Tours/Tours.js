@@ -58,15 +58,20 @@ const Tours = () => {
       style: { fontWeight: 'bold', textAlign: 'center', width: '80px' }
     },
     {
+      key: 'tour_code',
+      title: 'Tour Code',
+      render: (item) => item.tour_code || 'N/A'
+    },
+    {
       key: 'title',
       title: 'Tour Title',
       render: (item) => item.title || 'N/A'
     },
-    {
-      key: 'category_name',
-      title: 'Category',
-      render: (item) => item.category_name || 'N/A'
-    },
+    // {
+    //   key: 'category_name',
+    //   title: 'Category',
+    //   render: (item) => item.category_name || 'N/A'
+    // },
     {
       key: 'primary_destination_name',
       title: 'Primary Destination',

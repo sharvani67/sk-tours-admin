@@ -343,7 +343,7 @@ export default TourDetails;
 
 
 
-//Tharun code with edit and xdelete icons
+//Tharun code with edit and delete icons
 
 // import React, { useState, useEffect } from 'react';
 // import { Container, Card, Nav, Badge, Alert, Spinner } from 'react-bootstrap';

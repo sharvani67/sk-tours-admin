@@ -46,15 +46,15 @@ const AddTour = () => {
   const [formData, setFormData] = useState({
     tour_code: '',
     title: '',
-    category_id: '',
+    category_id: 1,
     primary_destination_id: '',
     duration_days: '',
     overview: '',
     base_price_adult: '',
     is_international: 0,
-     cost_remarks: "",
-  hotel_remarks: "",
-  transport_remarks: ""
+    cost_remarks: "",
+    hotel_remarks: "",
+    transport_remarks: ""
   });
 
   // DEPARTURES (multiple)
@@ -197,9 +197,9 @@ const AddTour = () => {
     const txt = poiText.trim();
     if (!txt) return;
     setBookingPois([
-    ...bookingPois,
-    { item: poiText, amount_details: poiAmount }
-  ]);
+      ...bookingPois,
+      { item: poiText, amount_details: poiAmount }
+    ]);
     setPoiText('');
     setPoiAmount("");
   };
@@ -212,11 +212,10 @@ const AddTour = () => {
   // CANCELLATION
   // =======================
   const [cancelItem, setCancelItem] = useState({
-    days_min: '',
-    days_max: '',
-    charge_percentage: '',
-    charges: ''
+    cancellation_policy: "",
+    charges: ""
   });
+
   const [cancelPolicies, setCancelPolicies] = useState([]);
 
   const handleCancelChange = (e) => {
@@ -225,14 +224,15 @@ const AddTour = () => {
   };
 
   const addCancelRow = () => {
-    if (!cancelItem.charge_percentage) return;
+    if (!cancelItem.cancellation_policy) return;
     setCancelPolicies(prev => [...prev, { ...cancelItem }]);
-    setCancelItem({ days_min: '', days_max: '', charge_percentage: '', charges: '' });
+    setCancelItem({ cancellation_policy: "", charges: "" });
   };
 
   const removeCancelRow = (idx) => {
     setCancelPolicies(prev => prev.filter((_, i) => i !== idx));
   };
+
 
   // =======================
   // INSTRUCTIONS
@@ -754,7 +754,7 @@ const AddTour = () => {
                       />
                     </Form.Group>
 
-                    <Form.Group className="mb-3">
+                    {/* <Form.Group className="mb-3">
                       <Form.Label>Category *</Form.Label>
                       <Form.Select
                         name="category_id"
@@ -771,8 +771,9 @@ const AddTour = () => {
                           </option>
                         ))}
                       </Form.Select>
-                    </Form.Group>
-                       <Form.Group className="mb-3">
+                    </Form.Group> */}
+
+                    <Form.Group className="mb-3">
                       <Form.Label>International Tour?</Form.Label>
                       <Form.Select
                         name="is_international"
@@ -816,7 +817,7 @@ const AddTour = () => {
                     </Form.Group>
 
                     <Form.Group className="mb-3">
-                      <Form.Label>Price (Adult) *</Form.Label>
+                      <Form.Label>Tour Price *</Form.Label>
                       <Form.Control
                         type="number"
                         name="base_price_adult"
@@ -825,7 +826,7 @@ const AddTour = () => {
                       />
                     </Form.Group>
 
-                 
+
                   </Col>
 
                   <Col md={12}>
@@ -841,48 +842,156 @@ const AddTour = () => {
                     </Form.Group>
                   </Col>
                   <Col md={12}>
-  <Form.Group className="mb-3">
-    <Form.Label>Cost Remarks</Form.Label>
-    <Form.Control
-      as="textarea"
-      rows={3}
-      name="cost_remarks"
-      value={formData.cost_remarks}
-      onChange={handleBasicChange}
-    />
-  </Form.Group>
-</Col>
+                    <Form.Group className="mb-3">
+                      <Form.Label>Cost Remarks</Form.Label>
+                      <Form.Control
+                        as="textarea"
+                        rows={3}
+                        name="cost_remarks"
+                        value={formData.cost_remarks}
+                        onChange={handleBasicChange}
+                      />
+                    </Form.Group>
+                  </Col>
 
-<Col md={12}>
-  <Form.Group className="mb-3">
-    <Form.Label>Hotel Remarks</Form.Label>
-    <Form.Control
-      as="textarea"
-      rows={3}
-      name="hotel_remarks"
-      value={formData.hotel_remarks}
-      onChange={handleBasicChange}
-    />
-  </Form.Group>
-</Col>
+                  <Col md={12}>
+                    <Form.Group className="mb-3">
+                      <Form.Label>Hotel Remarks</Form.Label>
+                      <Form.Control
+                        as="textarea"
+                        rows={3}
+                        name="hotel_remarks"
+                        value={formData.hotel_remarks}
+                        onChange={handleBasicChange}
+                      />
+                    </Form.Group>
+                  </Col>
 
-<Col md={12}>
-  <Form.Group className="mb-3">
-    <Form.Label>Transport Remarks</Form.Label>
-    <Form.Control
-      as="textarea"
-      rows={3}
-      name="transport_remarks"
-      value={formData.transport_remarks}
-      onChange={handleBasicChange}
-    />
-  </Form.Group>
-</Col>
+                  <Col md={12}>
+                    <Form.Group className="mb-3">
+                      <Form.Label>Transport Remarks</Form.Label>
+                      <Form.Control
+                        as="textarea"
+                        rows={3}
+                        name="transport_remarks"
+                        value={formData.transport_remarks}
+                        onChange={handleBasicChange}
+                      />
+                    </Form.Group>
+                  </Col>
 
                 </Row>
               </Tab>
 
-              {/* ======== TAB 2: DEPARTURES ======== */}
+              <Tab eventKey="itineraries" title="Itineraries">
+                <Row>
+                  <Col md={2}>
+                    <Form.Group className="mb-3">
+                      <Form.Label>Day</Form.Label>
+                      <Form.Control
+                        type="number"
+                        name="day"
+                        value={itineraryItem.day}
+                        onChange={handleItineraryChange}
+                      />
+                    </Form.Group>
+                  </Col>
+
+                  <Col md={4}>
+                    <Form.Group className="mb-3">
+                      <Form.Label>Title</Form.Label>
+                      <Form.Control
+                        type="text"
+                        name="title"
+                        value={itineraryItem.title}
+                        onChange={handleItineraryChange}
+                      />
+                    </Form.Group>
+                  </Col>
+
+                  <Col md={6}>
+                    <Form.Group className="mb-3">
+                      <Form.Label>Meals</Form.Label>
+                      <div className="d-flex gap-3">
+                        <Form.Check
+                          type="checkbox"
+                          label="Breakfast"
+                          name="breakfast"
+                          checked={itineraryItem.meals.breakfast}
+                          onChange={handleMealsCheckboxChange}
+                        />
+                        <Form.Check
+                          type="checkbox"
+                          label="Lunch"
+                          name="lunch"
+                          checked={itineraryItem.meals.lunch}
+                          onChange={handleMealsCheckboxChange}
+                        />
+                        <Form.Check
+                          type="checkbox"
+                          label="Dinner"
+                          name="dinner"
+                          checked={itineraryItem.meals.dinner}
+                          onChange={handleMealsCheckboxChange}
+                        />
+                      </div>
+                    </Form.Group>
+                  </Col>
+                </Row>
+
+                <Form.Group className="mb-3">
+                  <Form.Label>Description</Form.Label>
+                  <Form.Control
+                    as="textarea"
+                    rows={3}
+                    name="description"
+                    value={itineraryItem.description}
+                    onChange={handleItineraryChange}
+                  />
+                </Form.Group>
+
+                <Button size="sm" onClick={handleAddItinerary}>
+                  + Add Day
+                </Button>
+
+                {itineraries.length > 0 && (
+                  <Table striped bordered hover size="sm" className="mt-3">
+                    <thead>
+                      <tr>
+                        <th>#</th>
+                        <th>Day</th>
+                        <th>Title</th>
+                        <th>Meals</th>
+                        <th>Description</th>
+                        <th>Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {itineraries
+                        .sort((a, b) => a.day - b.day)
+                        .map((item, idx) => (
+                          <tr key={idx}>
+                            <td>{idx + 1}</td>
+                            <td>{item.day}</td>
+                            <td>{item.title}</td>
+                            <td>{item.meals || '-'}</td>
+                            <td>{item.description || '-'}</td>
+                            <td>
+                              <Button
+                                variant="link"
+                                size="sm"
+                                onClick={() => handleRemoveItinerary(idx)}
+                              >
+                                remove
+                              </Button>
+                            </td>
+                          </tr>
+                        ))}
+                    </tbody>
+                  </Table>
+                )}
+              </Tab>
+
               <Tab eventKey="departures" title="Departures">
                 <Row>
                   {/* <Col md={3}>
@@ -1163,98 +1272,88 @@ const AddTour = () => {
                 )}
               </Tab>
 
-              <Tab eventKey="hotels" title="Hotels">
-                <Row className="align-items-end">
-                  <Col md={3}>
-                    <Form.Group>
-                      <Form.Label>City *</Form.Label>
-                      <Form.Control
-                        type="text"
-                        name="city"
-                        value={hotelItem.city}
-                        onChange={handleHotelChange}
-                      />
-                    </Form.Group>
-                  </Col>
+              <Tab eventKey="inclusions" title="Inclusions">
+                <Form.Group className="mb-3">
+                  <Form.Label>Add Inclusion</Form.Label>
+                  <Form.Control
+                    as="textarea"
+                    rows={3}
+                    value={inclusionText}
+                    onChange={(e) => setInclusionText(e.target.value)}
+                    placeholder="Type an inclusion and click Add"
+                  />
+                  <Button className="mt-2" size="sm" onClick={handleAddInclusion}>
+                    + Add Inclusion
+                  </Button>
+                </Form.Group>
 
-                  <Col md={3}>
-                    <Form.Group>
-                      <Form.Label>Hotel Name *</Form.Label>
-                      <Form.Control
-                        type="text"
-                        name="hotel_name"
-                        value={hotelItem.hotel_name}
-                        onChange={handleHotelChange}
-                      />
-                    </Form.Group>
-                  </Col>
-
-                  <Col md={3}>
-                    <Form.Group>
-                      <Form.Label>Room Type</Form.Label>
-                      <Form.Control
-                        type="text"
-                        name="room_type"
-                        value={hotelItem.room_type}
-                        onChange={handleHotelChange}
-                      />
-                    </Form.Group>
-                  </Col>
-
-                  <Col md={2}>
-                    <Form.Group>
-                      <Form.Label>Nights</Form.Label>
-                      <Form.Control
-                        type="number"
-                        name="nights"
-                        value={hotelItem.nights}
-                        onChange={handleHotelChange}
-                      />
-                    </Form.Group>
-                  </Col>
-
-                  {/* <Col md={12}>
-                    <Form.Group className="mt-2">
-                      <Form.Label>Remarks</Form.Label>
-                      <Form.Control
-                        as="textarea"
-                        rows={3}
-                        name="remarks"
-                        value={hotelItem.remarks}
-                        onChange={handleHotelChange}
-                      />
-                    </Form.Group>
-                  </Col> */}
-
-                  <Col md={2}>
-                    <Button size="sm" className="mt-4" onClick={addHotelRow}>+ Add</Button>
-                  </Col>
-                </Row>
-
-                {hotelRows.length > 0 && (
-                  <Table striped bordered hover size="sm" className="mt-3">
+                {inclusions.length > 0 && (
+                  <Table striped bordered hover size="sm">
                     <thead>
                       <tr>
                         <th>#</th>
-                        <th>City</th>
-                        <th>Hotel</th>
-                        <th>Room</th>
-                        <th>Nights</th>
-                        {/* <th>Remarks</th> */}
-                        <th></th>
+                        <th>Inclusion</th>
+                        <th>Action</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {hotelRows.map((h, idx) => (
+                      {inclusions.map((item, idx) => (
                         <tr key={idx}>
                           <td>{idx + 1}</td>
-                          <td>{h.city}</td>
-                          <td>{h.hotel_name}</td>
-                          <td>{h.room_type}</td>
-                          <td>{h.nights}</td>
-                          {/* <td>{h.remarks || 'NA'}</td> */}
+                          <td>{item}</td>
                           <td>
-                            <Button variant="link" size="sm" onClick={() => removeHotelRow(idx)}>remove</Button>
+                            <Button
+                              variant="link"
+                              size="sm"
+                              onClick={() => handleRemoveInclusion(idx)}
+                            >
+                              remove
+                            </Button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </Table>
+                )}
+              </Tab>
+
+              <Tab eventKey="exclusions" title="Exclusions">
+                <Form.Group className="mb-3">
+                  <Form.Label>Add Exclusion</Form.Label>
+                  <Form.Control
+                    as="textarea"
+                    rows={3}
+                    value={exclusionText}
+                    onChange={(e) => setExclusionText(e.target.value)}
+                    placeholder="Type an exclusion and click Add"
+                  />
+                  <Button className="mt-2" size="sm" onClick={handleAddExclusion}>
+                    + Add Exclusion
+                  </Button>
+                </Form.Group>
+
+                {exclusions.length > 0 && (
+                  <Table striped bordered hover size="sm">
+                    <thead>
+                      <tr>
+                        <th>#</th>
+                        <th>Exclusion</th>
+                        <th>Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {exclusions.map((item, idx) => (
+                        <tr key={idx}>
+                          <td>{idx + 1}</td>
+                          <td>{item}</td>
+                          <td>
+                            <Button
+                              variant="link"
+                              size="sm"
+                              onClick={() => handleRemoveExclusion(idx)}
+                            >
+                              remove
+                            </Button>
                           </td>
                         </tr>
                       ))}
@@ -1413,7 +1512,7 @@ const AddTour = () => {
                           <td>{t.departure_datetime}</td>
                           <td>{t.arrival_datetime}</td> */}
                           {/* <td>{t.remarks || 'NA'}</td> */}
-                           <td>{t.description || 'NA'}</td>
+                          <td>{t.description || 'NA'}</td>
                           <td>
                             <Button variant="link" size="sm" onClick={() => removeTransportRow(idx)}>remove</Button>
                           </td>
@@ -1424,147 +1523,239 @@ const AddTour = () => {
                 )}
               </Tab>
 
-             <Tab eventKey="bookingPoi" title="Booking POI">
-  <Form.Group className="mb-3">
-    <Form.Label>Add POI Item</Form.Label>
-    <Form.Control
-      as="textarea"
-      rows={3}
-      value={poiText}
-      onChange={(e) => setPoiText(e.target.value)}
-      placeholder="Type and click Add"
-    />
+              <Tab eventKey="hotels" title="Hotels">
+                <Row className="align-items-end">
+                  <Col md={3}>
+                    <Form.Group>
+                      <Form.Label>City *</Form.Label>
+                      <Form.Control
+                        type="text"
+                        name="city"
+                        value={hotelItem.city}
+                        onChange={handleHotelChange}
+                      />
+                    </Form.Group>
+                  </Col>
 
-    {/* NEW FIELD: amount details */}
-    <Form.Label className="mt-2">Amount Details</Form.Label>
-    <Form.Control
-      type="text"
-      value={poiAmount}
-      onChange={(e) => setPoiAmount(e.target.value)}
-      placeholder="Enter amount details"
-    />
+                  <Col md={3}>
+                    <Form.Group>
+                      <Form.Label>Hotel Name *</Form.Label>
+                      <Form.Control
+                        type="text"
+                        name="hotel_name"
+                        value={hotelItem.hotel_name}
+                        onChange={handleHotelChange}
+                      />
+                    </Form.Group>
+                  </Col>
 
-    <Button size="sm" className="mt-2" onClick={addPoi}>+ Add</Button>
-  </Form.Group>
+                  <Col md={3}>
+                    <Form.Group>
+                      <Form.Label>Room Type</Form.Label>
+                      <Form.Control
+                        type="text"
+                        name="room_type"
+                        value={hotelItem.room_type}
+                        onChange={handleHotelChange}
+                      />
+                    </Form.Group>
+                  </Col>
 
-  {bookingPois.length > 0 && (
-    <Table striped bordered hover size="sm">
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>Item</th>
-          <th>Amount Details</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody>
-        {bookingPois.map((p, idx) => (
-          <tr key={idx}>
-            <td>{idx + 1}</td>
-            <td>{p.item}</td>
-            <td>{p.amount_details}</td>
-            <td>
-              <Button variant="link" size="sm" onClick={() => removePoi(idx)}>
-                remove
-              </Button>
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </Table>
-  )}
-</Tab>
+                  <Col md={2}>
+                    <Form.Group>
+                      <Form.Label>Nights</Form.Label>
+                      <Form.Control
+                        type="number"
+                        name="nights"
+                        value={hotelItem.nights}
+                        onChange={handleHotelChange}
+                      />
+                    </Form.Group>
+                  </Col>
+
+                  {/* <Col md={12}>
+                    <Form.Group className="mt-2">
+                      <Form.Label>Remarks</Form.Label>
+                      <Form.Control
+                        as="textarea"
+                        rows={3}
+                        name="remarks"
+                        value={hotelItem.remarks}
+                        onChange={handleHotelChange}
+                      />
+                    </Form.Group>
+                  </Col> */}
+
+                  <Col md={2}>
+                    <Button size="sm" className="mt-4" onClick={addHotelRow}>+ Add</Button>
+                  </Col>
+                </Row>
+
+                {hotelRows.length > 0 && (
+                  <Table striped bordered hover size="sm" className="mt-3">
+                    <thead>
+                      <tr>
+                        <th>#</th>
+                        <th>City</th>
+                        <th>Hotel</th>
+                        <th>Room</th>
+                        <th>Nights</th>
+                        {/* <th>Remarks</th> */}
+                        <th></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {hotelRows.map((h, idx) => (
+                        <tr key={idx}>
+                          <td>{idx + 1}</td>
+                          <td>{h.city}</td>
+                          <td>{h.hotel_name}</td>
+                          <td>{h.room_type}</td>
+                          <td>{h.nights}</td>
+                          {/* <td>{h.remarks || 'NA'}</td> */}
+                          <td>
+                            <Button variant="link" size="sm" onClick={() => removeHotelRow(idx)}>remove</Button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </Table>
+                )}
+              </Tab>
+
+              <Tab eventKey="bookingPoi" title="Booking POI">
+
+                <Form.Group className="mb-3">
+                  <Row>
+                    {/* COL 8 — POI TEXT */}
+                    <Col md={8}>
+                      <Form.Label>Add POI Item</Form.Label>
+                      <Form.Control
+                        as="textarea"
+                        rows={3}
+                        value={poiText}
+                        onChange={(e) => setPoiText(e.target.value)}
+                        placeholder="Type and click Add"
+                      />
+                    </Col>
+
+                    {/* COL 4 — AMOUNT DETAILS */}
+                    <Col md={4}>
+                      <Form.Label>Amount Details</Form.Label>
+                      <Form.Control
+                        type="text"
+                        value={poiAmount}
+                        onChange={(e) => setPoiAmount(e.target.value)}
+                        placeholder="Enter amount details"
+                      />
+                    </Col>
+                  </Row>
+
+                  <Button size="sm" className="mt-2" onClick={addPoi}>
+                    + Add
+                  </Button>
+                </Form.Group>
+
+                {bookingPois.length > 0 && (
+                  <Table striped bordered hover size="sm">
+                    <thead>
+                      <tr>
+                        <th>#</th>
+                        <th>Item</th>
+                        <th>Amount Details</th>
+                        <th></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {bookingPois.map((p, idx) => (
+                        <tr key={idx}>
+                          <td>{idx + 1}</td>
+                          <td>{p.item}</td>
+                          <td>{p.amount_details}</td>
+                          <td>
+                            <Button
+                              variant="link"
+                              size="sm"
+                              onClick={() => removePoi(idx)}
+                            >
+                              remove
+                            </Button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </Table>
+                )}
+              </Tab>
 
 
-             <Tab eventKey="cancellation" title="Cancellation Policy">
-  <Row className="align-items-end">
-    <Col md={3}>
-      <Form.Group>
-        <Form.Label>Days Min</Form.Label>
-        <Form.Control
-          type="number"
-          name="days_min"
-          value={cancelItem.days_min}
-          onChange={handleCancelChange}
-        />
-      </Form.Group>
-    </Col>
+              <Tab eventKey="cancellation" title="Cancellation Policy">
+                <Row>
+                  {/* COL 8 — Cancellation Policy Text */}
+                  <Col md={8}>
+                    <Form.Group>
+                      <Form.Label>Cancellation Policy</Form.Label>
+                      <Form.Control
+                        as="textarea"
+                        rows={3}
+                        name="cancellation_policy"
+                        value={cancelItem.cancellation_policy}
+                        onChange={handleCancelChange}
+                        placeholder="Type cancellation policy here"
+                      />
+                    </Form.Group>
+                  </Col>
 
-    <Col md={3}>
-      <Form.Group>
-        <Form.Label>Days Max</Form.Label>
-        <Form.Control
-          type="number"
-          name="days_max"
-          value={cancelItem.days_max}
-          onChange={handleCancelChange}
-        />
-      </Form.Group>
-    </Col>
+                  {/* COL 4 — Charges */}
+                  <Col md={4}>
+                    <Form.Group>
+                      <Form.Label>Charges</Form.Label>
+                      <Form.Control
+                        type="text"
+                        name="charges"
+                        value={cancelItem.charges}
+                        onChange={handleCancelChange}
+                        placeholder="Example: No refund / 50% retained"
+                      />
+                    </Form.Group>
+                  </Col>
+                </Row>
 
-    <Col md={3}>
-      <Form.Group>
-        <Form.Label>Charge (%) *</Form.Label>
-        <Form.Control
-          type="number"
-          name="charge_percentage"
-          value={cancelItem.charge_percentage}
-          onChange={handleCancelChange}
-        />
-      </Form.Group>
-    </Col>
+                <Button size="sm" className="mt-2" onClick={addCancelRow}>
+                  + Add
+                </Button>
 
-    {/* NEW FIELD: charges (varchar) */}
-    <Col md={3}>
-      <Form.Group>
-        <Form.Label>Charges (Description)</Form.Label>
-        <Form.Control
-          type="text"
-          name="charges"
-          value={cancelItem.charges}
-          onChange={handleCancelChange}
-          placeholder="Example: No refund / 50% retained"
-        />
-      </Form.Group>
-    </Col>
-
-    <Col md={1}>
-      <Button size="sm" className="mt-4" onClick={addCancelRow}>+ Add</Button>
-    </Col>
-  </Row>
-
-  {cancelPolicies.length > 0 && (
-    <Table striped bordered hover className="mt-3" size="sm">
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>Days Min</th>
-          <th>Days Max</th>
-          <th>Charge %</th>
-          <th>Charges (Desc)</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody>
-        {cancelPolicies.map((c, idx) => (
-          <tr key={idx}>
-            <td>{idx + 1}</td>
-            <td>{c.days_min || '-'}</td>
-            <td>{c.days_max || '-'}</td>
-            <td>{c.charge_percentage}</td>
-            <td>{c.charges || "-"}</td>
-            <td>
-              <Button variant="link" size="sm" onClick={() => removeCancelRow(idx)}>
-                remove
-              </Button>
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </Table>
-  )}
-</Tab>
-
+                {cancelPolicies.length > 0 && (
+                  <Table striped bordered hover className="mt-3" size="sm">
+                    <thead>
+                      <tr>
+                        <th>#</th>
+                        <th>Cancellation Policy</th>
+                        <th>Charges</th>
+                        <th></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {cancelPolicies.map((c, idx) => (
+                        <tr key={idx}>
+                          <td>{idx + 1}</td>
+                          <td>{c.cancellation_policy}</td>
+                          <td>{c.charges || "-"}</td>
+                          <td>
+                            <Button
+                              variant="link"
+                              size="sm"
+                              onClick={() => removeCancelRow(idx)}
+                            >
+                              remove
+                            </Button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </Table>
+                )}
+              </Tab>
 
               <Tab eventKey="instructions" title="Instructions">
                 <Form.Group className="mb-3">
@@ -1603,53 +1794,6 @@ const AddTour = () => {
                 )}
               </Tab>
 
-              {/* ======== TAB 3: EXCLUSIONS ======== */}
-              <Tab eventKey="exclusions" title="Exclusions">
-                <Form.Group className="mb-3">
-                  <Form.Label>Add Exclusion</Form.Label>
-                  <Form.Control
-                    as="textarea"
-                    rows={3}
-                    value={exclusionText}
-                    onChange={(e) => setExclusionText(e.target.value)}
-                    placeholder="Type an exclusion and click Add"
-                  />
-                  <Button className="mt-2" size="sm" onClick={handleAddExclusion}>
-                    + Add Exclusion
-                  </Button>
-                </Form.Group>
-
-                {exclusions.length > 0 && (
-                  <Table striped bordered hover size="sm">
-                    <thead>
-                      <tr>
-                        <th>#</th>
-                        <th>Exclusion</th>
-                        <th>Action</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {exclusions.map((item, idx) => (
-                        <tr key={idx}>
-                          <td>{idx + 1}</td>
-                          <td>{item}</td>
-                          <td>
-                            <Button
-                              variant="link"
-                              size="sm"
-                              onClick={() => handleRemoveExclusion(idx)}
-                            >
-                              remove
-                            </Button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </Table>
-                )}
-              </Tab>
-
-              {/* ======== TAB 4: IMAGES ======== */}
               <Tab eventKey="images" title="Images">
                 <Form.Group className="mb-3">
                   <Form.Label>Upload Images</Form.Label>
@@ -1684,161 +1828,6 @@ const AddTour = () => {
                 )}
               </Tab>
 
-              {/* ======== TAB 5: INCLUSIONS ======== */}
-              <Tab eventKey="inclusions" title="Inclusions">
-                <Form.Group className="mb-3">
-                  <Form.Label>Add Inclusion</Form.Label>
-                  <Form.Control
-                    as="textarea"
-                    rows={3}
-                    value={inclusionText}
-                    onChange={(e) => setInclusionText(e.target.value)}
-                    placeholder="Type an inclusion and click Add"
-                  />
-                  <Button className="mt-2" size="sm" onClick={handleAddInclusion}>
-                    + Add Inclusion
-                  </Button>
-                </Form.Group>
-
-                {inclusions.length > 0 && (
-                  <Table striped bordered hover size="sm">
-                    <thead>
-                      <tr>
-                        <th>#</th>
-                        <th>Inclusion</th>
-                        <th>Action</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {inclusions.map((item, idx) => (
-                        <tr key={idx}>
-                          <td>{idx + 1}</td>
-                          <td>{item}</td>
-                          <td>
-                            <Button
-                              variant="link"
-                              size="sm"
-                              onClick={() => handleRemoveInclusion(idx)}
-                            >
-                              remove
-                            </Button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </Table>
-                )}
-              </Tab>
-
-              {/* ======== TAB 6: ITINERARIES ======== */}
-              <Tab eventKey="itineraries" title="Itineraries">
-                <Row>
-                  <Col md={2}>
-                    <Form.Group className="mb-3">
-                      <Form.Label>Day</Form.Label>
-                      <Form.Control
-                        type="number"
-                        name="day"
-                        value={itineraryItem.day}
-                        onChange={handleItineraryChange}
-                      />
-                    </Form.Group>
-                  </Col>
-
-                  <Col md={4}>
-                    <Form.Group className="mb-3">
-                      <Form.Label>Title</Form.Label>
-                      <Form.Control
-                        type="text"
-                        name="title"
-                        value={itineraryItem.title}
-                        onChange={handleItineraryChange}
-                      />
-                    </Form.Group>
-                  </Col>
-
-                  <Col md={6}>
-                    <Form.Group className="mb-3">
-                      <Form.Label>Meals</Form.Label>
-                      <div className="d-flex gap-3">
-                        <Form.Check
-                          type="checkbox"
-                          label="Breakfast"
-                          name="breakfast"
-                          checked={itineraryItem.meals.breakfast}
-                          onChange={handleMealsCheckboxChange}
-                        />
-                        <Form.Check
-                          type="checkbox"
-                          label="Lunch"
-                          name="lunch"
-                          checked={itineraryItem.meals.lunch}
-                          onChange={handleMealsCheckboxChange}
-                        />
-                        <Form.Check
-                          type="checkbox"
-                          label="Dinner"
-                          name="dinner"
-                          checked={itineraryItem.meals.dinner}
-                          onChange={handleMealsCheckboxChange}
-                        />
-                      </div>
-                    </Form.Group>
-                  </Col>
-                </Row>
-
-                <Form.Group className="mb-3">
-                  <Form.Label>Description</Form.Label>
-                  <Form.Control
-                    as="textarea"
-                    rows={3}
-                    name="description"
-                    value={itineraryItem.description}
-                    onChange={handleItineraryChange}
-                  />
-                </Form.Group>
-
-                <Button size="sm" onClick={handleAddItinerary}>
-                  + Add Day
-                </Button>
-
-                {itineraries.length > 0 && (
-                  <Table striped bordered hover size="sm" className="mt-3">
-                    <thead>
-                      <tr>
-                        <th>#</th>
-                        <th>Day</th>
-                        <th>Title</th>
-                        <th>Meals</th>
-                        <th>Description</th>
-                        <th>Action</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {itineraries
-                        .sort((a, b) => a.day - b.day)
-                        .map((item, idx) => (
-                          <tr key={idx}>
-                            <td>{idx + 1}</td>
-                            <td>{item.day}</td>
-                            <td>{item.title}</td>
-                            <td>{item.meals || '-'}</td>
-                            <td>{item.description || '-'}</td>
-                            <td>
-                              <Button
-                                variant="link"
-                                size="sm"
-                                onClick={() => handleRemoveItinerary(idx)}
-                              >
-                                remove
-                              </Button>
-                            </td>
-                          </tr>
-                        ))}
-                    </tbody>
-                  </Table>
-                )}
-              </Tab>
             </Tabs>
 
             {/* ======== BUTTONS ======== */}
