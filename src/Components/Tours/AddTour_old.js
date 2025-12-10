@@ -18,22 +18,19 @@ import { baseurl } from '../../Api/Baseurl';
 const AddTour = () => {
   const navigate = useNavigate();
 
-  // TAB ORDER MUST MATCH JSX ORDER
   const TAB_LIST = [
     'basic',
-    'itineraries',
     'departures',
     'costs',
-    'optionalTours',
-    'emiOptions',
-    'inclusions',
-    'exclusions',
-    'transport',
     'hotels',
+    'transport',
     'bookingPoi',
     'cancellation',
     'instructions',
-    'images'
+    'exclusions',
+    'images',
+    'inclusions',
+    'itineraries'
   ];
 
   const [activeTab, setActiveTab] = useState('basic');
@@ -105,7 +102,6 @@ const AddTour = () => {
   };
 
   const addCostRow = () => {
-    // Required field: pax
     if (!tourCostItem.pax) return;
     setTourCosts(prev => [...prev, { ...tourCostItem }]);
     setTourCostItem({
@@ -121,99 +117,6 @@ const AddTour = () => {
 
   const removeCostRow = (idx) => {
     setTourCosts(prev => prev.filter((_, i) => i !== idx));
-  };
-
-  // =======================
-  // OPTIONAL TOURS
-  // =======================
-  const [optionalTourItem, setOptionalTourItem] = useState({
-    tour_name: '',
-    adult_price: '',
-    child_price: ''
-  });
-  const [optionalTours, setOptionalTours] = useState([]);
-
-  const handleOptionalTourChange = (e) => {
-    const { name, value } = e.target;
-    setOptionalTourItem(prev => ({ ...prev, [name]: value }));
-  };
-
-  const addOptionalTourRow = () => {
-    // Required field: tour_name
-    if (!optionalTourItem.tour_name.trim()) return;
-
-    const processedItem = {
-      ...optionalTourItem,
-      adult_price: optionalTourItem.adult_price
-        ? Number(optionalTourItem.adult_price)
-        : '',
-      child_price: optionalTourItem.child_price
-        ? Number(optionalTourItem.child_price)
-        : ''
-    };
-
-    setOptionalTours(prev => [...prev, processedItem]);
-    setOptionalTourItem({
-      tour_name: '',
-      adult_price: '',
-      child_price: ''
-    });
-  };
-
-  const removeOptionalTourRow = (idx) => {
-    setOptionalTours(prev => prev.filter((_, i) => i !== idx));
-  };
-
-  // =======================
-  // EMI OPTIONS
-  // =======================
-  const [loanAmount, setLoanAmount] = useState('');
-  const [emiOptions, setEmiOptions] = useState([
-    { particulars: 'Per Month Payment', months: 6, emi: 0 },
-    { particulars: 'Per Month Payment', months: 12, emi: 0 },
-    { particulars: 'Per Month Payment', months: 18, emi: 0 },
-    { particulars: 'Per Month Payment', months: 24, emi: 0 },
-    { particulars: 'Per Month Payment', months: 30, emi: 0 },
-    { particulars: 'Per Month Payment', months: 36, emi: 0 },
-    { particulars: 'Per Month Payment', months: 48, emi: 0 }
-  ]);
-
-  useEffect(() => {
-    if (loanAmount) {
-      const amount = parseFloat(loanAmount);
-      if (!isNaN(amount) && amount > 0) {
-        const updatedEmiOptions = emiOptions.map(option => {
-          const emi = calculateEMI(amount, option.months);
-          return { ...option, emi };
-        });
-        setEmiOptions(updatedEmiOptions);
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loanAmount]);
-
-  const calculateEMI = (principal, months, annualInterestRate = 12) => {
-    if (!principal || principal <= 0 || !months || months <= 0) return 0;
-    const monthlyRate = annualInterestRate / 12 / 100;
-    const emi =
-      (principal *
-        monthlyRate *
-        Math.pow(1 + monthlyRate, months)) /
-      (Math.pow(1 + monthlyRate, months) - 1);
-    return Math.round(emi);
-  };
-
-  const handleLoanAmountChange = (e) => {
-    const value = e.target.value;
-    setLoanAmount(value);
-  };
-
-  const handleAddEMIOptions = () => {
-    if (!loanAmount || parseFloat(loanAmount) <= 0) {
-      setError('Please enter a valid loan amount');
-      return;
-    }
-    setError('');
   };
 
   // =======================
@@ -234,16 +137,9 @@ const AddTour = () => {
   };
 
   const addHotelRow = () => {
-    // Required: city & hotel_name
     if (!hotelItem.city.trim() || !hotelItem.hotel_name.trim()) return;
     setHotelRows(prev => [...prev, { ...hotelItem }]);
-    setHotelItem({
-      city: '',
-      hotel_name: '',
-      room_type: '',
-      nights: '',
-      remarks: ''
-    });
+    setHotelItem({ city: '', hotel_name: '', room_type: '', nights: '', remarks: '' });
   };
 
   const removeHotelRow = (idx) => {
@@ -272,8 +168,7 @@ const AddTour = () => {
   };
 
   const addTransportRow = () => {
-    // Required: description (free flow)
-    if (!transportItem.description.trim()) return;
+    // if (!transportItem.from_city || !transportItem.to_city) return;
     setTransports(prev => [...prev, { ...transportItem }]);
     setTransportItem({
       mode: '',
@@ -283,8 +178,7 @@ const AddTour = () => {
       number_code: '',
       departure_datetime: '',
       arrival_datetime: '',
-      description: '',
-      remarks: ''
+      description: ''
     });
   };
 
@@ -330,8 +224,7 @@ const AddTour = () => {
   };
 
   const addCancelRow = () => {
-    // Required: cancellation_policy
-    if (!cancelItem.cancellation_policy.trim()) return;
+    if (!cancelItem.cancellation_policy) return;
     setCancelPolicies(prev => [...prev, { ...cancelItem }]);
     setCancelItem({ cancellation_policy: "", charges: "" });
   };
@@ -339,6 +232,7 @@ const AddTour = () => {
   const removeCancelRow = (idx) => {
     setCancelPolicies(prev => prev.filter((_, i) => i !== idx));
   };
+
 
   // =======================
   // INSTRUCTIONS
@@ -374,6 +268,7 @@ const AddTour = () => {
   useEffect(() => {
     const loadDropdownsAndTourCode = async () => {
       try {
+        // Fetch next tour code
         const tourCodeRes = await fetch(`${baseurl}/api/tours/next-tour-code`);
         if (tourCodeRes.ok) {
           const tourCodeData = await tourCodeRes.json();
@@ -383,10 +278,12 @@ const AddTour = () => {
           }));
         }
 
+        // Load categories
         const catRes = await fetch(`${baseurl}/api/categories/all-tours`);
         const categoryData = await catRes.json();
         setCategories(Array.isArray(categoryData) ? categoryData : []);
 
+        // Load destinations
         const destRes = await fetch(`${baseurl}/api/destinations`);
         const destData = await destRes.json();
         setDestinations(Array.isArray(destData) ? destData : []);
@@ -434,8 +331,6 @@ const AddTour = () => {
   };
 
   const handleAddDeparture = () => {
-    // Required: description
-    if (!departureForm.description.trim()) return;
     setDepartures((prev) => [
       ...prev,
       { ...departureForm }
@@ -518,7 +413,6 @@ const AddTour = () => {
 
   const handleAddItinerary = () => {
     const { day, title, description, meals } = itineraryItem;
-    // Required: day & title
     if (!day || !title.trim()) return;
 
     const selectedMeals = [];
@@ -573,81 +467,7 @@ const AddTour = () => {
     navigate('/tours');
   };
 
-  const isLastTab = activeTab === TAB_LIST[TAB_LIST.length - 1];
-
-  // AUTO-ADD WHEN USER CLICKS SAVE & CONTINUE (OPTION C + RULE 1)
-  const autoAddBeforeNext = () => {
-    switch (activeTab) {
-      case 'itineraries':
-        if (itineraryItem.day && itineraryItem.title.trim()) {
-          handleAddItinerary();
-        }
-        break;
-
-      case 'departures':
-        if (departureForm.description && departureForm.description.trim()) {
-          handleAddDeparture();
-        }
-        break;
-
-      case 'costs':
-        if (tourCostItem.pax) {
-          addCostRow();
-        }
-        break;
-
-      case 'optionalTours':
-        if (optionalTourItem.tour_name && optionalTourItem.tour_name.trim()) {
-          addOptionalTourRow();
-        }
-        break;
-
-      case 'hotels':
-        if (hotelItem.city.trim() && hotelItem.hotel_name.trim()) {
-          addHotelRow();
-        }
-        break;
-
-      case 'transport':
-        if (transportItem.description && transportItem.description.trim()) {
-          addTransportRow();
-        }
-        break;
-
-      case 'bookingPoi':
-        if (poiText && poiText.trim()) {
-          addPoi();
-        }
-        break;
-
-      case 'cancellation':
-        if (cancelItem.cancellation_policy && cancelItem.cancellation_policy.trim()) {
-          addCancelRow();
-        }
-        break;
-
-      case 'instructions':
-        if (instructionText && instructionText.trim()) {
-          addInstruction();
-        }
-        break;
-
-      case 'inclusions':
-        if (inclusionText && inclusionText.trim()) {
-          handleAddInclusion();
-        }
-        break;
-
-      case 'exclusions':
-        if (exclusionText && exclusionText.trim()) {
-          handleAddExclusion();
-        }
-        break;
-
-      default:
-        break;
-    }
-  };
+  const isLastTab = activeTab === 'itineraries';
 
   // FINAL SUBMIT — all APIs hit here
   const finalSubmit = async () => {
@@ -714,32 +534,7 @@ const AddTour = () => {
         });
       }
 
-      // 8) OPTIONAL TOURS BULK
-      if (optionalTours.length > 0) {
-        await fetch(`${baseurl}/api/optional-tours/bulk`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            tour_id: tourId,
-            optional_tours: optionalTours
-          })
-        });
-      }
-
-      // 9) EMI OPTIONS BULK
-      if (loanAmount && parseFloat(loanAmount) > 0) {
-        await fetch(`${baseurl}/api/emi-options/bulk`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            tour_id: tourId,
-            loan_amount: parseFloat(loanAmount),
-            emi_options: emiOptions
-          })
-        });
-      }
-
-      // 10) HOTELS BULK
+      // 8) HOTELS BULK
       if (hotelRows.length > 0) {
         await fetch(`${baseurl}/api/tour-hotels/bulk`, {
           method: 'POST',
@@ -751,7 +546,7 @@ const AddTour = () => {
         });
       }
 
-      // 11) TRANSPORT BULK
+      // 9) TRANSPORT BULK
       if (transports.length > 0) {
         await fetch(`${baseurl}/api/tour-transports/bulk`, {
           method: 'POST',
@@ -763,7 +558,7 @@ const AddTour = () => {
         });
       }
 
-      // 12) BOOKING POI BULK
+      // 10) BOOKING POI BULK
       if (bookingPois.length > 0) {
         await fetch(`${baseurl}/api/tour-booking-poi/bulk`, {
           method: 'POST',
@@ -775,7 +570,7 @@ const AddTour = () => {
         });
       }
 
-      // 13) CANCELLATION BULK
+      // 11) CANCELLATION BULK
       if (cancelPolicies.length > 0) {
         await fetch(`${baseurl}/api/tour-cancellation/bulk`, {
           method: 'POST',
@@ -787,7 +582,7 @@ const AddTour = () => {
         });
       }
 
-      // 14) INSTRUCTIONS BULK
+      // 12) INSTRUCTIONS BULK
       if (instructions.length > 0) {
         await fetch(`${baseurl}/api/tour-instructions/bulk`, {
           method: 'POST',
@@ -882,9 +677,6 @@ const AddTour = () => {
   };
 
   const handleSaveClick = () => {
-    // Auto-add buffered row if user forgot to click "+ Add"
-    autoAddBeforeNext();
-
     if (isLastTab) {
       finalSubmit();
     } else {
@@ -901,6 +693,7 @@ const AddTour = () => {
       return;
     }
 
+    // Add days
     const dateObj = new Date(departureDate);
     dateObj.setDate(dateObj.getDate() + Number(duration));
 
@@ -912,38 +705,6 @@ const AddTour = () => {
       return_date: returnISO
     }));
   };
-
-  // Dynamic "+ Add ..." button for bottom bar
-  const getAddConfigForTab = (tabKey) => {
-    switch (tabKey) {
-      case 'itineraries':
-        return { label: '+ Add Day', onClick: handleAddItinerary };
-      case 'departures':
-        return { label: '+ Add Departure', onClick: handleAddDeparture };
-      case 'costs':
-        return { label: '+ Add Cost Row', onClick: addCostRow };
-      case 'optionalTours':
-        return { label: '+ Add Optional Tour', onClick: addOptionalTourRow };
-      case 'inclusions':
-        return { label: '+ Add Inclusion', onClick: handleAddInclusion };
-      case 'exclusions':
-        return { label: '+ Add Exclusion', onClick: handleAddExclusion };
-      case 'transport':
-        return { label: '+ Add Transport', onClick: addTransportRow };
-      case 'hotels':
-        return { label: '+ Add Hotel', onClick: addHotelRow };
-      case 'bookingPoi':
-        return { label: '+ Add POI', onClick: addPoi };
-      case 'cancellation':
-        return { label: '+ Add Policy', onClick: addCancelRow };
-      case 'instructions':
-        return { label: '+ Add Instruction', onClick: addInstruction };
-      default:
-        return null; // basic, emiOptions, images have no "+ Add" here
-    }
-  };
-
-  const addConfig = getAddConfigForTab(activeTab);
 
   return (
     <Navbar>
@@ -973,10 +734,14 @@ const AddTour = () => {
                         onChange={handleBasicChange}
                         readOnly
                         style={{
+                          // backgroundColor: "#e9ecef",
                           cursor: "not-allowed",
                           fontWeight: "bold"
                         }}
                       />
+                      {/* <Form.Text className="text-muted">
+                        Auto-generated tour code
+                      </Form.Text> */}
                     </Form.Group>
 
                     <Form.Group className="mb-3">
@@ -988,6 +753,25 @@ const AddTour = () => {
                         onChange={handleBasicChange}
                       />
                     </Form.Group>
+
+                    {/* <Form.Group className="mb-3">
+                      <Form.Label>Category *</Form.Label>
+                      <Form.Select
+                        name="category_id"
+                        value={formData.category_id}
+                        onChange={handleBasicChange}
+                      >
+                        <option value="">Select Category</option>
+                        {categories.map((c) => (
+                          <option
+                            key={c.category_id}
+                            value={c.category_id}
+                          >
+                            {c.name}
+                          </option>
+                        ))}
+                      </Form.Select>
+                    </Form.Group> */}
 
                     <Form.Group className="mb-3">
                       <Form.Label>International Tour?</Form.Label>
@@ -1004,7 +788,7 @@ const AddTour = () => {
 
                   <Col md={6}>
                     <Form.Group className="mb-3">
-                      <Form.Label>Indian States *</Form.Label>
+                      <Form.Label>Primary Destination *</Form.Label>
                       <Form.Select
                         name="primary_destination_id"
                         value={formData.primary_destination_id}
@@ -1041,6 +825,8 @@ const AddTour = () => {
                         onChange={handleBasicChange}
                       />
                     </Form.Group>
+
+
                   </Col>
 
                   <Col md={12}>
@@ -1055,6 +841,45 @@ const AddTour = () => {
                       />
                     </Form.Group>
                   </Col>
+                  <Col md={12}>
+                    <Form.Group className="mb-3">
+                      <Form.Label>Cost Remarks</Form.Label>
+                      <Form.Control
+                        as="textarea"
+                        rows={3}
+                        name="cost_remarks"
+                        value={formData.cost_remarks}
+                        onChange={handleBasicChange}
+                      />
+                    </Form.Group>
+                  </Col>
+
+                  <Col md={12}>
+                    <Form.Group className="mb-3">
+                      <Form.Label>Hotel Remarks</Form.Label>
+                      <Form.Control
+                        as="textarea"
+                        rows={3}
+                        name="hotel_remarks"
+                        value={formData.hotel_remarks}
+                        onChange={handleBasicChange}
+                      />
+                    </Form.Group>
+                  </Col>
+
+                  <Col md={12}>
+                    <Form.Group className="mb-3">
+                      <Form.Label>Transport Remarks</Form.Label>
+                      <Form.Control
+                        as="textarea"
+                        rows={3}
+                        name="transport_remarks"
+                        value={formData.transport_remarks}
+                        onChange={handleBasicChange}
+                      />
+                    </Form.Group>
+                  </Col>
+
                 </Row>
               </Tab>
 
@@ -1125,6 +950,10 @@ const AddTour = () => {
                   />
                 </Form.Group>
 
+                <Button size="sm" onClick={handleAddItinerary}>
+                  + Add Day
+                </Button>
+
                 {itineraries.length > 0 && (
                   <Table striped bordered hover size="sm" className="mt-3">
                     <thead>
@@ -1165,6 +994,96 @@ const AddTour = () => {
 
               <Tab eventKey="departures" title="Departures">
                 <Row>
+                  {/* <Col md={3}>
+                    <Form.Group className="mb-3">
+                      <Form.Label>Duration (Days)</Form.Label>
+                      <Form.Control
+                        type="number"
+                        value={formData.duration_days}
+                        readOnly
+                        style={{
+                          backgroundColor: "#e9ecef",
+                          cursor: "not-allowed"
+                        }}
+                      />
+                    </Form.Group>
+                  </Col>
+
+                  <Col md={3}>
+                    <Form.Group className="mb-3">
+                      <Form.Label>Departure Date</Form.Label>
+                      <Form.Control
+                        type="date"
+                        name="departure_date"
+                        value={departureForm.departure_date}
+                        onChange={handleDepartureDateSelect}
+                      />
+                    </Form.Group>
+                  </Col>
+
+                  <Col md={3}>
+                    <Form.Group className="mb-3">
+                      <Form.Label>Return Date</Form.Label>
+                      <Form.Control
+                        type="date"
+                        name="return_date"
+                        value={departureForm.return_date}
+                        readOnly
+                        style={{
+                          backgroundColor: "#e9ecef",
+                          cursor: "not-allowed"
+                        }}
+                      />
+                    </Form.Group>
+                  </Col>
+
+                  <Col md={2}>
+                    <Form.Group className="mb-3">
+                      <Form.Label>Total Seats</Form.Label>
+                      <Form.Control
+                        type="number"
+                        name="total_seats"
+                        value={departureForm.total_seats}
+                        onChange={handleDepartureChange}
+                      />
+                    </Form.Group>
+                  </Col>
+
+                  <Col md={2}>
+                    <Form.Group className="mb-3">
+                      <Form.Label>Adult Price</Form.Label>
+                      <Form.Control
+                        type="number"
+                        name="adult_price"
+                        value={departureForm.adult_price}
+                        onChange={handleDepartureChange}
+                      />
+                    </Form.Group>
+                  </Col>
+
+                  <Col md={2}>
+                    <Form.Group className="mb-3">
+                      <Form.Label>Child Price</Form.Label>
+                      <Form.Control
+                        type="number"
+                        name="child_price"
+                        value={departureForm.child_price}
+                        onChange={handleDepartureChange}
+                      />
+                    </Form.Group>
+                  </Col>
+
+                  <Col md={2}>
+                    <Form.Group className="mb-3">
+                      <Form.Label>Infant Price</Form.Label>
+                      <Form.Control
+                        type="number"
+                        name="infant_price"
+                        value={departureForm.infant_price}
+                        onChange={handleDepartureChange}
+                      />
+                    </Form.Group>
+                  </Col> */}
                   <Col md={12}>
                     <Form.Group className="mb-3">
                       <Form.Label>Free Flow Description</Form.Label>
@@ -1179,12 +1098,22 @@ const AddTour = () => {
                   </Col>
                 </Row>
 
+                <Button size="sm" className="mb-3" onClick={handleAddDeparture}>
+                  + Add Departure
+                </Button>
+
                 {departures.length > 0 && (
                   <Table striped bordered hover size="sm">
                     <thead>
                       <tr>
                         <th>#</th>
+                        {/* <th>Departure Date</th>
+                        <th>Return Date</th>
+                        <th>Adult Price</th>
+                        <th>Child Price</th>
+                        <th>Infant Price</th> */}
                         <th>Description</th>
+                        {/* <th>Total Seats</th> */}
                         <th>Action</th>
                       </tr>
                     </thead>
@@ -1192,7 +1121,13 @@ const AddTour = () => {
                       {departures.map((dep, idx) => (
                         <tr key={idx}>
                           <td>{idx + 1}</td>
+                          {/* <td>{dep.departure_date}</td>
+                          <td>{dep.return_date || '-'}</td>
+                          <td>{dep.adult_price}</td>
+                          <td>{dep.child_price || '-'}</td>
+                          <td>{dep.infant_price || '-'}</td> */}
                           <td>{dep.description || '-'}</td>
+                          {/* <td>{dep.total_seats}</td> */}
                           <td>
                             <Button
                               variant="link"
@@ -1282,18 +1217,24 @@ const AddTour = () => {
                       />
                     </Form.Group>
                   </Col>
-                </Row>
 
-                <Form.Group className="mt-3">
-                  <Form.Label>Cost Remarks</Form.Label>
-                  <Form.Control
-                    as="textarea"
-                    rows={3}
-                    name="cost_remarks"
-                    value={formData.cost_remarks}
-                    onChange={handleBasicChange}
-                  />
-                </Form.Group>
+                  {/* <Col md={12}>
+                    <Form.Group>
+                      <Form.Label>Remarks</Form.Label>
+                      <Form.Control
+                        as="textarea"
+                        rows={3}
+                        name="remarks"
+                        value={tourCostItem.remarks}
+                        onChange={handleCostChange}
+                      />
+                    </Form.Group>
+                  </Col> */}
+
+                  <Col md={12} className="mt-3">
+                    <Button size="sm" onClick={addCostRow}>+ Add Cost Row</Button>
+                  </Col>
+                </Row>
 
                 {tourCosts.length > 0 && (
                   <Table striped bordered hover size="sm" className="mt-3">
@@ -1306,6 +1247,7 @@ const AddTour = () => {
                         <th>Executive</th>
                         <th>Chd Bed</th>
                         <th>Chd NoBed</th>
+                        {/* <th>Remarks</th> */}
                         <th></th>
                       </tr>
                     </thead>
@@ -1319,6 +1261,7 @@ const AddTour = () => {
                           <td>{c.executive_hotel || 'NA'}</td>
                           <td>{c.child_with_bed || 'NA'}</td>
                           <td>{c.child_no_bed || 'NA'}</td>
+                          {/* <td>{c.remarks || 'NA'}</td> */}
                           <td>
                             <Button variant="link" size="sm" onClick={() => removeCostRow(idx)}>remove</Button>
                           </td>
@@ -1329,142 +1272,6 @@ const AddTour = () => {
                 )}
               </Tab>
 
-              {/* ======== OPTIONAL TOURS ======== */}
-              <Tab eventKey="optionalTours" title="Optional Tour">
-                <Row className="align-items-end">
-                  <Col md={4}>
-                    <Form.Group>
-                      <Form.Label>Tour Name *</Form.Label>
-                      <Form.Control
-                        type="text"
-                        name="tour_name"
-                        value={optionalTourItem.tour_name}
-                        onChange={handleOptionalTourChange}
-                        placeholder="Enter optional tour name"
-                      />
-                    </Form.Group>
-                  </Col>
-
-                  <Col md={4}>
-                    <Form.Group>
-                      <Form.Label>Adult Price</Form.Label>
-                      <Form.Control
-                        type="number"
-                        name="adult_price"
-                        value={optionalTourItem.adult_price}
-                        onChange={handleOptionalTourChange}
-                        placeholder="Enter adult price"
-                      />
-                    </Form.Group>
-                  </Col>
-
-                  <Col md={4}>
-                    <Form.Group>
-                      <Form.Label>Child Price</Form.Label>
-                      <Form.Control
-                        type="number"
-                        name="child_price"
-                        value={optionalTourItem.child_price}
-                        onChange={handleOptionalTourChange}
-                        placeholder="Enter child price"
-                      />
-                    </Form.Group>
-                  </Col>
-                </Row>
-
-                {optionalTours.length > 0 && (
-                  <Table striped bordered hover size="sm" className="mt-3">
-                    <thead>
-                      <tr>
-                        <th>#</th>
-                        <th>Tour Name</th>
-                        <th>Adult Price</th>
-                        <th>Child Price</th>
-                        <th></th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {optionalTours.map((tour, idx) => (
-                        <tr key={idx}>
-                          <td>{idx + 1}</td>
-                          <td>{tour.tour_name}</td>
-                          <td>{tour.adult_price || 'NA'}</td>
-                          <td>{tour.child_price || 'NA'}</td>
-                          <td>
-                            <Button 
-                              variant="link" 
-                              size="sm" 
-                              onClick={() => removeOptionalTourRow(idx)}
-                            >
-                              remove
-                            </Button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </Table>
-                )}
-              </Tab>
-
-              {/* ======== EMI OPTIONS ======== */}
-              <Tab eventKey="emiOptions" title="EMI Options">
-                <Row className="align-items-end mb-4">
-                  <Col md={6}>
-                    <Form.Group>
-                      <Form.Label>Loan Amount *</Form.Label>
-                      <Form.Control
-                        type="number"
-                        value={loanAmount}
-                        onChange={handleLoanAmountChange}
-                        placeholder="Enter loan amount"
-                      />
-                    </Form.Group>
-                  </Col>
-                  <Col md={6} className="d-flex align-items-end">
-                    <Button
-                      size="sm"
-                      onClick={handleAddEMIOptions}
-                      disabled={!loanAmount || parseFloat(loanAmount) <= 0}
-                    >
-                      Calculate EMI
-                    </Button>
-                  </Col>
-                </Row>
-
-                <Table striped bordered hover size="sm">
-                  <thead>
-                    <tr>
-                      <th>#</th>
-                      <th>Particulars</th>
-                      <th>Loan Amount</th>
-                      <th>Months</th>
-                      <th>EMI</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {emiOptions.map((option, idx) => (
-                      <tr key={idx}>
-                        <td>{idx + 1}</td>
-                        <td>{option.particulars}</td>
-                        <td>
-                          {loanAmount ? `₹${parseFloat(loanAmount).toLocaleString()}` : '-'}
-                        </td>
-                        <td>{option.months}</td>
-                        <td>
-                          {option.emi > 0 ? `₹${option.emi.toLocaleString()}` : '-'}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </Table>
-
-                <div className="mt-3 text-muted">
-                  <small>
-                    Note: EMI calculations based on 12% annual interest rate. 7 fixed payment options displayed above.
-                  </small>
-                </div>
-              </Tab>
-
               <Tab eventKey="inclusions" title="Inclusions">
                 <Form.Group className="mb-3">
                   <Form.Label>Add Inclusion</Form.Label>
@@ -1473,8 +1280,11 @@ const AddTour = () => {
                     rows={3}
                     value={inclusionText}
                     onChange={(e) => setInclusionText(e.target.value)}
-                    placeholder="Type an inclusion"
+                    placeholder="Type an inclusion and click Add"
                   />
+                  <Button className="mt-2" size="sm" onClick={handleAddInclusion}>
+                    + Add Inclusion
+                  </Button>
                 </Form.Group>
 
                 {inclusions.length > 0 && (
@@ -1515,8 +1325,11 @@ const AddTour = () => {
                     rows={3}
                     value={exclusionText}
                     onChange={(e) => setExclusionText(e.target.value)}
-                    placeholder="Type an exclusion"
+                    placeholder="Type an exclusion and click Add"
                   />
+                  <Button className="mt-2" size="sm" onClick={handleAddExclusion}>
+                    + Add Exclusion
+                  </Button>
                 </Form.Group>
 
                 {exclusions.length > 0 && (
@@ -1550,7 +1363,95 @@ const AddTour = () => {
               </Tab>
 
               <Tab eventKey="transport" title="Transport">
-                <Row className="mt-3">
+                {/* <Row className="align-items-end">
+                  <Col md={2}>
+                    <Form.Group>
+                      <Form.Label>Mode</Form.Label>
+                      <Form.Select name="mode" value={transportItem.mode} onChange={handleTransportChange}>
+                        <option>Flight</option>
+                        <option>Train</option>
+                        <option>Bus</option>
+                        <option>Ferry</option>
+                        <option>Cruise</option>
+                        <option>Car</option>
+                      </Form.Select>
+                    </Form.Group>
+                  </Col>
+
+                  <Col md={3}>
+                    <Form.Group>
+                      <Form.Label>From City *</Form.Label>
+                      <Form.Control
+                        type="text"
+                        name="from_city"
+                        value={transportItem.from_city}
+                        onChange={handleTransportChange}
+                      />
+                    </Form.Group>
+                  </Col>
+
+                  <Col md={3}>
+                    <Form.Group>
+                      <Form.Label>To City *</Form.Label>
+                      <Form.Control
+                        type="text"
+                        name="to_city"
+                        value={transportItem.to_city}
+                        onChange={handleTransportChange}
+                      />
+                    </Form.Group>
+                  </Col>
+
+                  <Col md={2}>
+                    <Form.Group>
+                      <Form.Label>Carrier</Form.Label>
+                      <Form.Control
+                        type="text"
+                        name="carrier"
+                        value={transportItem.carrier}
+                        onChange={handleTransportChange}
+                      />
+                    </Form.Group>
+                  </Col>
+
+                  <Col md={2}>
+                    <Form.Group>
+                      <Form.Label>Number</Form.Label>
+                      <Form.Control
+                        type="text"
+                        name="number_code"
+                        value={transportItem.number_code}
+                        onChange={handleTransportChange}
+                      />
+                    </Form.Group>
+                  </Col>
+                </Row> */}
+
+                <Row className="mt-3 align-items-end">
+                  {/* <Col md={3}>
+                    <Form.Group>
+                      <Form.Label>Departure</Form.Label>
+                      <Form.Control
+                        type="datetime-local"
+                        name="departure_datetime"
+                        value={transportItem.departure_datetime}
+                        onChange={handleTransportChange}
+                      />
+                    </Form.Group>
+                  </Col>
+
+                  <Col md={3}>
+                    <Form.Group>
+                      <Form.Label>Arrival</Form.Label>
+                      <Form.Control
+                        type="datetime-local"
+                        name="arrival_datetime"
+                        value={transportItem.arrival_datetime}
+                        onChange={handleTransportChange}
+                      />
+                    </Form.Group>
+                  </Col> */}
+
                   <Col md={12}>
                     <Form.Group>
                       <Form.Label>Description</Form.Label>
@@ -1563,24 +1464,38 @@ const AddTour = () => {
                       />
                     </Form.Group>
                   </Col>
-                </Row>
 
-                <Form.Group className="mt-3">
-                  <Form.Label>Transport Remarks</Form.Label>
-                  <Form.Control
-                    as="textarea"
-                    rows={3}
-                    name="transport_remarks"
-                    value={formData.transport_remarks}
-                    onChange={handleBasicChange}
-                  />
-                </Form.Group>
+                  {/* <Col md={12} className="mt-2">
+                    <Form.Group>
+                      <Form.Label>Remarks</Form.Label>
+                      <Form.Control
+                        as="textarea"
+                        rows={3}
+                        name="remarks"
+                        value={transportItem.remarks}
+                        onChange={handleTransportChange}
+                      />
+                    </Form.Group>
+                  </Col> */}
+
+                  <Col md={1}>
+                    <Button size="sm" className="mt-4" onClick={addTransportRow}>+ Add</Button>
+                  </Col>
+                </Row>
 
                 {transports.length > 0 && (
                   <Table striped bordered hover size="sm" className="mt-3">
                     <thead>
                       <tr>
                         <th>#</th>
+                        {/* <th>Mode</th>
+                        <th>From</th>
+                        <th>To</th>
+                        <th>Carrier</th>
+                        <th>Number</th>
+                        <th>Departure</th>
+                        <th>Arrival</th>
+                        <th>Remarks</th> */}
                         <th>Description</th>
                         <th></th>
                       </tr>
@@ -1589,6 +1504,14 @@ const AddTour = () => {
                       {transports.map((t, idx) => (
                         <tr key={idx}>
                           <td>{idx + 1}</td>
+                          {/* <td>{t.mode}</td>
+                          <td>{t.from_city}</td>
+                          <td>{t.to_city}</td>
+                          <td>{t.carrier}</td>
+                          <td>{t.number_code}</td>
+                          <td>{t.departure_datetime}</td>
+                          <td>{t.arrival_datetime}</td> */}
+                          {/* <td>{t.remarks || 'NA'}</td> */}
                           <td>{t.description || 'NA'}</td>
                           <td>
                             <Button variant="link" size="sm" onClick={() => removeTransportRow(idx)}>remove</Button>
@@ -1649,18 +1572,24 @@ const AddTour = () => {
                       />
                     </Form.Group>
                   </Col>
-                </Row>
 
-                <Form.Group className="mt-3">
-                  <Form.Label>Hotel Remarks</Form.Label>
-                  <Form.Control
-                    as="textarea"
-                    rows={3}
-                    name="hotel_remarks"
-                    value={formData.hotel_remarks}
-                    onChange={handleBasicChange}
-                  />
-                </Form.Group>
+                  {/* <Col md={12}>
+                    <Form.Group className="mt-2">
+                      <Form.Label>Remarks</Form.Label>
+                      <Form.Control
+                        as="textarea"
+                        rows={3}
+                        name="remarks"
+                        value={hotelItem.remarks}
+                        onChange={handleHotelChange}
+                      />
+                    </Form.Group>
+                  </Col> */}
+
+                  <Col md={2}>
+                    <Button size="sm" className="mt-4" onClick={addHotelRow}>+ Add</Button>
+                  </Col>
+                </Row>
 
                 {hotelRows.length > 0 && (
                   <Table striped bordered hover size="sm" className="mt-3">
@@ -1671,6 +1600,7 @@ const AddTour = () => {
                         <th>Hotel</th>
                         <th>Room</th>
                         <th>Nights</th>
+                        {/* <th>Remarks</th> */}
                         <th></th>
                       </tr>
                     </thead>
@@ -1682,6 +1612,7 @@ const AddTour = () => {
                           <td>{h.hotel_name}</td>
                           <td>{h.room_type}</td>
                           <td>{h.nights}</td>
+                          {/* <td>{h.remarks || 'NA'}</td> */}
                           <td>
                             <Button variant="link" size="sm" onClick={() => removeHotelRow(idx)}>remove</Button>
                           </td>
@@ -1693,8 +1624,10 @@ const AddTour = () => {
               </Tab>
 
               <Tab eventKey="bookingPoi" title="Booking POI">
+
                 <Form.Group className="mb-3">
                   <Row>
+                    {/* COL 8 — POI TEXT */}
                     <Col md={8}>
                       <Form.Label>Add POI Item</Form.Label>
                       <Form.Control
@@ -1706,6 +1639,7 @@ const AddTour = () => {
                       />
                     </Col>
 
+                    {/* COL 4 — AMOUNT DETAILS */}
                     <Col md={4}>
                       <Form.Label>Amount Details</Form.Label>
                       <Form.Control
@@ -1716,6 +1650,10 @@ const AddTour = () => {
                       />
                     </Col>
                   </Row>
+
+                  <Button size="sm" className="mt-2" onClick={addPoi}>
+                    + Add
+                  </Button>
                 </Form.Group>
 
                 {bookingPois.length > 0 && (
@@ -1750,8 +1688,10 @@ const AddTour = () => {
                 )}
               </Tab>
 
+
               <Tab eventKey="cancellation" title="Cancellation Policy">
                 <Row>
+                  {/* COL 8 — Cancellation Policy Text */}
                   <Col md={8}>
                     <Form.Group>
                       <Form.Label>Cancellation Policy</Form.Label>
@@ -1766,6 +1706,7 @@ const AddTour = () => {
                     </Form.Group>
                   </Col>
 
+                  {/* COL 4 — Charges */}
                   <Col md={4}>
                     <Form.Group>
                       <Form.Label>Charges</Form.Label>
@@ -1779,6 +1720,10 @@ const AddTour = () => {
                     </Form.Group>
                   </Col>
                 </Row>
+
+                <Button size="sm" className="mt-2" onClick={addCancelRow}>
+                  + Add
+                </Button>
 
                 {cancelPolicies.length > 0 && (
                   <Table striped bordered hover className="mt-3" size="sm">
@@ -1820,8 +1765,9 @@ const AddTour = () => {
                     rows={3}
                     value={instructionText}
                     onChange={(e) => setInstructionText(e.target.value)}
-                    placeholder="Type instruction"
+                    placeholder="Type instruction and click Add"
                   />
+                  <Button size="sm" className="mt-2" onClick={addInstruction}>+ Add</Button>
                 </Form.Group>
 
                 {instructions.length > 0 && (
@@ -1881,41 +1827,20 @@ const AddTour = () => {
                   </Row>
                 )}
               </Tab>
+
             </Tabs>
 
             {/* ======== BUTTONS ======== */}
             <div className="d-flex justify-content-end gap-2 mt-4">
-              <Button
-                variant="outline-secondary"
-                onClick={handleCancel}
-                disabled={loading}
-              >
+              <Button variant="outline-secondary" onClick={handleCancel}>
                 Cancel
               </Button>
 
-              <Button
-                variant="secondary"
-                onClick={goBack}
-                disabled={activeTab === 'basic' || loading}
-              >
+              <Button variant="secondary" onClick={goBack} disabled={activeTab === 'basic'}>
                 Back
               </Button>
 
-              {addConfig && (
-                <Button
-                  variant="success"
-                  onClick={addConfig.onClick}
-                  disabled={loading}
-                >
-                  {addConfig.label}
-                </Button>
-              )}
-
-              <Button
-                variant="primary"
-                onClick={handleSaveClick}
-                disabled={loading}
-              >
+              <Button variant="primary" onClick={handleSaveClick} disabled={loading}>
                 {isLastTab ? (loading ? 'Saving...' : 'Save All') : 'Save & Continue'}
               </Button>
             </div>
