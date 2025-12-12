@@ -89,14 +89,14 @@ const Tours = () => {
       render: (item) => item.base_price_adult ? `₹${item.base_price_adult}` : 'N/A',
       style: { textAlign: 'right' }
     },
-    {
-      key: 'overview',
-      title: 'Overview',
-      render: (item) => {
-        const overview = item.overview || '';
-        return overview.length > 50 ? `${overview.substring(0, 50)}...` : overview || '—';
-      }
-    },
+    // {
+    //   key: 'overview',
+    //   title: 'Overview',
+    //   render: (item) => {
+    //     const overview = item.overview || '';
+    //     return overview.length > 50 ? `${overview.substring(0, 50)}...` : overview || '—';
+    //   }
+    // },
     {
       key: 'is_international',
       title: 'International?',

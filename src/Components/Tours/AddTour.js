@@ -1043,7 +1043,7 @@ const AddTour = () => {
                     </Form.Group>
                   </Col>
 
-                  <Col md={12}>
+                  {/* <Col md={12}>
                     <Form.Group className="mb-3">
                       <Form.Label>Overview</Form.Label>
                       <Form.Control
@@ -1054,7 +1054,7 @@ const AddTour = () => {
                         onChange={handleBasicChange}
                       />
                     </Form.Group>
-                  </Col>
+                  </Col> */}
                 </Row>
               </Tab>
 

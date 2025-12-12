@@ -119,7 +119,6 @@ const TourDetails = () => {
               <th>Executive</th>
               <th>Child Bed</th>
               <th>Child No Bed</th>
-              <th>Remarks</th>
             </tr>
           </thead>
           <tbody>
@@ -131,7 +130,6 @@ const TourDetails = () => {
                 <td>{c.executive_hotel || "-"}</td>
                 <td>{c.child_with_bed || "-"}</td>
                 <td>{c.child_no_bed || "-"}</td>
-                <td>{c.remarks || "-"}</td>
               </tr>
             ))}
           </tbody>
@@ -158,7 +156,7 @@ const TourDetails = () => {
                 <th>Hotel</th>
                 <th>Room Type</th>
                 <th>Nights</th>
-                <th>Remarks</th>
+
               </tr>
             </thead>
             <tbody>
@@ -168,7 +166,7 @@ const TourDetails = () => {
                   <td>{h.hotel_name}</td>
                   <td>{h.room_type}</td>
                   <td>{h.nights}</td>
-                  <td>{h.remarks}</td>
+
                 </tr>
               ))}
             </tbody>
@@ -194,29 +192,29 @@ const TourDetails = () => {
           <Table bordered hover>
             <thead>
               <tr>
-                <th>Mode</th>
+                {/* <th>Mode</th>
                 <th>From</th>
                 <th>To</th>
                 <th>Carrier</th>
                 <th>No.</th>
                 <th>Departure</th>
-                <th>Arrival</th>
+                <th>Arrival</th> */}
                 <th>Description</th>
-                <th>Remarks</th>
+                {/* <th>Remarks</th> */}
               </tr>
             </thead>
             <tbody>
               {t.transport.map((tr) => (
                 <tr key={tr.transport_id}>
-                  <td>{tr.mode}</td>
+                  {/* <td>{tr.mode}</td>
                   <td>{tr.from_city}</td>
                   <td>{tr.to_city}</td>
                   <td>{tr.carrier}</td>
                   <td>{tr.number_code}</td>
                   <td>{tr.departure_datetime}</td>
-                  <td>{tr.arrival_datetime}</td>
+                  <td>{tr.arrival_datetime}</td> */}
                   <td>{tr.description}</td>
-                  <td>{tr.remarks}</td>
+                  {/* <td>{tr.remarks}</td> */}
                 </tr>
               ))}
             </tbody>
@@ -268,18 +266,18 @@ const TourDetails = () => {
         <Table bordered hover>
           <thead>
             <tr>
-              <th>From (Days)</th>
-              <th>To (Days)</th>
-              <th>Charge (%)</th>
-              <th>Charges Description</th>
+              {/* <th>From (Days)</th>
+              <th>To (Days)</th> */}
+              <th>Cancellation Policy</th>
+              <th>Charges</th>
             </tr>
           </thead>
           <tbody>
             {t.cancellation_policies.map((c) => (
               <tr key={c.policy_id}>
-                <td>{c.days_min ?? "-"}</td>
-                <td>{c.days_max ?? "-"}</td>
-                <td>{c.charge_percentage}%</td>
+                {/* <td>{c.days_min ?? "-"}</td>
+                <td>{c.days_max ?? "-"}</td> */}
+                <td>{c.cancellation_policy}</td>
                 <td>{c.charges ?? "-"}</td>
               </tr>
             ))}
