@@ -1382,9 +1382,10 @@ const finalSubmit = async () => {
                             onChange={handleGroupDepartureChange}
                           >
                             <option value="Available">Available</option>
-                            <option value="Soldout">Soldout</option>
-                            <option value="Fastbooking">Fastbooking</option>
-                            <option value="Other">Other</option>
+                              <option value="Few Seats">Few Seats</option>
+                            <option value="Sold Out">Sold Out</option>
+                            <option value="Fast Filling">Fast Filling</option>
+                          
                           </Form.Select>
                         </Form.Group>
                       </Col>
@@ -2007,9 +2008,9 @@ const finalSubmit = async () => {
                   </Table>
                 )}
               </Tab>
+<Tab eventKey="transport" title="Transport">
 
-            <Tab eventKey="transport" title="Transport">
-  {/* INDIVIDUAL */}
+  {/* ================= INDIVIDUAL ================= */}
   {formData.tour_type === 'Individual' && (
     <Form.Group className="mt-3">
       <Form.Label>Description</Form.Label>
@@ -2023,45 +2024,147 @@ const finalSubmit = async () => {
     </Form.Group>
   )}
 
-  {/* GROUP */}
+  {/* ================= GROUP ================= */}
   {formData.tour_type === 'Group' && (
     <Row className="mt-3">
+      {/* Airline */}
       <Col md={4}>
         <Form.Group>
           <Form.Label>Airline</Form.Label>
-          <Form.Control name="airline" value={transportItem.airline} onChange={handleTransportChange} />
+          <Form.Control
+            name="airline"
+            value={transportItem.airline}
+            onChange={handleTransportChange}
+          />
         </Form.Group>
       </Col>
 
+      {/* Flight No */}
       <Col md={4}>
         <Form.Group>
           <Form.Label>Flight No</Form.Label>
-          <Form.Control name="flight_no" value={transportItem.flight_no} onChange={handleTransportChange} />
+          <Form.Control
+            name="flight_no"
+            value={transportItem.flight_no}
+            onChange={handleTransportChange}
+          />
+        </Form.Group>
+      </Col>
+
+      {/* Via */}
+      <Col md={4}>
+        <Form.Group>
+          <Form.Label>Via</Form.Label>
+          <Form.Control
+            name="via"
+            value={transportItem.via}
+            onChange={handleTransportChange}
+          />
+        </Form.Group>
+      </Col>
+
+      {/* FROM */}
+      <Col md={12} className="mt-3">
+        <Form.Label className="fw-bold">From</Form.Label>
+      </Col>
+
+      <Col md={4}>
+        <Form.Group>
+          <Form.Label>City</Form.Label>
+          <Form.Control
+            name="from_city"
+            value={transportItem.from_city}
+            onChange={handleTransportChange}
+          />
         </Form.Group>
       </Col>
 
       <Col md={4}>
         <Form.Group>
-          <Form.Label>Via</Form.Label>
-          <Form.Control name="via" value={transportItem.via} onChange={handleTransportChange} />
+          <Form.Label>Date</Form.Label>
+          <Form.Control
+            type="date"
+            name="from_date"
+            value={transportItem.from_date}
+            onChange={handleTransportChange}
+          />
         </Form.Group>
       </Col>
 
-      <Col md={3}><Form.Control placeholder="From City" name="from_city" value={transportItem.from_city} onChange={handleTransportChange} /></Col>
-      <Col md={3}><Form.Control type="date" name="from_date" value={transportItem.from_date} onChange={handleTransportChange} /></Col>
-      <Col md={3}><Form.Control type="time" name="from_time" value={transportItem.from_time} onChange={handleTransportChange} /></Col>
+      <Col md={4}>
+        <Form.Group>
+          <Form.Label>Time</Form.Label>
+          <Form.Control
+            type="time"
+            name="from_time"
+            value={transportItem.from_time}
+            onChange={handleTransportChange}
+          />
+        </Form.Group>
+      </Col>
 
-      <Col md={3}><Form.Control placeholder="To City" name="to_city" value={transportItem.to_city} onChange={handleTransportChange} /></Col>
-      <Col md={3}><Form.Control type="date" name="to_date" value={transportItem.to_date} onChange={handleTransportChange} /></Col>
-      <Col md={3}><Form.Control type="time" name="to_time" value={transportItem.to_time} onChange={handleTransportChange} /></Col>
+      {/* TO */}
+      <Col md={12} className="mt-3">
+        <Form.Label className="fw-bold">To</Form.Label>
+      </Col>
+
+      <Col md={4}>
+        <Form.Group>
+          <Form.Label>City</Form.Label>
+          <Form.Control
+            name="to_city"
+            value={transportItem.to_city}
+            onChange={handleTransportChange}
+          />
+        </Form.Group>
+      </Col>
+
+      <Col md={4}>
+        <Form.Group>
+          <Form.Label>Date</Form.Label>
+          <Form.Control
+            type="date"
+            name="to_date"
+            value={transportItem.to_date}
+            onChange={handleTransportChange}
+          />
+        </Form.Group>
+      </Col>
+
+      <Col md={4}>
+        <Form.Group>
+          <Form.Label>Time</Form.Label>
+          <Form.Control
+            type="time"
+            name="to_time"
+            value={transportItem.to_time}
+            onChange={handleTransportChange}
+          />
+        </Form.Group>
+      </Col>
     </Row>
   )}
 
-  <Button className="mt-3" onClick={addTransportRow}>Add</Button>
+  {/* ================= ADD BUTTON ================= */}
+  <Button className="mt-3" onClick={addTransportRow}>
+    Add
+  </Button>
 
-  {/* TABLE */}
+  {/* ================= TRANSPORT REMARKS (BOTH) ================= */}
+  <Form.Group className="mt-4">
+    <Form.Label>Transport Remarks</Form.Label>
+    <Form.Control
+      as="textarea"
+      rows={3}
+      name="transport_remarks"
+      value={formData.transport_remarks}
+      onChange={handleBasicChange}
+    />
+  </Form.Group>
+
+  {/* ================= TABLE ================= */}
   {transports.length > 0 && (
-    <Table bordered size="sm" className="mt-3">
+    <Table bordered hover size="sm" className="mt-3">
       <thead>
         <tr>
           <th>#</th>
@@ -2091,13 +2194,23 @@ const finalSubmit = async () => {
                 <td>{t.airline}</td>
                 <td>{t.flight_no}</td>
                 <td>{t.from_city} → {t.to_city}</td>
-                <td>{t.from_date} {t.from_time} → {t.to_date} {t.to_time}</td>
+                <td>
+                  {t.from_date} {t.from_time}
+                  <br />
+                  {t.to_date} {t.to_time}
+                </td>
                 <td>{t.via || 'Direct'}</td>
               </>
             )}
 
             <td>
-              <Button variant="link" onClick={() => removeTransportRow(i)}>remove</Button>
+              <Button
+                variant="link"
+                size="sm"
+                onClick={() => removeTransportRow(i)}
+              >
+                remove
+              </Button>
             </td>
           </tr>
         ))}
@@ -2105,7 +2218,6 @@ const finalSubmit = async () => {
     </Table>
   )}
 </Tab>
-
 
               <Tab eventKey="hotels" title="Hotels">
                 <Row className="align-items-end">
