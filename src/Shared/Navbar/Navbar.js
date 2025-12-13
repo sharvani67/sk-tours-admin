@@ -98,11 +98,11 @@ const Navbar = ({ children }) => {
     matchPaths: ["/countries"],
   },
 
-  { 
-    label: "Customers", 
-    path: "/customers", 
-    icon: <FiUsers className="sidebar-icon" />  // group of people
-  },
+  // { 
+  //   label: "Customers", 
+  //   path: "/customers", 
+  //   icon: <FiUsers className="sidebar-icon" />  // group of people
+  // },
 
   {
     label: "Tours",
@@ -118,12 +118,12 @@ const Navbar = ({ children }) => {
     matchPaths: ["/tours-categories"],
   },
 
-  {
-    label: "Promotions",
-    path: "/promotions",
-    icon: <FiGift className="sidebar-icon" />,   // offers/promos = gift
-    matchPaths: ["/promotions"],
-  },
+  // {
+  //   label: "Promotions",
+  //   path: "/promotions",
+  //   icon: <FiGift className="sidebar-icon" />,   // offers/promos = gift
+  //   matchPaths: ["/promotions"],
+  // },
 
   {
     label: "Destinations",
@@ -132,12 +132,12 @@ const Navbar = ({ children }) => {
     matchPaths: ["/destinations"],
   },
 
-  {
-    label: "Bookings",
-    path: "/bookings",
-    icon: <FiArchive className="sidebar-icon" />, // records/bookings
-    matchPaths: ["/bookings"],
-  },
+  // {
+  //   label: "Bookings",
+  //   path: "/bookings",
+  //   icon: <FiArchive className="sidebar-icon" />, // records/bookings
+  //   matchPaths: ["/bookings"],
+  // },
    {
     label: "Cruise Bookings",
     path: "/cruise-bookings",

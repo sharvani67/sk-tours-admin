@@ -49,6 +49,7 @@ const AddTour = () => {
   const [formData, setFormData] = useState({
     tour_code: '',
     title: '',
+    tour_type: 'Individual', // ✅ NEW
     category_id: 1,
     primary_destination_id: '',
     duration_days: '',
@@ -254,16 +255,18 @@ const AddTour = () => {
   // TRANSPORT
   // =======================
   const [transportItem, setTransportItem] = useState({
-    mode: '',
-    from_city: '',
-    to_city: '',
-    carrier: '',
-    number_code: '',
-    departure_datetime: '',
-    arrival_datetime: '',
-    description: '',
-    remarks: ''
-  });
+   description: '',
+  airline: '',
+  flight_no: '',
+  from_city: '',
+  from_date: '',
+  from_time: '',
+  to_city: '',
+  to_date: '',
+  to_time: '',
+  via: ''
+});
+
   const [transports, setTransports] = useState([]);
 
   const handleTransportChange = (e) => {
@@ -271,22 +274,31 @@ const AddTour = () => {
     setTransportItem(prev => ({ ...prev, [name]: value }));
   };
 
-  const addTransportRow = () => {
-    // Required: description (free flow)
+ const addTransportRow = () => {
+  if (formData.tour_type === 'Individual') {
     if (!transportItem.description.trim()) return;
-    setTransports(prev => [...prev, { ...transportItem }]);
-    setTransportItem({
-      mode: '',
-      from_city: '',
-      to_city: '',
-      carrier: '',
-      number_code: '',
-      departure_datetime: '',
-      arrival_datetime: '',
-      description: '',
-      remarks: ''
-    });
-  };
+  } else {
+    if (!transportItem.airline || !transportItem.flight_no || !transportItem.from_city || !transportItem.to_city) {
+      return;
+    }
+  }
+
+  setTransports(prev => [...prev, { ...transportItem }]);
+
+  setTransportItem({
+    description: '',
+    airline: '',
+    flight_no: '',
+    from_city: '',
+    from_date: '',
+    from_time: '',
+    to_city: '',
+    to_date: '',
+    to_time: '',
+    via: ''
+  });
+};
+
 
   const removeTransportRow = (idx) => {
     setTransports(prev => prev.filter((_, i) => i !== idx));
@@ -608,11 +620,15 @@ const AddTour = () => {
         }
         break;
 
-      case 'transport':
-        if (transportItem.description && transportItem.description.trim()) {
-          addTransportRow();
-        }
-        break;
+     case 'transport':
+  if (
+    (formData.tour_type === 'Individual' && transportItem.description.trim()) ||
+    (formData.tour_type === 'Group' && transportItem.airline && transportItem.flight_no)
+  ) {
+    addTransportRow();
+  }
+  break;
+
 
       case 'bookingPoi':
         if (poiText && poiText.trim()) {
@@ -978,6 +994,19 @@ const AddTour = () => {
                         }}
                       />
                     </Form.Group>
+
+                    <Form.Group className="mb-3">
+  <Form.Label>Tour Type *</Form.Label>
+  <Form.Select
+    name="tour_type"
+    value={formData.tour_type}
+    onChange={handleBasicChange}
+  >
+    <option value="Individual">Individual</option>
+    <option value="Group">Group</option>
+  </Form.Select>
+</Form.Group>
+
 
                     <Form.Group className="mb-3">
                       <Form.Label>Tour Title *</Form.Label>
@@ -1549,56 +1578,104 @@ const AddTour = () => {
                 )}
               </Tab>
 
-              <Tab eventKey="transport" title="Transport">
-                <Row className="mt-3">
-                  <Col md={12}>
-                    <Form.Group>
-                      <Form.Label>Description</Form.Label>
-                      <Form.Control
-                        as="textarea"
-                        rows={4}
-                        name="description"
-                        value={transportItem.description}
-                        onChange={handleTransportChange}
-                      />
-                    </Form.Group>
-                  </Col>
-                </Row>
+            <Tab eventKey="transport" title="Transport">
+  {/* INDIVIDUAL */}
+  {formData.tour_type === 'Individual' && (
+    <Form.Group className="mt-3">
+      <Form.Label>Description</Form.Label>
+      <Form.Control
+        as="textarea"
+        rows={4}
+        name="description"
+        value={transportItem.description}
+        onChange={handleTransportChange}
+      />
+    </Form.Group>
+  )}
 
-                <Form.Group className="mt-3">
-                  <Form.Label>Transport Remarks</Form.Label>
-                  <Form.Control
-                    as="textarea"
-                    rows={3}
-                    name="transport_remarks"
-                    value={formData.transport_remarks}
-                    onChange={handleBasicChange}
-                  />
-                </Form.Group>
+  {/* GROUP */}
+  {formData.tour_type === 'Group' && (
+    <Row className="mt-3">
+      <Col md={4}>
+        <Form.Group>
+          <Form.Label>Airline</Form.Label>
+          <Form.Control name="airline" value={transportItem.airline} onChange={handleTransportChange} />
+        </Form.Group>
+      </Col>
 
-                {transports.length > 0 && (
-                  <Table striped bordered hover size="sm" className="mt-3">
-                    <thead>
-                      <tr>
-                        <th>#</th>
-                        <th>Description</th>
-                        <th></th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {transports.map((t, idx) => (
-                        <tr key={idx}>
-                          <td>{idx + 1}</td>
-                          <td>{t.description || 'NA'}</td>
-                          <td>
-                            <Button variant="link" size="sm" onClick={() => removeTransportRow(idx)}>remove</Button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </Table>
-                )}
-              </Tab>
+      <Col md={4}>
+        <Form.Group>
+          <Form.Label>Flight No</Form.Label>
+          <Form.Control name="flight_no" value={transportItem.flight_no} onChange={handleTransportChange} />
+        </Form.Group>
+      </Col>
+
+      <Col md={4}>
+        <Form.Group>
+          <Form.Label>Via</Form.Label>
+          <Form.Control name="via" value={transportItem.via} onChange={handleTransportChange} />
+        </Form.Group>
+      </Col>
+
+      <Col md={3}><Form.Control placeholder="From City" name="from_city" value={transportItem.from_city} onChange={handleTransportChange} /></Col>
+      <Col md={3}><Form.Control type="date" name="from_date" value={transportItem.from_date} onChange={handleTransportChange} /></Col>
+      <Col md={3}><Form.Control type="time" name="from_time" value={transportItem.from_time} onChange={handleTransportChange} /></Col>
+
+      <Col md={3}><Form.Control placeholder="To City" name="to_city" value={transportItem.to_city} onChange={handleTransportChange} /></Col>
+      <Col md={3}><Form.Control type="date" name="to_date" value={transportItem.to_date} onChange={handleTransportChange} /></Col>
+      <Col md={3}><Form.Control type="time" name="to_time" value={transportItem.to_time} onChange={handleTransportChange} /></Col>
+    </Row>
+  )}
+
+  <Button className="mt-3" onClick={addTransportRow}>Add</Button>
+
+  {/* TABLE */}
+  {transports.length > 0 && (
+    <Table bordered size="sm" className="mt-3">
+      <thead>
+        <tr>
+          <th>#</th>
+          {formData.tour_type === 'Individual' ? (
+            <th>Description</th>
+          ) : (
+            <>
+              <th>Airline</th>
+              <th>Flight</th>
+              <th>Route</th>
+              <th>Schedule</th>
+              <th>Via</th>
+            </>
+          )}
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {transports.map((t, i) => (
+          <tr key={i}>
+            <td>{i + 1}</td>
+
+            {formData.tour_type === 'Individual' ? (
+              <td>{t.description}</td>
+            ) : (
+              <>
+                <td>{t.airline}</td>
+                <td>{t.flight_no}</td>
+                <td>{t.from_city} → {t.to_city}</td>
+                <td>{t.from_date} {t.from_time} → {t.to_date} {t.to_time}</td>
+                <td>{t.via || 'Direct'}</td>
+              </>
+            )}
+
+            <td>
+              <Button variant="link" onClick={() => removeTransportRow(i)}>remove</Button>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </Table>
+  )}
+</Tab>
+
 
               <Tab eventKey="hotels" title="Hotels">
                 <Row className="align-items-end">
