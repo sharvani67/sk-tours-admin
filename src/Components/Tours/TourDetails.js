@@ -12,7 +12,7 @@ const TourDetails = () => {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const res = await fetch(`${baseurl}/api/tours/tour/full/${tourId}`);
+        const res = await fetch(`${baseurl}/api/tours/tour/full/individual/${tourId}`);
         const json = await res.json();
         setData(json);
         console.log("Tour Details Data:", json);

@@ -17,6 +17,11 @@ import Tours from "./Components/Tours/Tours";
 import AddTour from "./Components/Tours/AddTour";
 import TourDetails from "./Components/Tours/TourDetails";
 
+import GroupTours from "./Components/Tours/GroupTour"
+import AddGroupTour from "./Components/Tours/AddGroupTour";
+
+
+
 function App() {
   return (
     <BrowserRouter>
@@ -39,6 +44,9 @@ function App() {
          <Route path="/add-destination" element={<AddDestination />} />
          <Route path="/tours" element={<Tours />} />
           <Route path="/add-tour" element={<AddTour />} />
+
+           <Route path="/group-tours" element={<GroupTours />} />
+          <Route path="/add-group-tour" element={<AddGroupTour />} /> 
 
           <Route path="/tour-details/:tourId" element={<TourDetails />} />
         {/* Catch-all Route */}

@@ -6,14 +6,14 @@ import ReusableTable from '../../Shared/TableLayout/DataTable';
 import { useNavigate } from 'react-router-dom';
 import { Eye } from 'react-bootstrap-icons';
 
-const Tours = () => {
+const GroupTours = () => {
   const [tours, setTours] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
   // Fetch Tours
- const fetchTours = async () => {
+  const fetchTours = async () => {
   try {
     setLoading(true);
     setError('');
@@ -21,9 +21,9 @@ const Tours = () => {
     const response = await fetch(`${baseurl}/api/tours`);
     const result = await response.json();
 
-    // Filter tours where tour_type is "Individual" (case-sensitive check)
+    // Filter tours where tour_type is "Group" (case-insensitive check)
     const filteredTours = result.filter(tour => 
-      tour.tour_type && tour.tour_type.toLowerCase() === "individual"
+      tour.tour_type && tour.tour_type.toLowerCase() === "group"
     );
 
     // Add serial numbers to the filtered data
@@ -40,6 +40,7 @@ const Tours = () => {
     setLoading(false);
   }
 };
+
   useEffect(() => {
     fetchTours();
   }, []);
@@ -151,7 +152,7 @@ const Tours = () => {
     <Navbar>
       <Container>
         <div className="d-flex justify-content-between align-items-center mb-4">
-          <h2 className="mb-0">Tours</h2>
+          <h2 className="mb-0">Group Tours</h2>
           <div className="d-flex gap-2">
             {/* <button 
               className="btn btn-primary"
@@ -162,7 +163,7 @@ const Tours = () => {
             </button> */}
             <button
               className="btn btn-success"
-              onClick={() => navigate('/add-tour')}
+              onClick={() => navigate('/add-group-tour')}
             >
               + Add Tour
             </button>
@@ -184,7 +185,7 @@ const Tours = () => {
               </div>
             ) : (
               <ReusableTable
-                title="Tours"
+                title="Group Tours"
                 data={tableData}
                 columns={columns}
                 initialEntriesPerPage={5}
@@ -201,4 +202,4 @@ const Tours = () => {
   );
 };
 
-export default Tours;
+export default GroupTours;

@@ -15,7 +15,7 @@ import { useNavigate } from 'react-router-dom';
 import Navbar from '../../Shared/Navbar/Navbar';
 import { baseurl } from '../../Api/Baseurl';
 
-const AddTour = () => {
+const AddGroupTour = () => {
   const navigate = useNavigate();
 
   // TAB ORDER MUST MATCH JSX ORDER
@@ -48,7 +48,7 @@ const AddTour = () => {
   // BASIC DETAILS
   const [formData, setFormData] = useState({
     tour_code: '',
-    tour_type: "individual",
+    tour_type: "Group",
     title: '',
     category_id: 1,
     primary_destination_id: '',
@@ -61,16 +61,86 @@ const AddTour = () => {
     transport_remarks: ""
   });
 
-  // DEPARTURES (multiple)
-  const [departureForm, setDepartureForm] = useState({
-    departure_date: '',
-    return_date: '',
-    adult_price: '',
-    child_price: '',
-    infant_price: '',
-    description: '',
-    total_seats: ''
+  // =======================
+  // DEPARTURES FOR GROUP TOURS
+  // =======================
+  const [groupDepartureForm, setGroupDepartureForm] = useState({
+    start_date: '',
+    end_date: '',
+    status: 'Available',
+    price: '',
+    description: ''
   });
+
+  // TOUR COST FIELDS FOR GROUP TOURS
+  const [tourCostFields, setTourCostFields] = useState({
+    threeStar: {
+      perPaxTwin: '',
+      perPaxTriple: '',
+      childWithBed: '',
+      childWithoutBed: '',
+      infant: '',
+      perPaxSingle: ''
+    },
+    fourStar: {
+      perPaxTwin: '',
+      perPaxTriple: '',
+      childWithBed: '',
+      childWithoutBed: '',
+      infant: '',
+      perPaxSingle: ''
+    },
+    fiveStar: {
+      perPaxTwin: '',
+      perPaxTriple: '',
+      childWithBed: '',
+      childWithoutBed: '',
+      infant: '',
+      perPaxSingle: ''
+    }
+  });
+
+
+   // =======================
+    // TOUR COST
+    // =======================
+    const [tourCostItem, setTourCostItem] = useState({
+      pax: '',
+      standard_hotel: '',
+      deluxe_hotel: '',
+      executive_hotel: '',
+      child_with_bed: '',
+      child_no_bed: '',
+      remarks: ''
+    });
+    const [tourCosts, setTourCosts] = useState([]);
+  
+    const handleCostChange = (e) => {
+      const { name, value } = e.target;
+      setTourCostItem(prev => ({ ...prev, [name]: value }));
+    };
+  
+    const addCostRow = () => {
+      // Required field: pax
+      if (!tourCostItem.pax) return;
+      setTourCosts(prev => [...prev, { ...tourCostItem }]);
+      setTourCostItem({
+        pax: '',
+        standard_hotel: '',
+        deluxe_hotel: '',
+        executive_hotel: '',
+        child_with_bed: '',
+        child_no_bed: '',
+        remarks: ''
+      });
+    };
+  
+    const removeCostRow = (idx) => {
+      setTourCosts(prev => prev.filter((_, i) => i !== idx));
+    };
+
+
+
   const [departures, setDepartures] = useState([]);
 
   // EXCLUSIONS
@@ -85,44 +155,6 @@ const AddTour = () => {
   const [imageFiles, setImageFiles] = useState([]);
   const [imagePreviews, setImagePreviews] = useState([]);
   const [imageCaption, setImageCaption] = useState('');
-
-  // =======================
-  // TOUR COST
-  // =======================
-  const [tourCostItem, setTourCostItem] = useState({
-    pax: '',
-    standard_hotel: '',
-    deluxe_hotel: '',
-    executive_hotel: '',
-    child_with_bed: '',
-    child_no_bed: '',
-    remarks: ''
-  });
-  const [tourCosts, setTourCosts] = useState([]);
-
-  const handleCostChange = (e) => {
-    const { name, value } = e.target;
-    setTourCostItem(prev => ({ ...prev, [name]: value }));
-  };
-
-  const addCostRow = () => {
-    // Required field: pax
-    if (!tourCostItem.pax) return;
-    setTourCosts(prev => [...prev, { ...tourCostItem }]);
-    setTourCostItem({
-      pax: '',
-      standard_hotel: '',
-      deluxe_hotel: '',
-      executive_hotel: '',
-      child_with_bed: '',
-      child_no_bed: '',
-      remarks: ''
-    });
-  };
-
-  const removeCostRow = (idx) => {
-    setTourCosts(prev => prev.filter((_, i) => i !== idx));
-  };
 
   // =======================
   // OPTIONAL TOURS
@@ -252,19 +284,21 @@ const AddTour = () => {
   };
 
   // =======================
-  // TRANSPORT
+  // TRANSPORT FOR GROUP TOURS
   // =======================
   const [transportItem, setTransportItem] = useState({
-    mode: '',
-    from_city: '',
-    to_city: '',
-    carrier: '',
-    number_code: '',
-    departure_datetime: '',
-    arrival_datetime: '',
     description: '',
-    remarks: ''
+    airline: '',
+    flight_no: '',
+    from_city: '',
+    from_date: '',
+    from_time: '',
+    to_city: '',
+    to_date: '',
+    to_time: '',
+    via: ''
   });
+
   const [transports, setTransports] = useState([]);
 
   const handleTransportChange = (e) => {
@@ -273,19 +307,24 @@ const AddTour = () => {
   };
 
   const addTransportRow = () => {
-    // Required: description (free flow)
-    if (!transportItem.description.trim()) return;
+    // For Group tours, require airline and flight_no
+    if (!transportItem.airline || !transportItem.flight_no || !transportItem.from_city || !transportItem.to_city) {
+      return;
+    }
+
     setTransports(prev => [...prev, { ...transportItem }]);
+
     setTransportItem({
-      mode: '',
-      from_city: '',
-      to_city: '',
-      carrier: '',
-      number_code: '',
-      departure_datetime: '',
-      arrival_datetime: '',
       description: '',
-      remarks: ''
+      airline: '',
+      flight_no: '',
+      from_city: '',
+      from_date: '',
+      from_time: '',
+      to_city: '',
+      to_date: '',
+      to_time: '',
+      via: ''
     });
   };
 
@@ -421,12 +460,12 @@ const AddTour = () => {
     }));
   };
 
-  // DEPARTURE FORM CHANGE
-  const handleDepartureChange = (e) => {
+  // DEPARTURE FORM CHANGE - Group
+  const handleGroupDepartureChange = (e) => {
     const { name, value } = e.target;
-    const numericFields = ['adult_price', 'child_price', 'total_seats', 'infant_price'];
+    const numericFields = ['price'];
 
-    setDepartureForm((prev) => ({
+    setGroupDepartureForm((prev) => ({
       ...prev,
       [name]: numericFields.includes(name)
         ? value === '' ? '' : Number(value)
@@ -434,22 +473,74 @@ const AddTour = () => {
     }));
   };
 
-  const handleAddDeparture = () => {
-    // Required: description
-    if (!departureForm.description.trim()) return;
-    setDepartures((prev) => [
+  // TOUR COST FIELDS CHANGE - Group
+  const handleTourCostFieldsChange = (e) => {
+    const { name, value } = e.target;
+    // Extract hotel type and field name from input name (e.g., "threeStar_perPaxTwin")
+    const [hotelType, fieldName] = name.split('_');
+    
+    setTourCostFields(prev => ({
       ...prev,
-      { ...departureForm }
-    ]);
+      [hotelType]: {
+        ...prev[hotelType],
+        [fieldName]: value
+      }
+    }));
+  };
 
-    setDepartureForm({
-      departure_date: '',
-      return_date: '',
-      adult_price: '',
-      child_price: '',
-      infant_price: '',
-      description: '',
-      total_seats: ''
+  const handleAddDeparture = () => {
+    // Group tour: Structured departure
+    if (!groupDepartureForm.start_date || !groupDepartureForm.end_date || !groupDepartureForm.price) return;
+    
+    const departureData = {
+      tour_type: 'Group',
+      start_date: groupDepartureForm.start_date,
+      end_date: groupDepartureForm.end_date,
+      status: groupDepartureForm.status,
+      price: groupDepartureForm.price,
+      description: groupDepartureForm.description || '',
+      type: 'structured',
+      // Add tour cost data
+      tour_costs: tourCostFields
+    };
+    
+    setDepartures((prev) => [...prev, departureData]);
+    
+    // Reset form
+    setGroupDepartureForm({
+      start_date: '',
+      end_date: '',
+      status: 'Available',
+      price: '',
+      description: ''
+    });
+    
+    // Reset tour cost fields
+    setTourCostFields({
+      threeStar: {
+        perPaxTwin: '',
+        perPaxTriple: '',
+        childWithBed: '',
+        childWithoutBed: '',
+        infant: '',
+        perPaxSingle: ''
+      },
+      fourStar: {
+        perPaxTwin: '',
+        perPaxTriple: '',
+        childWithBed: '',
+        childWithoutBed: '',
+        infant: '',
+        perPaxSingle: ''
+      },
+      fiveStar: {
+        perPaxTwin: '',
+        perPaxTriple: '',
+        childWithBed: '',
+        childWithoutBed: '',
+        infant: '',
+        perPaxSingle: ''
+      }
     });
   };
 
@@ -576,7 +667,7 @@ const AddTour = () => {
 
   const isLastTab = activeTab === TAB_LIST[TAB_LIST.length - 1];
 
-  // AUTO-ADD WHEN USER CLICKS SAVE & CONTINUE (OPTION C + RULE 1)
+  // AUTO-ADD WHEN USER CLICKS SAVE & CONTINUE
   const autoAddBeforeNext = () => {
     switch (activeTab) {
       case 'itineraries':
@@ -586,14 +677,8 @@ const AddTour = () => {
         break;
 
       case 'departures':
-        if (departureForm.description && departureForm.description.trim()) {
+        if (groupDepartureForm.start_date && groupDepartureForm.end_date && groupDepartureForm.price) {
           handleAddDeparture();
-        }
-        break;
-
-      case 'costs':
-        if (tourCostItem.pax) {
-          addCostRow();
         }
         break;
 
@@ -610,7 +695,7 @@ const AddTour = () => {
         break;
 
       case 'transport':
-        if (transportItem.description && transportItem.description.trim()) {
+        if (transportItem.airline && transportItem.flight_no) {
           addTransportRow();
         }
         break;
@@ -681,14 +766,27 @@ const AddTour = () => {
       }
 
       const tourData = await tourRes.json();
-      const tourId =
-        tourData.tour_id || tourData.id || tourData.insertId;
+      const tourId = tourData.tour_id || tourData.id || tourData.insertId;
 
-      // 2) DEPARTURES BULK
+      // 2) DEPARTURES BULK - GROUP TOURS
       if (departures.length > 0) {
+        // Transform departures data for backend
+        const formattedDepartures = departures.map(dep => ({
+          tour_type: 'Group',
+          start_date: dep.start_date,
+          end_date: dep.end_date,
+          status: dep.status,
+          price: dep.price,
+          description: dep.description || null,
+          total_seats: 40, // Default value
+          booked_seats: 0,
+          // Tour costs for group
+          tour_costs: dep.tour_costs
+        }));
+
         const depBody = {
           tour_id: tourId,
-          departures
+          departures: formattedDepartures
         };
 
         const depRes = await fetch(`${baseurl}/api/departures/bulk`, {
@@ -704,101 +802,16 @@ const AddTour = () => {
       }
 
       // 7) TOUR COSTS BULK
-      if (tourCosts.length > 0) {
-        await fetch(`${baseurl}/api/tour-costs/bulk`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            tour_id: tourId,
-            costs: tourCosts
-          })
-        });
-      }
-
-      // 8) OPTIONAL TOURS BULK
-      if (optionalTours.length > 0) {
-        await fetch(`${baseurl}/api/optional-tours/bulk`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            tour_id: tourId,
-            optional_tours: optionalTours
-          })
-        });
-      }
-
-      // 9) EMI OPTIONS BULK
-      if (loanAmount && parseFloat(loanAmount) > 0) {
-        await fetch(`${baseurl}/api/emi-options/bulk`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            tour_id: tourId,
-            loan_amount: parseFloat(loanAmount),
-            emi_options: emiOptions
-          })
-        });
-      }
-
-      // 10) HOTELS BULK
-      if (hotelRows.length > 0) {
-        await fetch(`${baseurl}/api/tour-hotels/bulk`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            tour_id: tourId,
-            hotels: hotelRows
-          })
-        });
-      }
-
-      // 11) TRANSPORT BULK
-      if (transports.length > 0) {
-        await fetch(`${baseurl}/api/tour-transports/bulk`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            tour_id: tourId,
-            items: transports
-          })
-        });
-      }
-
-      // 12) BOOKING POI BULK
-      if (bookingPois.length > 0) {
-        await fetch(`${baseurl}/api/tour-booking-poi/bulk`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            tour_id: tourId,
-            items: bookingPois
-          })
-        });
-      }
-
-      // 13) CANCELLATION BULK
-      if (cancelPolicies.length > 0) {
-        await fetch(`${baseurl}/api/tour-cancellation/bulk`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            tour_id: tourId,
-            policies: cancelPolicies
-          })
-        });
-      }
-
-      // 14) INSTRUCTIONS BULK
-      if (instructions.length > 0) {
-        await fetch(`${baseurl}/api/tour-instructions/bulk`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            tour_id: tourId,
-            items: instructions
-          })
-        });
-      }
+            if (tourCosts.length > 0) {
+              await fetch(`${baseurl}/api/tour-costs/bulk`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  tour_id: tourId,
+                  costs: tourCosts
+                })
+              });
+            }
 
       // 3) EXCLUSIONS
       if (exclusions.length > 0) {
@@ -817,23 +830,16 @@ const AddTour = () => {
       // 4) IMAGES
       if (imageFiles.length > 0) {
         const formDataImages = new FormData();
-
         imageFiles.forEach((file) => {
           formDataImages.append('images', file);
         });
-
         if (imageCaption.trim()) {
           formDataImages.append('caption', imageCaption.trim());
         }
-
-        const imgRes = await fetch(
-          `${baseurl}/api/images/upload/${tourId}`,
-          {
-            method: 'POST',
-            body: formDataImages
-          }
-        );
-
+        const imgRes = await fetch(`${baseurl}/api/images/upload/${tourId}`, {
+          method: 'POST',
+          body: formDataImages
+        });
         if (!imgRes.ok) {
           const err = await imgRes.json().catch(() => ({}));
           throw new Error(err.error || 'Failed to upload images');
@@ -847,7 +853,6 @@ const AddTour = () => {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ tour_id: tourId, items: inclusions })
         });
-
         if (!incRes.ok) {
           const err = await incRes.json().catch(() => ({}));
           throw new Error(err.error || 'Failed to save inclusions');
@@ -860,21 +865,104 @@ const AddTour = () => {
           ...item,
           tour_id: tourId
         }));
-
         const itiRes = await fetch(`${baseurl}/api/itineraries/bulk`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
         });
-
         if (!itiRes.ok) {
           const err = await itiRes.json().catch(() => ({}));
           throw new Error(err.error || 'Failed to save itineraries');
         }
       }
 
+      // 7) OPTIONAL TOURS BULK
+      if (optionalTours.length > 0) {
+        await fetch(`${baseurl}/api/optional-tours/bulk`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            tour_id: tourId,
+            optional_tours: optionalTours
+          })
+        });
+      }
+
+      // 8) EMI OPTIONS BULK
+      if (loanAmount && parseFloat(loanAmount) > 0) {
+        await fetch(`${baseurl}/api/emi-options/bulk`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            tour_id: tourId,
+            loan_amount: parseFloat(loanAmount),
+            emi_options: emiOptions
+          })
+        });
+      }
+
+      // 9) HOTELS BULK
+      if (hotelRows.length > 0) {
+        await fetch(`${baseurl}/api/tour-hotels/bulk`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            tour_id: tourId,
+            hotels: hotelRows
+          })
+        });
+      }
+
+      // 10) TRANSPORT BULK
+      if (transports.length > 0) {
+        await fetch(`${baseurl}/api/tour-transports/bulk`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            tour_id: tourId,
+            items: transports
+          })
+        });
+      }
+
+      // 11) BOOKING POI BULK
+      if (bookingPois.length > 0) {
+        await fetch(`${baseurl}/api/tour-booking-poi/bulk`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            tour_id: tourId,
+            items: bookingPois
+          })
+        });
+      }
+
+      // 12) CANCELLATION BULK
+      if (cancelPolicies.length > 0) {
+        await fetch(`${baseurl}/api/tour-cancellation/bulk`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            tour_id: tourId,
+            policies: cancelPolicies
+          })
+        });
+      }
+
+      // 13) INSTRUCTIONS BULK
+      if (instructions.length > 0) {
+        await fetch(`${baseurl}/api/tour-instructions/bulk`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            tour_id: tourId,
+            items: instructions
+          })
+        });
+      }
+
       setSuccess('Tour saved successfully!');
-      setTimeout(() => navigate('/tours'), 1500);
+      setTimeout(() => navigate('/group-tours'), 1500);
     } catch (err) {
       setError(err.message || 'Failed to save tour');
     } finally {
@@ -891,27 +979,6 @@ const AddTour = () => {
     } else {
       goNext();
     }
-  };
-
-  const handleDepartureDateSelect = (e) => {
-    const departureDate = e.target.value;
-    const duration = formData.duration_days;
-
-    if (!departureDate || !duration) {
-      setDepartureForm(prev => ({ ...prev, departure_date: departureDate }));
-      return;
-    }
-
-    const dateObj = new Date(departureDate);
-    dateObj.setDate(dateObj.getDate() + Number(duration));
-
-    const returnISO = dateObj.toISOString().split("T")[0];
-
-    setDepartureForm(prev => ({
-      ...prev,
-      departure_date: departureDate,
-      return_date: returnISO
-    }));
   };
 
   // Dynamic "+ Add ..." button for bottom bar
@@ -949,7 +1016,7 @@ const AddTour = () => {
   return (
     <Navbar>
       <Container>
-        <h2 className="mb-4">Add Tour</h2>
+        <h2 className="mb-4">Add Group Tour</h2>
 
         {error && <Alert variant="danger">{error}</Alert>}
         {success && <Alert variant="success">{success}</Alert>}
@@ -1043,19 +1110,6 @@ const AddTour = () => {
                       />
                     </Form.Group>
                   </Col>
-
-                  {/* <Col md={12}>
-                    <Form.Group className="mb-3">
-                      <Form.Label>Overview</Form.Label>
-                      <Form.Control
-                        as="textarea"
-                        rows={4}
-                        name="overview"
-                        value={formData.overview}
-                        onChange={handleBasicChange}
-                      />
-                    </Form.Group>
-                  </Col> */}
                 </Row>
               </Tab>
 
@@ -1164,171 +1218,451 @@ const AddTour = () => {
                 )}
               </Tab>
 
+              {/* ======== DEPARTURES TAB - GROUP TOUR ======== */}
               <Tab eventKey="departures" title="Departures">
-                <Row>
-                  <Col md={12}>
-                    <Form.Group className="mb-3">
-                      <Form.Label>Free Flow Description</Form.Label>
-                      <Form.Control
-                        as="textarea"
-                        rows={4}
-                        name="description"
-                        value={departureForm.description}
-                        onChange={handleDepartureChange}
-                      />
-                    </Form.Group>
-                  </Col>
-                </Row>
+                <div>
+                  {/* Departure Dates Section */}
+                  <Row className="mb-4">
+                    <h5>Departure Dates</h5>
+                    <Col md={3}>
+                      <Form.Group className="mb-3">
+                        <Form.Label>Start Date *</Form.Label>
+                        <Form.Control
+                          type="date"
+                          name="start_date"
+                          value={groupDepartureForm.start_date}
+                          onChange={handleGroupDepartureChange}
+                        />
+                      </Form.Group>
+                    </Col>
 
-                {departures.length > 0 && (
-                  <Table striped bordered hover size="sm">
-                    <thead>
-                      <tr>
-                        <th>#</th>
-                        <th>Description</th>
-                        <th>Action</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {departures.map((dep, idx) => (
-                        <tr key={idx}>
-                          <td>{idx + 1}</td>
-                          <td>{dep.description || '-'}</td>
+                    <Col md={3}>
+                      <Form.Group className="mb-3">
+                        <Form.Label>End Date *</Form.Label>
+                        <Form.Control
+                          type="date"
+                          name="end_date"
+                          value={groupDepartureForm.end_date}
+                          onChange={handleGroupDepartureChange}
+                        />
+                      </Form.Group>
+                    </Col>
+
+                    <Col md={3}>
+                      <Form.Group className="mb-3">
+                        <Form.Label>Status *</Form.Label>
+                        <Form.Select
+                          name="status"
+                          value={groupDepartureForm.status}
+                          onChange={handleGroupDepartureChange}
+                        >
+                          <option value="Available">Available</option>
+                          <option value="Few Seats">Few Seats</option>
+                          <option value="Sold Out">Sold Out</option>
+                          <option value="Fast Filling">Fast Filling</option>
+                        </Form.Select>
+                      </Form.Group>
+                    </Col>
+
+                    <Col md={3}>
+                      <Form.Group className="mb-3">
+                        <Form.Label>Price *</Form.Label>
+                        <Form.Control
+                          type="number"
+                          name="price"
+                          value={groupDepartureForm.price}
+                          onChange={handleGroupDepartureChange}
+                          placeholder="Enter price"
+                        />
+                      </Form.Group>
+                    </Col>
+
+                    <Col md={12}>
+                      <Form.Group className="mb-3">
+                        <Form.Label>Description</Form.Label>
+                        <Form.Control
+                          type="text"
+                          name="description"
+                          value={groupDepartureForm.description}
+                          onChange={handleGroupDepartureChange}
+                          placeholder="Optional description"
+                        />
+                      </Form.Group>
+                    </Col>
+                  </Row>
+
+                  {/* Tour Cost Section */}
+                  <Row className="mb-4">
+                    <h5>Tour Cost</h5>
+                    
+                    {/* Table Header */}
+                    <Table striped bordered hover size="sm">
+                      <thead>
+                        <tr>
+                          <th>Particulars</th>
+                          <th>3 Star</th>
+                          <th>4 Star</th>
+                          <th>5 Star</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {/* Per Pax on Twin Basis */}
+                        <tr>
+                          <td>Per Pax on Twin Basis</td>
                           <td>
-                            <Button
-                              variant="link"
-                              size="sm"
-                              onClick={() => handleRemoveDeparture(idx)}
-                            >
-                              remove
-                            </Button>
+                            <Form.Control
+                              type="number"
+                              name="threeStar_perPaxTwin"
+                              value={tourCostFields.threeStar.perPaxTwin}
+                              onChange={handleTourCostFieldsChange}
+                              placeholder="Enter price"
+                            />
+                          </td>
+                          <td>
+                            <Form.Control
+                              type="number"
+                              name="fourStar_perPaxTwin"
+                              value={tourCostFields.fourStar.perPaxTwin}
+                              onChange={handleTourCostFieldsChange}
+                              placeholder="Enter price"
+                            />
+                          </td>
+                          <td>
+                            <Form.Control
+                              type="number"
+                              name="fiveStar_perPaxTwin"
+                              value={tourCostFields.fiveStar.perPaxTwin}
+                              onChange={handleTourCostFieldsChange}
+                              placeholder="Enter price"
+                            />
                           </td>
                         </tr>
-                      ))}
-                    </tbody>
-                  </Table>
-                )}
-              </Tab>
 
-              <Tab eventKey="costs" title="Tour Cost">
-                <Row className="align-items-end">
-                  <Col md={2}>
-                    <Form.Group>
-                      <Form.Label>Pax *</Form.Label>
-                      <Form.Control
-                        type="number"
-                        name="pax"
-                        value={tourCostItem.pax}
-                        onChange={handleCostChange}
-                      />
-                    </Form.Group>
-                  </Col>
-
-                  <Col md={2}>
-                    <Form.Group>
-                      <Form.Label>Standard Hotel</Form.Label>
-                      <Form.Control
-                        type="number"
-                        name="standard_hotel"
-                        value={tourCostItem.standard_hotel}
-                        onChange={handleCostChange}
-                      />
-                    </Form.Group>
-                  </Col>
-
-                  <Col md={2}>
-                    <Form.Group>
-                      <Form.Label>Deluxe Hotel</Form.Label>
-                      <Form.Control
-                        type="number"
-                        name="deluxe_hotel"
-                        value={tourCostItem.deluxe_hotel}
-                        onChange={handleCostChange}
-                      />
-                    </Form.Group>
-                  </Col>
-
-                  <Col md={2}>
-                    <Form.Group>
-                      <Form.Label>Executive Hotel</Form.Label>
-                      <Form.Control
-                        type="number"
-                        name="executive_hotel"
-                        value={tourCostItem.executive_hotel}
-                        onChange={handleCostChange}
-                      />
-                    </Form.Group>
-                  </Col>
-
-                  <Col md={2}>
-                    <Form.Group>
-                      <Form.Label>Child With Bed</Form.Label>
-                      <Form.Control
-                        type="number"
-                        name="child_with_bed"
-                        value={tourCostItem.child_with_bed}
-                        onChange={handleCostChange}
-                      />
-                    </Form.Group>
-                  </Col>
-
-                  <Col md={2}>
-                    <Form.Group>
-                      <Form.Label>Child No Bed</Form.Label>
-                      <Form.Control
-                        type="number"
-                        name="child_no_bed"
-                        value={tourCostItem.child_no_bed}
-                        onChange={handleCostChange}
-                      />
-                    </Form.Group>
-                  </Col>
-                </Row>
-
-                <Form.Group className="mt-3">
-                  <Form.Label>Cost Remarks</Form.Label>
-                  <Form.Control
-                    as="textarea"
-                    rows={3}
-                    name="cost_remarks"
-                    value={formData.cost_remarks}
-                    onChange={handleBasicChange}
-                  />
-                </Form.Group>
-
-                {tourCosts.length > 0 && (
-                  <Table striped bordered hover size="sm" className="mt-3">
-                    <thead>
-                      <tr>
-                        <th>#</th>
-                        <th>Pax</th>
-                        <th>Standard</th>
-                        <th>Deluxe</th>
-                        <th>Executive</th>
-                        <th>Chd Bed</th>
-                        <th>Chd NoBed</th>
-                        <th></th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {tourCosts.map((c, idx) => (
-                        <tr key={idx}>
-                          <td>{idx + 1}</td>
-                          <td>{c.pax}</td>
-                          <td>{c.standard_hotel || 'NA'}</td>
-                          <td>{c.deluxe_hotel || 'NA'}</td>
-                          <td>{c.executive_hotel || 'NA'}</td>
-                          <td>{c.child_with_bed || 'NA'}</td>
-                          <td>{c.child_no_bed || 'NA'}</td>
+                        {/* Per Pax on Triple Basis */}
+                        <tr>
+                          <td>Per Pax on Triple Basis</td>
                           <td>
-                            <Button variant="link" size="sm" onClick={() => removeCostRow(idx)}>remove</Button>
+                            <Form.Control
+                              type="number"
+                              name="threeStar_perPaxTriple"
+                              value={tourCostFields.threeStar.perPaxTriple}
+                              onChange={handleTourCostFieldsChange}
+                              placeholder="Enter price"
+                            />
+                          </td>
+                          <td>
+                            <Form.Control
+                              type="number"
+                              name="fourStar_perPaxTriple"
+                              value={tourCostFields.fourStar.perPaxTriple}
+                              onChange={handleTourCostFieldsChange}
+                              placeholder="Enter price"
+                            />
+                          </td>
+                          <td>
+                            <Form.Control
+                              type="number"
+                              name="fiveStar_perPaxTriple"
+                              value={tourCostFields.fiveStar.perPaxTriple}
+                              onChange={handleTourCostFieldsChange}
+                              placeholder="Enter price"
+                            />
                           </td>
                         </tr>
-                      ))}
-                    </tbody>
-                  </Table>
-                )}
+
+                        {/* Child with Bed */}
+                        <tr>
+                          <td>Child with Bed</td>
+                          <td>
+                            <Form.Control
+                              type="number"
+                              name="threeStar_childWithBed"
+                              value={tourCostFields.threeStar.childWithBed}
+                              onChange={handleTourCostFieldsChange}
+                              placeholder="Enter price"
+                            />
+                          </td>
+                          <td>
+                            <Form.Control
+                              type="number"
+                              name="fourStar_childWithBed"
+                              value={tourCostFields.fourStar.childWithBed}
+                              onChange={handleTourCostFieldsChange}
+                              placeholder="Enter price"
+                            />
+                          </td>
+                          <td>
+                            <Form.Control
+                              type="number"
+                              name="fiveStar_childWithBed"
+                              value={tourCostFields.fiveStar.childWithBed}
+                              onChange={handleTourCostFieldsChange}
+                              placeholder="Enter price"
+                            />
+                          </td>
+                        </tr>
+
+                        {/* Child without Bed */}
+                        <tr>
+                          <td>Child without Bed</td>
+                          <td>
+                            <Form.Control
+                              type="number"
+                              name="threeStar_childWithoutBed"
+                              value={tourCostFields.threeStar.childWithoutBed}
+                              onChange={handleTourCostFieldsChange}
+                              placeholder="Enter price"
+                            />
+                          </td>
+                          <td>
+                            <Form.Control
+                              type="number"
+                              name="fourStar_childWithoutBed"
+                              value={tourCostFields.fourStar.childWithoutBed}
+                              onChange={handleTourCostFieldsChange}
+                              placeholder="Enter price"
+                            />
+                          </td>
+                          <td>
+                            <Form.Control
+                              type="number"
+                              name="fiveStar_childWithoutBed"
+                              value={tourCostFields.fiveStar.childWithoutBed}
+                              onChange={handleTourCostFieldsChange}
+                              placeholder="Enter price"
+                            />
+                          </td>
+                        </tr>
+
+                        {/* Infant */}
+                        <tr>
+                          <td>Infant</td>
+                          <td>
+                            <Form.Control
+                              type="number"
+                              name="threeStar_infant"
+                              value={tourCostFields.threeStar.infant}
+                              onChange={handleTourCostFieldsChange}
+                              placeholder="Enter price"
+                            />
+                          </td>
+                          <td>
+                            <Form.Control
+                              type="number"
+                              name="fourStar_infant"
+                              value={tourCostFields.fourStar.infant}
+                              onChange={handleTourCostFieldsChange}
+                              placeholder="Enter price"
+                            />
+                          </td>
+                          <td>
+                            <Form.Control
+                              type="number"
+                              name="fiveStar_infant"
+                              value={tourCostFields.fiveStar.infant}
+                              onChange={handleTourCostFieldsChange}
+                              placeholder="Enter price"
+                            />
+                          </td>
+                        </tr>
+
+                        {/* Per Pax Single Occupancy */}
+                        <tr>
+                          <td>Per Pax Single Occupancy</td>
+                          <td>
+                            <Form.Control
+                              type="number"
+                              name="threeStar_perPaxSingle"
+                              value={tourCostFields.threeStar.perPaxSingle}
+                              onChange={handleTourCostFieldsChange}
+                              placeholder="Enter price"
+                            />
+                          </td>
+                          <td>
+                            <Form.Control
+                              type="number"
+                              name="fourStar_perPaxSingle"
+                              value={tourCostFields.fourStar.perPaxSingle}
+                              onChange={handleTourCostFieldsChange}
+                              placeholder="Enter price"
+                            />
+                          </td>
+                          <td>
+                            <Form.Control
+                              type="number"
+                              name="fiveStar_perPaxSingle"
+                              value={tourCostFields.fiveStar.perPaxSingle}
+                              onChange={handleTourCostFieldsChange}
+                              placeholder="Enter price"
+                            />
+                          </td>
+                        </tr>
+                      </tbody>
+                    </Table>
+                  </Row>
+
+                  {/* Display Added Departures */}
+                  {departures.length > 0 && (
+                    <div className="mt-4">
+                      <h6>Added Departures:</h6>
+                      <Table striped bordered hover size="sm">
+                        <thead>
+                          <tr>
+                            <th>#</th>
+                            <th>Start Date</th>
+                            <th>End Date</th>
+                            <th>Status</th>
+                            <th>Price</th>
+                            <th>Action</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {departures.map((dep, idx) => (
+                            <tr key={idx}>
+                              <td>{idx + 1}</td>
+                              <td>{dep.start_date || '-'}</td>
+                              <td>{dep.end_date || '-'}</td>
+                              <td>{dep.status || '-'}</td>
+                              <td>{dep.price ? `₹${dep.price.toLocaleString()}` : '-'}</td>
+                              <td>
+                                <Button
+                                  variant="link"
+                                  size="sm"
+                                  onClick={() => handleRemoveDeparture(idx)}
+                                >
+                                  remove
+                                </Button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </Table>
+                    </div>
+                  )}
+                </div>
               </Tab>
+
+               <Tab eventKey="costs" title="Tour Cost">
+                              <Row className="align-items-end">
+                                <Col md={2}>
+                                  <Form.Group>
+                                    <Form.Label>Pax *</Form.Label>
+                                    <Form.Control
+                                      type="number"
+                                      name="pax"
+                                      value={tourCostItem.pax}
+                                      onChange={handleCostChange}
+                                    />
+                                  </Form.Group>
+                                </Col>
+              
+                                <Col md={2}>
+                                  <Form.Group>
+                                    <Form.Label>Standard Hotel</Form.Label>
+                                    <Form.Control
+                                      type="number"
+                                      name="standard_hotel"
+                                      value={tourCostItem.standard_hotel}
+                                      onChange={handleCostChange}
+                                    />
+                                  </Form.Group>
+                                </Col>
+              
+                                <Col md={2}>
+                                  <Form.Group>
+                                    <Form.Label>Deluxe Hotel</Form.Label>
+                                    <Form.Control
+                                      type="number"
+                                      name="deluxe_hotel"
+                                      value={tourCostItem.deluxe_hotel}
+                                      onChange={handleCostChange}
+                                    />
+                                  </Form.Group>
+                                </Col>
+              
+                                <Col md={2}>
+                                  <Form.Group>
+                                    <Form.Label>Executive Hotel</Form.Label>
+                                    <Form.Control
+                                      type="number"
+                                      name="executive_hotel"
+                                      value={tourCostItem.executive_hotel}
+                                      onChange={handleCostChange}
+                                    />
+                                  </Form.Group>
+                                </Col>
+              
+                                <Col md={2}>
+                                  <Form.Group>
+                                    <Form.Label>Child With Bed</Form.Label>
+                                    <Form.Control
+                                      type="number"
+                                      name="child_with_bed"
+                                      value={tourCostItem.child_with_bed}
+                                      onChange={handleCostChange}
+                                    />
+                                  </Form.Group>
+                                </Col>
+              
+                                <Col md={2}>
+                                  <Form.Group>
+                                    <Form.Label>Child No Bed</Form.Label>
+                                    <Form.Control
+                                      type="number"
+                                      name="child_no_bed"
+                                      value={tourCostItem.child_no_bed}
+                                      onChange={handleCostChange}
+                                    />
+                                  </Form.Group>
+                                </Col>
+                              </Row>
+              
+                              <Form.Group className="mt-3">
+                                <Form.Label>Cost Remarks</Form.Label>
+                                <Form.Control
+                                  as="textarea"
+                                  rows={3}
+                                  name="cost_remarks"
+                                  value={formData.cost_remarks}
+                                  onChange={handleBasicChange}
+                                />
+                              </Form.Group>
+              
+                              {tourCosts.length > 0 && (
+                                <Table striped bordered hover size="sm" className="mt-3">
+                                  <thead>
+                                    <tr>
+                                      <th>#</th>
+                                      <th>Pax</th>
+                                      <th>Standard</th>
+                                      <th>Deluxe</th>
+                                      <th>Executive</th>
+                                      <th>Chd Bed</th>
+                                      <th>Chd NoBed</th>
+                                      <th></th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {tourCosts.map((c, idx) => (
+                                      <tr key={idx}>
+                                        <td>{idx + 1}</td>
+                                        <td>{c.pax}</td>
+                                        <td>{c.standard_hotel || 'NA'}</td>
+                                        <td>{c.deluxe_hotel || 'NA'}</td>
+                                        <td>{c.executive_hotel || 'NA'}</td>
+                                        <td>{c.child_with_bed || 'NA'}</td>
+                                        <td>{c.child_no_bed || 'NA'}</td>
+                                        <td>
+                                          <Button variant="link" size="sm" onClick={() => removeCostRow(idx)}>remove</Button>
+                                        </td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </Table>
+                              )}
+                            </Tab>
+
+
 
               {/* ======== OPTIONAL TOURS ======== */}
               <Tab eventKey="optionalTours" title="Optional Tour">
@@ -1550,23 +1884,133 @@ const AddTour = () => {
                 )}
               </Tab>
 
+              {/* ======== TRANSPORT TAB - GROUP TOUR ======== */}
               <Tab eventKey="transport" title="Transport">
                 <Row className="mt-3">
-                  <Col md={12}>
+                  {/* Airline */}
+                  <Col md={4}>
                     <Form.Group>
-                      <Form.Label>Description</Form.Label>
+                      <Form.Label>Airline</Form.Label>
                       <Form.Control
-                        as="textarea"
-                        rows={4}
-                        name="description"
-                        value={transportItem.description}
+                        name="airline"
+                        value={transportItem.airline}
+                        onChange={handleTransportChange}
+                      />
+                    </Form.Group>
+                  </Col>
+
+                  {/* Flight No */}
+                  <Col md={4}>
+                    <Form.Group>
+                      <Form.Label>Flight No</Form.Label>
+                      <Form.Control
+                        name="flight_no"
+                        value={transportItem.flight_no}
+                        onChange={handleTransportChange}
+                      />
+                    </Form.Group>
+                  </Col>
+
+                  {/* Via */}
+                  <Col md={4}>
+                    <Form.Group>
+                      <Form.Label>Via</Form.Label>
+                      <Form.Control
+                        name="via"
+                        value={transportItem.via}
+                        onChange={handleTransportChange}
+                      />
+                    </Form.Group>
+                  </Col>
+
+                  {/* FROM */}
+                  <Col md={12} className="mt-3">
+                    <Form.Label className="fw-bold">From</Form.Label>
+                  </Col>
+
+                  <Col md={4}>
+                    <Form.Group>
+                      <Form.Label>City</Form.Label>
+                      <Form.Control
+                        name="from_city"
+                        value={transportItem.from_city}
+                        onChange={handleTransportChange}
+                      />
+                    </Form.Group>
+                  </Col>
+
+                  <Col md={4}>
+                    <Form.Group>
+                      <Form.Label>Date</Form.Label>
+                      <Form.Control
+                        type="date"
+                        name="from_date"
+                        value={transportItem.from_date}
+                        onChange={handleTransportChange}
+                      />
+                    </Form.Group>
+                  </Col>
+
+                  <Col md={4}>
+                    <Form.Group>
+                      <Form.Label>Time</Form.Label>
+                      <Form.Control
+                        type="time"
+                        name="from_time"
+                        value={transportItem.from_time}
+                        onChange={handleTransportChange}
+                      />
+                    </Form.Group>
+                  </Col>
+
+                  {/* TO */}
+                  <Col md={12} className="mt-3">
+                    <Form.Label className="fw-bold">To</Form.Label>
+                  </Col>
+
+                  <Col md={4}>
+                    <Form.Group>
+                      <Form.Label>City</Form.Label>
+                      <Form.Control
+                        name="to_city"
+                        value={transportItem.to_city}
+                        onChange={handleTransportChange}
+                      />
+                    </Form.Group>
+                  </Col>
+
+                  <Col md={4}>
+                    <Form.Group>
+                      <Form.Label>Date</Form.Label>
+                      <Form.Control
+                        type="date"
+                        name="to_date"
+                        value={transportItem.to_date}
+                        onChange={handleTransportChange}
+                      />
+                    </Form.Group>
+                  </Col>
+
+                  <Col md={4}>
+                    <Form.Group>
+                      <Form.Label>Time</Form.Label>
+                      <Form.Control
+                        type="time"
+                        name="to_time"
+                        value={transportItem.to_time}
                         onChange={handleTransportChange}
                       />
                     </Form.Group>
                   </Col>
                 </Row>
 
-                <Form.Group className="mt-3">
+                {/* ================= ADD BUTTON ================= */}
+                <Button className="mt-3" onClick={addTransportRow}>
+                  Add
+                </Button>
+
+                {/* ================= TRANSPORT REMARKS ================= */}
+                <Form.Group className="mt-4">
                   <Form.Label>Transport Remarks</Form.Label>
                   <Form.Control
                     as="textarea"
@@ -1577,22 +2021,41 @@ const AddTour = () => {
                   />
                 </Form.Group>
 
+                {/* ================= TABLE ================= */}
                 {transports.length > 0 && (
-                  <Table striped bordered hover size="sm" className="mt-3">
+                  <Table bordered hover size="sm" className="mt-3">
                     <thead>
                       <tr>
                         <th>#</th>
-                        <th>Description</th>
+                        <th>Airline</th>
+                        <th>Flight</th>
+                        <th>Route</th>
+                        <th>Schedule</th>
+                        <th>Via</th>
                         <th></th>
                       </tr>
                     </thead>
                     <tbody>
-                      {transports.map((t, idx) => (
-                        <tr key={idx}>
-                          <td>{idx + 1}</td>
-                          <td>{t.description || 'NA'}</td>
+                      {transports.map((t, i) => (
+                        <tr key={i}>
+                          <td>{i + 1}</td>
+                          <td>{t.airline}</td>
+                          <td>{t.flight_no}</td>
+                          <td>{t.from_city} → {t.to_city}</td>
                           <td>
-                            <Button variant="link" size="sm" onClick={() => removeTransportRow(idx)}>remove</Button>
+                            {t.from_date} {t.from_time}
+                            <br />
+                            {t.to_date} {t.to_time}
+                          </td>
+                          <td>{t.via || 'Direct'}</td>
+                          <td>
+                            <Button
+                              variant="link"
+                              size="sm"
+                              onClick={() => removeTransportRow(i)}
+                            >
+                              remove
+                            </Button>
                           </td>
                         </tr>
                       ))}
@@ -1927,4 +2390,4 @@ const AddTour = () => {
   );
 };
 
-export default AddTour;
+export default AddGroupTour;
