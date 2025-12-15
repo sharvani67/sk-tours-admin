@@ -19,6 +19,7 @@ import TourDetails from "./Components/Tours/TourDetails";
 
 import GroupTours from "./Components/Tours/GroupTour"
 import AddGroupTour from "./Components/Tours/AddGroupTour";
+import GroupTourDetails from "./Components/Tours/GroupTourDetails";
 
 
 
@@ -49,6 +50,7 @@ function App() {
           <Route path="/add-group-tour" element={<AddGroupTour />} /> 
 
           <Route path="/tour-details/:tourId" element={<TourDetails />} />
+           <Route path="/group-tour-details/:tourId" element={<GroupTourDetails />} />
         {/* Catch-all Route */}
         
 

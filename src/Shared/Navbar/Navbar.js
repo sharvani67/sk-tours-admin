@@ -105,16 +105,16 @@ const Navbar = ({ children }) => {
   // },
 
   {
-    label: "Tours",
+    label: "Individual-Tours",
     path: "/tours",
     icon: <FiMap className="sidebar-icon" />,   // tours = map routes
     matchPaths: ["/tours", "add-tour"],
   },
 
    {
-    label: "GroupTours",  // NEW FIELD ADDED HERE
+    label: "Group-Tours", 
     path: "/group-tours",
-    icon: <FiUsers className="sidebar-icon" />,   // group icon for GroupTours
+    icon: <FiUsers className="sidebar-icon" />, 
     matchPaths: ["/group-tours", "add-group-tour"],
   },
 

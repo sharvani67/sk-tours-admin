@@ -47,7 +47,7 @@ const GroupTours = () => {
 
   // Handle view tour details
   const handleViewTour = (tourId) => {
-    navigate(`/tour-details/${tourId}`);
+    navigate(`/group-tour-details/${tourId}`);
   };
 
   // Columns for ReusableTable
