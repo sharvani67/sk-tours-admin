@@ -198,27 +198,28 @@ const handleEMIChange = (index, value) => {
 
 // Add EMI Options to form
 // Add EMI Options to form
+// Add EMI Options to form - MODIFIED VERSION
 const handleAddEMIOptions = () => {
   console.log('EMI Options before validation:', emiOptions);
   
-  // Validate that all rows have loan amount and EMI
-  const hasEmptyFields = emiOptions.some(option => 
-    !option.loan_amount || option.loan_amount <= 0 || !option.emi || option.emi <= 0
+  // Filter only rows that have values (not all rows need to be filled)
+  const validEmiOptions = emiOptions.filter(option => 
+    option.loan_amount && option.loan_amount > 0 && option.emi && option.emi > 0
   );
   
-  console.log('Has empty fields:', hasEmptyFields);
+  console.log('Valid EMI options:', validEmiOptions);
   
-  if (hasEmptyFields) {
-    setError('Please enter valid Loan Amount and EMI for all rows');
+  // Check if at least one row is filled (optional requirement)
+  if (validEmiOptions.length === 0) {
+    setError('Please fill at least one EMI option row');
     return;
   }
   
   setError('');
-  setSuccess('EMI Options added successfully');
+  // setSuccess(`Added ${validEmiOptions.length} EMI options successfully`);
   
-  console.log('EMI Options validated and saved:', emiOptions);
+  console.log('Valid EMI Options saved:', validEmiOptions);
 };
-
 
   // =======================
   // HOTELS
@@ -600,22 +601,22 @@ const handleAddEMIOptions = () => {
         }
         break;
 
-       case 'emiOptions':
-  // Validate EMI options before moving to next tab
-  console.log('Validating EMI options before next tab:', emiOptions);
-  const hasValidEmiOptions = emiOptions.every(option => 
+      case 'emiOptions':
+  // Don't validate all rows - just check if at least one row has values
+  const hasAtLeastOneValidOption = emiOptions.some(option => 
     option.loan_amount && option.loan_amount > 0 && option.emi && option.emi > 0
   );
   
-  if (!hasValidEmiOptions) {
-    console.log('EMI validation failed - staying on tab');
-    setError('Please fill all Loan Amount and EMI fields before proceeding');
+  if (!hasAtLeastOneValidOption) {
+    console.log('No valid EMI options found');
+    setError('Please fill at least one EMI option before proceeding');
     // Stay on current tab
     return false;
   }
   
-  console.log('EMI validation passed - proceeding to next tab');
+  console.log('EMI options check passed - proceeding to next tab');
   break;
+
 
       case 'optionalTours':
         if (optionalTourItem.tour_name && optionalTourItem.tour_name.trim()) {
@@ -755,53 +756,54 @@ const handleAddEMIOptions = () => {
       // In your finalSubmit function, update the EMI Options section:
 
 // 9) EMI OPTIONS BULK
+// 9) EMI OPTIONS BULK - UPDATED VERSION
 console.log('Sending EMI options to backend:', emiOptions);
-if (emiOptions.length > 0) {
-  // Filter only options that have values
-  const validEmiOptions = emiOptions.filter(opt => 
-    opt.loan_amount && opt.loan_amount > 0 && opt.emi && opt.emi > 0
-  );
-  
-  console.log('Valid EMI options for submission:', validEmiOptions);
-  
-  if (validEmiOptions.length > 0) {
-    try {
-      const emiPayload = {
-        tour_id: tourId,
-        emi_options: validEmiOptions.map(opt => ({
-          particulars: opt.particulars,
-          months: opt.months,
-          loan_amount: parseFloat(opt.loan_amount),
-          emi: parseFloat(opt.emi)
-        }))
-      };
-      
-      console.log('EMI API Payload:', JSON.stringify(emiPayload, null, 2));
-      
-      const emiResponse = await fetch(`${baseurl}/api/emi-options/emi/bulk`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(emiPayload)
-      });
-      
-      console.log('EMI API Status:', emiResponse.status);
-      
-      if (!emiResponse.ok) {
-        const errorText = await emiResponse.text();
-        console.error('EMI API Error Response:', errorText);
-        throw new Error(`Failed to save EMI options: ${errorText}`);
-      }
-      
+
+// Filter only options that have values
+const validEmiOptions = emiOptions.filter(opt => 
+  opt.loan_amount && opt.loan_amount > 0 && opt.emi && opt.emi > 0
+);
+
+console.log('Valid EMI options for submission:', validEmiOptions);
+
+if (validEmiOptions.length > 0) {
+  try {
+    const emiPayload = {
+      tour_id: tourId,
+      emi_options: validEmiOptions.map(opt => ({
+        particulars: opt.particulars,
+        months: opt.months,
+        loan_amount: parseFloat(opt.loan_amount),
+        emi: parseFloat(opt.emi)
+      }))
+    };
+    
+    console.log('EMI API Payload:', JSON.stringify(emiPayload, null, 2));
+    
+    const emiResponse = await fetch(`${baseurl}/api/emi-options/emi/bulk`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(emiPayload)
+    });
+    
+    console.log('EMI API Status:', emiResponse.status);
+    
+    if (!emiResponse.ok) {
+      const errorText = await emiResponse.text();
+      console.error('EMI API Error Response:', errorText);
+      // Don't throw error - just log it as EMI options are optional
+      console.warn('EMI options could not be saved, but continuing with other data');
+    } else {
       const emiResult = await emiResponse.json();
       console.log('EMI API Success Response:', emiResult);
-    } catch (error) {
-      console.error('Error saving EMI options:', error);
-      // Don't throw here to allow other data to be saved
-      // Just log the error
     }
-  } else {
-    console.log('No valid EMI options to save');
+  } catch (error) {
+    console.error('Error saving EMI options:', error);
+    // Don't throw here to allow other data to be saved
+    // EMI options are optional
   }
+} else {
+  console.log('No valid EMI options to save - this is optional');
 }
 
 
@@ -1475,23 +1477,17 @@ if (emiOptions.length > 0) {
               {/* ======== EMI OPTIONS ======== */}
               {/* ======== EMI OPTIONS (MANUAL) ======== */}
 
-              <Tab eventKey="emiOptions" title="EMI Options">
-  <Row className="mb-3">
-    <Col md={12}>
-      <Alert variant="info">
-        Enter Loan Amount and EMI manually for each payment option below.
-      </Alert>
-    </Col>
-  </Row>
+            <Tab eventKey="emiOptions" title="EMI Options">
+
 
   <Table striped bordered hover responsive className="align-middle">
     <thead className="table-dark">
       <tr>
         <th width="5%">#</th>
         <th width="30%">Particulars</th>
-        <th width="25%">Loan Amount *</th>
+        <th width="25%">Loan Amount</th>
         <th width="15%">Months</th>
-        <th width="25%">EMI *</th>
+        <th width="25%">EMI</th>
       </tr>
     </thead>
     <tbody>
@@ -1517,8 +1513,7 @@ if (emiOptions.length > 0) {
                   step="1000"
                   value={option.loan_amount || ''}
                   onChange={(e) => handleLoanAmountChange(index, e.target.value)}
-                  placeholder="Enter amount"
-                  required
+                  placeholder="Optional"
                 />
               </InputGroup>
             </Form.Group>
@@ -1542,8 +1537,7 @@ if (emiOptions.length > 0) {
                   step="100"
                   value={option.emi || ''}
                   onChange={(e) => handleEMIChange(index, e.target.value)}
-                  placeholder="Enter EMI"
-                  required
+                  placeholder="Optional"
                 />
               </InputGroup>
             </Form.Group>
@@ -1557,10 +1551,10 @@ if (emiOptions.length > 0) {
     <Col md={12} className="d-flex justify-content-between align-items-center">
       <div>
         <small className="text-muted">
-          * Required fields. Enter Loan Amount and EMI for each payment option.
+          {/* <i className="fas fa-info-circle"></i> Fill only the options you want to offer. Leave others empty. */}
         </small>
       </div>
-      <Button
+      {/* <Button
         variant="primary"
         onClick={() => {
           console.log('EMI Options before validation:', emiOptions);
@@ -1568,7 +1562,7 @@ if (emiOptions.length > 0) {
         }}
       >
         Save EMI Options
-      </Button>
+      </Button> */}
     </Col>
   </Row>
 </Tab>

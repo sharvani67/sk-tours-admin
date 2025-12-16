@@ -9,7 +9,8 @@ import {
   Col,
   Tabs,
   Tab,
-  Table
+  Table,
+  InputGroup
 } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../../Shared/Navbar/Navbar';
@@ -23,7 +24,7 @@ const AddGroupTour = () => {
     'basic',
     'itineraries',
     'departures',
-    'costs',
+    // 'costs',
     'optionalTours',
     'emiOptions',
     'inclusions',
@@ -200,55 +201,73 @@ const AddGroupTour = () => {
   // =======================
   // EMI OPTIONS
   // =======================
-  const [loanAmount, setLoanAmount] = useState('');
+
   const [emiOptions, setEmiOptions] = useState([
-    { particulars: 'Per Month Payment', months: 6, emi: 0 },
-    { particulars: 'Per Month Payment', months: 12, emi: 0 },
-    { particulars: 'Per Month Payment', months: 18, emi: 0 },
-    { particulars: 'Per Month Payment', months: 24, emi: 0 },
-    { particulars: 'Per Month Payment', months: 30, emi: 0 },
-    { particulars: 'Per Month Payment', months: 36, emi: 0 },
-    { particulars: 'Per Month Payment', months: 48, emi: 0 }
-  ]);
+  { particulars: 'Per Month Payment', loan_amount: '', months: 6, emi: '' },
+  { particulars: 'Per Month Payment', loan_amount: '', months: 12, emi: '' },
+  { particulars: 'Per Month Payment', loan_amount: '', months: 18, emi: '' },
+  { particulars: 'Per Month Payment', loan_amount: '', months: 24, emi: '' },
+  { particulars: 'Per Month Payment', loan_amount: '', months: 30, emi: '' },
+  { particulars: 'Per Month Payment', loan_amount: '', months: 36, emi: '' },
+  { particulars: 'Per Month Payment', loan_amount: '', months: 48, emi: '' }
+]);
 
-  useEffect(() => {
-    if (loanAmount) {
-      const amount = parseFloat(loanAmount);
-      if (!isNaN(amount) && amount > 0) {
-        const updatedEmiOptions = emiOptions.map(option => {
-          const emi = calculateEMI(amount, option.months);
-          return { ...option, emi };
-        });
-        setEmiOptions(updatedEmiOptions);
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loanAmount]);
+// Remove the old loanAmount state and useEffect
+// Remove these lines:
+// const [loanAmount, setLoanAmount] = useState('');
+// useEffect(() => {
+//   if (loanAmount) {
+//     const amount = parseFloat(loanAmount);
+//     if (!isNaN(amount) && amount > 0) {
+//       const updatedEmiOptions = emiOptions.map(option => {
+//         const emi = calculateEMI(amount, option.months);
+//         return { ...option, emi };
+//       });
+//       setEmiOptions(updatedEmiOptions);
+//     }
+//   }
+//   // eslint-disable-next-line react-hooks/exhaustive-deps
+// }, [loanAmount]);
 
-  const calculateEMI = (principal, months, annualInterestRate = 12) => {
-    if (!principal || principal <= 0 || !months || months <= 0) return 0;
-    const monthlyRate = annualInterestRate / 12 / 100;
-    const emi =
-      (principal *
-        monthlyRate *
-        Math.pow(1 + monthlyRate, months)) /
-      (Math.pow(1 + monthlyRate, months) - 1);
-    return Math.round(emi);
-  };
+// Remove the calculateEMI function or keep it as helper if needed elsewhere
 
-  const handleLoanAmountChange = (e) => {
-    const value = e.target.value;
-    setLoanAmount(value);
-  };
+// Handle loan amount change for a specific row
+const handleLoanAmountChange = (index, value) => {
+  const updatedOptions = [...emiOptions];
+  updatedOptions[index].loan_amount = value;
+  setEmiOptions(updatedOptions);
+};
 
-  const handleAddEMIOptions = () => {
-    if (!loanAmount || parseFloat(loanAmount) <= 0) {
-      setError('Please enter a valid loan amount');
-      return;
-    }
-    setError('');
-  };
+// Handle EMI change for a specific row
+const handleEMIChange = (index, value) => {
+  const updatedOptions = [...emiOptions];
+  updatedOptions[index].emi = value;
+  setEmiOptions(updatedOptions);
+};
 
+// Add EMI Options to form
+const handleAddEMIOptions = () => {
+  console.log('EMI Options before validation:', emiOptions);
+  
+  // Filter only rows that have values (not all rows need to be filled)
+  const validEmiOptions = emiOptions.filter(option => 
+    option.loan_amount && option.loan_amount > 0 && option.emi && option.emi > 0
+  );
+  
+  console.log('Valid EMI options:', validEmiOptions);
+  
+  // Check if at least one row is filled (optional requirement)
+  if (validEmiOptions.length === 0) {
+    setError('Please fill at least one EMI option row');
+    return;
+  }
+  
+  setError('');
+  setSuccess(`Added ${validEmiOptions.length} EMI options successfully`);
+  
+  console.log('Valid EMI Options saved:', validEmiOptions);
+};
+ 
   // =======================
   // HOTELS
   // =======================
@@ -682,6 +701,23 @@ const AddGroupTour = () => {
         }
         break;
 
+        // Add this case to your autoAddBeforeNext function:
+      case 'emiOptions':
+        // Don't validate all rows - just check if at least one row has values
+        const hasAtLeastOneValidOption = emiOptions.some(option => 
+          option.loan_amount && option.loan_amount > 0 && option.emi && option.emi > 0
+        );
+        
+        if (!hasAtLeastOneValidOption) {
+          console.log('No valid EMI options found');
+          setError('Please fill at least one EMI option before proceeding');
+          // Stay on current tab
+          return false;
+        }
+        
+        console.log('EMI options check passed - proceeding to next tab');
+        break;
+
       case 'optionalTours':
         if (optionalTourItem.tour_name && optionalTourItem.tour_name.trim()) {
           addOptionalTourRow();
@@ -889,17 +925,55 @@ const AddGroupTour = () => {
       }
 
       // 8) EMI OPTIONS BULK
-      if (loanAmount && parseFloat(loanAmount) > 0) {
-        await fetch(`${baseurl}/api/emi-options/bulk`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            tour_id: tourId,
-            loan_amount: parseFloat(loanAmount),
-            emi_options: emiOptions
-          })
-        });
-      }
+      // 8) EMI OPTIONS BULK - UPDATED VERSION
+console.log('Sending EMI options to backend:', emiOptions);
+
+// Filter only options that have values
+const validEmiOptions = emiOptions.filter(opt => 
+  opt.loan_amount && opt.loan_amount > 0 && opt.emi && opt.emi > 0
+);
+
+console.log('Valid EMI options for submission:', validEmiOptions);
+
+if (validEmiOptions.length > 0) {
+  try {
+    const emiPayload = {
+      tour_id: tourId,
+      emi_options: validEmiOptions.map(opt => ({
+        particulars: opt.particulars,
+        months: opt.months,
+        loan_amount: parseFloat(opt.loan_amount),
+        emi: parseFloat(opt.emi)
+      }))
+    };
+    
+    console.log('EMI API Payload:', JSON.stringify(emiPayload, null, 2));
+    
+    const emiResponse = await fetch(`${baseurl}/api/emi-options/emi/bulk`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(emiPayload)
+    });
+    
+    console.log('EMI API Status:', emiResponse.status);
+    
+    if (!emiResponse.ok) {
+      const errorText = await emiResponse.text();
+      console.error('EMI API Error Response:', errorText);
+      // Don't throw error - just log it as EMI options are optional
+      console.warn('EMI options could not be saved, but continuing with other data');
+    } else {
+      const emiResult = await emiResponse.json();
+      console.log('EMI API Success Response:', emiResult);
+    }
+  } catch (error) {
+    console.error('Error saving EMI options:', error);
+    // Don't throw here to allow other data to be saved
+    // EMI options are optional
+  }
+} else {
+  console.log('No valid EMI options to save - this is optional');
+}
 
       // 9) HOTELS BULK
       if (hotelRows.length > 0) {
@@ -1542,8 +1616,8 @@ const AddGroupTour = () => {
                 </div>
               </Tab>
 
-               <Tab eventKey="costs" title="Tour Cost">
-                              <Row className="align-items-end">
+                <Tab eventKey="costs" title="Tour Cost">
+                              {/* <Row className="align-items-end">
                                 <Col md={2}>
                                   <Form.Group>
                                     <Form.Label>Pax *</Form.Label>
@@ -1615,7 +1689,7 @@ const AddGroupTour = () => {
                                     />
                                   </Form.Group>
                                 </Col>
-                              </Row>
+                              </Row> */}
               
                               <Form.Group className="mt-3">
                                 <Form.Label>Cost Remarks</Form.Label>
@@ -1742,63 +1816,95 @@ const AddGroupTour = () => {
               </Tab>
 
               {/* ======== EMI OPTIONS ======== */}
-              <Tab eventKey="emiOptions" title="EMI Options">
-                <Row className="align-items-end mb-4">
-                  <Col md={6}>
-                    <Form.Group>
-                      <Form.Label>Loan Amount *</Form.Label>
-                      <Form.Control
-                        type="number"
-                        value={loanAmount}
-                        onChange={handleLoanAmountChange}
-                        placeholder="Enter loan amount"
-                      />
-                    </Form.Group>
-                  </Col>
-                  <Col md={6} className="d-flex align-items-end">
-                    <Button
-                      size="sm"
-                      onClick={handleAddEMIOptions}
-                      disabled={!loanAmount || parseFloat(loanAmount) <= 0}
-                    >
-                      Calculate EMI
-                    </Button>
-                  </Col>
-                </Row>
+              {/* ======== EMI OPTIONS (MANUAL) ======== */}
+<Tab eventKey="emiOptions" title="EMI Options">
 
-                <Table striped bordered hover size="sm">
-                  <thead>
-                    <tr>
-                      <th>#</th>
-                      <th>Particulars</th>
-                      <th>Loan Amount</th>
-                      <th>Months</th>
-                      <th>EMI</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {emiOptions.map((option, idx) => (
-                      <tr key={idx}>
-                        <td>{idx + 1}</td>
-                        <td>{option.particulars}</td>
-                        <td>
-                          {loanAmount ? `₹${parseFloat(loanAmount).toLocaleString()}` : '-'}
-                        </td>
-                        <td>{option.months}</td>
-                        <td>
-                          {option.emi > 0 ? `₹${option.emi.toLocaleString()}` : '-'}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </Table>
+  <Table striped bordered hover responsive className="align-middle">
+    <thead className="table-dark">
+      <tr>
+        <th width="5%">#</th>
+        <th width="30%">Particulars</th>
+        <th width="25%">Loan Amount</th>
+        <th width="15%">Months</th>
+        <th width="25%">EMI</th>
+      </tr>
+    </thead>
+    <tbody>
+      {emiOptions.map((option, index) => (
+        <tr key={index}>
+          <td className="text-center">{index + 1}</td>
+          <td>
+            <Form.Control
+              type="text"
+              value={option.particulars}
+              readOnly
+              plaintext
+              className="border-0 bg-transparent"
+            />
+          </td>
+          <td>
+            <Form.Group className="mb-0">
+              <InputGroup>
+                <InputGroup.Text>₹</InputGroup.Text>
+                <Form.Control
+                  type="number"
+                  min="0"
+                  step="1000"
+                  value={option.loan_amount || ''}
+                  onChange={(e) => handleLoanAmountChange(index, e.target.value)}
+                  placeholder="Optional"
+                />
+              </InputGroup>
+            </Form.Group>
+          </td>
+          <td className="text-center">
+            <Form.Control
+              type="text"
+              value={option.months}
+              readOnly
+              plaintext
+              className="border-0 bg-transparent text-center"
+            />
+          </td>
+          <td>
+            <Form.Group className="mb-0">
+              <InputGroup>
+                <InputGroup.Text>₹</InputGroup.Text>
+                <Form.Control
+                  type="number"
+                  min="0"
+                  step="100"
+                  value={option.emi || ''}
+                  onChange={(e) => handleEMIChange(index, e.target.value)}
+                  placeholder="Optional"
+                />
+              </InputGroup>
+            </Form.Group>
+          </td>
+        </tr>
+      ))}
+    </tbody>
+  </Table>
 
-                <div className="mt-3 text-muted">
-                  <small>
-                    Note: EMI calculations based on 12% annual interest rate. 7 fixed payment options displayed above.
-                  </small>
-                </div>
-              </Tab>
+  <Row className="mt-3">
+    <Col md={12} className="d-flex justify-content-between align-items-center">
+      <div>
+        <small className="text-muted">
+          <i className="fas fa-info-circle"></i> Fill only the options you want to offer. Leave others empty.
+        </small>
+      </div>
+      {/* <Button
+        variant="primary"
+        onClick={() => {
+          console.log('EMI Options before validation:', emiOptions);
+          handleAddEMIOptions();
+        }}
+      >
+        Save EMI Options
+      </Button> */}
+    </Col>
+  </Row>
+</Tab>
 
               <Tab eventKey="inclusions" title="Inclusions">
                 <Form.Group className="mb-3">
