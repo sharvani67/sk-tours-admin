@@ -59,7 +59,10 @@ const AddTour = () => {
     is_international: 0,
     cost_remarks: "",
     hotel_remarks: "",
-    transport_remarks: ""
+    transport_remarks: "",
+    booking_poi_remarks: "",
+    cancellation_remarks: "",
+    emi_remarks: ""
   });
 
   // DEPARTURES (multiple)
@@ -1363,6 +1366,18 @@ if (validEmiOptions.length > 0) {
                   />
                 </Form.Group>
 
+                
+                <Form.Group className="mt-3">
+                  <Form.Label>EMI Remarks</Form.Label>
+                  <Form.Control
+                    as="textarea"
+                    rows={3}
+                    name="emi_remarks"
+                    value={formData.emi_remarks}
+                    onChange={handleBasicChange}
+                  />
+                </Form.Group>
+
                 {tourCosts.length > 0 && (
                   <Table striped bordered hover size="sm" className="mt-3">
                     <thead>
@@ -1656,7 +1671,7 @@ if (validEmiOptions.length > 0) {
                 <Row className="mt-3">
                   <Col md={12}>
                     <Form.Group>
-                      <Form.Label>Description</Form.Label>
+                      <Form.Label>Flights/Train or Transport Details</Form.Label>
                       <Form.Control
                         as="textarea"
                         rows={4}
@@ -1819,6 +1834,18 @@ if (validEmiOptions.length > 0) {
                       />
                     </Col>
                   </Row>
+
+                   <Form.Group className="mt-3">
+                  <Form.Label>Booking POI Remarks</Form.Label>
+                  <Form.Control
+                    as="textarea"
+                    rows={3}
+                    name="booking_poi_remarks"
+                    value={formData.booking_poi_remarks}
+                    onChange={handleBasicChange}
+                  />
+                </Form.Group>
+
                 </Form.Group>
 
                 {bookingPois.length > 0 && (
@@ -1882,6 +1909,17 @@ if (validEmiOptions.length > 0) {
                     </Form.Group>
                   </Col>
                 </Row>
+
+                 <Form.Group className="mt-3">
+                  <Form.Label>Cancellation Remarks</Form.Label>
+                  <Form.Control
+                    as="textarea"
+                    rows={3}
+                    name="cancellation_remarks"
+                    value={formData.cancellation_remarks}
+                    onChange={handleBasicChange}
+                  />
+                </Form.Group>
 
                 {cancelPolicies.length > 0 && (
                   <Table striped bordered hover className="mt-3" size="sm">
