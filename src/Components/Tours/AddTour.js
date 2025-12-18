@@ -173,56 +173,56 @@ const AddTour = () => {
   // EMI OPTIONS
   // =======================
   // =======================
-// EMI OPTIONS (MANUAL)
-// =======================
-const [emiOptions, setEmiOptions] = useState([
-  { particulars: 'Per Month Payment', loan_amount: '', months: 6, emi: '' },
-  { particulars: 'Per Month Payment', loan_amount: '', months: 12, emi: '' },
-  { particulars: 'Per Month Payment', loan_amount: '', months: 18, emi: '' },
-  { particulars: 'Per Month Payment', loan_amount: '', months: 24, emi: '' },
-  { particulars: 'Per Month Payment', loan_amount: '', months: 30, emi: '' },
-  { particulars: 'Per Month Payment', loan_amount: '', months: 36, emi: '' },
-  { particulars: 'Per Month Payment', loan_amount: '', months: 48, emi: '' }
-]);
+  // EMI OPTIONS (MANUAL)
+  // =======================
+  const [emiOptions, setEmiOptions] = useState([
+    { particulars: 'Per Month Payment', loan_amount: '', months: 6, emi: '' },
+    { particulars: 'Per Month Payment', loan_amount: '', months: 12, emi: '' },
+    { particulars: 'Per Month Payment', loan_amount: '', months: 18, emi: '' },
+    { particulars: 'Per Month Payment', loan_amount: '', months: 24, emi: '' },
+    { particulars: 'Per Month Payment', loan_amount: '', months: 30, emi: '' },
+    { particulars: 'Per Month Payment', loan_amount: '', months: 36, emi: '' },
+    { particulars: 'Per Month Payment', loan_amount: '', months: 48, emi: '' }
+  ]);
 
-// Handle loan amount change for a specific row
-const handleLoanAmountChange = (index, value) => {
-  const updatedOptions = [...emiOptions];
-  updatedOptions[index].loan_amount = value;
-  setEmiOptions(updatedOptions);
-};
+  // Handle loan amount change for a specific row
+  const handleLoanAmountChange = (index, value) => {
+    const updatedOptions = [...emiOptions];
+    updatedOptions[index].loan_amount = value;
+    setEmiOptions(updatedOptions);
+  };
 
-// Handle EMI change for a specific row
-const handleEMIChange = (index, value) => {
-  const updatedOptions = [...emiOptions];
-  updatedOptions[index].emi = value;
-  setEmiOptions(updatedOptions);
-};
+  // Handle EMI change for a specific row
+  const handleEMIChange = (index, value) => {
+    const updatedOptions = [...emiOptions];
+    updatedOptions[index].emi = value;
+    setEmiOptions(updatedOptions);
+  };
 
-// Add EMI Options to form
-// Add EMI Options to form
-// Add EMI Options to form - MODIFIED VERSION
-const handleAddEMIOptions = () => {
-  console.log('EMI Options before validation:', emiOptions);
-  
-  // Filter only rows that have values (not all rows need to be filled)
-  const validEmiOptions = emiOptions.filter(option => 
-    option.loan_amount && option.loan_amount > 0 && option.emi && option.emi > 0
-  );
-  
-  console.log('Valid EMI options:', validEmiOptions);
-  
-  // Check if at least one row is filled (optional requirement)
-  if (validEmiOptions.length === 0) {
-    setError('Please fill at least one EMI option row');
-    return;
-  }
-  
-  setError('');
-  // setSuccess(`Added ${validEmiOptions.length} EMI options successfully`);
-  
-  console.log('Valid EMI Options saved:', validEmiOptions);
-};
+  // Add EMI Options to form
+  // Add EMI Options to form
+  // Add EMI Options to form - MODIFIED VERSION
+  const handleAddEMIOptions = () => {
+    console.log('EMI Options before validation:', emiOptions);
+
+    // Filter only rows that have values (not all rows need to be filled)
+    const validEmiOptions = emiOptions.filter(option =>
+      option.loan_amount && option.loan_amount > 0 && option.emi && option.emi > 0
+    );
+
+    console.log('Valid EMI options:', validEmiOptions);
+
+    // Check if at least one row is filled (optional requirement)
+    if (validEmiOptions.length === 0) {
+      setError('Please fill at least one EMI option row');
+      return;
+    }
+
+    setError('');
+    // setSuccess(`Added ${validEmiOptions.length} EMI options successfully`);
+
+    console.log('Valid EMI Options saved:', validEmiOptions);
+  };
 
   // =======================
   // HOTELS
@@ -232,7 +232,10 @@ const handleAddEMIOptions = () => {
     hotel_name: '',
     room_type: '',
     nights: '',
-    remarks: ''
+    remarks: '',
+    hotel_standard: '',
+    hotel_deluxe: '',
+    hotel_executive: ''
   });
   const [hotelRows, setHotelRows] = useState([]);
 
@@ -250,7 +253,10 @@ const handleAddEMIOptions = () => {
       hotel_name: '',
       room_type: '',
       nights: '',
-      remarks: ''
+      remarks: '',
+      hotel_standard: '',
+      hotel_deluxe: '',
+      hotel_executive: ''
     });
   };
 
@@ -379,33 +385,33 @@ const handleAddEMIOptions = () => {
   const [itineraries, setItineraries] = useState([]);
 
   // Fetch next tour code when component loads
- useEffect(() => {
-  const loadDropdownsAndTourCode = async () => {
-    try {
-      // Pass tour_type as query parameter
-      const tourCodeRes = await fetch(`${baseurl}/api/tours/next-tour-code?tour_type=individual`);
-      if (tourCodeRes.ok) {
-        const tourCodeData = await tourCodeRes.json();
-        setFormData(prev => ({
-          ...prev,
-          tour_code: tourCodeData.next_tour_code
-        }));
+  useEffect(() => {
+    const loadDropdownsAndTourCode = async () => {
+      try {
+        // Pass tour_type as query parameter
+        const tourCodeRes = await fetch(`${baseurl}/api/tours/next-tour-code?tour_type=individual`);
+        if (tourCodeRes.ok) {
+          const tourCodeData = await tourCodeRes.json();
+          setFormData(prev => ({
+            ...prev,
+            tour_code: tourCodeData.next_tour_code
+          }));
+        }
+
+        const catRes = await fetch(`${baseurl}/api/categories/all-tours`);
+        const categoryData = await catRes.json();
+        setCategories(Array.isArray(categoryData) ? categoryData : []);
+
+        const destRes = await fetch(`${baseurl}/api/destinations`);
+        const destData = await destRes.json();
+        setDestinations(Array.isArray(destData) ? destData : []);
+      } catch (err) {
+        setError('Failed to load dropdown data');
       }
+    };
 
-      const catRes = await fetch(`${baseurl}/api/categories/all-tours`);
-      const categoryData = await catRes.json();
-      setCategories(Array.isArray(categoryData) ? categoryData : []);
-
-      const destRes = await fetch(`${baseurl}/api/destinations`);
-      const destData = await destRes.json();
-      setDestinations(Array.isArray(destData) ? destData : []);
-    } catch (err) {
-      setError('Failed to load dropdown data');
-    }
-  };
-
-  loadDropdownsAndTourCode();
-}, []);
+    loadDropdownsAndTourCode();
+  }, []);
 
   // BASIC DETAILS CHANGE
   const handleBasicChange = (e) => {
@@ -606,20 +612,20 @@ const handleAddEMIOptions = () => {
         break;
 
       case 'emiOptions':
-  // Don't validate all rows - just check if at least one row has values
-  const hasAtLeastOneValidOption = emiOptions.some(option => 
-    option.loan_amount && option.loan_amount > 0 && option.emi && option.emi > 0
-  );
-  
-  if (!hasAtLeastOneValidOption) {
-    console.log('No valid EMI options found');
-    setError('Please fill at least one EMI option before proceeding');
-    // Stay on current tab
-    return false;
-  }
-  
-  console.log('EMI options check passed - proceeding to next tab');
-  break;
+        // Don't validate all rows - just check if at least one row has values
+        const hasAtLeastOneValidOption = emiOptions.some(option =>
+          option.loan_amount && option.loan_amount > 0 && option.emi && option.emi > 0
+        );
+
+        if (!hasAtLeastOneValidOption) {
+          console.log('No valid EMI options found');
+          setError('Please fill at least one EMI option before proceeding');
+          // Stay on current tab
+          return false;
+        }
+
+        console.log('EMI options check passed - proceeding to next tab');
+        break;
 
 
       case 'optionalTours':
@@ -759,56 +765,56 @@ const handleAddEMIOptions = () => {
 
       // In your finalSubmit function, update the EMI Options section:
 
-// 9) EMI OPTIONS BULK
-// 9) EMI OPTIONS BULK - UPDATED VERSION
-console.log('Sending EMI options to backend:', emiOptions);
+      // 9) EMI OPTIONS BULK
+      // 9) EMI OPTIONS BULK - UPDATED VERSION
+      console.log('Sending EMI options to backend:', emiOptions);
 
-// Filter only options that have values
-const validEmiOptions = emiOptions.filter(opt => 
-  opt.loan_amount && opt.loan_amount > 0 && opt.emi && opt.emi > 0
-);
+      // Filter only options that have values
+      const validEmiOptions = emiOptions.filter(opt =>
+        opt.loan_amount && opt.loan_amount > 0 && opt.emi && opt.emi > 0
+      );
 
-console.log('Valid EMI options for submission:', validEmiOptions);
+      console.log('Valid EMI options for submission:', validEmiOptions);
 
-if (validEmiOptions.length > 0) {
-  try {
-    const emiPayload = {
-      tour_id: tourId,
-      emi_options: validEmiOptions.map(opt => ({
-        particulars: opt.particulars,
-        months: opt.months,
-        loan_amount: parseFloat(opt.loan_amount),
-        emi: parseFloat(opt.emi)
-      }))
-    };
-    
-    console.log('EMI API Payload:', JSON.stringify(emiPayload, null, 2));
-    
-    const emiResponse = await fetch(`${baseurl}/api/emi-options/emi/bulk`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(emiPayload)
-    });
-    
-    console.log('EMI API Status:', emiResponse.status);
-    
-    if (!emiResponse.ok) {
-      const errorText = await emiResponse.text();
-      console.error('EMI API Error Response:', errorText);
-      // Don't throw error - just log it as EMI options are optional
-      console.warn('EMI options could not be saved, but continuing with other data');
-    } else {
-      const emiResult = await emiResponse.json();
-      console.log('EMI API Success Response:', emiResult);
-    }
-  } catch (error) {
-    console.error('Error saving EMI options:', error);
-    // Don't throw here to allow other data to be saved
-    // EMI options are optional
-  }
-} else {
-  console.log('No valid EMI options to save - this is optional');
-}
+      if (validEmiOptions.length > 0) {
+        try {
+          const emiPayload = {
+            tour_id: tourId,
+            emi_options: validEmiOptions.map(opt => ({
+              particulars: opt.particulars,
+              months: opt.months,
+              loan_amount: parseFloat(opt.loan_amount),
+              emi: parseFloat(opt.emi)
+            }))
+          };
+
+          console.log('EMI API Payload:', JSON.stringify(emiPayload, null, 2));
+
+          const emiResponse = await fetch(`${baseurl}/api/emi-options/emi/bulk`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(emiPayload)
+          });
+
+          console.log('EMI API Status:', emiResponse.status);
+
+          if (!emiResponse.ok) {
+            const errorText = await emiResponse.text();
+            console.error('EMI API Error Response:', errorText);
+            // Don't throw error - just log it as EMI options are optional
+            console.warn('EMI options could not be saved, but continuing with other data');
+          } else {
+            const emiResult = await emiResponse.json();
+            console.log('EMI API Success Response:', emiResult);
+          }
+        } catch (error) {
+          console.error('Error saving EMI options:', error);
+          // Don't throw here to allow other data to be saved
+          // EMI options are optional
+        }
+      } else {
+        console.log('No valid EMI options to save - this is optional');
+      }
 
 
       // 10) HOTELS BULK
@@ -1367,7 +1373,7 @@ if (validEmiOptions.length > 0) {
                   />
                 </Form.Group>
 
-                
+
                 <Form.Group className="mt-3">
                   <Form.Label>EMI Remarks</Form.Label>
                   <Form.Control
@@ -1475,9 +1481,9 @@ if (validEmiOptions.length > 0) {
                           <td>{tour.adult_price || 'NA'}</td>
                           <td>{tour.child_price || 'NA'}</td>
                           <td>
-                            <Button 
-                              variant="link" 
-                              size="sm" 
+                            <Button
+                              variant="link"
+                              size="sm"
                               onClick={() => removeOptionalTourRow(idx)}
                             >
                               remove
@@ -1493,84 +1499,84 @@ if (validEmiOptions.length > 0) {
               {/* ======== EMI OPTIONS ======== */}
               {/* ======== EMI OPTIONS (MANUAL) ======== */}
 
-            <Tab eventKey="emiOptions" title="EMI Options">
+              <Tab eventKey="emiOptions" title="EMI Options">
 
 
-  <Table striped bordered hover responsive className="align-middle">
-    <thead className="table-dark">
-      <tr>
-        <th width="5%">#</th>
-        <th width="30%">Particulars</th>
-        <th width="25%">Loan Amount</th>
-        <th width="15%">Months</th>
-        <th width="25%">EMI</th>
-      </tr>
-    </thead>
-    <tbody>
-      {emiOptions.map((option, index) => (
-        <tr key={index}>
-          <td className="text-center">{index + 1}</td>
-          <td>
-            <Form.Control
-              type="text"
-              value={option.particulars}
-              readOnly
-              plaintext
-              className="border-0 bg-transparent"
-            />
-          </td>
-          <td>
-            <Form.Group className="mb-0">
-              <InputGroup>
-                <InputGroup.Text>₹</InputGroup.Text>
-                <Form.Control
-                  type="number"
-                  min="0"
-                  step="1000"
-                  value={option.loan_amount || ''}
-                  onChange={(e) => handleLoanAmountChange(index, e.target.value)}
-                  placeholder="Optional"
-                />
-              </InputGroup>
-            </Form.Group>
-          </td>
-          <td className="text-center">
-            <Form.Control
-              type="text"
-              value={option.months}
-              readOnly
-              plaintext
-              className="border-0 bg-transparent text-center"
-            />
-          </td>
-          <td>
-            <Form.Group className="mb-0">
-              <InputGroup>
-                <InputGroup.Text>₹</InputGroup.Text>
-                <Form.Control
-                  type="number"
-                  min="0"
-                  step="100"
-                  value={option.emi || ''}
-                  onChange={(e) => handleEMIChange(index, e.target.value)}
-                  placeholder="Optional"
-                />
-              </InputGroup>
-            </Form.Group>
-          </td>
-        </tr>
-      ))}
-    </tbody>
-  </Table>
+                <Table striped bordered hover responsive className="align-middle">
+                  <thead className="table-dark">
+                    <tr>
+                      <th width="5%">#</th>
+                      <th width="30%">Particulars</th>
+                      <th width="25%">Loan Amount</th>
+                      <th width="15%">Months</th>
+                      <th width="25%">EMI</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {emiOptions.map((option, index) => (
+                      <tr key={index}>
+                        <td className="text-center">{index + 1}</td>
+                        <td>
+                          <Form.Control
+                            type="text"
+                            value={option.particulars}
+                            readOnly
+                            plaintext
+                            className="border-0 bg-transparent"
+                          />
+                        </td>
+                        <td>
+                          <Form.Group className="mb-0">
+                            <InputGroup>
+                              <InputGroup.Text>₹</InputGroup.Text>
+                              <Form.Control
+                                type="number"
+                                min="0"
+                                step="1000"
+                                value={option.loan_amount || ''}
+                                onChange={(e) => handleLoanAmountChange(index, e.target.value)}
+                                placeholder="Optional"
+                              />
+                            </InputGroup>
+                          </Form.Group>
+                        </td>
+                        <td className="text-center">
+                          <Form.Control
+                            type="text"
+                            value={option.months}
+                            readOnly
+                            plaintext
+                            className="border-0 bg-transparent text-center"
+                          />
+                        </td>
+                        <td>
+                          <Form.Group className="mb-0">
+                            <InputGroup>
+                              <InputGroup.Text>₹</InputGroup.Text>
+                              <Form.Control
+                                type="number"
+                                min="0"
+                                step="100"
+                                value={option.emi || ''}
+                                onChange={(e) => handleEMIChange(index, e.target.value)}
+                                placeholder="Optional"
+                              />
+                            </InputGroup>
+                          </Form.Group>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </Table>
 
-  <Row className="mt-3">
-    <Col md={12} className="d-flex justify-content-between align-items-center">
-      <div>
-        <small className="text-muted">
-          {/* <i className="fas fa-info-circle"></i> Fill only the options you want to offer. Leave others empty. */}
-        </small>
-      </div>
-      {/* <Button
+                <Row className="mt-3">
+                  <Col md={12} className="d-flex justify-content-between align-items-center">
+                    <div>
+                      <small className="text-muted">
+                        {/* <i className="fas fa-info-circle"></i> Fill only the options you want to offer. Leave others empty. */}
+                      </small>
+                    </div>
+                    {/* <Button
         variant="primary"
         onClick={() => {
           console.log('EMI Options before validation:', emiOptions);
@@ -1579,9 +1585,9 @@ if (validEmiOptions.length > 0) {
       >
         Save EMI Options
       </Button> */}
-    </Col>
-  </Row>
-</Tab>
+                  </Col>
+                </Row>
+              </Tab>
 
 
               <Tab eventKey="inclusions" title="Inclusions">
@@ -1745,6 +1751,40 @@ if (validEmiOptions.length > 0) {
                     </Form.Group>
                   </Col>
 
+                   <Col md={3}>
+                    <Form.Group>
+                      <Form.Label>Standard</Form.Label>
+                      <Form.Control
+                        type="text"
+                        name="hotel_standard"
+                        value={hotelItem.hotel_standard}
+                        onChange={handleHotelChange}
+                      />
+                    </Form.Group>
+                  </Col>
+                   <Col md={3}>
+                    <Form.Group>
+                      <Form.Label>Deluxe</Form.Label>
+                      <Form.Control
+                        type="text"
+                        name="hotel_deluxe"
+                        value={hotelItem.hotel_deluxe}
+                        onChange={handleHotelChange}
+                      />
+                    </Form.Group>
+                  </Col>
+                   <Col md={3}>
+                    <Form.Group>
+                      <Form.Label>Executive</Form.Label>
+                      <Form.Control
+                        type="text"
+                        name="hotel_executive"
+                        value={hotelItem.hotel_executive}
+                        onChange={handleHotelChange}
+                      />
+                    </Form.Group>
+                  </Col>
+
                   <Col md={3}>
                     <Form.Group>
                       <Form.Label>Room Type</Form.Label>
@@ -1790,6 +1830,9 @@ if (validEmiOptions.length > 0) {
                         <th>Hotel</th>
                         <th>Room</th>
                         <th>Nights</th>
+                           <th>Standard</th>
+                              <th>Deluxe</th>
+                                 <th>Executive</th>
                         <th></th>
                       </tr>
                     </thead>
@@ -1801,6 +1844,9 @@ if (validEmiOptions.length > 0) {
                           <td>{h.hotel_name}</td>
                           <td>{h.room_type}</td>
                           <td>{h.nights}</td>
+                           <td>{h.hotel_standard}</td>
+                            <td>{h.hotel_deluxe}</td>
+                             <td>{h.hotel_executive}</td>
                           <td>
                             <Button variant="link" size="sm" onClick={() => removeHotelRow(idx)}>remove</Button>
                           </td>
@@ -1836,16 +1882,16 @@ if (validEmiOptions.length > 0) {
                     </Col>
                   </Row>
 
-                   <Form.Group className="mt-3">
-                  <Form.Label>Booking POI Remarks</Form.Label>
-                  <Form.Control
-                    as="textarea"
-                    rows={3}
-                    name="booking_poi_remarks"
-                    value={formData.booking_poi_remarks}
-                    onChange={handleBasicChange}
-                  />
-                </Form.Group>
+                  <Form.Group className="mt-3">
+                    <Form.Label>Booking POI Remarks</Form.Label>
+                    <Form.Control
+                      as="textarea"
+                      rows={3}
+                      name="booking_poi_remarks"
+                      value={formData.booking_poi_remarks}
+                      onChange={handleBasicChange}
+                    />
+                  </Form.Group>
 
                 </Form.Group>
 
@@ -1911,7 +1957,7 @@ if (validEmiOptions.length > 0) {
                   </Col>
                 </Row>
 
-                 <Form.Group className="mt-3">
+                <Form.Group className="mt-3">
                   <Form.Label>Cancellation Remarks</Form.Label>
                   <Form.Control
                     as="textarea"
