@@ -24,7 +24,7 @@ const AddGroupTour = () => {
     'basic',
     'itineraries',
     'departures',
-    // 'costs',
+    'costs',
     'optionalTours',
     'emiOptions',
     'inclusions',
