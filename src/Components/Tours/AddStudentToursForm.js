@@ -440,32 +440,32 @@ const AddStudentTour = () => {
 
   // Fetch next tour code when component loads
   useEffect(() => {
-    const loadDropdownsAndTourCode = async () => {
-      try {
-        // Pass tour_type as query parameter
-        const tourCodeRes = await fetch(`${baseurl}/api/tours/next-tour-code?tour_type=group`);
-        if (tourCodeRes.ok) {
-          const tourCodeData = await tourCodeRes.json();
-          setFormData(prev => ({
-            ...prev,
-            tour_code: tourCodeData.next_tour_code
-          }));
-        }
-
-        const catRes = await fetch(`${baseurl}/api/categories/all-tours`);
-        const categoryData = await catRes.json();
-        setCategories(Array.isArray(categoryData) ? categoryData : []);
-
-        const destRes = await fetch(`${baseurl}/api/destinations`);
-        const destData = await destRes.json();
-        setDestinations(Array.isArray(destData) ? destData : []);
-      } catch (err) {
-        setError('Failed to load dropdown data');
+  const loadDropdownsAndTourCode = async () => {
+    try {
+      // Pass tour_type as query parameter
+      const tourCodeRes = await fetch(`${baseurl}/api/tours/next-tour-code?tour_type=student`);
+      if (tourCodeRes.ok) {
+        const tourCodeData = await tourCodeRes.json();
+        setFormData(prev => ({
+          ...prev,
+          tour_code: tourCodeData.next_tour_code
+        }));
       }
-    };
 
-    loadDropdownsAndTourCode();
-  }, []);
+      const catRes = await fetch(`${baseurl}/api/categories/all-tours`);
+      const categoryData = await catRes.json();
+      setCategories(Array.isArray(categoryData) ? categoryData : []);
+
+      const destRes = await fetch(`${baseurl}/api/destinations`);
+      const destData = await destRes.json();
+      setDestinations(Array.isArray(destData) ? destData : []);
+    } catch (err) {
+      setError('Failed to load dropdown data');
+    }
+  };
+
+  loadDropdownsAndTourCode();
+}, []);
 
   // BASIC DETAILS CHANGE
   const handleBasicChange = (e) => {
