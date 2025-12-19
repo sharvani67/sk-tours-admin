@@ -37,7 +37,7 @@ const TourCategoriesTable = () => {
   }, []);
 
   const handleAddCategory = () => {
-    navigate('/add-tour-category');
+    navigate('/add-category');
   };
 
   // Format date for display

@@ -118,11 +118,41 @@ const Navbar = ({ children }) => {
     matchPaths: ["/group-tours", "add-group-tour"],
   },
 
+  
+  // NEW TABS ADDED HERE
+  {
+    label: "Ladies Special Tours",
+    path: "/ladies-special-tours",
+    icon: <FiUsers className="sidebar-icon" />,
+    matchPaths: ["/ladies-special-tours", "add-ladies-special-tour"],
+  },
+
+  {
+    label: "Senior Citizen Tours",
+    path: "/senior-citizen-tours",
+    icon: <FiUsers className="sidebar-icon" />,
+    matchPaths: ["/senior-citizen-tours", "add-senior-citizen-tour"],
+  },
+
+  {
+    label: "Student Tours",
+    path: "/student-tours",
+    icon: <FiUsers className="sidebar-icon" />,
+    matchPaths: ["/student-tours", "add-student-tour"],
+  },
+
+  {
+    label: "Honeymoon Tours",
+    path: "/honeymoon-tours",
+    icon: <FiMap className="sidebar-icon" />,
+    matchPaths: ["/honeymoon-tours", "add-honeymoon-tour"],
+  },
+
    {
     label: "Tours-categories",
     path: "/categories-tours",
     icon: <FiMap className="sidebar-icon" />,   // tours = map routes
-    matchPaths: ["/tours-categories"],
+    matchPaths: ["/categories-tour","/add-category"],
   },
 
   // {
@@ -136,7 +166,7 @@ const Navbar = ({ children }) => {
     label: "Destinations",
     path: "/destinations",
     icon: <FiMapPin className="sidebar-icon" />, // place pin
-    matchPaths: ["/destinations"],
+    matchPaths: ["/destinations", "/add-destination"],
   },
 
   // {

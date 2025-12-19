@@ -23,6 +23,17 @@ import GroupTourDetails from "./Components/Tours/GroupTourDetails";
 
 
 
+
+import LadiesSpecialTours from './Components/Tours/LadiesSpecialTable';
+import AddLadiesSpecialTour from './Components/Tours/AddLadiesSpecial';
+import SeniorCitizenTours from './Components/Tours/SeniorCitizenTable';
+import AddSeniorCitizenTour from './Components/Tours/AddSeniorCitizen';
+import StudentTours from './Components/Tours/StudentToursTable';
+import AddStudentTour from './Components/Tours/AddStudentToursForm';
+import HoneymoonTours from './Components/Tours/HoneyMoonTable';
+import AddHoneymoonTour from './Components/Tours/AddHoneyMoonForm';
+
+
 function App() {
   return (
     <BrowserRouter>
@@ -38,7 +49,7 @@ function App() {
         <Route path="/visa-appointments" element={<Visaappointments />} />
         <Route path="/visa-appointment-details" element={<VisaAppointmentDetails />} />
          <Route path="/categories-tours" element={<TourCategoriesTable />} />
-        <Route path="/add-tour-category" element={<AddTourCategory />} /> {/* Add this route */}
+        <Route path="/add-category" element={<AddTourCategory />} /> {/* Add this route */}
          <Route path="/countries" element={<Countries />} />
          <Route path="/add-country" element={<AddCountry />} />
          <Route path="/destinations" element={<Destinations />} />
@@ -52,6 +63,23 @@ function App() {
           <Route path="/tour-details/:tourId" element={<TourDetails />} />
            <Route path="/group-tour-details/:tourId" element={<GroupTourDetails />} />
         {/* Catch-all Route */}
+
+       
+          <Route path="/ladies-special-tours" element={<LadiesSpecialTours />} />
+          <Route path="/add-ladies-special-tour" element={<AddLadiesSpecialTour />} />
+          {/* <Route path="/ladies-special-tour-details/:id" element={<TourDetails />} />  */}
+
+          <Route path="/senior-citizen-tours" element={<SeniorCitizenTours />} />
+          <Route path="/add-senior-citizen-tour" element={<AddSeniorCitizenTour />} />
+          {/* <Route path="/senior-citizen-tour-details/:id" element={<TourDetails />} /> */}
+
+          <Route path="/student-tours" element={<StudentTours />} />
+          <Route path="/add-student-tour" element={<AddStudentTour />} />
+          {/* <Route path="/student-tour-details/:id" element={<TourDetails />} /> */}
+
+          <Route path="/honeymoon-tours" element={<HoneymoonTours />} />
+          <Route path="/add-honeymoon-tour" element={<AddHoneymoonTour />} />
+          {/* <Route path="/honeymoon-tour-details/:id" element={<TourDetails />} /> */}
         
 
       </Routes>
