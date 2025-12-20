@@ -1046,7 +1046,7 @@ const AddSeniorTour = () => {
       }
 
       setSuccess('Tour saved successfully!');
-      setTimeout(() => navigate('/group-tours'), 1500);
+      setTimeout(() => navigate('/senior-citizen-tours'), 1500);
     } catch (err) {
       setError(err.message || 'Failed to save tour');
     } finally {

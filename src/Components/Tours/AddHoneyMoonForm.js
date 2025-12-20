@@ -951,7 +951,7 @@ const AddHoneyMoonTour = () => {
       }
 
       setSuccess('Tour saved successfully!');
-      setTimeout(() => navigate('/tours'), 1500);
+      setTimeout(() => navigate('/honeymoon-tours'), 1500);
     } catch (err) {
       setError(err.message || 'Failed to save tour');
     } finally {
