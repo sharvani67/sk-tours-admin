@@ -9,7 +9,8 @@ import {
   Badge,
 } from "react-bootstrap";
 import {
-  FiMenu,FiHome,FiUsers,FiUser, FiLogOut,FiX, FiBell,FiClock,FiFlag,FiMap,FiMapPin,FiGift,FiArchive,FiAnchor,FiSettings
+  FiMenu,FiHome,FiUsers,FiUser, FiLogOut,FiX, FiBell,FiClock,FiFlag,FiMap,FiMapPin,FiGift,FiArchive,FiAnchor,FiSettings,
+  FiVideo
 } from "react-icons/fi";
 
 import { useNavigate, useLocation } from "react-router-dom";
@@ -90,6 +91,12 @@ const Navbar = ({ children }) => {
     path: "/dashboard", 
     icon: <FiHome className="sidebar-icon" /> 
   },
+   {
+    label: "Add Videos",
+    path: "/add-video",
+    icon: <FiVideo className="sidebar-icon" />,   // tours = map routes
+    // matchPaths: ["/categories-tour","/add-video"],
+  },
 
   {
     label: "Countries",
@@ -154,6 +161,7 @@ const Navbar = ({ children }) => {
     icon: <FiMap className="sidebar-icon" />,   // tours = map routes
     matchPaths: ["/categories-tour","/add-category"],
   },
+
 
   // {
   //   label: "Promotions",
