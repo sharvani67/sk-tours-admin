@@ -33,6 +33,11 @@ import AddStudentTour from './Components/Tours/AddStudentToursForm';
 import HoneymoonTours from './Components/Tours/HoneyMoonTable';
 import AddHoneymoonTour from './Components/Tours/AddHoneyMoonForm';
 
+import LadiesTourDetails from "./Components/Tours/LadiesTourDetails";
+import SeniorCitizenTourDetails from "./Components/Tours/SetizenTourDetails";
+import StudentTourDetails from "./Components/Tours/StudentTourDetails";
+import HoneymoonTourDetails from "./Components/Tours/HoneyMoonTour";
+
 
 function App() {
   return (
@@ -62,6 +67,10 @@ function App() {
 
           <Route path="/tour-details/:tourId" element={<TourDetails />} />
            <Route path="/group-tour-details/:tourId" element={<GroupTourDetails />} />
+             <Route path="/ladies-special-tour-details/:tourId" element={<LadiesTourDetails />} />
+               <Route path="/senior-citizen-tour-details/:tourId" element={<SeniorCitizenTourDetails />} />
+                 <Route path="/student-tour-details/:tourId" element={<StudentTourDetails />} />
+                    <Route path="/honeymoon-tour-details/:tourId" element={<HoneymoonTourDetails />} />
         {/* Catch-all Route */}
 
        
