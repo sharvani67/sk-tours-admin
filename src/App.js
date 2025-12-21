@@ -62,9 +62,12 @@ function App() {
          <Route path="/add-destination" element={<AddDestination />} />
          <Route path="/tours" element={<Tours />} />
           <Route path="/add-tour" element={<AddTour />} />
+          <Route path="/edit-tour/:id" element={<AddTour />} />
+
 
            <Route path="/group-tours" element={<GroupTours />} />
           <Route path="/add-group-tour" element={<AddGroupTour />} /> 
+           <Route path="/edit-group-tour/:id" element={<AddGroupTour />} />
 
           <Route path="/tour-details/:tourId" element={<TourDetails />} />
            <Route path="/group-tour-details/:tourId" element={<GroupTourDetails />} />
@@ -77,18 +80,21 @@ function App() {
        
           <Route path="/ladies-special-tours" element={<LadiesSpecialTours />} />
           <Route path="/add-ladies-special-tour" element={<AddLadiesSpecialTour />} />
-          {/* <Route path="/ladies-special-tour-details/:id" element={<TourDetails />} />  */}
+          <Route path="/edit-ladies-special-tour/:id" element={<AddLadiesSpecialTour />} /> 
 
           <Route path="/senior-citizen-tours" element={<SeniorCitizenTours />} />
           <Route path="/add-senior-citizen-tour" element={<AddSeniorCitizenTour />} />
+          <Route path="/edit-senior-citizen-tour/:id" element={<AddSeniorCitizenTour />} />
           {/* <Route path="/senior-citizen-tour-details/:id" element={<TourDetails />} /> */}
 
           <Route path="/student-tours" element={<StudentTours />} />
           <Route path="/add-student-tour" element={<AddStudentTour />} />
+          <Route path="/edit-student-tour/:id" element={<AddStudentTour />} />
           {/* <Route path="/student-tour-details/:id" element={<TourDetails />} /> */}
 
           <Route path="/honeymoon-tours" element={<HoneymoonTours />} />
           <Route path="/add-honeymoon-tour" element={<AddHoneymoonTour />} />
+          <Route path="/edit-honeymoon-tour/:id" element={<AddHoneymoonTour />} />
           {/* <Route path="/honeymoon-tour-details/:id" element={<TourDetails />} /> */}
           <Route path="/add-video" element={<AdminVideoManager />} />
         
