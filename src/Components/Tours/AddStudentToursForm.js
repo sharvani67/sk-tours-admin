@@ -19,10 +19,9 @@ import { Pencil, Trash } from 'react-bootstrap-icons';
 
 const AddStudentTour = () => {
   const navigate = useNavigate();
-  const { id } = useParams(); // Get tour ID from URL for edit mode
+  const { id } = useParams();
   const isEditMode = !!id;
 
-  // TAB ORDER MUST MATCH JSX ORDER
   const TAB_LIST = [
     'basic',
     'itineraries',
@@ -69,15 +68,36 @@ const AddStudentTour = () => {
   });
 
   // =======================
-  // DEPARTURES FOR STUDENT TOURS (SAME AS GROUP TOURS)
+  // DEPARTURES FOR STUDENT TOURS - UPDATED WITH HOTEL PRICE FIELDS
   // =======================
-  const [groupDepartureForm, setGroupDepartureForm] = useState({
+  const [studentDepartureForm, setStudentDepartureForm] = useState({
     start_date: '',
     end_date: '',
     status: 'Available',
     total_seats: 40,
     booked_seats: 0,
     description: '',
+    // 3-Star Hotel Prices
+    three_star_twin: '',
+    three_star_triple: '',
+    three_star_child_with_bed: '',
+    three_star_child_without_bed: '',
+    three_star_infant: '',
+    three_star_single: '',
+    // 4-Star Hotel Prices
+    four_star_twin: '',
+    four_star_triple: '',
+    four_star_child_with_bed: '',
+    four_star_child_without_bed: '',
+    four_star_infant: '',
+    four_star_single: '',
+    // 5-Star Hotel Prices
+    five_star_twin: '',
+    five_star_triple: '',
+    five_star_child_with_bed: '',
+    five_star_child_without_bed: '',
+    five_star_infant: '',
+    five_star_single: ''
   });
 
   const [departures, setDepartures] = useState([]);
@@ -368,7 +388,6 @@ const AddStudentTour = () => {
   const editItinerary = (idx) => {
     const item = itineraries[idx];
     
-    // Parse meals string back to checkboxes
     const mealsArray = item.meals ? item.meals.split(', ') : [];
     const meals = {
       breakfast: mealsArray.includes('Breakfast'),
@@ -390,7 +409,6 @@ const AddStudentTour = () => {
   useEffect(() => {
     const loadDropdownsAndTourCode = async () => {
       try {
-        // Load dropdowns
         const catRes = await fetch(`${baseurl}/api/categories/all-tours`);
         const categoryData = await catRes.json();
         setCategories(Array.isArray(categoryData) ? categoryData : []);
@@ -400,10 +418,8 @@ const AddStudentTour = () => {
         setDestinations(Array.isArray(destData) ? destData : []);
 
         if (isEditMode) {
-          // Load existing tour data for edit
           await loadTourData();
         } else {
-          // Load next tour code for add mode
           const tourCodeRes = await fetch(`${baseurl}/api/tours/next-tour-code?tour_type=student`);
           if (tourCodeRes.ok) {
             const tourCodeData = await tourCodeRes.json();
@@ -421,20 +437,18 @@ const AddStudentTour = () => {
     loadDropdownsAndTourCode();
   }, [id]);
 
-  // Load tour data for editing
+  // Load tour data for editing - UPDATED TO INCLUDE HOTEL PRICE FIELDS
   const loadTourData = async () => {
     try {
       setLoading(true);
       setError('');
       
-      // Fetch full tour data for student tour
       const response = await fetch(`${baseurl}/api/tours/tour/full/student/${id}`);
       if (!response.ok) throw new Error('Failed to fetch tour data');
       
       const data = await response.json();
       
       if (data.success) {
-        // Set basic form data
         const basic = data.basic_details;
         setFormData({
           tour_code: basic.tour_code || '',
@@ -465,7 +479,7 @@ const AddStudentTour = () => {
           setItineraries(formattedItineraries);
         }
 
-        // Set departures - Student tours have different structure
+        // Set departures - Updated with hotel price fields like Senior Tour
         if (data.departures && Array.isArray(data.departures)) {
           const formattedDepartures = data.departures.map(dept => ({
             start_date: dept.start_date ? dept.start_date.split('T')[0] : '',
@@ -474,9 +488,27 @@ const AddStudentTour = () => {
             total_seats: dept.total_seats || 40,
             booked_seats: dept.booked_seats || 0,
             description: dept.description || '',
-            adult_price: dept.adult_price || '',
-            child_price: dept.child_price || '',
-            infant_price: dept.infant_price || ''
+            // 3-Star Hotel Prices
+            three_star_twin: dept.three_star_twin || '',
+            three_star_triple: dept.three_star_triple || '',
+            three_star_child_with_bed: dept.three_star_child_with_bed || '',
+            three_star_child_without_bed: dept.three_star_child_without_bed || '',
+            three_star_infant: dept.three_star_infant || '',
+            three_star_single: dept.three_star_single || '',
+            // 4-Star Hotel Prices
+            four_star_twin: dept.four_star_twin || '',
+            four_star_triple: dept.four_star_triple || '',
+            four_star_child_with_bed: dept.four_star_child_with_bed || '',
+            four_star_child_without_bed: dept.four_star_child_without_bed || '',
+            four_star_infant: dept.four_star_infant || '',
+            four_star_single: dept.four_star_single || '',
+            // 5-Star Hotel Prices
+            five_star_twin: dept.five_star_twin || '',
+            five_star_triple: dept.five_star_triple || '',
+            five_star_child_with_bed: dept.five_star_child_with_bed || '',
+            five_star_child_without_bed: dept.five_star_child_without_bed || '',
+            five_star_infant: dept.five_star_infant || '',
+            five_star_single: dept.five_star_single || ''
           }));
           setDepartures(formattedDepartures);
         }
@@ -524,16 +556,7 @@ const AddStudentTour = () => {
 
         // Set hotels
         if (data.hotels && Array.isArray(data.hotels)) {
-          setHotelRows(data.hotels.map(hotel => ({
-            city: hotel.city,
-            hotel_name: hotel.hotel_name,
-            room_type: hotel.room_type,
-            nights: hotel.nights,
-            remarks: hotel.remarks,
-            hotel_standard: hotel.hotel_standard || '',
-            hotel_deluxe: hotel.hotel_deluxe || '',
-            hotel_executive: hotel.hotel_executive || ''
-          })));
+          setHotelRows(data.hotels);
         }
 
         // Set transport
@@ -602,15 +625,20 @@ const AddStudentTour = () => {
     }));
   };
 
-  // DEPARTURE FORM CHANGE - Student Tour
-  const handleGroupDepartureChange = (e) => {
+  // DEPARTURE FORM CHANGE - UPDATED WITH HOTEL PRICE FIELDS
+  const handleStudentDepartureChange = (e) => {
     const { name, value } = e.target;
     const numericFields = [
       'total_seats', 'booked_seats',
-      'adult_price', 'child_price', 'infant_price'
+      'three_star_twin', 'three_star_triple', 'three_star_child_with_bed',
+      'three_star_child_without_bed', 'three_star_infant', 'three_star_single',
+      'four_star_twin', 'four_star_triple', 'four_star_child_with_bed',
+      'four_star_child_without_bed', 'four_star_infant', 'four_star_single',
+      'five_star_twin', 'five_star_triple', 'five_star_child_with_bed',
+      'five_star_child_without_bed', 'five_star_infant', 'five_star_single'
     ];
 
-    setGroupDepartureForm((prev) => ({
+    setStudentDepartureForm((prev) => ({
       ...prev,
       [name]: numericFields.includes(name)
         ? value === '' ? '' : Number(value)
@@ -619,35 +647,68 @@ const AddStudentTour = () => {
   };
 
   const handleAddDeparture = () => {
-    if (!groupDepartureForm.start_date || !groupDepartureForm.end_date) return;
+    if (!studentDepartureForm.start_date || !studentDepartureForm.end_date) return;
 
     const departureData = {
-      ...groupDepartureForm,
+      ...studentDepartureForm,
       // Ensure all price fields are numbers or null
-      adult_price: groupDepartureForm.adult_price || null,
-      child_price: groupDepartureForm.child_price || null,
-      infant_price: groupDepartureForm.infant_price || null
+      three_star_twin: studentDepartureForm.three_star_twin || null,
+      three_star_triple: studentDepartureForm.three_star_triple || null,
+      three_star_child_with_bed: studentDepartureForm.three_star_child_with_bed || null,
+      three_star_child_without_bed: studentDepartureForm.three_star_child_without_bed || null,
+      three_star_infant: studentDepartureForm.three_star_infant || null,
+      three_star_single: studentDepartureForm.three_star_single || null,
+      four_star_twin: studentDepartureForm.four_star_twin || null,
+      four_star_triple: studentDepartureForm.four_star_triple || null,
+      four_star_child_with_bed: studentDepartureForm.four_star_child_with_bed || null,
+      four_star_child_without_bed: studentDepartureForm.four_star_child_without_bed || null,
+      four_star_infant: studentDepartureForm.four_star_infant || null,
+      four_star_single: studentDepartureForm.four_star_single || null,
+      five_star_twin: studentDepartureForm.five_star_twin || null,
+      five_star_triple: studentDepartureForm.five_star_triple || null,
+      five_star_child_with_bed: studentDepartureForm.five_star_child_with_bed || null,
+      five_star_child_without_bed: studentDepartureForm.five_star_child_without_bed || null,
+      five_star_infant: studentDepartureForm.five_star_infant || null,
+      five_star_single: studentDepartureForm.five_star_single || null
     };
 
     setDepartures((prev) => [...prev, departureData]);
 
     // Reset form
-    setGroupDepartureForm({
+    setStudentDepartureForm({
       start_date: '',
       end_date: '',
       status: 'Available',
       total_seats: 40,
       booked_seats: 0,
       description: '',
-      adult_price: '',
-      child_price: '',
-      infant_price: ''
+      // 3-Star Hotel Prices
+      three_star_twin: '',
+      three_star_triple: '',
+      three_star_child_with_bed: '',
+      three_star_child_without_bed: '',
+      three_star_infant: '',
+      three_star_single: '',
+      // 4-Star Hotel Prices
+      four_star_twin: '',
+      four_star_triple: '',
+      four_star_child_with_bed: '',
+      four_star_child_without_bed: '',
+      four_star_infant: '',
+      four_star_single: '',
+      // 5-Star Hotel Prices
+      five_star_twin: '',
+      five_star_triple: '',
+      five_star_child_with_bed: '',
+      five_star_child_without_bed: '',
+      five_star_infant: '',
+      five_star_single: ''
     });
   };
 
   const editDeparture = (idx) => {
     const departure = departures[idx];
-    setGroupDepartureForm(departure);
+    setStudentDepartureForm(departure);
     setDepartures(prev => prev.filter((_, i) => i !== idx));
   };
 
@@ -799,7 +860,7 @@ const AddStudentTour = () => {
         break;
 
       case 'departures':
-        if (groupDepartureForm.start_date && groupDepartureForm.end_date) {
+        if (studentDepartureForm.start_date && studentDepartureForm.end_date) {
           handleAddDeparture();
         }
         break;
@@ -868,7 +929,7 @@ const AddStudentTour = () => {
     }
   };
 
-  // UPDATE EXISTING TOUR
+  // UPDATE EXISTING TOUR - UPDATED WITH HOTEL PRICE FIELDS
   const updateTour = async () => {
     if (!formData.tour_code.trim()) {
       setError('Tour code is required');
@@ -886,7 +947,6 @@ const AddStudentTour = () => {
       setError('');
       setSuccess('');
 
-      // 1) PREPARE BASIC TOUR DATA FOR UPDATE
       const tourUpdateData = {
         title: formData.title.trim(),
         tour_type: formData.tour_type || 'student',
@@ -905,7 +965,6 @@ const AddStudentTour = () => {
 
       console.log('Updating student tour with data:', tourUpdateData);
 
-      // 1) UPDATE TOUR BASIC DETAILS
       const tourRes = await fetch(`${baseurl}/api/tours/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -918,7 +977,7 @@ const AddStudentTour = () => {
         throw new Error(tourResponse.error || tourResponse.message || 'Failed to update tour');
       }
 
-      // 2) DELETE EXISTING DATA
+      // DELETE EXISTING DATA
       const deleteEndpoints = [
         `${baseurl}/api/departures/bulk/${id}`,
         `${baseurl}/api/optional-tours/tour/${id}`,
@@ -941,20 +1000,39 @@ const AddStudentTour = () => {
         }
       }
 
-      // 3) RE-ADD ALL DATA
-      // Departures - Student tours
+      // RE-ADD ALL DATA
+      // Departures - Updated with hotel price fields
       if (departures.length > 0) {
         const formattedDepartures = departures.map(dept => ({
-          tour_type: 'Group', // Note: Student tours use Group type in departures
+          tour_type: 'Group',
           start_date: dept.start_date,
           end_date: dept.end_date,
           status: dept.status,
           total_seats: dept.total_seats || 40,
           booked_seats: dept.booked_seats || 0,
           description: dept.description || null,
-          adult_price: dept.adult_price || null,
-          child_price: dept.child_price || null,
-          infant_price: dept.infant_price || null
+          adult_price: dept.three_star_twin || 0,
+          // 3-Star Hotel Prices
+          three_star_twin: dept.three_star_twin || null,
+          three_star_triple: dept.three_star_triple || null,
+          three_star_child_with_bed: dept.three_star_child_with_bed || null,
+          three_star_child_without_bed: dept.three_star_child_without_bed || null,
+          three_star_infant: dept.three_star_infant || null,
+          three_star_single: dept.three_star_single || null,
+          // 4-Star Hotel Prices
+          four_star_twin: dept.four_star_twin || null,
+          four_star_triple: dept.four_star_triple || null,
+          four_star_child_with_bed: dept.four_star_child_with_bed || null,
+          four_star_child_without_bed: dept.four_star_child_without_bed || null,
+          four_star_infant: dept.four_star_infant || null,
+          four_star_single: dept.four_star_single || null,
+          // 5-Star Hotel Prices
+          five_star_twin: dept.five_star_twin || null,
+          five_star_triple: dept.five_star_triple || null,
+          five_star_child_with_bed: dept.five_star_child_with_bed || null,
+          five_star_child_without_bed: dept.five_star_child_without_bed || null,
+          five_star_infant: dept.five_star_infant || null,
+          five_star_single: dept.five_star_single || null
         }));
 
         await fetch(`${baseurl}/api/departures/bulk`, {
@@ -1090,7 +1168,7 @@ const AddStudentTour = () => {
     }
   };
 
-  // CREATE NEW STUDENT TOUR
+  // CREATE NEW STUDENT TOUR - UPDATED WITH HOTEL PRICE FIELDS
   const createTour = async () => {
     if (!formData.tour_code.trim()) {
       setError('Tour code is required');
@@ -1123,19 +1201,38 @@ const AddStudentTour = () => {
       const tourData = await tourRes.json();
       const tourId = tourData.tour_id || tourData.id || tourData.insertId;
 
-      // 2) DEPARTURES BULK - STUDENT TOURS
+      // 2) DEPARTURES BULK - UPDATED WITH HOTEL PRICE FIELDS
       if (departures.length > 0) {
         const formattedDepartures = departures.map(dept => ({
-          tour_type: 'Group', // Student tours use Group type in departures
+          tour_type: 'Group',
           start_date: dept.start_date,
           end_date: dept.end_date,
           status: dept.status,
           total_seats: dept.total_seats || 40,
           booked_seats: dept.booked_seats || 0,
           description: dept.description || null,
-          adult_price: dept.adult_price || null,
-          child_price: dept.child_price || null,
-          infant_price: dept.infant_price || null
+          adult_price: dept.three_star_twin || 0,
+          // 3-Star Hotel Prices
+          three_star_twin: dept.three_star_twin || null,
+          three_star_triple: dept.three_star_triple || null,
+          three_star_child_with_bed: dept.three_star_child_with_bed || null,
+          three_star_child_without_bed: dept.three_star_child_without_bed || null,
+          three_star_infant: dept.three_star_infant || null,
+          three_star_single: dept.three_star_single || null,
+          // 4-Star Hotel Prices
+          four_star_twin: dept.four_star_twin || null,
+          four_star_triple: dept.four_star_triple || null,
+          four_star_child_with_bed: dept.four_star_child_with_bed || null,
+          four_star_child_without_bed: dept.four_star_child_without_bed || null,
+          four_star_infant: dept.four_star_infant || null,
+          four_star_single: dept.four_star_single || null,
+          // 5-Star Hotel Prices
+          five_star_twin: dept.five_star_twin || null,
+          five_star_triple: dept.five_star_triple || null,
+          five_star_child_with_bed: dept.five_star_child_with_bed || null,
+          five_star_child_without_bed: dept.five_star_child_without_bed || null,
+          five_star_infant: dept.five_star_infant || null,
+          five_star_single: dept.five_star_single || null
         }));
 
         await fetch(`${baseurl}/api/departures/bulk`, {
@@ -1532,7 +1629,7 @@ const AddStudentTour = () => {
                 )}
               </Tab>
 
-              {/* ======== DEPARTURES TAB - STUDENT TOUR ======== */}
+              {/* ======== DEPARTURES TAB - STUDENT TOUR (UPDATED) ======== */}
               <Tab eventKey="departures" title="Departures">
                 <div>
                   {/* Departure Dates Section */}
@@ -1544,8 +1641,8 @@ const AddStudentTour = () => {
                         <Form.Control
                           type="date"
                           name="start_date"
-                          value={groupDepartureForm.start_date}
-                          onChange={handleGroupDepartureChange}
+                          value={studentDepartureForm.start_date}
+                          onChange={handleStudentDepartureChange}
                         />
                       </Form.Group>
                     </Col>
@@ -1556,8 +1653,8 @@ const AddStudentTour = () => {
                         <Form.Control
                           type="date"
                           name="end_date"
-                          value={groupDepartureForm.end_date}
-                          onChange={handleGroupDepartureChange}
+                          value={studentDepartureForm.end_date}
+                          onChange={handleStudentDepartureChange}
                         />
                       </Form.Group>
                     </Col>
@@ -1567,8 +1664,8 @@ const AddStudentTour = () => {
                         <Form.Label>Status *</Form.Label>
                         <Form.Select
                           name="status"
-                          value={groupDepartureForm.status}
-                          onChange={handleGroupDepartureChange}
+                          value={studentDepartureForm.status}
+                          onChange={handleStudentDepartureChange}
                         >
                           <option value="Available">Available</option>
                           <option value="Few Seats">Few Seats</option>
@@ -1584,8 +1681,8 @@ const AddStudentTour = () => {
                         <Form.Control
                           type="number"
                           name="total_seats"
-                          value={groupDepartureForm.total_seats}
-                          onChange={handleGroupDepartureChange}
+                          value={studentDepartureForm.total_seats}
+                          onChange={handleStudentDepartureChange}
                           placeholder="Total seats"
                         />
                       </Form.Group>
@@ -1597,8 +1694,8 @@ const AddStudentTour = () => {
                         <Form.Control
                           type="number"
                           name="booked_seats"
-                          value={groupDepartureForm.booked_seats}
-                          onChange={handleGroupDepartureChange}
+                          value={studentDepartureForm.booked_seats}
+                          onChange={handleStudentDepartureChange}
                           placeholder="Booked seats"
                         />
                       </Form.Group>
@@ -1610,49 +1707,239 @@ const AddStudentTour = () => {
                         <Form.Control
                           type="text"
                           name="description"
-                          value={groupDepartureForm.description}
-                          onChange={handleGroupDepartureChange}
+                          value={studentDepartureForm.description}
+                          onChange={handleStudentDepartureChange}
                           placeholder="Optional description"
                         />
                       </Form.Group>
                     </Col>
                   </Row>
 
-                  {/* Prices Section */}
+                  {/* 3-Star Hotel Prices */}
                   <Row className="mb-4">
-                    <h5>Prices</h5>
-                    <Col md={4}>
+                    <h5>3-Star Hotel Prices</h5>
+                    <Col md={2}>
                       <Form.Group>
-                        <Form.Label>Adult Price</Form.Label>
+                        <Form.Label>Twin Sharing</Form.Label>
                         <Form.Control
                           type="number"
-                          name="adult_price"
-                          value={groupDepartureForm.adult_price}
-                          onChange={handleGroupDepartureChange}
+                          name="three_star_twin"
+                          value={studentDepartureForm.three_star_twin}
+                          onChange={handleStudentDepartureChange}
                           placeholder="₹"
                         />
                       </Form.Group>
                     </Col>
-                    <Col md={4}>
+                    <Col md={2}>
                       <Form.Group>
-                        <Form.Label>Child Price</Form.Label>
+                        <Form.Label>Triple Sharing</Form.Label>
                         <Form.Control
                           type="number"
-                          name="child_price"
-                          value={groupDepartureForm.child_price}
-                          onChange={handleGroupDepartureChange}
+                          name="three_star_triple"
+                          value={studentDepartureForm.three_star_triple}
+                          onChange={handleStudentDepartureChange}
                           placeholder="₹"
                         />
                       </Form.Group>
                     </Col>
-                    <Col md={4}>
+                    <Col md={2}>
                       <Form.Group>
-                        <Form.Label>Infant Price</Form.Label>
+                        <Form.Label>Child With Bed</Form.Label>
                         <Form.Control
                           type="number"
-                          name="infant_price"
-                          value={groupDepartureForm.infant_price}
-                          onChange={handleGroupDepartureChange}
+                          name="three_star_child_with_bed"
+                          value={studentDepartureForm.three_star_child_with_bed}
+                          onChange={handleStudentDepartureChange}
+                          placeholder="₹"
+                        />
+                      </Form.Group>
+                    </Col>
+                    <Col md={2}>
+                      <Form.Group>
+                        <Form.Label>Child No Bed</Form.Label>
+                        <Form.Control
+                          type="number"
+                          name="three_star_child_without_bed"
+                          value={studentDepartureForm.three_star_child_without_bed}
+                          onChange={handleStudentDepartureChange}
+                          placeholder="₹"
+                        />
+                      </Form.Group>
+                    </Col>
+                    <Col md={2}>
+                      <Form.Group>
+                        <Form.Label>Infant</Form.Label>
+                        <Form.Control
+                          type="number"
+                          name="three_star_infant"
+                          value={studentDepartureForm.three_star_infant}
+                          onChange={handleStudentDepartureChange}
+                          placeholder="₹"
+                        />
+                      </Form.Group>
+                    </Col>
+                    <Col md={2}>
+                      <Form.Group>
+                        <Form.Label>Single</Form.Label>
+                        <Form.Control
+                          type="number"
+                          name="three_star_single"
+                          value={studentDepartureForm.three_star_single}
+                          onChange={handleStudentDepartureChange}
+                          placeholder="₹"
+                        />
+                      </Form.Group>
+                    </Col>
+                  </Row>
+
+                  {/* 4-Star Hotel Prices */}
+                  <Row className="mb-4">
+                    <h5>4-Star Hotel Prices</h5>
+                    <Col md={2}>
+                      <Form.Group>
+                        <Form.Label>Twin Sharing</Form.Label>
+                        <Form.Control
+                          type="number"
+                          name="four_star_twin"
+                          value={studentDepartureForm.four_star_twin}
+                          onChange={handleStudentDepartureChange}
+                          placeholder="₹"
+                        />
+                      </Form.Group>
+                    </Col>
+                    <Col md={2}>
+                      <Form.Group>
+                        <Form.Label>Triple Sharing</Form.Label>
+                        <Form.Control
+                          type="number"
+                          name="four_star_triple"
+                          value={studentDepartureForm.four_star_triple}
+                          onChange={handleStudentDepartureChange}
+                          placeholder="₹"
+                        />
+                      </Form.Group>
+                    </Col>
+                    <Col md={2}>
+                      <Form.Group>
+                        <Form.Label>Child With Bed</Form.Label>
+                        <Form.Control
+                          type="number"
+                          name="four_star_child_with_bed"
+                          value={studentDepartureForm.four_star_child_with_bed}
+                          onChange={handleStudentDepartureChange}
+                          placeholder="₹"
+                        />
+                      </Form.Group>
+                    </Col>
+                    <Col md={2}>
+                      <Form.Group>
+                        <Form.Label>Child No Bed</Form.Label>
+                        <Form.Control
+                          type="number"
+                          name="four_star_child_without_bed"
+                          value={studentDepartureForm.four_star_child_without_bed}
+                          onChange={handleStudentDepartureChange}
+                          placeholder="₹"
+                        />
+                      </Form.Group>
+                    </Col>
+                    <Col md={2}>
+                      <Form.Group>
+                        <Form.Label>Infant</Form.Label>
+                        <Form.Control
+                          type="number"
+                          name="four_star_infant"
+                          value={studentDepartureForm.four_star_infant}
+                          onChange={handleStudentDepartureChange}
+                          placeholder="₹"
+                        />
+                      </Form.Group>
+                    </Col>
+                    <Col md={2}>
+                      <Form.Group>
+                        <Form.Label>Single</Form.Label>
+                        <Form.Control
+                          type="number"
+                          name="four_star_single"
+                          value={studentDepartureForm.four_star_single}
+                          onChange={handleStudentDepartureChange}
+                          placeholder="₹"
+                        />
+                      </Form.Group>
+                    </Col>
+                  </Row>
+
+                  {/* 5-Star Hotel Prices */}
+                  <Row className="mb-4">
+                    <h5>5-Star Hotel Prices</h5>
+                    <Col md={2}>
+                      <Form.Group>
+                        <Form.Label>Twin Sharing</Form.Label>
+                        <Form.Control
+                          type="number"
+                          name="five_star_twin"
+                          value={studentDepartureForm.five_star_twin}
+                          onChange={handleStudentDepartureChange}
+                          placeholder="₹"
+                        />
+                      </Form.Group>
+                    </Col>
+                    <Col md={2}>
+                      <Form.Group>
+                        <Form.Label>Triple Sharing</Form.Label>
+                        <Form.Control
+                          type="number"
+                          name="five_star_triple"
+                          value={studentDepartureForm.five_star_triple}
+                          onChange={handleStudentDepartureChange}
+                          placeholder="₹"
+                        />
+                      </Form.Group>
+                    </Col>
+                    <Col md={2}>
+                      <Form.Group>
+                        <Form.Label>Child With Bed</Form.Label>
+                        <Form.Control
+                          type="number"
+                          name="five_star_child_with_bed"
+                          value={studentDepartureForm.five_star_child_with_bed}
+                          onChange={handleStudentDepartureChange}
+                          placeholder="₹"
+                        />
+                      </Form.Group>
+                    </Col>
+                    <Col md={2}>
+                      <Form.Group>
+                        <Form.Label>Child No Bed</Form.Label>
+                        <Form.Control
+                          type="number"
+                          name="five_star_child_without_bed"
+                          value={studentDepartureForm.five_star_child_without_bed}
+                          onChange={handleStudentDepartureChange}
+                          placeholder="₹"
+                        />
+                      </Form.Group>
+                    </Col>
+                    <Col md={2}>
+                      <Form.Group>
+                        <Form.Label>Infant</Form.Label>
+                        <Form.Control
+                          type="number"
+                          name="five_star_infant"
+                          value={studentDepartureForm.five_star_infant}
+                          onChange={handleStudentDepartureChange}
+                          placeholder="₹"
+                        />
+                      </Form.Group>
+                    </Col>
+                    <Col md={2}>
+                      <Form.Group>
+                        <Form.Label>Single</Form.Label>
+                        <Form.Control
+                          type="number"
+                          name="five_star_single"
+                          value={studentDepartureForm.five_star_single}
+                          onChange={handleStudentDepartureChange}
                           placeholder="₹"
                         />
                       </Form.Group>
@@ -1671,9 +1958,9 @@ const AddStudentTour = () => {
                             <th>End Date</th>
                             <th>Status</th>
                             <th>Seats</th>
-                            <th>Adult Price</th>
-                            <th>Child Price</th>
-                            <th>Infant Price</th>
+                            <th>3-Star Twin</th>
+                            <th>4-Star Twin</th>
+                            <th>5-Star Twin</th>
                             <th>Action</th>
                           </tr>
                         </thead>
@@ -1685,9 +1972,9 @@ const AddStudentTour = () => {
                               <td>{dep.end_date || '-'}</td>
                               <td>{dep.status || '-'}</td>
                               <td>{dep.total_seats || '-'}</td>
-                              <td>{dep.adult_price ? `₹${dep.adult_price.toLocaleString()}` : '-'}</td>
-                              <td>{dep.child_price ? `₹${dep.child_price.toLocaleString()}` : '-'}</td>
-                              <td>{dep.infant_price ? `₹${dep.infant_price.toLocaleString()}` : '-'}</td>
+                              <td>{dep.three_star_twin ? `₹${dep.three_star_twin.toLocaleString()}` : '-'}</td>
+                              <td>{dep.four_star_twin ? `₹${dep.four_star_twin.toLocaleString()}` : '-'}</td>
+                              <td>{dep.five_star_twin ? `₹${dep.five_star_twin.toLocaleString()}` : '-'}</td>
                               <td>
                                 <div className="d-flex gap-1">
                                   <Button

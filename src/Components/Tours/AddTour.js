@@ -810,28 +810,101 @@ const AddTour = () => {
 
   const isLastTab = activeTab === TAB_LIST[TAB_LIST.length - 1];
 
-  // AUTO-ADD WHEN USER CLICKS SAVE & CONTINUE
-  const autoAddBeforeNext = () => {
+  // FIXED: Check if item is already added before auto-adding
+  const shouldAutoAddItem = () => {
     switch (activeTab) {
       case 'itineraries':
-        if (itineraryItem.day && itineraryItem.title.trim()) {
-          handleAddItinerary();
-        }
+        return itineraryItem.day && itineraryItem.title.trim() && 
+               !itineraries.some(item => 
+                 item.day === Number(itineraryItem.day) && 
+                 item.title === itineraryItem.title.trim()
+               );
+      
+      case 'departures':
+        return departureForm.description && departureForm.description.trim() && 
+               !departures.some(dep => 
+                 dep.description === departureForm.description.trim()
+               );
+      
+      case 'costs':
+        return tourCostItem.pax && 
+               !tourCosts.some(cost => cost.pax === tourCostItem.pax);
+      
+      case 'optionalTours':
+        return optionalTourItem.tour_name.trim() && 
+               !optionalTours.some(tour => 
+                 tour.tour_name === optionalTourItem.tour_name.trim()
+               );
+      
+      case 'inclusions':
+        return inclusionText.trim() && 
+               !inclusions.includes(inclusionText.trim());
+      
+      case 'exclusions':
+        return exclusionText.trim() && 
+               !exclusions.includes(exclusionText.trim());
+      
+      case 'transport':
+        return transportItem.description.trim() && 
+               !transports.some(t => 
+                 t.description === transportItem.description.trim()
+               );
+      
+      case 'hotels':
+        return hotelItem.city.trim() && hotelItem.hotel_name.trim() && 
+               !hotelRows.some(h => 
+                 h.city === hotelItem.city.trim() && 
+                 h.hotel_name === hotelItem.hotel_name.trim()
+               );
+      
+      case 'bookingPoi':
+        return poiText.trim() && 
+               !bookingPois.some(p => p.item === poiText.trim());
+      
+      case 'cancellation':
+        return cancelItem.cancellation_policy.trim() && 
+               !cancelPolicies.some(c => 
+                 c.cancellation_policy === cancelItem.cancellation_policy.trim()
+               );
+      
+      case 'instructions':
+        return instructionText.trim() && 
+               !instructions.includes(instructionText.trim());
+      
+      case 'emiOptions':
+        // For EMI options, just validate they have at least one valid option
+        const hasAtLeastOneValidOption = emiOptions.some(option =>
+          option.loan_amount && option.loan_amount > 0 && option.emi && option.emi > 0
+        );
+        return hasAtLeastOneValidOption;
+      
+      default:
+        return false;
+    }
+  };
+
+  // FIXED: Auto-add only if item is not already added
+  const autoAddBeforeNext = () => {
+    if (!shouldAutoAddItem()) {
+      return false;
+    }
+
+    switch (activeTab) {
+      case 'itineraries':
+        handleAddItinerary();
         break;
 
       case 'departures':
-        if (departureForm.description && departureForm.description.trim()) {
-          handleAddDeparture();
-        }
+        handleAddDeparture();
         break;
 
       case 'costs':
-        if (tourCostItem.pax) {
-          addCostRow();
-        }
+        addCostRow();
         break;
 
       case 'emiOptions':
+        // EMI options are already in the array, no need to add
+        // Just validate they have at least one valid option
         const hasAtLeastOneValidOption = emiOptions.some(option =>
           option.loan_amount && option.loan_amount > 0 && option.emi && option.emi > 0
         );
@@ -843,56 +916,42 @@ const AddTour = () => {
         break;
 
       case 'optionalTours':
-        if (optionalTourItem.tour_name && optionalTourItem.tour_name.trim()) {
-          addOptionalTourRow();
-        }
+        addOptionalTourRow();
         break;
 
       case 'hotels':
-        if (hotelItem.city.trim() && hotelItem.hotel_name.trim()) {
-          addHotelRow();
-        }
+        addHotelRow();
         break;
 
       case 'transport':
-        if (transportItem.description && transportItem.description.trim()) {
-          addTransportRow();
-        }
+        addTransportRow();
         break;
 
       case 'bookingPoi':
-        if (poiText && poiText.trim()) {
-          addPoi();
-        }
+        addPoi();
         break;
 
       case 'cancellation':
-        if (cancelItem.cancellation_policy && cancelItem.cancellation_policy.trim()) {
-          addCancelRow();
-        }
+        addCancelRow();
         break;
 
       case 'instructions':
-        if (instructionText && instructionText.trim()) {
-          addInstruction();
-        }
+        addInstruction();
         break;
 
       case 'inclusions':
-        if (inclusionText && inclusionText.trim()) {
-          handleAddInclusion();
-        }
+        handleAddInclusion();
         break;
 
       case 'exclusions':
-        if (exclusionText && exclusionText.trim()) {
-          handleAddExclusion();
-        }
+        handleAddExclusion();
         break;
 
       default:
         break;
     }
+    
+    return true;
   };
 
   // UPDATE EXISTING TOUR
@@ -1293,6 +1352,7 @@ const AddTour = () => {
   };
 
   const handleSaveClick = () => {
+    // FIXED: Only auto-add if not already added
     autoAddBeforeNext();
 
     if (isLastTab) {
