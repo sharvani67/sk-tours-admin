@@ -15,6 +15,7 @@ import Destinations from "./Components/Destinations/DestinationsTable";
 import AddDestination from './Components/Destinations/AddDestinationsForm';
 import Tours from "./Components/Tours/Tours";
 import AddTour from "./Components/Tours/AddTour";
+// import EditTour from "./Components/Tours/EditTour"
 import TourDetails from "./Components/Tours/TourDetails";
 
 import GroupTours from "./Components/Tours/GroupTour"
@@ -38,6 +39,7 @@ import SeniorCitizenTourDetails from "./Components/Tours/SetizenTourDetails";
 import StudentTourDetails from "./Components/Tours/StudentTourDetails";
 import HoneymoonTourDetails from "./Components/Tours/HoneyMoonTour";
 import AdminVideoManager from "./Components/Home/AdminVideoManager";
+// import EditTour from "./Components/Tours/EditTour";
 
 
 function App() {

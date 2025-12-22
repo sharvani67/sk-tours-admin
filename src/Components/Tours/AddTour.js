@@ -20,10 +20,9 @@ import { Pencil, Trash } from 'react-bootstrap-icons';
 
 const AddTour = () => {
   const navigate = useNavigate();
-  const { id } = useParams(); // Get tour ID from URL for edit mode
+  const { id } = useParams();
   const isEditMode = !!id;
 
-  // TAB ORDER MUST MATCH JSX ORDER
   const TAB_LIST = [
     'basic',
     'itineraries',
@@ -75,7 +74,7 @@ const AddTour = () => {
     emi_remarks: ""
   });
 
-  // DEPARTURES (multiple)
+  // DEPARTURES
   const [departureForm, setDepartureForm] = useState({
     departure_date: '',
     return_date: '',
@@ -100,9 +99,7 @@ const AddTour = () => {
   const [imagePreviews, setImagePreviews] = useState([]);
   const [imageCaption, setImageCaption] = useState('');
 
-  // =======================
   // TOUR COST
-  // =======================
   const [tourCostItem, setTourCostItem] = useState({
     pax: '',
     standard_hotel: '',
@@ -114,38 +111,7 @@ const AddTour = () => {
   });
   const [tourCosts, setTourCosts] = useState([]);
 
-  const handleCostChange = (e) => {
-    const { name, value } = e.target;
-    setTourCostItem(prev => ({ ...prev, [name]: value }));
-  };
-
-  const addCostRow = () => {
-    if (!tourCostItem.pax) return;
-    setTourCosts(prev => [...prev, { ...tourCostItem }]);
-    setTourCostItem({
-      pax: '',
-      standard_hotel: '',
-      deluxe_hotel: '',
-      executive_hotel: '',
-      child_with_bed: '',
-      child_no_bed: '',
-      remarks: ''
-    });
-  };
-
-  const editCostRow = (idx) => {
-    const item = tourCosts[idx];
-    setTourCostItem(item);
-    setTourCosts(prev => prev.filter((_, i) => i !== idx));
-  };
-
-  const removeCostRow = (idx) => {
-    setTourCosts(prev => prev.filter((_, i) => i !== idx));
-  };
-
-  // =======================
   // OPTIONAL TOURS
-  // =======================
   const [optionalTourItem, setOptionalTourItem] = useState({
     tour_name: '',
     adult_price: '',
@@ -153,45 +119,7 @@ const AddTour = () => {
   });
   const [optionalTours, setOptionalTours] = useState([]);
 
-  const handleOptionalTourChange = (e) => {
-    const { name, value } = e.target;
-    setOptionalTourItem(prev => ({ ...prev, [name]: value }));
-  };
-
-  const addOptionalTourRow = () => {
-    if (!optionalTourItem.tour_name.trim()) return;
-
-    const processedItem = {
-      ...optionalTourItem,
-      adult_price: optionalTourItem.adult_price
-        ? Number(optionalTourItem.adult_price)
-        : '',
-      child_price: optionalTourItem.child_price
-        ? Number(optionalTourItem.child_price)
-        : ''
-    };
-
-    setOptionalTours(prev => [...prev, processedItem]);
-    setOptionalTourItem({
-      tour_name: '',
-      adult_price: '',
-      child_price: ''
-    });
-  };
-
-  const editOptionalTourRow = (idx) => {
-    const item = optionalTours[idx];
-    setOptionalTourItem(item);
-    setOptionalTours(prev => prev.filter((_, i) => i !== idx));
-  };
-
-  const removeOptionalTourRow = (idx) => {
-    setOptionalTours(prev => prev.filter((_, i) => i !== idx));
-  };
-
-  // =======================
   // EMI OPTIONS
-  // =======================
   const [emiOptions, setEmiOptions] = useState([
     { particulars: 'Per Month Payment', loan_amount: '', months: 6, emi: '' },
     { particulars: 'Per Month Payment', loan_amount: '', months: 12, emi: '' },
@@ -202,21 +130,7 @@ const AddTour = () => {
     { particulars: 'Per Month Payment', loan_amount: '', months: 48, emi: '' }
   ]);
 
-  const handleLoanAmountChange = (index, value) => {
-    const updatedOptions = [...emiOptions];
-    updatedOptions[index].loan_amount = value;
-    setEmiOptions(updatedOptions);
-  };
-
-  const handleEMIChange = (index, value) => {
-    const updatedOptions = [...emiOptions];
-    updatedOptions[index].emi = value;
-    setEmiOptions(updatedOptions);
-  };
-
-  // =======================
   // HOTELS
-  // =======================
   const [hotelItem, setHotelItem] = useState({
     city: '',
     hotel_name: '',
@@ -229,39 +143,7 @@ const AddTour = () => {
   });
   const [hotelRows, setHotelRows] = useState([]);
 
-  const handleHotelChange = (e) => {
-    const { name, value } = e.target;
-    setHotelItem(prev => ({ ...prev, [name]: value }));
-  };
-
-  const addHotelRow = () => {
-    if (!hotelItem.city.trim() || !hotelItem.hotel_name.trim()) return;
-    setHotelRows(prev => [...prev, { ...hotelItem }]);
-    setHotelItem({
-      city: '',
-      hotel_name: '',
-      room_type: '',
-      nights: '',
-      remarks: '',
-      hotel_standard: '',
-      hotel_deluxe: '',
-      hotel_executive: ''
-    });
-  };
-
-  const editHotelRow = (idx) => {
-    const item = hotelRows[idx];
-    setHotelItem(item);
-    setHotelRows(prev => prev.filter((_, i) => i !== idx));
-  };
-
-  const removeHotelRow = (idx) => {
-    setHotelRows(prev => prev.filter((_, i) => i !== idx));
-  };
-
-  // =======================
   // TRANSPORT
-  // =======================
   const [transportItem, setTransportItem] = useState({
     mode: '',
     from_city: '',
@@ -275,119 +157,21 @@ const AddTour = () => {
   });
   const [transports, setTransports] = useState([]);
 
-  const handleTransportChange = (e) => {
-    const { name, value } = e.target;
-    setTransportItem(prev => ({ ...prev, [name]: value }));
-  };
-
-  const addTransportRow = () => {
-    if (!transportItem.description.trim()) return;
-    setTransports(prev => [...prev, { ...transportItem }]);
-    setTransportItem({
-      mode: '',
-      from_city: '',
-      to_city: '',
-      carrier: '',
-      number_code: '',
-      departure_datetime: '',
-      arrival_datetime: '',
-      description: '',
-      remarks: ''
-    });
-  };
-
-  const editTransportRow = (idx) => {
-    const item = transports[idx];
-    setTransportItem(item);
-    setTransports(prev => prev.filter((_, i) => i !== idx));
-  };
-
-  const removeTransportRow = (idx) => {
-    setTransports(prev => prev.filter((_, i) => i !== idx));
-  };
-
-  // =======================
   // BOOKING POI
-  // =======================
   const [poiText, setPoiText] = useState('');
   const [poiAmount, setPoiAmount] = useState("");
   const [bookingPois, setBookingPois] = useState([]);
 
-  const addPoi = () => {
-    const txt = poiText.trim();
-    if (!txt) return;
-    setBookingPois([
-      ...bookingPois,
-      { item: poiText, amount_details: poiAmount }
-    ]);
-    setPoiText('');
-    setPoiAmount("");
-  };
-
-  const editPoi = (idx) => {
-    const poi = bookingPois[idx];
-    setPoiText(poi.item);
-    setPoiAmount(poi.amount_details);
-    setBookingPois(prev => prev.filter((_, i) => i !== idx));
-  };
-
-  const removePoi = (idx) => {
-    setBookingPois(prev => prev.filter((_, i) => i !== idx));
-  };
-
-  // =======================
   // CANCELLATION
-  // =======================
   const [cancelItem, setCancelItem] = useState({
     cancellation_policy: "",
     charges: ""
   });
-
   const [cancelPolicies, setCancelPolicies] = useState([]);
 
-  const handleCancelChange = (e) => {
-    const { name, value } = e.target;
-    setCancelItem(prev => ({ ...prev, [name]: value }));
-  };
-
-  const addCancelRow = () => {
-    if (!cancelItem.cancellation_policy.trim()) return;
-    setCancelPolicies(prev => [...prev, { ...cancelItem }]);
-    setCancelItem({ cancellation_policy: "", charges: "" });
-  };
-
-  const editCancelRow = (idx) => {
-    const policy = cancelPolicies[idx];
-    setCancelItem(policy);
-    setCancelPolicies(prev => prev.filter((_, i) => i !== idx));
-  };
-
-  const removeCancelRow = (idx) => {
-    setCancelPolicies(prev => prev.filter((_, i) => i !== idx));
-  };
-
-  // =======================
   // INSTRUCTIONS
-  // =======================
   const [instructionText, setInstructionText] = useState('');
   const [instructions, setInstructions] = useState([]);
-
-  const addInstruction = () => {
-    const txt = instructionText.trim();
-    if (!txt) return;
-    setInstructions(prev => [...prev, txt]);
-    setInstructionText('');
-  };
-
-  const editInstruction = (idx) => {
-    const instruction = instructions[idx];
-    setInstructionText(instruction);
-    setInstructions(prev => prev.filter((_, i) => i !== idx));
-  };
-
-  const removeInstruction = (idx) => {
-    setInstructions(prev => prev.filter((_, i) => i !== idx));
-  };
 
   // ITINERARIES
   const [itineraryItem, setItineraryItem] = useState({
@@ -402,30 +186,537 @@ const AddTour = () => {
   });
   const [itineraries, setItineraries] = useState([]);
 
-  // Edit functions for itineraries
+  // ========================
+  // EDIT FUNCTIONS - FIXED
+  // ========================
+
+  // Edit itinerary - FIXED: Only sets form for editing, doesn't remove from list
   const editItinerary = (idx) => {
     const item = itineraries[idx];
-    
-    // Parse meals string back to checkboxes
     const mealsArray = item.meals ? item.meals.split(', ') : [];
-    const meals = {
-      breakfast: mealsArray.includes('Breakfast'),
-      lunch: mealsArray.includes('Lunch'),
-      dinner: mealsArray.includes('Dinner')
-    };
-    
     setItineraryItem({
       day: item.day,
       title: item.title,
       description: item.description || '',
-      meals: meals
+      meals: {
+        breakfast: mealsArray.includes('Breakfast'),
+        lunch: mealsArray.includes('Lunch'),
+        dinner: mealsArray.includes('Dinner')
+      }
     });
+    // Set editing context
+    setEditingItem(item);
+    setEditingType('itinerary');
+    setEditIndex(idx);
+  };
+
+  // Edit departure - FIXED
+  const editDeparture = (idx) => {
+    const departure = departures[idx];
+    setDepartureForm(departure);
+    setEditingItem(departure);
+    setEditingType('departure');
+    setEditIndex(idx);
+  };
+
+  // Edit cost row - FIXED
+  const editCostRow = (idx) => {
+    const item = tourCosts[idx];
+    setTourCostItem(item);
+    setEditingItem(item);
+    setEditingType('cost');
+    setEditIndex(idx);
+  };
+
+  // Edit optional tour - FIXED
+  const editOptionalTourRow = (idx) => {
+    const item = optionalTours[idx];
+    setOptionalTourItem(item);
+    setEditingItem(item);
+    setEditingType('optionalTour');
+    setEditIndex(idx);
+  };
+
+  // Edit hotel row - FIXED
+  const editHotelRow = (idx) => {
+    const item = hotelRows[idx];
+    setHotelItem(item);
+    setEditingItem(item);
+    setEditingType('hotel');
+    setEditIndex(idx);
+  };
+
+  // Edit transport row - FIXED
+  const editTransportRow = (idx) => {
+    const item = transports[idx];
+    setTransportItem(item);
+    setEditingItem(item);
+    setEditingType('transport');
+    setEditIndex(idx);
+  };
+
+  // Edit inclusion - FIXED
+  const editInclusion = (idx) => {
+    const inclusion = inclusions[idx];
+    setInclusionText(inclusion);
+    setEditingItem(inclusion);
+    setEditingType('inclusion');
+    setEditIndex(idx);
+  };
+
+  // Edit exclusion - FIXED
+  const editExclusion = (idx) => {
+    const exclusion = exclusions[idx];
+    setExclusionText(exclusion);
+    setEditingItem(exclusion);
+    setEditingType('exclusion');
+    setEditIndex(idx);
+  };
+
+  // Edit POI - FIXED
+  const editPoi = (idx) => {
+    const poi = bookingPois[idx];
+    setPoiText(poi.item);
+    setPoiAmount(poi.amount_details);
+    setEditingItem(poi);
+    setEditingType('poi');
+    setEditIndex(idx);
+  };
+
+  // Edit cancel policy - FIXED
+  const editCancelRow = (idx) => {
+    const policy = cancelPolicies[idx];
+    setCancelItem(policy);
+    setEditingItem(policy);
+    setEditingType('cancellation');
+    setEditIndex(idx);
+  };
+
+  // Edit instruction - FIXED
+  const editInstruction = (idx) => {
+    const instruction = instructions[idx];
+    setInstructionText(instruction);
+    setEditingItem(instruction);
+    setEditingType('instruction');
+    setEditIndex(idx);
+  };
+
+  // ========================
+  // ADD FUNCTIONS - FIXED
+  // ========================
+
+  const handleAddItinerary = () => {
+    const { day, title, description, meals } = itineraryItem;
+    if (!day || !title.trim()) return;
+
+    const selectedMeals = [];
+    if (meals.breakfast) selectedMeals.push('Breakfast');
+    if (meals.lunch) selectedMeals.push('Lunch');
+    if (meals.dinner) selectedMeals.push('Dinner');
+    const mealsString = selectedMeals.join(', ');
+
+    const newItem = {
+      day: Number(day),
+      title: title.trim(),
+      description: description.trim(),
+      meals: mealsString
+    };
+
+    if (editingType === 'itinerary' && editIndex !== -1) {
+      // Update existing item
+      const updated = [...itineraries];
+      updated[editIndex] = newItem;
+      setItineraries(updated);
+    } else {
+      // Add new item
+      setItineraries(prev => [...prev, newItem]);
+    }
+
+    // Reset form
+    setItineraryItem({
+      day: '',
+      title: '',
+      description: '',
+      meals: { breakfast: false, lunch: false, dinner: false }
+    });
+    resetEditing();
+  };
+
+  const handleAddDeparture = () => {
+    if (!departureForm.description.trim()) return;
     
-    // Remove from list so user can re-add with changes
+    const newItem = { ...departureForm };
+    
+    if (editingType === 'departure' && editIndex !== -1) {
+      const updated = [...departures];
+      updated[editIndex] = newItem;
+      setDepartures(updated);
+    } else {
+      setDepartures(prev => [...prev, newItem]);
+    }
+
+    setDepartureForm({
+      departure_date: '',
+      return_date: '',
+      adult_price: '',
+      child_price: '',
+      infant_price: '',
+      description: '',
+      total_seats: ''
+    });
+    resetEditing();
+  };
+
+  const addCostRow = () => {
+    if (!tourCostItem.pax) return;
+    
+    const newItem = { ...tourCostItem };
+    
+    if (editingType === 'cost' && editIndex !== -1) {
+      const updated = [...tourCosts];
+      updated[editIndex] = newItem;
+      setTourCosts(updated);
+    } else {
+      setTourCosts(prev => [...prev, newItem]);
+    }
+
+    setTourCostItem({
+      pax: '',
+      standard_hotel: '',
+      deluxe_hotel: '',
+      executive_hotel: '',
+      child_with_bed: '',
+      child_no_bed: '',
+      remarks: ''
+    });
+    resetEditing();
+  };
+
+  const addOptionalTourRow = () => {
+    if (!optionalTourItem.tour_name.trim()) return;
+
+    const processedItem = {
+      ...optionalTourItem,
+      adult_price: optionalTourItem.adult_price ? Number(optionalTourItem.adult_price) : '',
+      child_price: optionalTourItem.child_price ? Number(optionalTourItem.child_price) : ''
+    };
+
+    if (editingType === 'optionalTour' && editIndex !== -1) {
+      const updated = [...optionalTours];
+      updated[editIndex] = processedItem;
+      setOptionalTours(updated);
+    } else {
+      setOptionalTours(prev => [...prev, processedItem]);
+    }
+
+    setOptionalTourItem({
+      tour_name: '',
+      adult_price: '',
+      child_price: ''
+    });
+    resetEditing();
+  };
+
+  const addHotelRow = () => {
+    if (!hotelItem.city.trim() || !hotelItem.hotel_name.trim()) return;
+    
+    if (editingType === 'hotel' && editIndex !== -1) {
+      const updated = [...hotelRows];
+      updated[editIndex] = { ...hotelItem };
+      setHotelRows(updated);
+    } else {
+      setHotelRows(prev => [...prev, { ...hotelItem }]);
+    }
+
+    setHotelItem({
+      city: '',
+      hotel_name: '',
+      room_type: '',
+      nights: '',
+      remarks: '',
+      hotel_standard: '',
+      hotel_deluxe: '',
+      hotel_executive: ''
+    });
+    resetEditing();
+  };
+
+  const addTransportRow = () => {
+    if (!transportItem.description.trim()) return;
+    
+    if (editingType === 'transport' && editIndex !== -1) {
+      const updated = [...transports];
+      updated[editIndex] = { ...transportItem };
+      setTransports(updated);
+    } else {
+      setTransports(prev => [...prev, { ...transportItem }]);
+    }
+
+    setTransportItem({
+      mode: '',
+      from_city: '',
+      to_city: '',
+      carrier: '',
+      number_code: '',
+      departure_datetime: '',
+      arrival_datetime: '',
+      description: '',
+      remarks: ''
+    });
+    resetEditing();
+  };
+
+  const handleAddInclusion = () => {
+    const trimmed = inclusionText.trim();
+    if (!trimmed) return;
+    
+    if (editingType === 'inclusion' && editIndex !== -1) {
+      const updated = [...inclusions];
+      updated[editIndex] = trimmed;
+      setInclusions(updated);
+    } else {
+      setInclusions(prev => [...prev, trimmed]);
+    }
+    
+    setInclusionText('');
+    resetEditing();
+  };
+
+  const handleAddExclusion = () => {
+    const trimmed = exclusionText.trim();
+    if (!trimmed) return;
+    
+    if (editingType === 'exclusion' && editIndex !== -1) {
+      const updated = [...exclusions];
+      updated[editIndex] = trimmed;
+      setExclusions(updated);
+    } else {
+      setExclusions(prev => [...prev, trimmed]);
+    }
+    
+    setExclusionText('');
+    resetEditing();
+  };
+
+  const addPoi = () => {
+    const txt = poiText.trim();
+    if (!txt) return;
+    
+    const newPoi = { item: poiText, amount_details: poiAmount };
+    
+    if (editingType === 'poi' && editIndex !== -1) {
+      const updated = [...bookingPois];
+      updated[editIndex] = newPoi;
+      setBookingPois(updated);
+    } else {
+      setBookingPois([...bookingPois, newPoi]);
+    }
+    
+    setPoiText('');
+    setPoiAmount("");
+    resetEditing();
+  };
+
+  const addCancelRow = () => {
+    if (!cancelItem.cancellation_policy.trim()) return;
+    
+    if (editingType === 'cancellation' && editIndex !== -1) {
+      const updated = [...cancelPolicies];
+      updated[editIndex] = { ...cancelItem };
+      setCancelPolicies(updated);
+    } else {
+      setCancelPolicies(prev => [...prev, { ...cancelItem }]);
+    }
+    
+    setCancelItem({ cancellation_policy: "", charges: "" });
+    resetEditing();
+  };
+
+  const addInstruction = () => {
+    const txt = instructionText.trim();
+    if (!txt) return;
+    
+    if (editingType === 'instruction' && editIndex !== -1) {
+      const updated = [...instructions];
+      updated[editIndex] = txt;
+      setInstructions(updated);
+    } else {
+      setInstructions(prev => [...prev, txt]);
+    }
+    
+    setInstructionText('');
+    resetEditing();
+  };
+
+  // Reset editing context
+  const resetEditing = () => {
+    setEditingItem(null);
+    setEditingType('');
+    setEditIndex(-1);
+  };
+
+  // ========================
+  // REMOVE FUNCTIONS
+  // ========================
+
+  const handleRemoveItinerary = (idx) => {
     setItineraries(prev => prev.filter((_, i) => i !== idx));
   };
 
-  // Fetch tour data for edit mode
+  const handleRemoveDeparture = (idx) => {
+    setDepartures(prev => prev.filter((_, i) => i !== idx));
+  };
+
+  const removeCostRow = (idx) => {
+    setTourCosts(prev => prev.filter((_, i) => i !== idx));
+  };
+
+  const removeOptionalTourRow = (idx) => {
+    setOptionalTours(prev => prev.filter((_, i) => i !== idx));
+  };
+
+  const removeHotelRow = (idx) => {
+    setHotelRows(prev => prev.filter((_, i) => i !== idx));
+  };
+
+  const removeTransportRow = (idx) => {
+    setTransports(prev => prev.filter((_, i) => i !== idx));
+  };
+
+  const handleRemoveInclusion = (idx) => {
+    setInclusions(prev => prev.filter((_, i) => i !== idx));
+  };
+
+  const handleRemoveExclusion = (idx) => {
+    setExclusions(prev => prev.filter((_, i) => i !== idx));
+  };
+
+  const removePoi = (idx) => {
+    setBookingPois(prev => prev.filter((_, i) => i !== idx));
+  };
+
+  const removeCancelRow = (idx) => {
+    setCancelPolicies(prev => prev.filter((_, i) => i !== idx));
+  };
+
+  const removeInstruction = (idx) => {
+    setInstructions(prev => prev.filter((_, i) => i !== idx));
+  };
+
+  // ========================
+  // HANDLER FUNCTIONS
+  // ========================
+
+  const handleCostChange = (e) => {
+    const { name, value } = e.target;
+    setTourCostItem(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleOptionalTourChange = (e) => {
+    const { name, value } = e.target;
+    setOptionalTourItem(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleHotelChange = (e) => {
+    const { name, value } = e.target;
+    setHotelItem(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleTransportChange = (e) => {
+    const { name, value } = e.target;
+    setTransportItem(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleLoanAmountChange = (index, value) => {
+    const updatedOptions = [...emiOptions];
+    updatedOptions[index].loan_amount = value;
+    setEmiOptions(updatedOptions);
+  };
+
+  const handleEMIChange = (index, value) => {
+    const updatedOptions = [...emiOptions];
+    updatedOptions[index].emi = value;
+    setEmiOptions(updatedOptions);
+  };
+
+  const handleCancelChange = (e) => {
+    const { name, value } = e.target;
+    setCancelItem(prev => ({ ...prev, [name]: value }));
+  };
+
+  // BASIC DETAILS CHANGE
+  const handleBasicChange = (e) => {
+    const { name, value } = e.target;
+    const numericFields = [
+      'duration_days',
+      'base_price_adult',
+      'category_id',
+      'primary_destination_id',
+      'is_international'
+    ];
+    const finalValue = numericFields.includes(name)
+      ? value === '' ? '' : Number(value)
+      : value;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: finalValue
+    }));
+  };
+
+  // DEPARTURE FORM CHANGE
+  const handleDepartureChange = (e) => {
+    const { name, value } = e.target;
+    const numericFields = ['adult_price', 'child_price', 'total_seats', 'infant_price'];
+    setDepartureForm((prev) => ({
+      ...prev,
+      [name]: numericFields.includes(name)
+        ? value === '' ? '' : Number(value)
+        : value
+    }));
+  };
+
+  // ITINERARY CHANGE
+  const handleItineraryChange = (e) => {
+    const { name, value } = e.target;
+    setItineraryItem((prev) => ({
+      ...prev,
+      [name]: name === 'day' ? value.replace(/[^0-9]/g, '') : value
+    }));
+  };
+
+  const handleMealsCheckboxChange = (e) => {
+    const { name, checked } = e.target;
+    setItineraryItem((prev) => ({
+      ...prev,
+      meals: {
+        ...prev.meals,
+        [name]: checked
+      }
+    }));
+  };
+
+  // IMAGES
+  const handleImageChange = (e) => {
+    const files = e.target.files ? Array.from(e.target.files) : [];
+    setImageFiles(files);
+    const previews = files.map((file) => URL.createObjectURL(file));
+    setImagePreviews(prev => [...prev, ...previews]);
+  };
+
+  useEffect(() => {
+    return () => {
+      imagePreviews.forEach((url) => {
+        if (url.startsWith('blob:')) {
+          URL.revokeObjectURL(url);
+        }
+      });
+    };
+  }, [imagePreviews]);
+
+  // ========================
+  // LOAD DATA
+  // ========================
+
   useEffect(() => {
     const loadDropdownsAndTourCode = async () => {
       try {
@@ -439,10 +730,8 @@ const AddTour = () => {
         setDestinations(Array.isArray(destData) ? destData : []);
 
         if (isEditMode) {
-          // Load existing tour data for edit
           await loadTourData();
         } else {
-          // Load next tour code for add mode
           const tourCodeRes = await fetch(`${baseurl}/api/tours/next-tour-code?tour_type=individual`);
           if (tourCodeRes.ok) {
             const tourCodeData = await tourCodeRes.json();
@@ -466,7 +755,6 @@ const AddTour = () => {
       setLoading(true);
       setError('');
       
-      // Fetch full tour data
       const response = await fetch(`${baseurl}/api/tours/tour/full/individual/${id}`);
       if (!response.ok) throw new Error('Failed to fetch tour data');
       
@@ -598,7 +886,7 @@ const AddTour = () => {
           setInstructions(instructionItems);
         }
 
-        // Set images (previews only, not files)
+        // Set images
         if (data.images && Array.isArray(data.images)) {
           const imageUrls = data.images.map(img => img.url);
           setImagePreviews(imageUrls);
@@ -613,183 +901,10 @@ const AddTour = () => {
     }
   };
 
-  // BASIC DETAILS CHANGE
-  const handleBasicChange = (e) => {
-    const { name, value } = e.target;
-
-    const numericFields = [
-      'duration_days',
-      'base_price_adult',
-      'category_id',
-      'primary_destination_id',
-      'is_international'
-    ];
-
-    const finalValue = numericFields.includes(name)
-      ? value === '' ? '' : Number(value)
-      : value;
-
-    setFormData((prev) => ({
-      ...prev,
-      [name]: finalValue
-    }));
-  };
-
-  // DEPARTURE FORM CHANGE
-  const handleDepartureChange = (e) => {
-    const { name, value } = e.target;
-    const numericFields = ['adult_price', 'child_price', 'total_seats', 'infant_price'];
-
-    setDepartureForm((prev) => ({
-      ...prev,
-      [name]: numericFields.includes(name)
-        ? value === '' ? '' : Number(value)
-        : value
-    }));
-  };
-
-  const handleAddDeparture = () => {
-    if (!departureForm.description.trim()) return;
-    setDepartures((prev) => [
-      ...prev,
-      { ...departureForm }
-    ]);
-
-    setDepartureForm({
-      departure_date: '',
-      return_date: '',
-      adult_price: '',
-      child_price: '',
-      infant_price: '',
-      description: '',
-      total_seats: ''
-    });
-  };
-
-  const editDeparture = (idx) => {
-    const departure = departures[idx];
-    setDepartureForm(departure);
-    setDepartures(prev => prev.filter((_, i) => i !== idx));
-  };
-
-  const handleRemoveDeparture = (idx) => {
-    setDepartures((prev) => prev.filter((_, i) => i !== idx));
-  };
-
-  // EXCLUSIONS
-  const handleAddExclusion = () => {
-    const trimmed = exclusionText.trim();
-    if (!trimmed) return;
-    setExclusions((prev) => [...prev, trimmed]);
-    setExclusionText('');
-  };
-
-  const editExclusion = (idx) => {
-    const exclusion = exclusions[idx];
-    setExclusionText(exclusion);
-    setExclusions(prev => prev.filter((_, i) => i !== idx));
-  };
-
-  const handleRemoveExclusion = (idx) => {
-    setExclusions((prev) => prev.filter((_, i) => i !== idx));
-  };
-
-  // INCLUSIONS
-  const handleAddInclusion = () => {
-    const trimmed = inclusionText.trim();
-    if (!trimmed) return;
-    setInclusions((prev) => [...prev, trimmed]);
-    setInclusionText('');
-  };
-
-  const editInclusion = (idx) => {
-    const inclusion = inclusions[idx];
-    setInclusionText(inclusion);
-    setInclusions(prev => prev.filter((_, i) => i !== idx));
-  };
-
-  const handleRemoveInclusion = (idx) => {
-    setInclusions((prev) => prev.filter((_, i) => i !== idx));
-  };
-
-  // IMAGES
-  const handleImageChange = (e) => {
-    const files = e.target.files ? Array.from(e.target.files) : [];
-    setImageFiles(files);
-
-    const previews = files.map((file) => URL.createObjectURL(file));
-    setImagePreviews(prev => [...prev, ...previews]);
-  };
-
-  useEffect(() => {
-    return () => {
-      imagePreviews.forEach((url) => {
-        if (url.startsWith('blob:')) {
-          URL.revokeObjectURL(url);
-        }
-      });
-    };
-  }, [imagePreviews]);
-
-  // ITINERARY
-  const handleItineraryChange = (e) => {
-    const { name, value } = e.target;
-
-    setItineraryItem((prev) => ({
-      ...prev,
-      [name]: name === 'day' ? value.replace(/[^0-9]/g, '') : value
-    }));
-  };
-
-  const handleMealsCheckboxChange = (e) => {
-    const { name, checked } = e.target;
-    setItineraryItem((prev) => ({
-      ...prev,
-      meals: {
-        ...prev.meals,
-        [name]: checked
-      }
-    }));
-  };
-
-  const handleAddItinerary = () => {
-    const { day, title, description, meals } = itineraryItem;
-    if (!day || !title.trim()) return;
-
-    const selectedMeals = [];
-    if (meals.breakfast) selectedMeals.push('Breakfast');
-    if (meals.lunch) selectedMeals.push('Lunch');
-    if (meals.dinner) selectedMeals.push('Dinner');
-
-    const mealsString = selectedMeals.join(', ');
-
-    setItineraries((prev) => [
-      ...prev,
-      {
-        day: Number(day),
-        title: title.trim(),
-        description: description.trim(),
-        meals: mealsString
-      }
-    ]);
-
-    setItineraryItem({
-      day: '',
-      title: '',
-      description: '',
-      meals: {
-        breakfast: false,
-        lunch: false,
-        dinner: false
-      }
-    });
-  };
-
-  const handleRemoveItinerary = (idx) => {
-    setItineraries((prev) => prev.filter((_, i) => i !== idx));
-  };
-
+  // ========================
   // NAVIGATION
+  // ========================
+
   const goNext = () => {
     const currentIndex = TAB_LIST.indexOf(activeTab);
     if (currentIndex < TAB_LIST.length - 1) {
@@ -810,372 +925,11 @@ const AddTour = () => {
 
   const isLastTab = activeTab === TAB_LIST[TAB_LIST.length - 1];
 
-  // FIXED: Check if item is already added before auto-adding
-  const shouldAutoAddItem = () => {
-    switch (activeTab) {
-      case 'itineraries':
-        return itineraryItem.day && itineraryItem.title.trim() && 
-               !itineraries.some(item => 
-                 item.day === Number(itineraryItem.day) && 
-                 item.title === itineraryItem.title.trim()
-               );
-      
-      case 'departures':
-        return departureForm.description && departureForm.description.trim() && 
-               !departures.some(dep => 
-                 dep.description === departureForm.description.trim()
-               );
-      
-      case 'costs':
-        return tourCostItem.pax && 
-               !tourCosts.some(cost => cost.pax === tourCostItem.pax);
-      
-      case 'optionalTours':
-        return optionalTourItem.tour_name.trim() && 
-               !optionalTours.some(tour => 
-                 tour.tour_name === optionalTourItem.tour_name.trim()
-               );
-      
-      case 'inclusions':
-        return inclusionText.trim() && 
-               !inclusions.includes(inclusionText.trim());
-      
-      case 'exclusions':
-        return exclusionText.trim() && 
-               !exclusions.includes(exclusionText.trim());
-      
-      case 'transport':
-        return transportItem.description.trim() && 
-               !transports.some(t => 
-                 t.description === transportItem.description.trim()
-               );
-      
-      case 'hotels':
-        return hotelItem.city.trim() && hotelItem.hotel_name.trim() && 
-               !hotelRows.some(h => 
-                 h.city === hotelItem.city.trim() && 
-                 h.hotel_name === hotelItem.hotel_name.trim()
-               );
-      
-      case 'bookingPoi':
-        return poiText.trim() && 
-               !bookingPois.some(p => p.item === poiText.trim());
-      
-      case 'cancellation':
-        return cancelItem.cancellation_policy.trim() && 
-               !cancelPolicies.some(c => 
-                 c.cancellation_policy === cancelItem.cancellation_policy.trim()
-               );
-      
-      case 'instructions':
-        return instructionText.trim() && 
-               !instructions.includes(instructionText.trim());
-      
-      case 'emiOptions':
-        // For EMI options, just validate they have at least one valid option
-        const hasAtLeastOneValidOption = emiOptions.some(option =>
-          option.loan_amount && option.loan_amount > 0 && option.emi && option.emi > 0
-        );
-        return hasAtLeastOneValidOption;
-      
-      default:
-        return false;
-    }
-  };
+  // ========================
+  // SAVE FUNCTIONS
+  // ========================
 
-  // FIXED: Auto-add only if item is not already added
-  const autoAddBeforeNext = () => {
-    if (!shouldAutoAddItem()) {
-      return false;
-    }
-
-    switch (activeTab) {
-      case 'itineraries':
-        handleAddItinerary();
-        break;
-
-      case 'departures':
-        handleAddDeparture();
-        break;
-
-      case 'costs':
-        addCostRow();
-        break;
-
-      case 'emiOptions':
-        // EMI options are already in the array, no need to add
-        // Just validate they have at least one valid option
-        const hasAtLeastOneValidOption = emiOptions.some(option =>
-          option.loan_amount && option.loan_amount > 0 && option.emi && option.emi > 0
-        );
-
-        if (!hasAtLeastOneValidOption) {
-          setError('Please fill at least one EMI option before proceeding');
-          return false;
-        }
-        break;
-
-      case 'optionalTours':
-        addOptionalTourRow();
-        break;
-
-      case 'hotels':
-        addHotelRow();
-        break;
-
-      case 'transport':
-        addTransportRow();
-        break;
-
-      case 'bookingPoi':
-        addPoi();
-        break;
-
-      case 'cancellation':
-        addCancelRow();
-        break;
-
-      case 'instructions':
-        addInstruction();
-        break;
-
-      case 'inclusions':
-        handleAddInclusion();
-        break;
-
-      case 'exclusions':
-        handleAddExclusion();
-        break;
-
-      default:
-        break;
-    }
-    
-    return true;
-  };
-
-  // UPDATE EXISTING TOUR
-  const updateTour = async () => {
-  if (!formData.tour_code.trim()) {
-    setError('Tour code is required');
-    setActiveTab('basic');
-    return;
-  }
-  if (!formData.title.trim()) {
-    setError('Tour title is required');
-    setActiveTab('basic');
-    return;
-  }
-
-  try {
-    setLoading(true);
-    setError('');
-    setSuccess('');
-
-    // 1) PREPARE BASIC TOUR DATA FOR UPDATE
-    const tourUpdateData = {
-      title: formData.title.trim(),
-      tour_type: formData.tour_type || 'individual',
-      primary_destination_id: formData.primary_destination_id,
-      duration_days: Number(formData.duration_days) || 0,
-      overview: formData.overview || '',
-      base_price_adult: Number(formData.base_price_adult) || 0,
-      is_international: Number(formData.is_international) || 0,
-      cost_remarks: formData.cost_remarks || '',
-      hotel_remarks: formData.hotel_remarks || '',
-      transport_remarks: formData.transport_remarks || '',
-      emi_remarks: formData.emi_remarks || '',
-      booking_poi_remarks: formData.booking_poi_remarks || '',
-      cancellation_remarks: formData.cancellation_remarks || ''
-    };
-
-    console.log('Updating tour with data:', tourUpdateData);
-
-    // 1) UPDATE TOUR BASIC DETAILS
-    const tourRes = await fetch(`${baseurl}/api/tours/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(tourUpdateData)
-    });
-
-    const tourResponse = await tourRes.json();
-    
-    if (!tourRes.ok) {
-      throw new Error(tourResponse.error || tourResponse.message || 'Failed to update tour');
-    }
-
-    // 2) DELETE EXISTING DATA (your existing code is fine)
-    const deleteEndpoints = [
-      `${baseurl}/api/departures/bulk/${id}`,
-      `${baseurl}/api/tour-costs/tour/${id}`,
-      `${baseurl}/api/optional-tours/tour/${id}`,
-      `${baseurl}/api/emi-options/tour/${id}`,
-      `${baseurl}/api/tour-hotels/tour/${id}`,
-      `${baseurl}/api/tour-transports/tour/${id}`,
-      `${baseurl}/api/tour-booking-poi/tour/${id}`,
-      `${baseurl}/api/tour-cancellation/tour/${id}`,
-      `${baseurl}/api/tour-instructions/tour/${id}`,
-      `${baseurl}/api/exclusions/tour/${id}`,
-      `${baseurl}/api/inclusions/tour/${id}`,
-      `${baseurl}/api/itineraries/tour/${id}`
-    ];
-
-    for (const endpoint of deleteEndpoints) {
-      try {
-        await fetch(endpoint, { method: 'DELETE' });
-      } catch (err) {
-        console.warn(`Failed to delete from ${endpoint}:`, err.message);
-      }
-    }
-
-    // 3) RE-ADD ALL DATA (your existing code is fine)
-    // [Keep all your existing bulk insert code here]
-    
-    // Departures
-    if (departures.length > 0) {
-      await fetch(`${baseurl}/api/departures/bulk`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tour_id: id, departures })
-      });
-    }
-
-    // Tour Costs
-    if (tourCosts.length > 0) {
-      await fetch(`${baseurl}/api/tour-costs/bulk`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tour_id: id, costs: tourCosts })
-      });
-    }
-
-    // Optional Tours
-    if (optionalTours.length > 0) {
-      await fetch(`${baseurl}/api/optional-tours/bulk`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tour_id: id, optional_tours: optionalTours })
-      });
-    }
-
-    // EMI Options
-    const validEmiOptions = emiOptions.filter(opt =>
-      opt.loan_amount && opt.loan_amount > 0 && opt.emi && opt.emi > 0
-    );
-    
-    if (validEmiOptions.length > 0) {
-      await fetch(`${baseurl}/api/emi-options/emi/bulk`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tour_id: id, emi_options: validEmiOptions })
-      });
-    }
-
-    // Hotels
-    if (hotelRows.length > 0) {
-      await fetch(`${baseurl}/api/tour-hotels/bulk`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tour_id: id, hotels: hotelRows })
-      });
-    }
-
-    // Transport
-    if (transports.length > 0) {
-      await fetch(`${baseurl}/api/tour-transports/bulk`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tour_id: id, items: transports })
-      });
-    }
-
-    // Booking POI
-    if (bookingPois.length > 0) {
-      await fetch(`${baseurl}/api/tour-booking-poi/bulk`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tour_id: id, items: bookingPois })
-      });
-    }
-
-    // Cancellation
-    if (cancelPolicies.length > 0) {
-      await fetch(`${baseurl}/api/tour-cancellation/bulk`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tour_id: id, policies: cancelPolicies })
-      });
-    }
-
-    // Instructions
-    if (instructions.length > 0) {
-      await fetch(`${baseurl}/api/tour-instructions/bulk`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tour_id: id, items: instructions })
-      });
-    }
-
-    // Exclusions
-    if (exclusions.length > 0) {
-      await fetch(`${baseurl}/api/exclusions/bulk`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tour_id: id, items: exclusions })
-      });
-    }
-
-    // Inclusions
-    if (inclusions.length > 0) {
-      await fetch(`${baseurl}/api/inclusions/bulk`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tour_id: id, items: inclusions })
-      });
-    }
-
-    // Itineraries
-    if (itineraries.length > 0) {
-      const itineraryPayload = itineraries.map((item) => ({
-        ...item,
-        tour_id: id
-      }));
-
-      await fetch(`${baseurl}/api/itineraries/bulk`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(itineraryPayload)
-      });
-    }
-
-    // Images (only if new files added)
-    if (imageFiles.length > 0) {
-      const formDataImages = new FormData();
-      imageFiles.forEach((file) => {
-        formDataImages.append('images', file);
-      });
-
-      if (imageCaption.trim()) {
-        formDataImages.append('caption', imageCaption.trim());
-      }
-
-      await fetch(`${baseurl}/api/images/upload/${id}`, {
-        method: 'POST',
-        body: formDataImages
-      });
-    }
-
-    setSuccess('Tour updated successfully!');
-    setTimeout(() => navigate('/tours'), 1500);
-  } catch (err) {
-    console.error('Error updating tour:', err);
-    setError(err.message || 'Failed to update tour');
-  } finally {
-    setLoading(false);
-  }
-};
-
-  // CREATE NEW TOUR
+  // CREATE NEW TOUR (POST)
   const createTour = async () => {
     if (!formData.tour_code.trim()) {
       setError('Tour code is required');
@@ -1208,7 +962,21 @@ const AddTour = () => {
       const tourData = await tourRes.json();
       const tourId = tourData.tour_id || tourData.id || tourData.insertId;
 
-      // 2) DEPARTURES BULK
+      // 2) ITINERARIES
+      if (itineraries.length > 0) {
+        const itineraryPayload = itineraries.map((item) => ({
+          ...item,
+          tour_id: tourId
+        }));
+
+        await fetch(`${baseurl}/api/itineraries/bulk`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(itineraryPayload)
+        });
+      }
+
+      // 3) DEPARTURES
       if (departures.length > 0) {
         await fetch(`${baseurl}/api/departures/bulk`, {
           method: 'POST',
@@ -1217,7 +985,7 @@ const AddTour = () => {
         });
       }
 
-      // 3) TOUR COSTS BULK
+      // 4) TOUR COSTS
       if (tourCosts.length > 0) {
         await fetch(`${baseurl}/api/tour-costs/bulk`, {
           method: 'POST',
@@ -1226,7 +994,7 @@ const AddTour = () => {
         });
       }
 
-      // 4) OPTIONAL TOURS BULK
+      // 5) OPTIONAL TOURS
       if (optionalTours.length > 0) {
         await fetch(`${baseurl}/api/optional-tours/bulk`, {
           method: 'POST',
@@ -1235,11 +1003,10 @@ const AddTour = () => {
         });
       }
 
-      // 5) EMI OPTIONS BULK
+      // 6) EMI OPTIONS
       const validEmiOptions = emiOptions.filter(opt =>
         opt.loan_amount && opt.loan_amount > 0 && opt.emi && opt.emi > 0
       );
-
       if (validEmiOptions.length > 0) {
         await fetch(`${baseurl}/api/emi-options/emi/bulk`, {
           method: 'POST',
@@ -1248,7 +1015,7 @@ const AddTour = () => {
         });
       }
 
-      // 6) HOTELS BULK
+      // 7) HOTELS
       if (hotelRows.length > 0) {
         await fetch(`${baseurl}/api/tour-hotels/bulk`, {
           method: 'POST',
@@ -1257,7 +1024,7 @@ const AddTour = () => {
         });
       }
 
-      // 7) TRANSPORT BULK
+      // 8) TRANSPORT
       if (transports.length > 0) {
         await fetch(`${baseurl}/api/tour-transports/bulk`, {
           method: 'POST',
@@ -1266,60 +1033,7 @@ const AddTour = () => {
         });
       }
 
-      // 8) BOOKING POI BULK
-      if (bookingPois.length > 0) {
-        await fetch(`${baseurl}/api/tour-booking-poi/bulk`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ tour_id: tourId, items: bookingPois })
-        });
-      }
-
-      // 9) CANCELLATION BULK
-      if (cancelPolicies.length > 0) {
-        await fetch(`${baseurl}/api/tour-cancellation/bulk`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ tour_id: tourId, policies: cancelPolicies })
-        });
-      }
-
-      // 10) INSTRUCTIONS BULK
-      if (instructions.length > 0) {
-        await fetch(`${baseurl}/api/tour-instructions/bulk`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ tour_id: tourId, items: instructions })
-        });
-      }
-
-      // 11) EXCLUSIONS
-      if (exclusions.length > 0) {
-        await fetch(`${baseurl}/api/exclusions/bulk`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ tour_id: tourId, items: exclusions })
-        });
-      }
-
-      // 12) IMAGES
-      if (imageFiles.length > 0) {
-        const formDataImages = new FormData();
-        imageFiles.forEach((file) => {
-          formDataImages.append('images', file);
-        });
-
-        if (imageCaption.trim()) {
-          formDataImages.append('caption', imageCaption.trim());
-        }
-
-        await fetch(`${baseurl}/api/images/upload/${tourId}`, {
-          method: 'POST',
-          body: formDataImages
-        });
-      }
-
-      // 13) INCLUSIONS
+      // 9) INCLUSIONS
       if (inclusions.length > 0) {
         await fetch(`${baseurl}/api/inclusions/bulk`, {
           method: 'POST',
@@ -1328,33 +1042,278 @@ const AddTour = () => {
         });
       }
 
-      // 14) ITINERARY DAYS
-      if (itineraries.length > 0) {
-        const payload = itineraries.map((item) => ({
-          ...item,
-          tour_id: tourId
-        }));
-
-        await fetch(`${baseurl}/api/itineraries/bulk`, {
+      // 10) EXCLUSIONS
+      if (exclusions.length > 0) {
+        await fetch(`${baseurl}/api/exclusions/bulk`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
+          body: JSON.stringify({ tour_id: tourId, items: exclusions })
         });
       }
 
-      setSuccess('Tour saved successfully!');
+      // 11) BOOKING POI
+      if (bookingPois.length > 0) {
+        await fetch(`${baseurl}/api/tour-booking-poi/bulk`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tour_id: tourId, items: bookingPois })
+        });
+      }
+
+      // 12) CANCELLATION
+      if (cancelPolicies.length > 0) {
+        await fetch(`${baseurl}/api/tour-cancellation/bulk`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tour_id: tourId, policies: cancelPolicies })
+        });
+      }
+
+      // 13) INSTRUCTIONS
+      if (instructions.length > 0) {
+        await fetch(`${baseurl}/api/tour-instructions/bulk`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tour_id: tourId, items: instructions })
+        });
+      }
+
+      // 14) IMAGES
+      if (imageFiles.length > 0) {
+        const formDataImages = new FormData();
+        imageFiles.forEach((file) => {
+          formDataImages.append('images', file);
+        });
+        if (imageCaption.trim()) {
+          formDataImages.append('caption', imageCaption.trim());
+        }
+        await fetch(`${baseurl}/api/images/upload/${tourId}`, {
+          method: 'POST',
+          body: formDataImages
+        });
+      }
+
+      setSuccess('Tour created successfully!');
       setTimeout(() => navigate('/tours'), 1500);
     } catch (err) {
-      setError(err.message || 'Failed to save tour');
+      setError(err.message || 'Failed to create tour');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // UPDATE EXISTING TOUR (PUT)
+  const updateTour = async () => {
+    if (!formData.tour_code.trim()) {
+      setError('Tour code is required');
+      setActiveTab('basic');
+      return;
+    }
+    if (!formData.title.trim()) {
+      setError('Tour title is required');
+      setActiveTab('basic');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError('');
+      setSuccess('');
+
+      // 1) UPDATE TOUR BASIC DETAILS
+      const tourUpdateData = {
+        title: formData.title.trim(),
+        tour_type: formData.tour_type || 'individual',
+        primary_destination_id: formData.primary_destination_id,
+        duration_days: Number(formData.duration_days) || 0,
+        overview: formData.overview || '',
+        base_price_adult: Number(formData.base_price_adult) || 0,
+        is_international: Number(formData.is_international) || 0,
+        cost_remarks: formData.cost_remarks || '',
+        hotel_remarks: formData.hotel_remarks || '',
+        transport_remarks: formData.transport_remarks || '',
+        emi_remarks: formData.emi_remarks || '',
+        booking_poi_remarks: formData.booking_poi_remarks || '',
+        cancellation_remarks: formData.cancellation_remarks || ''
+      };
+
+      const tourRes = await fetch(`${baseurl}/api/tours/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(tourUpdateData)
+      });
+
+      const tourResponse = await tourRes.json();
+      if (!tourRes.ok) {
+        throw new Error(tourResponse.error || tourResponse.message || 'Failed to update tour');
+      }
+
+      // 2) DELETE ALL EXISTING DATA
+      const deleteEndpoints = [
+        `${baseurl}/api/departures/bulk/${id}`,
+        `${baseurl}/api/tour-costs/tour/${id}`,
+        `${baseurl}/api/optional-tours/tour/${id}`,
+        `${baseurl}/api/emi-options/tour/${id}`,
+        `${baseurl}/api/tour-hotels/tour/${id}`,
+        `${baseurl}/api/tour-transports/tour/${id}`,
+        `${baseurl}/api/tour-booking-poi/tour/${id}`,
+        `${baseurl}/api/tour-cancellation/tour/${id}`,
+        `${baseurl}/api/tour-instructions/tour/${id}`,
+        `${baseurl}/api/exclusions/tour/${id}`,
+        `${baseurl}/api/inclusions/tour/${id}`,
+        `${baseurl}/api/itineraries/tour/${id}`
+      ];
+
+      for (const endpoint of deleteEndpoints) {
+        try {
+          await fetch(endpoint, { method: 'DELETE' });
+        } catch (err) {
+          console.warn(`Failed to delete from ${endpoint}:`, err.message);
+        }
+      }
+
+      // 3) RE-ADD ALL UPDATED DATA
+      // Itineraries
+      if (itineraries.length > 0) {
+        const itineraryPayload = itineraries.map((item) => ({
+          ...item,
+          tour_id: id
+        }));
+        await fetch(`${baseurl}/api/itineraries/bulk`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(itineraryPayload)
+        });
+      }
+
+      // Departures
+      if (departures.length > 0) {
+        await fetch(`${baseurl}/api/departures/bulk`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tour_id: id, departures })
+        });
+      }
+
+      // Tour Costs
+      if (tourCosts.length > 0) {
+        await fetch(`${baseurl}/api/tour-costs/bulk`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tour_id: id, costs: tourCosts })
+        });
+      }
+
+      // Optional Tours
+      if (optionalTours.length > 0) {
+        await fetch(`${baseurl}/api/optional-tours/bulk`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tour_id: id, optional_tours: optionalTours })
+        });
+      }
+
+      // EMI Options
+      const validEmiOptions = emiOptions.filter(opt =>
+        opt.loan_amount && opt.loan_amount > 0 && opt.emi && opt.emi > 0
+      );
+      if (validEmiOptions.length > 0) {
+        await fetch(`${baseurl}/api/emi-options/emi/bulk`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tour_id: id, emi_options: validEmiOptions })
+        });
+      }
+
+      // Hotels
+      if (hotelRows.length > 0) {
+        await fetch(`${baseurl}/api/tour-hotels/bulk`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tour_id: id, hotels: hotelRows })
+        });
+      }
+
+      // Transport
+      if (transports.length > 0) {
+        await fetch(`${baseurl}/api/tour-transports/bulk`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tour_id: id, items: transports })
+        });
+      }
+
+      // Inclusions
+      if (inclusions.length > 0) {
+        await fetch(`${baseurl}/api/inclusions/bulk`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tour_id: id, items: inclusions })
+        });
+      }
+
+      // Exclusions
+      if (exclusions.length > 0) {
+        await fetch(`${baseurl}/api/exclusions/bulk`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tour_id: id, items: exclusions })
+        });
+      }
+
+      // Booking POI
+      if (bookingPois.length > 0) {
+        await fetch(`${baseurl}/api/tour-booking-poi/bulk`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tour_id: id, items: bookingPois })
+        });
+      }
+
+      // Cancellation
+      if (cancelPolicies.length > 0) {
+        await fetch(`${baseurl}/api/tour-cancellation/bulk`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tour_id: id, policies: cancelPolicies })
+        });
+      }
+
+      // Instructions
+      if (instructions.length > 0) {
+        await fetch(`${baseurl}/api/tour-instructions/bulk`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tour_id: id, items: instructions })
+        });
+      }
+
+      // Images (only if new files added)
+      if (imageFiles.length > 0) {
+        const formDataImages = new FormData();
+        imageFiles.forEach((file) => {
+          formDataImages.append('images', file);
+        });
+        if (imageCaption.trim()) {
+          formDataImages.append('caption', imageCaption.trim());
+        }
+        await fetch(`${baseurl}/api/images/upload/${id}`, {
+          method: 'POST',
+          body: formDataImages
+        });
+      }
+
+      setSuccess('Tour updated successfully!');
+      setTimeout(() => navigate('/tours'), 1500);
+    } catch (err) {
+      console.error('Error updating tour:', err);
+      setError(err.message || 'Failed to update tour');
     } finally {
       setLoading(false);
     }
   };
 
   const handleSaveClick = () => {
-    // FIXED: Only auto-add if not already added
-    autoAddBeforeNext();
-
     if (isLastTab) {
       if (isEditMode) {
         updateTour();
@@ -1366,58 +1325,74 @@ const AddTour = () => {
     }
   };
 
-  const handleDepartureDateSelect = (e) => {
-    const departureDate = e.target.value;
-    const duration = formData.duration_days;
+  // ========================
+  // RENDER
+  // ========================
 
-    if (!departureDate || !duration) {
-      setDepartureForm(prev => ({ ...prev, departure_date: departureDate }));
-      return;
-    }
-
-    const dateObj = new Date(departureDate);
-    dateObj.setDate(dateObj.getDate() + Number(duration));
-
-    const returnISO = dateObj.toISOString().split("T")[0];
-
-    setDepartureForm(prev => ({
-      ...prev,
-      departure_date: departureDate,
-      return_date: returnISO
-    }));
-  };
-
-  // Dynamic "+ Add ..." button for bottom bar
   const getAddConfigForTab = (tabKey) => {
     switch (tabKey) {
       case 'itineraries':
-        return { label: '+ Add Day', onClick: handleAddItinerary };
+        return { 
+          label: editingType === 'itinerary' ? 'Update Day' : '+ Add Day', 
+          onClick: handleAddItinerary 
+        };
       case 'departures':
-        return { label: '+ Add Departure', onClick: handleAddDeparture };
+        return { 
+          label: editingType === 'departure' ? 'Update Departure' : '+ Add Departure', 
+          onClick: handleAddDeparture 
+        };
       case 'costs':
-        return { label: '+ Add Cost Row', onClick: addCostRow };
+        return { 
+          label: editingType === 'cost' ? 'Update Cost Row' : '+ Add Cost Row', 
+          onClick: addCostRow 
+        };
       case 'optionalTours':
-        return { label: '+ Add Optional Tour', onClick: addOptionalTourRow };
+        return { 
+          label: editingType === 'optionalTour' ? 'Update Optional Tour' : '+ Add Optional Tour', 
+          onClick: addOptionalTourRow 
+        };
       case 'inclusions':
-        return { label: '+ Add Inclusion', onClick: handleAddInclusion };
+        return { 
+          label: editingType === 'inclusion' ? 'Update Inclusion' : '+ Add Inclusion', 
+          onClick: handleAddInclusion 
+        };
       case 'exclusions':
-        return { label: '+ Add Exclusion', onClick: handleAddExclusion };
+        return { 
+          label: editingType === 'exclusion' ? 'Update Exclusion' : '+ Add Exclusion', 
+          onClick: handleAddExclusion 
+        };
       case 'transport':
-        return { label: '+ Add Transport', onClick: addTransportRow };
+        return { 
+          label: editingType === 'transport' ? 'Update Transport' : '+ Add Transport', 
+          onClick: addTransportRow 
+        };
       case 'hotels':
-        return { label: '+ Add Hotel', onClick: addHotelRow };
+        return { 
+          label: editingType === 'hotel' ? 'Update Hotel' : '+ Add Hotel', 
+          onClick: addHotelRow 
+        };
       case 'bookingPoi':
-        return { label: '+ Add POI', onClick: addPoi };
+        return { 
+          label: editingType === 'poi' ? 'Update POI' : '+ Add POI', 
+          onClick: addPoi 
+        };
       case 'cancellation':
-        return { label: '+ Add Policy', onClick: addCancelRow };
+        return { 
+          label: editingType === 'cancellation' ? 'Update Policy' : '+ Add Policy', 
+          onClick: addCancelRow 
+        };
       case 'instructions':
-        return { label: '+ Add Instruction', onClick: addInstruction };
+        return { 
+          label: editingType === 'instruction' ? 'Update Instruction' : '+ Add Instruction', 
+          onClick: addInstruction 
+        };
       default:
         return null;
     }
   };
 
   const addConfig = getAddConfigForTab(activeTab);
+  
 
   return (
     <Navbar>
