@@ -5,6 +5,8 @@ import { baseurl } from '../../Api/Baseurl';
 import ReusableTable from '../../Shared/TableLayout/DataTable';
 import { useNavigate } from 'react-router-dom';
 import { Eye, Pencil, Trash } from 'react-bootstrap-icons';
+import Form from 'react-bootstrap/Form';
+
 
 const Tours = () => {
   const [tours, setTours] = useState([]);
@@ -160,6 +162,31 @@ const Tours = () => {
           ? new Date(item.created_at).toLocaleDateString('en-US')
           : 'N/A'
     },
+{
+  key: 'status',
+  title: 'Status',
+  render: (item) => (
+    <div className="d-flex align-items-center justify-content-center gap-2">
+      <span
+        className={`fw-semibold ${
+          item.status === 1 ? 'text-success' : 'text-danger'
+        }`}
+      >
+        {item.status === 1 ? 'Active' : 'Inactive'}
+      </span>
+
+      <Form.Check
+        type="switch"
+        id={`status-switch-${item.tour_id}`}
+        checked={item.status === 1}
+        onChange={() => handleStatusToggle(item)}
+      />
+    </div>
+  ),
+  style: { textAlign: 'center', minWidth: '160px' }
+},
+
+
     {
       key: 'actions',
       title: 'Actions',
@@ -202,8 +229,31 @@ const Tours = () => {
     base_price_adult: tour.base_price_adult || 0,
     overview: tour.overview || "",
     is_international: tour.is_international || false,
-    created_at: tour.created_at || ""
+    created_at: tour.created_at || "",
+     status: tour.status ?? 1,
   }));
+
+  const handleStatusToggle = async (tour) => {
+  const newStatus = tour.status ? 0 : 1;
+
+  try {
+    await fetch(`${baseurl}/api/tours/status/${tour.tour_id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: newStatus }),
+    });
+
+    setTours(prev =>
+      prev.map(t =>
+        t.tour_id === tour.tour_id ? { ...t, status: newStatus } : t
+      )
+    );
+  } catch (err) {
+    console.error('Status update failed', err);
+    setError('Failed to update status');
+  }
+};
+
 
   return (
     <Navbar>
