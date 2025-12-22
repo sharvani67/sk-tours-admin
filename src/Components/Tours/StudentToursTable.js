@@ -70,7 +70,7 @@ const StudentTours = () => {
 
     try {
       setDeleteLoading(true);
-      const response = await fetch(`${baseurl}/api/tours/${tourToDelete.tour_id}`, {
+      const response = await fetch(`${baseurl}/api/tours/bulk/${tourToDelete.tour_id}`, {
         method: 'DELETE',
       });
 
