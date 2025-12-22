@@ -1,0 +1,886 @@
+/* AdminDomesticTours.css - Light Theme Matching Image Style */
+
+:root {
+  /* Light Theme Colors */
+  --light-primary: #ffffff;
+  --light-secondary: #f8f9fa;
+  --light-tertiary: #f1f3f5;
+  --light-accent: #e9ecef;
+  --light-border: #dee2e6;
+  
+  /* Text Colors */
+  --light-text-primary: #212529;
+  --light-text-secondary: #495057;
+  --light-text-tertiary: #6c757d;
+  --light-text-muted: #adb5bd;
+  
+  /* Blue Accents (from image) */
+  --blue-primary: #0d6efd;
+  --blue-secondary: #1d4ed8;
+  --blue-light: #e8f4ff;
+  --blue-dark: #0c4ab2;
+  
+  /* Color Palette */
+  --emerald: #10b981;
+  --emerald-light: #d1fae5;
+  --emerald-dark: #065f46;
+  
+  --purple: #8b5cf6;
+  --purple-light: #ede9fe;
+  --purple-dark: #5b21b6;
+  
+  --green: #22c55e;
+  --green-light: #dcfce7;
+  --green-dark: #15803d;
+  
+  --red: #ef4444;
+  --red-light: #fee2e2;
+  --red-dark: #b91c1c;
+  
+  --orange: #f59e0b;
+  --orange-light: #fef3c7;
+  --orange-dark: #d97706;
+  
+  --gray-50: #f9fafb;
+  --gray-100: #f3f4f6;
+  --gray-200: #e5e7eb;
+  --gray-300: #d1d5db;
+  --gray-400: #9ca3af;
+  --gray-500: #6b7280;
+  --gray-600: #4b5563;
+  --gray-700: #374151;
+  --gray-800: #1f2937;
+  --gray-900: #111827;
+}
+
+/* ========== BASE STYLES ========== */
+.admin-domestic-tours {
+  min-height: 100vh;
+  background: linear-gradient(135deg, var(--light-secondary) 0%, var(--light-tertiary) 100%);
+  color: var(--light-text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  padding: 1rem;
+}
+
+@media (min-width: 768px) {
+  .admin-domestic-tours {
+    padding: 2rem;
+  }
+}
+
+/* ========== HEADER ========== */
+.admin-domestic-tours .header-content {
+  margin-bottom: 2rem;
+}
+
+.admin-domestic-tours .header-main {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .admin-domestic-tours .header-main {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+}
+
+.admin-domestic-tours .header-title h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--blue-primary) 0%, var(--blue-secondary) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 0.5rem;
+}
+
+.admin-domestic-tours .header-title p {
+  color: var(--light-text-secondary);
+  font-size: 0.95rem;
+}
+
+/* ========== STATS CARDS ========== */
+.admin-domestic-tours .stats-grid {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .admin-domestic-tours .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .admin-domestic-tours .stats-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.admin-domestic-tours .stat-card {
+  background: var(--light-primary);
+  border: 1px solid var(--light-border);
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  transition: all 0.2s ease;
+}
+
+.admin-domestic-tours .stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+.admin-domestic-tours .stat-value {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+
+.admin-domestic-tours .stat-label {
+  color: var(--light-text-tertiary);
+  font-size: 0.875rem;
+}
+
+/* ========== ERROR MESSAGE ========== */
+.admin-domestic-tours .error-message {
+  background: var(--red-light);
+  border: 1px solid var(--red-light);
+  color: var(--red-dark);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.admin-domestic-tours .error-icon {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--red-dark);
+  color: var(--red-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: bold;
+}
+
+/* ========== FILTERS SECTION ========== */
+.admin-domestic-tours .filters-container {
+  background: var(--light-primary);
+  border: 1px solid var(--light-border);
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  margin-bottom: 1.5rem;
+}
+
+.admin-domestic-tours .filters-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+@media (min-width: 768px) {
+  .admin-domestic-tours .filters-content {
+    flex-direction: row;
+    align-items: center;
+  }
+}
+
+.admin-domestic-tours .search-container {
+  flex: 1;
+  position: relative;
+}
+
+.admin-domestic-tours .search-icon {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--light-text-tertiary);
+  width: 20px;
+  height: 20px;
+}
+
+.admin-domestic-tours .search-input {
+  width: 100%;
+  padding: 0.75rem 1rem 0.75rem 3rem;
+  border: 1px solid var(--light-border);
+  border-radius: 8px;
+  font-size: 0.95rem;
+  color: var(--light-text-primary);
+  background: var(--light-primary);
+  transition: all 0.2s ease;
+}
+
+.admin-domestic-tours .search-input:focus {
+  outline: none;
+  border-color: var(--blue-primary);
+  box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.1);
+}
+
+.admin-domestic-tours .filters-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+/* ========== BUTTONS ========== */
+.admin-domestic-tours .btn {
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  border: none;
+  font-weight: 500;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.admin-domestic-tours .btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.admin-domestic-tours .btn-primary {
+  background: linear-gradient(135deg, var(--blue-primary) 0%, var(--blue-secondary) 100%);
+  color: white;
+}
+
+.admin-domestic-tours .btn-secondary {
+  background: var(--light-tertiary);
+  color: var(--light-text-primary);
+  border: 1px solid var(--light-border);
+}
+
+.admin-domestic-tours .btn-secondary:hover {
+  background: var(--light-accent);
+}
+
+.admin-domestic-tours .btn-success {
+  background: linear-gradient(135deg, var(--green) 0%, var(--emerald) 100%);
+  color: white;
+}
+
+.admin-domestic-tours .btn-gray {
+  background: var(--gray-600);
+  color: white;
+}
+
+.admin-domestic-tours .btn-gray:hover {
+  background: var(--gray-700);
+}
+
+.admin-domestic-tours .btn-small {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+}
+
+/* Select Styles */
+.admin-domestic-tours .select {
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--light-border);
+  border-radius: 8px;
+  font-size: 0.95rem;
+  color: var(--light-text-primary);
+  background: var(--light-primary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 140px;
+}
+
+.admin-domestic-tours .select:focus {
+  outline: none;
+  border-color: var(--blue-primary);
+  box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.1);
+}
+
+/* ========== TABLE CONTAINER ========== */
+.admin-domestic-tours .table-container {
+  background: var(--light-primary);
+  border: 1px solid var(--light-border);
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+}
+
+.admin-domestic-tours .table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.admin-domestic-tours .table thead {
+  background: var(--light-secondary);
+  border-bottom: 2px solid var(--light-border);
+}
+
+.admin-domestic-tours .table th {
+  padding: 1rem 1.5rem;
+  text-align: left;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--light-text-tertiary);
+  white-space: nowrap;
+}
+
+.admin-domestic-tours .table tbody tr {
+  border-bottom: 1px solid var(--light-border);
+  transition: all 0.2s ease;
+}
+
+.admin-domestic-tours .table tbody tr:hover {
+  background: var(--light-tertiary);
+}
+
+.admin-domestic-tours .table td {
+  padding: 1rem 1.5rem;
+  vertical-align: top;
+}
+
+/* ========== TABLE CELL STYLES ========== */
+/* Order Column */
+.admin-domestic-tours .order-cell {
+  width: 80px;
+  text-align: center;
+}
+
+.admin-domestic-tours .order-controls {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.admin-domestic-tours .order-btn {
+  padding: 0.25rem;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.admin-domestic-tours .order-btn:not(:disabled) {
+  color: var(--light-text-secondary);
+}
+
+.admin-domestic-tours .order-btn:not(:disabled):hover {
+  background: var(--light-accent);
+}
+
+.admin-domestic-tours .order-btn:disabled {
+  color: var(--light-border);
+  cursor: not-allowed;
+}
+
+.admin-domestic-tours .order-value {
+  font-weight: 600;
+  color: var(--light-text-primary);
+}
+
+/* Tour Details Column */
+.admin-domestic-tours .tour-details {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.admin-domestic-tours .tour-image {
+  width: 96px;
+  height: 64px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid var(--light-border);
+  flex-shrink: 0;
+}
+
+.admin-domestic-tours .tour-info h3 {
+  font-weight: 600;
+  color: var(--light-text-primary);
+  margin-bottom: 0.25rem;
+}
+
+.admin-domestic-tours .tour-meta {
+  color: var(--light-text-secondary);
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.25rem;
+}
+
+.admin-domestic-tours .tour-meta span {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.admin-domestic-tours .tour-extra {
+  font-size: 0.75rem;
+  color: var(--light-text-tertiary);
+}
+
+/* Price Column */
+.admin-domestic-tours .price-value {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--light-text-primary);
+  margin-bottom: 0.25rem;
+}
+
+.admin-domestic-tours .emi-value {
+  font-size: 0.875rem;
+  color: var(--light-text-secondary);
+}
+
+/* Type & Status Column */
+.admin-domestic-tours .type-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.admin-domestic-tours .type-individual {
+  background: var(--emerald-light);
+  color: var(--emerald-dark);
+}
+
+.admin-domestic-tours .type-group {
+  background: var(--purple-light);
+  color: var(--purple-dark);
+}
+
+.admin-domestic-tours .status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.admin-domestic-tours .status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.admin-domestic-tours .status-dot.active {
+  background: var(--green);
+}
+
+.admin-domestic-tours .status-dot.inactive {
+  background: var(--red);
+}
+
+.admin-domestic-tours .status-text {
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.admin-domestic-tours .status-text.active {
+  color: var(--green-dark);
+}
+
+.admin-domestic-tours .status-text.inactive {
+  color: var(--red-dark);
+}
+
+/* Actions Column */
+.admin-domestic-tours .action-buttons {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}
+
+.admin-domestic-tours .action-btn {
+  padding: 0.5rem;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.admin-domestic-tours .action-btn:hover {
+  background: var(--light-accent);
+}
+
+.admin-domestic-tours .btn-status {
+  color: var(--red);
+}
+
+.admin-domestic-tours .btn-status:hover {
+  background: var(--red-light);
+}
+
+.admin-domestic-tours .btn-edit {
+  color: var(--blue-primary);
+}
+
+.admin-domestic-tours .btn-edit:hover {
+  background: var(--blue-light);
+}
+
+.admin-domestic-tours .btn-delete {
+  color: var(--red);
+}
+
+.admin-domestic-tours .btn-delete:hover {
+  background: var(--red-light);
+}
+
+/* ========== LOADING & EMPTY STATES ========== */
+.admin-domestic-tours .loading-state {
+  padding: 3rem;
+  text-align: center;
+}
+
+.admin-domestic-tours .loading-spinner {
+  display: inline-block;
+  width: 2rem;
+  height: 2rem;
+  border: 3px solid var(--blue-light);
+  border-top-color: var(--blue-primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.admin-domestic-tours .loading-text {
+  color: var(--light-text-tertiary);
+}
+
+.admin-domestic-tours .empty-state {
+  padding: 3rem;
+  text-align: center;
+}
+
+.admin-domestic-tours .empty-text {
+  color: var(--light-text-tertiary);
+}
+
+/* ========== MODAL ========== */
+.admin-domestic-tours .modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  z-index: 50;
+}
+
+.admin-domestic-tours .modal-container {
+  background: var(--light-primary);
+  border-radius: 16px;
+  box-shadow: 0 20px 64px rgba(0, 0, 0, 0.2);
+  max-width: 42rem;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.admin-domestic-tours .modal-header {
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--light-border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.admin-domestic-tours .modal-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--light-text-primary);
+}
+
+.admin-domestic-tours .modal-close {
+  padding: 0.5rem;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: var(--light-text-tertiary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.admin-domestic-tours .modal-close:hover {
+  background: var(--light-tertiary);
+  color: var(--light-text-secondary);
+}
+
+.admin-domestic-tours .modal-content {
+  padding: 1.5rem;
+}
+
+/* ========== FORM STYLES ========== */
+.admin-domestic-tours .form-grid {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .admin-domestic-tours .form-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.admin-domestic-tours .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.admin-domestic-tours .form-group.full-width {
+  grid-column: 1 / -1;
+}
+
+.admin-domestic-tours .form-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--light-text-primary);
+}
+
+.admin-domestic-tours .form-input {
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--light-border);
+  border-radius: 8px;
+  font-size: 0.95rem;
+  color: var(--light-text-primary);
+  background: var(--light-primary);
+  transition: all 0.2s ease;
+  width: 100%;
+}
+
+.admin-domestic-tours .form-input:focus {
+  outline: none;
+  border-color: var(--blue-primary);
+  box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.1);
+}
+
+.admin-domestic-tours .form-input:read-only {
+  background: var(--light-tertiary);
+  color: var(--light-text-tertiary);
+  cursor: not-allowed;
+}
+
+.admin-domestic-tours .form-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.admin-domestic-tours .form-checkbox input[type="checkbox"] {
+  width: 1rem;
+  height: 1rem;
+  border-radius: 4px;
+  border: 1px solid var(--light-border);
+  cursor: pointer;
+}
+
+.admin-domestic-tours .form-checkbox label {
+  font-size: 0.875rem;
+  color: var(--light-text-secondary);
+  cursor: pointer;
+}
+
+/* Image Preview */
+.admin-domestic-tours .image-preview {
+  margin-top: 0.5rem;
+}
+
+.admin-domestic-tours .preview-image {
+  width: 100%;
+  height: 8rem;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid var(--light-border);
+}
+
+/* Form Actions */
+.admin-domestic-tours .form-actions {
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--light-border);
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+}
+
+.admin-domestic-tours .btn-cancel {
+  padding: 0.75rem 1.5rem;
+  border: 1px solid var(--light-border);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--light-text-secondary);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.admin-domestic-tours .btn-cancel:hover {
+  background: var(--light-tertiary);
+}
+
+.admin-domestic-tours .btn-submit {
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  border: none;
+  background: linear-gradient(135deg, var(--blue-primary) 0%, var(--blue-secondary) 100%);
+  color: white;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.admin-domestic-tours .btn-submit:hover {
+  background: linear-gradient(135deg, var(--blue-secondary) 0%, var(--blue-dark) 100%);
+}
+
+/* ========== RESPONSIVE ADJUSTMENTS ========== */
+@media (max-width: 768px) {
+  .admin-domestic-tours .table-container {
+    overflow-x: auto;
+  }
+  
+  .admin-domestic-tours .table {
+    min-width: 800px;
+  }
+  
+  .admin-domestic-tours .filters-actions {
+    flex-wrap: wrap;
+  }
+  
+  .admin-domestic-tours .select,
+  .admin-domestic-tours .btn {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
+@media (max-width: 640px) {
+  .admin-domestic-tours .header-actions {
+    width: 100%;
+  }
+  
+  .admin-domestic-tours .btn-primary {
+    width: 100%;
+  }
+  
+  .admin-domestic-tours .tour-details {
+    flex-direction: column;
+  }
+  
+  .admin-domestic-tours .tour-image {
+    width: 100%;
+    height: 120px;
+  }
+}
+
+
+
+
+/* Add to AdminDomesticTours.css */
+
+/* Success Message */
+.admin-domestic-tours .success-message {
+  background: #d1fae5;
+  border: 1px solid #a7f3d0;
+  color: #065f46;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  animation: slideIn 0.3s ease;
+}
+
+.admin-domestic-tours .success-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #10b981;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+/* Form Help Text */
+.admin-domestic-tours .form-help {
+  color: #6b7280;
+  font-size: 0.75rem;
+  margin-top: 0.25rem;
+  display: block;
+}
+
+/* Animations */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive improvements */
+@media (max-width: 768px) {
+  .admin-domestic-tours .filters-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .admin-domestic-tours .select,
+  .admin-domestic-tours .filters-actions .btn {
+    width: 100%;
+  }
+  
+  .admin-domestic-tours .tour-details {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .admin-domestic-tours .tour-image {
+    width: 100%;
+    height: 120px;
+    margin-bottom: 0.5rem;
+  }
+}

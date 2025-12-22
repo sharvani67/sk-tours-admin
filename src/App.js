@@ -38,6 +38,8 @@ import SeniorCitizenTourDetails from "./Components/Tours/SetizenTourDetails";
 import StudentTourDetails from "./Components/Tours/StudentTourDetails";
 import HoneymoonTourDetails from "./Components/Tours/HoneyMoonTour";
 import AdminVideoManager from "./Components/Home/AdminVideoManager";
+import AdminDomesticTours from "./Components/Home/AdminDomesticTours";
+import AdminLeads from "./Components/Home/AdminLeads";
 
 
 function App() {
@@ -90,7 +92,9 @@ function App() {
           <Route path="/honeymoon-tours" element={<HoneymoonTours />} />
           <Route path="/add-honeymoon-tour" element={<AddHoneymoonTour />} />
           {/* <Route path="/honeymoon-tour-details/:id" element={<TourDetails />} /> */}
-          <Route path="/add-video" element={<AdminVideoManager />} />
+          <Route path="/add-video" element={<AdminVideoManager />} /> 
+          <Route path="/add-card" element={<AdminDomesticTours />} />
+          <Route path="/leadspopup" element={<AdminLeads />} />
         
 
       </Routes>

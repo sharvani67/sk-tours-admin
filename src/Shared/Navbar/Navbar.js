@@ -15,6 +15,8 @@ import {
 
 import { useNavigate, useLocation } from "react-router-dom";
 import "./Sidebar.css";
+import { FaIdCard } from "react-icons/fa";
+import { FaCircleUser } from "react-icons/fa6";
 
 const Navbar = ({ children }) => {
   const [expandedSections, setExpandedSections] = useState({});
@@ -95,6 +97,18 @@ const Navbar = ({ children }) => {
     label: "Add Videos",
     path: "/add-video",
     icon: <FiVideo className="sidebar-icon" />,   // tours = map routes
+    // matchPaths: ["/categories-tour","/add-video"],
+  },
+  {
+    label: "Add Cards",
+    path: "/add-card",
+    icon: <FaIdCard className="sidebar-icon" />,   // tours = map routes
+    // matchPaths: ["/categories-tour","/add-video"],
+  },
+  {
+    label: "PopUp Leads",
+    path: "/leadspopup",
+    icon: <FaCircleUser className="sidebar-icon" />,   // tours = map routes
     // matchPaths: ["/categories-tour","/add-video"],
   },
 
