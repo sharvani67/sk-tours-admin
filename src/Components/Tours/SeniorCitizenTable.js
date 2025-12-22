@@ -1,16 +1,19 @@
-// SeniorCitizenTours.js (similar to LadiesSpecialTours.js)
+// SeniorCitizenTours.js (similar to GroupTours.js)
 import React, { useState, useEffect } from 'react';
-import { Container, Card, Alert, Spinner } from 'react-bootstrap';
+import { Container, Card, Alert, Spinner, Modal, Button } from 'react-bootstrap';
 import Navbar from '../../Shared/Navbar/Navbar';
 import { baseurl } from '../../Api/Baseurl';
 import ReusableTable from '../../Shared/TableLayout/DataTable';
 import { useNavigate } from 'react-router-dom';
-import { Eye } from 'react-bootstrap-icons';
+import { Eye, Pencil, Trash } from 'react-bootstrap-icons';
 
 const SeniorCitizenTours = () => {
   const [tours, setTours] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [tourToDelete, setTourToDelete] = useState(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
   const navigate = useNavigate();
 
   // Fetch Tours - Filter for Senior Citizen tours
@@ -51,7 +54,59 @@ const SeniorCitizenTours = () => {
     navigate(`/senior-citizen-tour-details/${tourId}`);
   };
 
-  // Columns (same as LadiesSpecialTours)
+  // Handle edit tour
+  const handleEditTour = (tourId) => {
+    navigate(`/edit-senior-citizen-tour/${tourId}`);
+  };
+
+  // Handle delete tour - show confirmation modal
+  const handleDeleteClick = (tour) => {
+    setTourToDelete(tour);
+    setShowDeleteModal(true);
+  };
+
+  // Confirm and delete tour
+  const handleConfirmDelete = async () => {
+    if (!tourToDelete) return;
+
+    try {
+      setDeleteLoading(true);
+      const response = await fetch(`${baseurl}/api/tours/bulk/${tourToDelete.tour_id}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        // Remove the tour from state
+        setTours(prevTours => prevTours.filter(tour => tour.tour_id !== tourToDelete.tour_id));
+        
+        // Show success message
+        setError('Senior citizen tour deleted successfully!');
+        
+        // Close modal
+        setShowDeleteModal(false);
+        setTourToDelete(null);
+        
+        // Clear success message after 3 seconds
+        setTimeout(() => setError(''), 3000);
+      } else {
+        const result = await response.json();
+        setError(result.message || 'Failed to delete senior citizen tour');
+      }
+    } catch (err) {
+      console.error('Error deleting senior citizen tour:', err);
+      setError('Error deleting senior citizen tour. Please try again.');
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
+
+  // Cancel delete
+  const handleCancelDelete = () => {
+    setShowDeleteModal(false);
+    setTourToDelete(null);
+  };
+
+  // Columns
   const columns = [
     {
       key: 'serial_no',
@@ -108,7 +163,7 @@ const SeniorCitizenTours = () => {
       key: 'actions',
       title: 'Actions',
       render: (item) => (
-        <div className="d-flex gap-2">
+        <div className="d-flex gap-2 justify-content-center">
           <button
             className="btn btn-outline-primary btn-sm"
             onClick={() => handleViewTour(item.tour_id)}
@@ -116,9 +171,23 @@ const SeniorCitizenTours = () => {
           >
             <Eye size={16} />
           </button>
+          <button
+            className="btn btn-outline-warning btn-sm"
+            onClick={() => handleEditTour(item.tour_id)}
+            title="Edit Tour"
+          >
+            <Pencil size={16} />
+          </button>
+          <button
+            className="btn btn-outline-danger btn-sm"
+            onClick={() => handleDeleteClick(item)}
+            title="Delete Tour"
+          >
+            <Trash size={16} />
+          </button>
         </div>
       ),
-      style: { textAlign: 'center' }
+      style: { textAlign: 'center', minWidth: '140px' }
     }
   ];
 
@@ -142,13 +211,13 @@ const SeniorCitizenTours = () => {
               className="btn btn-success"
               onClick={() => navigate('/add-senior-citizen-tour')}
             >
-              + Add Tour
+              + Add Senior Citizen Tour
             </button>
           </div>
         </div>
 
         {error && (
-          <Alert variant="danger" className="mb-4">
+          <Alert variant={error.includes('successfully') ? 'success' : 'danger'} className="mb-4">
             {error}
           </Alert>
         )}
@@ -158,7 +227,7 @@ const SeniorCitizenTours = () => {
             {loading ? (
               <div className="text-center py-5">
                 <Spinner animation="border" role="status" className="me-2" />
-                Loading tours...
+                Loading senior citizen tours...
               </div>
             ) : (
               <ReusableTable
@@ -166,7 +235,7 @@ const SeniorCitizenTours = () => {
                 data={tableData}
                 columns={columns}
                 initialEntriesPerPage={5}
-                searchPlaceholder="Search tours..."
+                searchPlaceholder="Search senior citizen tours..."
                 showSearch={true}
                 showEntriesSelector={true}
                 showPagination={true}
@@ -174,6 +243,40 @@ const SeniorCitizenTours = () => {
             )}
           </Card.Body>
         </Card>
+
+        {/* Delete Confirmation Modal */}
+        <Modal show={showDeleteModal} onHide={handleCancelDelete} centered>
+          <Modal.Header closeButton>
+            <Modal.Title>Confirm Delete</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <p>
+              Are you sure you want to delete the senior citizen tour "<strong>{tourToDelete?.title}</strong>" (Tour Code: {tourToDelete?.tour_code})?
+            </p>
+            <p className="text-danger">
+              <strong>Warning:</strong> This action cannot be undone.
+            </p>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={handleCancelDelete} disabled={deleteLoading}>
+              Cancel
+            </Button>
+            <Button 
+              variant="danger" 
+              onClick={handleConfirmDelete}
+              disabled={deleteLoading}
+            >
+              {deleteLoading ? (
+                <>
+                  <Spinner as="span" animation="border" size="sm" className="me-2" />
+                  Deleting...
+                </>
+              ) : (
+                'Delete'
+              )}
+            </Button>
+          </Modal.Footer>
+        </Modal>
       </Container>
     </Navbar>
   );

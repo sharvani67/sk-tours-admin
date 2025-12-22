@@ -12,12 +12,15 @@ import {
   Table,
   InputGroup
 } from 'react-bootstrap';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import Navbar from '../../Shared/Navbar/Navbar';
 import { baseurl } from '../../Api/Baseurl';
+import { Pencil, Trash } from 'react-bootstrap-icons';
 
 const AddLadiesTour = () => {
   const navigate = useNavigate();
+  const { id } = useParams(); // Get tour ID from URL for edit mode
+  const isEditMode = !!id;
 
   // TAB ORDER MUST MATCH JSX ORDER
   const TAB_LIST = [
@@ -66,84 +69,37 @@ const AddLadiesTour = () => {
   });
 
   // =======================
-  // DEPARTURES FOR GROUP TOURS
+  // DEPARTURES FOR LADIES SPECIAL TOURS - SIMILAR TO GROUP TOURS
   // =======================
-  const [groupDepartureForm, setGroupDepartureForm] = useState({
+  const [ladiesDepartureForm, setLadiesDepartureForm] = useState({
     start_date: '',
     end_date: '',
     status: 'Available',
-    price: '',
-    description: ''
+    total_seats: 40,
+    booked_seats: 0,
+    description: '',
+    // 3-Star Hotel Prices
+    three_star_twin: '',
+    three_star_triple: '',
+    three_star_child_with_bed: '',
+    three_star_child_without_bed: '',
+    three_star_infant: '',
+    three_star_single: '',
+    // 4-Star Hotel Prices
+    four_star_twin: '',
+    four_star_triple: '',
+    four_star_child_with_bed: '',
+    four_star_child_without_bed: '',
+    four_star_infant: '',
+    four_star_single: '',
+    // 5-Star Hotel Prices
+    five_star_twin: '',
+    five_star_triple: '',
+    five_star_child_with_bed: '',
+    five_star_child_without_bed: '',
+    five_star_infant: '',
+    five_star_single: ''
   });
-
-  // TOUR COST FIELDS FOR GROUP TOURS
-  const [tourCostFields, setTourCostFields] = useState({
-    threeStar: {
-      perPaxTwin: '',
-      perPaxTriple: '',
-      childWithBed: '',
-      childWithoutBed: '',
-      infant: '',
-      perPaxSingle: ''
-    },
-    fourStar: {
-      perPaxTwin: '',
-      perPaxTriple: '',
-      childWithBed: '',
-      childWithoutBed: '',
-      infant: '',
-      perPaxSingle: ''
-    },
-    fiveStar: {
-      perPaxTwin: '',
-      perPaxTriple: '',
-      childWithBed: '',
-      childWithoutBed: '',
-      infant: '',
-      perPaxSingle: ''
-    }
-  });
-
-
-  // =======================
-  // TOUR COST
-  // =======================
-  const [tourCostItem, setTourCostItem] = useState({
-    pax: '',
-    standard_hotel: '',
-    deluxe_hotel: '',
-    executive_hotel: '',
-    child_with_bed: '',
-    child_no_bed: '',
-    remarks: ''
-  });
-  const [tourCosts, setTourCosts] = useState([]);
-
-  const handleCostChange = (e) => {
-    const { name, value } = e.target;
-    setTourCostItem(prev => ({ ...prev, [name]: value }));
-  };
-
-  const addCostRow = () => {
-    // Required field: pax
-    if (!tourCostItem.pax) return;
-    setTourCosts(prev => [...prev, { ...tourCostItem }]);
-    setTourCostItem({
-      pax: '',
-      standard_hotel: '',
-      deluxe_hotel: '',
-      executive_hotel: '',
-      child_with_bed: '',
-      child_no_bed: '',
-      remarks: ''
-    });
-  };
-
-  const removeCostRow = (idx) => {
-    setTourCosts(prev => prev.filter((_, i) => i !== idx));
-  };
-
-
 
   const [departures, setDepartures] = useState([]);
 
@@ -176,7 +132,6 @@ const AddLadiesTour = () => {
   };
 
   const addOptionalTourRow = () => {
-    // Required field: tour_name
     if (!optionalTourItem.tour_name.trim()) return;
 
     const processedItem = {
@@ -197,6 +152,12 @@ const AddLadiesTour = () => {
     });
   };
 
+  const editOptionalTourRow = (idx) => {
+    const item = optionalTours[idx];
+    setOptionalTourItem(item);
+    setOptionalTours(prev => prev.filter((_, i) => i !== idx));
+  };
+
   const removeOptionalTourRow = (idx) => {
     setOptionalTours(prev => prev.filter((_, i) => i !== idx));
   };
@@ -204,7 +165,6 @@ const AddLadiesTour = () => {
   // =======================
   // EMI OPTIONS
   // =======================
-
   const [emiOptions, setEmiOptions] = useState([
     { particulars: 'Per Month Payment', loan_amount: '', months: 6, emi: '' },
     { particulars: 'Per Month Payment', loan_amount: '', months: 12, emi: '' },
@@ -215,60 +175,16 @@ const AddLadiesTour = () => {
     { particulars: 'Per Month Payment', loan_amount: '', months: 48, emi: '' }
   ]);
 
-  // Remove the old loanAmount state and useEffect
-  // Remove these lines:
-  // const [loanAmount, setLoanAmount] = useState('');
-  // useEffect(() => {
-  //   if (loanAmount) {
-  //     const amount = parseFloat(loanAmount);
-  //     if (!isNaN(amount) && amount > 0) {
-  //       const updatedEmiOptions = emiOptions.map(option => {
-  //         const emi = calculateEMI(amount, option.months);
-  //         return { ...option, emi };
-  //       });
-  //       setEmiOptions(updatedEmiOptions);
-  //     }
-  //   }
-  //   // eslint-disable-next-line react-hooks/exhaustive-deps
-  // }, [loanAmount]);
-
-  // Remove the calculateEMI function or keep it as helper if needed elsewhere
-
-  // Handle loan amount change for a specific row
   const handleLoanAmountChange = (index, value) => {
     const updatedOptions = [...emiOptions];
     updatedOptions[index].loan_amount = value;
     setEmiOptions(updatedOptions);
   };
 
-  // Handle EMI change for a specific row
   const handleEMIChange = (index, value) => {
     const updatedOptions = [...emiOptions];
     updatedOptions[index].emi = value;
     setEmiOptions(updatedOptions);
-  };
-
-  // Add EMI Options to form
-  const handleAddEMIOptions = () => {
-    console.log('EMI Options before validation:', emiOptions);
-
-    // Filter only rows that have values (not all rows need to be filled)
-    const validEmiOptions = emiOptions.filter(option =>
-      option.loan_amount && option.loan_amount > 0 && option.emi && option.emi > 0
-    );
-
-    console.log('Valid EMI options:', validEmiOptions);
-
-    // Check if at least one row is filled (optional requirement)
-    if (validEmiOptions.length === 0) {
-      setError('Please fill at least one EMI option row');
-      return;
-    }
-
-    setError('');
-    setSuccess(`Added ${validEmiOptions.length} EMI options successfully`);
-
-    console.log('Valid EMI Options saved:', validEmiOptions);
   };
 
   // =======================
@@ -280,9 +196,9 @@ const AddLadiesTour = () => {
     room_type: '',
     nights: '',
     remarks: '',
-       hotel_standard: '',
-      hotel_deluxe: '',
-      hotel_executive: ''
+    hotel_standard: '',
+    hotel_deluxe: '',
+    hotel_executive: ''
   });
   const [hotelRows, setHotelRows] = useState([]);
 
@@ -292,7 +208,6 @@ const AddLadiesTour = () => {
   };
 
   const addHotelRow = () => {
-    // Required: city & hotel_name
     if (!hotelItem.city.trim() || !hotelItem.hotel_name.trim()) return;
     setHotelRows(prev => [...prev, { ...hotelItem }]);
     setHotelItem({
@@ -301,10 +216,16 @@ const AddLadiesTour = () => {
       room_type: '',
       nights: '',
       remarks: '',
-         hotel_standard: '',
+      hotel_standard: '',
       hotel_deluxe: '',
       hotel_executive: ''
     });
+  };
+
+  const editHotelRow = (idx) => {
+    const item = hotelRows[idx];
+    setHotelItem(item);
+    setHotelRows(prev => prev.filter((_, i) => i !== idx));
   };
 
   const removeHotelRow = (idx) => {
@@ -312,7 +233,7 @@ const AddLadiesTour = () => {
   };
 
   // =======================
-  // TRANSPORT FOR GROUP TOURS
+  // TRANSPORT FOR LADIES SPECIAL TOURS
   // =======================
   const [transportItem, setTransportItem] = useState({
     description: '',
@@ -324,7 +245,8 @@ const AddLadiesTour = () => {
     to_city: '',
     to_date: '',
     to_time: '',
-    via: ''
+    via: '',
+    sort_order: 1
   });
 
   const [transports, setTransports] = useState([]);
@@ -335,12 +257,11 @@ const AddLadiesTour = () => {
   };
 
   const addTransportRow = () => {
-    // For Group tours, require airline and flight_no
     if (!transportItem.airline || !transportItem.flight_no || !transportItem.from_city || !transportItem.to_city) {
       return;
     }
 
-    setTransports(prev => [...prev, { ...transportItem }]);
+    setTransports(prev => [...prev, { ...transportItem, sort_order: prev.length + 1 }]);
 
     setTransportItem({
       description: '',
@@ -352,8 +273,15 @@ const AddLadiesTour = () => {
       to_city: '',
       to_date: '',
       to_time: '',
-      via: ''
+      via: '',
+      sort_order: transports.length + 2
     });
+  };
+
+  const editTransportRow = (idx) => {
+    const item = transports[idx];
+    setTransportItem(item);
+    setTransports(prev => prev.filter((_, i) => i !== idx));
   };
 
   const removeTransportRow = (idx) => {
@@ -372,10 +300,17 @@ const AddLadiesTour = () => {
     if (!txt) return;
     setBookingPois([
       ...bookingPois,
-      { item: poiText, amount_details: poiAmount }
+      { item: poiText, amount_details: poiAmount, sort_order: bookingPois.length + 1 }
     ]);
     setPoiText('');
     setPoiAmount("");
+  };
+
+  const editPoi = (idx) => {
+    const poi = bookingPois[idx];
+    setPoiText(poi.item);
+    setPoiAmount(poi.amount_details);
+    setBookingPois(prev => prev.filter((_, i) => i !== idx));
   };
 
   const removePoi = (idx) => {
@@ -387,7 +322,8 @@ const AddLadiesTour = () => {
   // =======================
   const [cancelItem, setCancelItem] = useState({
     cancellation_policy: "",
-    charges: ""
+    charges: "",
+    sort_order: 1
   });
 
   const [cancelPolicies, setCancelPolicies] = useState([]);
@@ -398,10 +334,15 @@ const AddLadiesTour = () => {
   };
 
   const addCancelRow = () => {
-    // Required: cancellation_policy
     if (!cancelItem.cancellation_policy.trim()) return;
-    setCancelPolicies(prev => [...prev, { ...cancelItem }]);
-    setCancelItem({ cancellation_policy: "", charges: "" });
+    setCancelPolicies(prev => [...prev, { ...cancelItem, sort_order: prev.length + 1 }]);
+    setCancelItem({ cancellation_policy: "", charges: "", sort_order: cancelPolicies.length + 2 });
+  };
+
+  const editCancelRow = (idx) => {
+    const policy = cancelPolicies[idx];
+    setCancelItem(policy);
+    setCancelPolicies(prev => prev.filter((_, i) => i !== idx));
   };
 
   const removeCancelRow = (idx) => {
@@ -421,6 +362,12 @@ const AddLadiesTour = () => {
     setInstructionText('');
   };
 
+  const editInstruction = (idx) => {
+    const instruction = instructions[idx];
+    setInstructionText(instruction);
+    setInstructions(prev => prev.filter((_, i) => i !== idx));
+  };
+
   const removeInstruction = (idx) => {
     setInstructions(prev => prev.filter((_, i) => i !== idx));
   };
@@ -438,34 +385,230 @@ const AddLadiesTour = () => {
   });
   const [itineraries, setItineraries] = useState([]);
 
-  // Fetch next tour code when component loads
- useEffect(() => {
-  const loadDropdownsAndTourCode = async () => {
-    try {
-      // Pass tour_type as query parameter
-      const tourCodeRes = await fetch(`${baseurl}/api/tours/next-tour-code?tour_type=ladies`);
-      if (tourCodeRes.ok) {
-        const tourCodeData = await tourCodeRes.json();
-        setFormData(prev => ({
-          ...prev,
-          tour_code: tourCodeData.next_tour_code
-        }));
-      }
-
-      const catRes = await fetch(`${baseurl}/api/categories/all-tours`);
-      const categoryData = await catRes.json();
-      setCategories(Array.isArray(categoryData) ? categoryData : []);
-
-      const destRes = await fetch(`${baseurl}/api/destinations`);
-      const destData = await destRes.json();
-      setDestinations(Array.isArray(destData) ? destData : []);
-    } catch (err) {
-      setError('Failed to load dropdown data');
-    }
+  // Edit function for itineraries
+  const editItinerary = (idx) => {
+    const item = itineraries[idx];
+    
+    // Parse meals string back to checkboxes
+    const mealsArray = item.meals ? item.meals.split(', ') : [];
+    const meals = {
+      breakfast: mealsArray.includes('Breakfast'),
+      lunch: mealsArray.includes('Lunch'),
+      dinner: mealsArray.includes('Dinner')
+    };
+    
+    setItineraryItem({
+      day: item.day,
+      title: item.title,
+      description: item.description || '',
+      meals: meals
+    });
+    
+    setItineraries(prev => prev.filter((_, i) => i !== idx));
   };
 
-  loadDropdownsAndTourCode();
-}, []);
+  // Fetch dropdowns and tour data
+  useEffect(() => {
+    const loadDropdownsAndTourCode = async () => {
+      try {
+        // Load dropdowns
+        const catRes = await fetch(`${baseurl}/api/categories/all-tours`);
+        const categoryData = await catRes.json();
+        setCategories(Array.isArray(categoryData) ? categoryData : []);
+
+        const destRes = await fetch(`${baseurl}/api/destinations`);
+        const destData = await destRes.json();
+        setDestinations(Array.isArray(destData) ? destData : []);
+
+        if (isEditMode) {
+          // Load existing tour data for edit
+          await loadTourData();
+        } else {
+          // Load next tour code for add mode
+          const tourCodeRes = await fetch(`${baseurl}/api/tours/next-tour-code?tour_type=ladies`);
+          if (tourCodeRes.ok) {
+            const tourCodeData = await tourCodeRes.json();
+            setFormData(prev => ({
+              ...prev,
+              tour_code: tourCodeData.next_tour_code
+            }));
+          }
+        }
+      } catch (err) {
+        setError('Failed to load dropdown data');
+      }
+    };
+
+    loadDropdownsAndTourCode();
+  }, [id]);
+
+  // Load tour data for editing
+  const loadTourData = async () => {
+    try {
+      setLoading(true);
+      setError('');
+      
+      // Fetch full tour data
+      const response = await fetch(`${baseurl}/api/tours/tour/full/ladiesspecial/${id}`);
+      if (!response.ok) throw new Error('Failed to fetch tour data');
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        // Set basic form data
+        const basic = data.basic_details;
+        setFormData({
+          tour_code: basic.tour_code || '',
+          tour_type: basic.tour_type || 'ladiesspecial',
+          title: basic.title || '',
+          category_id: basic.category_id || 1,
+          primary_destination_id: basic.primary_destination_id || '',
+          duration_days: basic.duration_days || '',
+          overview: basic.overview || '',
+          base_price_adult: basic.base_price_adult || '',
+          is_international: basic.is_international || 0,
+          cost_remarks: basic.cost_remarks || '',
+          hotel_remarks: basic.hotel_remarks || '',
+          transport_remarks: basic.transport_remarks || '',
+          booking_poi_remarks: basic.booking_poi_remarks || '',
+          cancellation_remarks: basic.cancellation_remarks || '',
+          emi_remarks: basic.emi_remarks || ''
+        });
+
+        // Set itineraries
+        if (data.itinerary && Array.isArray(data.itinerary)) {
+          const formattedItineraries = data.itinerary.map(item => ({
+            day: item.day,
+            title: item.title,
+            description: item.description || '',
+            meals: item.meals || ''
+          }));
+          setItineraries(formattedItineraries);
+        }
+
+        // Set departures - Ladies special tours have similar structure to group tours
+        if (data.departures && Array.isArray(data.departures)) {
+          const formattedDepartures = data.departures.map(dept => ({
+            start_date: dept.start_date ? dept.start_date.split('T')[0] : '',
+            end_date: dept.end_date ? dept.end_date.split('T')[0] : '',
+            status: dept.status || 'Available',
+            total_seats: dept.total_seats || 40,
+            booked_seats: dept.booked_seats || 0,
+            description: dept.description || '',
+            // 3-Star Hotel Prices
+            three_star_twin: dept.three_star_twin || '',
+            three_star_triple: dept.three_star_triple || '',
+            three_star_child_with_bed: dept.three_star_child_with_bed || '',
+            three_star_child_without_bed: dept.three_star_child_without_bed || '',
+            three_star_infant: dept.three_star_infant || '',
+            three_star_single: dept.three_star_single || '',
+            // 4-Star Hotel Prices
+            four_star_twin: dept.four_star_twin || '',
+            four_star_triple: dept.four_star_triple || '',
+            four_star_child_with_bed: dept.four_star_child_with_bed || '',
+            four_star_child_without_bed: dept.four_star_child_without_bed || '',
+            four_star_infant: dept.four_star_infant || '',
+            four_star_single: dept.four_star_single || '',
+            // 5-Star Hotel Prices
+            five_star_twin: dept.five_star_twin || '',
+            five_star_triple: dept.five_star_triple || '',
+            five_star_child_with_bed: dept.five_star_child_with_bed || '',
+            five_star_child_without_bed: dept.five_star_child_without_bed || '',
+            five_star_infant: dept.five_star_infant || '',
+            five_star_single: dept.five_star_single || ''
+          }));
+          setDepartures(formattedDepartures);
+        }
+
+        // Set inclusions
+        if (data.inclusions && Array.isArray(data.inclusions)) {
+          const inclusionItems = data.inclusions.map(inc => inc.item);
+          setInclusions(inclusionItems);
+        }
+
+        // Set exclusions
+        if (data.exclusions && Array.isArray(data.exclusions)) {
+          const exclusionItems = data.exclusions.map(exc => exc.item);
+          setExclusions(exclusionItems);
+        }
+
+        // Set optional tours
+        if (data.optional_tours && Array.isArray(data.optional_tours)) {
+          setOptionalTours(data.optional_tours);
+        }
+
+        // Set EMI options
+        if (data.emi_options && Array.isArray(data.emi_options)) {
+          const defaultOptions = [
+            { particulars: 'Per Month Payment', months: 6, loan_amount: '', emi: '' },
+            { particulars: 'Per Month Payment', months: 12, loan_amount: '', emi: '' },
+            { particulars: 'Per Month Payment', months: 18, loan_amount: '', emi: '' },
+            { particulars: 'Per Month Payment', months: 24, loan_amount: '', emi: '' },
+            { particulars: 'Per Month Payment', months: 30, loan_amount: '', emi: '' },
+            { particulars: 'Per Month Payment', months: 36, loan_amount: '', emi: '' },
+            { particulars: 'Per Month Payment', months: 48, loan_amount: '', emi: '' }
+          ];
+
+          const updatedOptions = defaultOptions.map(option => {
+            const existingOption = data.emi_options.find(eo => eo.months === option.months);
+            return existingOption ? {
+              ...option,
+              loan_amount: existingOption.loan_amount || '',
+              emi: existingOption.emi || ''
+            } : option;
+          });
+
+          setEmiOptions(updatedOptions);
+        }
+
+        // Set hotels
+        if (data.hotels && Array.isArray(data.hotels)) {
+          setHotelRows(data.hotels);
+        }
+
+        // Set transport
+        if (data.transport && Array.isArray(data.transport)) {
+          setTransports(data.transport);
+        }
+
+        // Set booking POI
+        if (data.booking_poi && Array.isArray(data.booking_poi)) {
+          const formattedPois = data.booking_poi.map(poi => ({
+            item: poi.item,
+            amount_details: poi.amount_details || ''
+          }));
+          setBookingPois(formattedPois);
+        }
+
+        // Set cancellation policies
+        if (data.cancellation_policies && Array.isArray(data.cancellation_policies)) {
+          const formattedPolicies = data.cancellation_policies.map(policy => ({
+            cancellation_policy: policy.cancellation_policy,
+            charges: policy.charges || ''
+          }));
+          setCancelPolicies(formattedPolicies);
+        }
+
+        // Set instructions
+        if (data.instructions && Array.isArray(data.instructions)) {
+          const instructionItems = data.instructions.map(inst => inst.item);
+          setInstructions(instructionItems);
+        }
+
+        // Set images (previews only, not files)
+        if (data.images && Array.isArray(data.images)) {
+          const imageUrls = data.images.map(img => img.url);
+          setImagePreviews(imageUrls);
+        }
+
+        setSuccess('Tour data loaded successfully');
+      }
+    } catch (err) {
+      setError('Failed to load tour data: ' + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // BASIC DETAILS CHANGE
   const handleBasicChange = (e) => {
@@ -489,12 +632,20 @@ const AddLadiesTour = () => {
     }));
   };
 
-  // DEPARTURE FORM CHANGE - Group
-  const handleGroupDepartureChange = (e) => {
+  // DEPARTURE FORM CHANGE - Ladies Special (SIMILAR TO GROUP)
+  const handleLadiesDepartureChange = (e) => {
     const { name, value } = e.target;
-    const numericFields = ['price'];
+    const numericFields = [
+      'total_seats', 'booked_seats',
+      'three_star_twin', 'three_star_triple', 'three_star_child_with_bed',
+      'three_star_child_without_bed', 'three_star_infant', 'three_star_single',
+      'four_star_twin', 'four_star_triple', 'four_star_child_with_bed',
+      'four_star_child_without_bed', 'four_star_infant', 'four_star_single',
+      'five_star_twin', 'five_star_triple', 'five_star_child_with_bed',
+      'five_star_child_without_bed', 'five_star_infant', 'five_star_single'
+    ];
 
-    setGroupDepartureForm((prev) => ({
+    setLadiesDepartureForm((prev) => ({
       ...prev,
       [name]: numericFields.includes(name)
         ? value === '' ? '' : Number(value)
@@ -502,75 +653,70 @@ const AddLadiesTour = () => {
     }));
   };
 
-  // TOUR COST FIELDS CHANGE - Group
-  const handleTourCostFieldsChange = (e) => {
-    const { name, value } = e.target;
-    // Extract hotel type and field name from input name (e.g., "threeStar_perPaxTwin")
-    const [hotelType, fieldName] = name.split('_');
-
-    setTourCostFields(prev => ({
-      ...prev,
-      [hotelType]: {
-        ...prev[hotelType],
-        [fieldName]: value
-      }
-    }));
-  };
-
   const handleAddDeparture = () => {
-    // Group tour: Structured departure
-    if (!groupDepartureForm.start_date || !groupDepartureForm.end_date || !groupDepartureForm.price) return;
+    if (!ladiesDepartureForm.start_date || !ladiesDepartureForm.end_date) return;
 
     const departureData = {
-      tour_type: 'Group',
-      start_date: groupDepartureForm.start_date,
-      end_date: groupDepartureForm.end_date,
-      status: groupDepartureForm.status,
-      price: groupDepartureForm.price,
-      description: groupDepartureForm.description || '',
-      type: 'structured',
-      // Add tour cost data
-      tour_costs: tourCostFields
+      ...ladiesDepartureForm,
+      // Ensure all price fields are numbers or null
+      three_star_twin: ladiesDepartureForm.three_star_twin || null,
+      three_star_triple: ladiesDepartureForm.three_star_triple || null,
+      three_star_child_with_bed: ladiesDepartureForm.three_star_child_with_bed || null,
+      three_star_child_without_bed: ladiesDepartureForm.three_star_child_without_bed || null,
+      three_star_infant: ladiesDepartureForm.three_star_infant || null,
+      three_star_single: ladiesDepartureForm.three_star_single || null,
+      four_star_twin: ladiesDepartureForm.four_star_twin || null,
+      four_star_triple: ladiesDepartureForm.four_star_triple || null,
+      four_star_child_with_bed: ladiesDepartureForm.four_star_child_with_bed || null,
+      four_star_child_without_bed: ladiesDepartureForm.four_star_child_without_bed || null,
+      four_star_infant: ladiesDepartureForm.four_star_infant || null,
+      four_star_single: ladiesDepartureForm.four_star_single || null,
+      five_star_twin: ladiesDepartureForm.five_star_twin || null,
+      five_star_triple: ladiesDepartureForm.five_star_triple || null,
+      five_star_child_with_bed: ladiesDepartureForm.five_star_child_with_bed || null,
+      five_star_child_without_bed: ladiesDepartureForm.five_star_child_without_bed || null,
+      five_star_infant: ladiesDepartureForm.five_star_infant || null,
+      five_star_single: ladiesDepartureForm.five_star_single || null
     };
 
     setDepartures((prev) => [...prev, departureData]);
 
     // Reset form
-    setGroupDepartureForm({
+    setLadiesDepartureForm({
       start_date: '',
       end_date: '',
       status: 'Available',
-      price: '',
-      description: ''
+      total_seats: 40,
+      booked_seats: 0,
+      description: '',
+      // 3-Star Hotel Prices
+      three_star_twin: '',
+      three_star_triple: '',
+      three_star_child_with_bed: '',
+      three_star_child_without_bed: '',
+      three_star_infant: '',
+      three_star_single: '',
+      // 4-Star Hotel Prices
+      four_star_twin: '',
+      four_star_triple: '',
+      four_star_child_with_bed: '',
+      four_star_child_without_bed: '',
+      four_star_infant: '',
+      four_star_single: '',
+      // 5-Star Hotel Prices
+      five_star_twin: '',
+      five_star_triple: '',
+      five_star_child_with_bed: '',
+      five_star_child_without_bed: '',
+      five_star_infant: '',
+      five_star_single: ''
     });
+  };
 
-    // Reset tour cost fields
-    setTourCostFields({
-      threeStar: {
-        perPaxTwin: '',
-        perPaxTriple: '',
-        childWithBed: '',
-        childWithoutBed: '',
-        infant: '',
-        perPaxSingle: ''
-      },
-      fourStar: {
-        perPaxTwin: '',
-        perPaxTriple: '',
-        childWithBed: '',
-        childWithoutBed: '',
-        infant: '',
-        perPaxSingle: ''
-      },
-      fiveStar: {
-        perPaxTwin: '',
-        perPaxTriple: '',
-        childWithBed: '',
-        childWithoutBed: '',
-        infant: '',
-        perPaxSingle: ''
-      }
-    });
+  const editDeparture = (idx) => {
+    const departure = departures[idx];
+    setLadiesDepartureForm(departure);
+    setDepartures(prev => prev.filter((_, i) => i !== idx));
   };
 
   const handleRemoveDeparture = (idx) => {
@@ -585,6 +731,12 @@ const AddLadiesTour = () => {
     setExclusionText('');
   };
 
+  const editExclusion = (idx) => {
+    const exclusion = exclusions[idx];
+    setExclusionText(exclusion);
+    setExclusions(prev => prev.filter((_, i) => i !== idx));
+  };
+
   const handleRemoveExclusion = (idx) => {
     setExclusions((prev) => prev.filter((_, i) => i !== idx));
   };
@@ -597,8 +749,14 @@ const AddLadiesTour = () => {
     setInclusionText('');
   };
 
+  const editInclusion = (idx) => {
+    const inclusion = inclusions[idx];
+    setInclusionText(inclusion);
+    setInclusions(prev => prev.filter((_, i) => i !== idx));
+  };
+
   const handleRemoveInclusion = (idx) => {
-    setInclusions((prev) => prev.filter((_, i) => i !== idx));
+    setInclusions(prev => prev.filter((_, i) => i !== idx));
   };
 
   // IMAGES
@@ -607,12 +765,16 @@ const AddLadiesTour = () => {
     setImageFiles(files);
 
     const previews = files.map((file) => URL.createObjectURL(file));
-    setImagePreviews(previews);
+    setImagePreviews(prev => [...prev, ...previews]);
   };
 
   useEffect(() => {
     return () => {
-      imagePreviews.forEach((url) => URL.revokeObjectURL(url));
+      imagePreviews.forEach((url) => {
+        if (url.startsWith('blob:')) {
+          URL.revokeObjectURL(url);
+        }
+      });
     };
   }, [imagePreviews]);
 
@@ -639,7 +801,6 @@ const AddLadiesTour = () => {
 
   const handleAddItinerary = () => {
     const { day, title, description, meals } = itineraryItem;
-    // Required: day & title
     if (!day || !title.trim()) return;
 
     const selectedMeals = [];
@@ -672,7 +833,7 @@ const AddLadiesTour = () => {
   };
 
   const handleRemoveItinerary = (idx) => {
-    setItineraries((prev) => prev.filter((_, i) => i !== idx));
+    setItineraries(prev => prev.filter((_, i) => i !== idx));
   };
 
   // NAVIGATION
@@ -691,7 +852,7 @@ const AddLadiesTour = () => {
   };
 
   const handleCancel = () => {
-    navigate('/tours');
+    navigate('/ladies-special-tours');
   };
 
   const isLastTab = activeTab === TAB_LIST[TAB_LIST.length - 1];
@@ -706,26 +867,20 @@ const AddLadiesTour = () => {
         break;
 
       case 'departures':
-        if (groupDepartureForm.start_date && groupDepartureForm.end_date && groupDepartureForm.price) {
+        if (ladiesDepartureForm.start_date && ladiesDepartureForm.end_date) {
           handleAddDeparture();
         }
         break;
 
-      // Add this case to your autoAddBeforeNext function:
       case 'emiOptions':
-        // Don't validate all rows - just check if at least one row has values
         const hasAtLeastOneValidOption = emiOptions.some(option =>
           option.loan_amount && option.loan_amount > 0 && option.emi && option.emi > 0
         );
 
         if (!hasAtLeastOneValidOption) {
-          console.log('No valid EMI options found');
           setError('Please fill at least one EMI option before proceeding');
-          // Stay on current tab
           return false;
         }
-
-        console.log('EMI options check passed - proceeding to next tab');
         break;
 
       case 'optionalTours':
@@ -781,8 +936,249 @@ const AddLadiesTour = () => {
     }
   };
 
-  // FINAL SUBMIT — all APIs hit here
-  const finalSubmit = async () => {
+  // UPDATE EXISTING TOUR
+  const updateTour = async () => {
+    if (!formData.tour_code.trim()) {
+      setError('Tour code is required');
+      setActiveTab('basic');
+      return;
+    }
+    if (!formData.title.trim()) {
+      setError('Tour title is required');
+      setActiveTab('basic');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError('');
+      setSuccess('');
+
+      // 1) PREPARE BASIC TOUR DATA FOR UPDATE
+      const tourUpdateData = {
+        title: formData.title.trim(),
+        tour_type: formData.tour_type || 'ladiesspecial',
+        primary_destination_id: formData.primary_destination_id,
+        duration_days: Number(formData.duration_days) || 0,
+        overview: formData.overview || '',
+        base_price_adult: Number(formData.base_price_adult) || 0,
+        is_international: Number(formData.is_international) || 0,
+        cost_remarks: formData.cost_remarks || '',
+        hotel_remarks: formData.hotel_remarks || '',
+        transport_remarks: formData.transport_remarks || '',
+        emi_remarks: formData.emi_remarks || '',
+        booking_poi_remarks: formData.booking_poi_remarks || '',
+        cancellation_remarks: formData.cancellation_remarks || ''
+      };
+
+      console.log('Updating tour with data:', tourUpdateData);
+
+      // 1) UPDATE TOUR BASIC DETAILS
+      const tourRes = await fetch(`${baseurl}/api/tours/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(tourUpdateData)
+      });
+
+      const tourResponse = await tourRes.json();
+      
+      if (!tourRes.ok) {
+        throw new Error(tourResponse.error || tourResponse.message || 'Failed to update tour');
+      }
+
+      // 2) DELETE EXISTING DATA
+      const deleteEndpoints = [
+        `${baseurl}/api/departures/bulk/${id}`,
+        `${baseurl}/api/optional-tours/tour/${id}`,
+        `${baseurl}/api/emi-options/tour/${id}`,
+        `${baseurl}/api/tour-hotels/tour/${id}`,
+        `${baseurl}/api/tour-transports/tour/${id}`,
+        `${baseurl}/api/tour-booking-poi/tour/${id}`,
+        `${baseurl}/api/tour-cancellation/tour/${id}`,
+        `${baseurl}/api/tour-instructions/tour/${id}`,
+        `${baseurl}/api/exclusions/tour/${id}`,
+        `${baseurl}/api/inclusions/tour/${id}`,
+        `${baseurl}/api/itineraries/tour/${id}`
+      ];
+
+      for (const endpoint of deleteEndpoints) {
+        try {
+          await fetch(endpoint, { method: 'DELETE' });
+        } catch (err) {
+          console.warn(`Failed to delete from ${endpoint}:`, err.message);
+        }
+      }
+
+      // 3) RE-ADD ALL DATA
+      // Departures - Ladies special tours (similar to group)
+      if (departures.length > 0) {
+        const formattedDepartures = departures.map(dept => ({
+          tour_type: 'ladiesspecial',
+          start_date: dept.start_date,
+          end_date: dept.end_date,
+          status: dept.status,
+          total_seats: dept.total_seats || 40,
+          booked_seats: dept.booked_seats || 0,
+          description: dept.description || null,
+          adult_price: dept.three_star_twin || 0,
+          // 3-Star Hotel Prices
+          three_star_twin: dept.three_star_twin || null,
+          three_star_triple: dept.three_star_triple || null,
+          three_star_child_with_bed: dept.three_star_child_with_bed || null,
+          three_star_child_without_bed: dept.three_star_child_without_bed || null,
+          three_star_infant: dept.three_star_infant || null,
+          three_star_single: dept.three_star_single || null,
+          // 4-Star Hotel Prices
+          four_star_twin: dept.four_star_twin || null,
+          four_star_triple: dept.four_star_triple || null,
+          four_star_child_with_bed: dept.four_star_child_with_bed || null,
+          four_star_child_without_bed: dept.four_star_child_without_bed || null,
+          four_star_infant: dept.four_star_infant || null,
+          four_star_single: dept.four_star_single || null,
+          // 5-Star Hotel Prices
+          five_star_twin: dept.five_star_twin || null,
+          five_star_triple: dept.five_star_triple || null,
+          five_star_child_with_bed: dept.five_star_child_with_bed || null,
+          five_star_child_without_bed: dept.five_star_child_without_bed || null,
+          five_star_infant: dept.five_star_infant || null,
+          five_star_single: dept.five_star_single || null
+        }));
+
+        await fetch(`${baseurl}/api/departures/bulk`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tour_id: id, departures: formattedDepartures })
+        });
+      }
+
+      // Optional Tours
+      if (optionalTours.length > 0) {
+        await fetch(`${baseurl}/api/optional-tours/bulk`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tour_id: id, optional_tours: optionalTours })
+        });
+      }
+
+      // EMI Options
+      const validEmiOptions = emiOptions.filter(opt =>
+        opt.loan_amount && opt.loan_amount > 0 && opt.emi && opt.emi > 0
+      );
+      
+      if (validEmiOptions.length > 0) {
+        await fetch(`${baseurl}/api/emi-options/emi/bulk`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tour_id: id, emi_options: validEmiOptions })
+        });
+      }
+
+      // Hotels
+      if (hotelRows.length > 0) {
+        await fetch(`${baseurl}/api/tour-hotels/bulk`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tour_id: id, hotels: hotelRows })
+        });
+      }
+
+      // Transport
+      if (transports.length > 0) {
+        await fetch(`${baseurl}/api/tour-transports/bulk`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tour_id: id, items: transports })
+        });
+      }
+
+      // Booking POI
+      if (bookingPois.length > 0) {
+        await fetch(`${baseurl}/api/tour-booking-poi/bulk`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tour_id: id, items: bookingPois })
+        });
+      }
+
+      // Cancellation
+      if (cancelPolicies.length > 0) {
+        await fetch(`${baseurl}/api/tour-cancellation/bulk`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tour_id: id, policies: cancelPolicies })
+        });
+      }
+
+      // Instructions
+      if (instructions.length > 0) {
+        await fetch(`${baseurl}/api/tour-instructions/bulk`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tour_id: id, items: instructions })
+        });
+      }
+
+      // Exclusions
+      if (exclusions.length > 0) {
+        await fetch(`${baseurl}/api/exclusions/bulk`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tour_id: id, items: exclusions })
+        });
+      }
+
+      // Inclusions
+      if (inclusions.length > 0) {
+        await fetch(`${baseurl}/api/inclusions/bulk`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tour_id: id, items: inclusions })
+        });
+      }
+
+      // Itineraries
+      if (itineraries.length > 0) {
+        const itineraryPayload = itineraries.map((item) => ({
+          ...item,
+          tour_id: id
+        }));
+
+        await fetch(`${baseurl}/api/itineraries/bulk`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(itineraryPayload)
+        });
+      }
+
+      // Images (only if new files added)
+      if (imageFiles.length > 0) {
+        const formDataImages = new FormData();
+        imageFiles.forEach((file) => {
+          formDataImages.append('images', file);
+        });
+
+        if (imageCaption.trim()) {
+          formDataImages.append('caption', imageCaption.trim());
+        }
+
+        await fetch(`${baseurl}/api/images/upload/${id}`, {
+          method: 'POST',
+          body: formDataImages
+        });
+      }
+
+      setSuccess('Tour updated successfully!');
+      setTimeout(() => navigate('/ladies-special-tours'), 1500);
+    } catch (err) {
+      console.error('Error updating tour:', err);
+      setError(err.message || 'Failed to update tour');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // CREATE NEW TOUR
+  const createTour = async () => {
     if (!formData.tour_code.trim()) {
       setError('Tour code is required');
       setActiveTab('basic');
@@ -814,63 +1210,54 @@ const AddLadiesTour = () => {
       const tourData = await tourRes.json();
       const tourId = tourData.tour_id || tourData.id || tourData.insertId;
 
-      // 2) DEPARTURES BULK - GROUP TOURS
+      // 2) DEPARTURES BULK - LADIES SPECIAL TOURS
       if (departures.length > 0) {
-        // Transform departures data for backend
-        const formattedDepartures = departures.map(dep => ({
-          tour_type: 'Group',
-          start_date: dep.start_date,
-          end_date: dep.end_date,
-          status: dep.status,
-          price: dep.price,
-          description: dep.description || null,
-          total_seats: 40, // Default value
-          booked_seats: 0,
-          // Tour costs for group
-          tour_costs: dep.tour_costs
+        const formattedDepartures = departures.map(dept => ({
+          tour_type: 'ladiesspecial',
+          start_date: dept.start_date,
+          end_date: dept.end_date,
+          status: dept.status,
+          total_seats: dept.total_seats || 40,
+          booked_seats: dept.booked_seats || 0,
+          description: dept.description || null,
+          adult_price: dept.three_star_twin || 0,
+          // 3-Star Hotel Prices
+          three_star_twin: dept.three_star_twin || null,
+          three_star_triple: dept.three_star_triple || null,
+          three_star_child_with_bed: dept.three_star_child_with_bed || null,
+          three_star_child_without_bed: dept.three_star_child_without_bed || null,
+          three_star_infant: dept.three_star_infant || null,
+          three_star_single: dept.three_star_single || null,
+          // 4-Star Hotel Prices
+          four_star_twin: dept.four_star_twin || null,
+          four_star_triple: dept.four_star_triple || null,
+          four_star_child_with_bed: dept.four_star_child_with_bed || null,
+          four_star_child_without_bed: dept.four_star_child_without_bed || null,
+          four_star_infant: dept.four_star_infant || null,
+          four_star_single: dept.four_star_single || null,
+          // 5-Star Hotel Prices
+          five_star_twin: dept.five_star_twin || null,
+          five_star_triple: dept.five_star_triple || null,
+          five_star_child_with_bed: dept.five_star_child_with_bed || null,
+          five_star_child_without_bed: dept.five_star_child_without_bed || null,
+          five_star_infant: dept.five_star_infant || null,
+          five_star_single: dept.five_star_single || null
         }));
 
-        const depBody = {
-          tour_id: tourId,
-          departures: formattedDepartures
-        };
-
-        const depRes = await fetch(`${baseurl}/api/departures/bulk`, {
+        await fetch(`${baseurl}/api/departures/bulk`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(depBody)
-        });
-
-        if (!depRes.ok) {
-          const err = await depRes.json().catch(() => ({}));
-          throw new Error(err.error || 'Failed to save departures');
-        }
-      }
-
-      // 7) TOUR COSTS BULK
-      if (tourCosts.length > 0) {
-        await fetch(`${baseurl}/api/tour-costs/bulk`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            tour_id: tourId,
-            costs: tourCosts
-          })
+          body: JSON.stringify({ tour_id: tourId, departures: formattedDepartures })
         });
       }
 
       // 3) EXCLUSIONS
       if (exclusions.length > 0) {
-        const excRes = await fetch(`${baseurl}/api/exclusions/bulk`, {
+        await fetch(`${baseurl}/api/exclusions/bulk`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ tour_id: tourId, items: exclusions })
         });
-
-        if (!excRes.ok) {
-          const err = await excRes.json().catch(() => ({}));
-          throw new Error(err.error || 'Failed to save exclusions');
-        }
       }
 
       // 4) IMAGES
@@ -882,27 +1269,19 @@ const AddLadiesTour = () => {
         if (imageCaption.trim()) {
           formDataImages.append('caption', imageCaption.trim());
         }
-        const imgRes = await fetch(`${baseurl}/api/images/upload/${tourId}`, {
+        await fetch(`${baseurl}/api/images/upload/${tourId}`, {
           method: 'POST',
           body: formDataImages
         });
-        if (!imgRes.ok) {
-          const err = await imgRes.json().catch(() => ({}));
-          throw new Error(err.error || 'Failed to upload images');
-        }
       }
 
       // 5) INCLUSIONS
       if (inclusions.length > 0) {
-        const incRes = await fetch(`${baseurl}/api/inclusions/bulk`, {
+        await fetch(`${baseurl}/api/inclusions/bulk`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ tour_id: tourId, items: inclusions })
         });
-        if (!incRes.ok) {
-          const err = await incRes.json().catch(() => ({}));
-          throw new Error(err.error || 'Failed to save inclusions');
-        }
       }
 
       // 6) ITINERARY DAYS
@@ -911,15 +1290,11 @@ const AddLadiesTour = () => {
           ...item,
           tour_id: tourId
         }));
-        const itiRes = await fetch(`${baseurl}/api/itineraries/bulk`, {
+        await fetch(`${baseurl}/api/itineraries/bulk`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
         });
-        if (!itiRes.ok) {
-          const err = await itiRes.json().catch(() => ({}));
-          throw new Error(err.error || 'Failed to save itineraries');
-        }
       }
 
       // 7) OPTIONAL TOURS BULK
@@ -927,62 +1302,21 @@ const AddLadiesTour = () => {
         await fetch(`${baseurl}/api/optional-tours/bulk`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            tour_id: tourId,
-            optional_tours: optionalTours
-          })
+          body: JSON.stringify({ tour_id: tourId, optional_tours: optionalTours })
         });
       }
 
       // 8) EMI OPTIONS BULK
-      // 8) EMI OPTIONS BULK - UPDATED VERSION
-      console.log('Sending EMI options to backend:', emiOptions);
-
-      // Filter only options that have values
       const validEmiOptions = emiOptions.filter(opt =>
         opt.loan_amount && opt.loan_amount > 0 && opt.emi && opt.emi > 0
       );
 
-      console.log('Valid EMI options for submission:', validEmiOptions);
-
       if (validEmiOptions.length > 0) {
-        try {
-          const emiPayload = {
-            tour_id: tourId,
-            emi_options: validEmiOptions.map(opt => ({
-              particulars: opt.particulars,
-              months: opt.months,
-              loan_amount: parseFloat(opt.loan_amount),
-              emi: parseFloat(opt.emi)
-            }))
-          };
-
-          console.log('EMI API Payload:', JSON.stringify(emiPayload, null, 2));
-
-          const emiResponse = await fetch(`${baseurl}/api/emi-options/emi/bulk`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(emiPayload)
-          });
-
-          console.log('EMI API Status:', emiResponse.status);
-
-          if (!emiResponse.ok) {
-            const errorText = await emiResponse.text();
-            console.error('EMI API Error Response:', errorText);
-            // Don't throw error - just log it as EMI options are optional
-            console.warn('EMI options could not be saved, but continuing with other data');
-          } else {
-            const emiResult = await emiResponse.json();
-            console.log('EMI API Success Response:', emiResult);
-          }
-        } catch (error) {
-          console.error('Error saving EMI options:', error);
-          // Don't throw here to allow other data to be saved
-          // EMI options are optional
-        }
-      } else {
-        console.log('No valid EMI options to save - this is optional');
+        await fetch(`${baseurl}/api/emi-options/emi/bulk`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tour_id: tourId, emi_options: validEmiOptions })
+        });
       }
 
       // 9) HOTELS BULK
@@ -990,10 +1324,7 @@ const AddLadiesTour = () => {
         await fetch(`${baseurl}/api/tour-hotels/bulk`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            tour_id: tourId,
-            hotels: hotelRows
-          })
+          body: JSON.stringify({ tour_id: tourId, hotels: hotelRows })
         });
       }
 
@@ -1002,10 +1333,7 @@ const AddLadiesTour = () => {
         await fetch(`${baseurl}/api/tour-transports/bulk`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            tour_id: tourId,
-            items: transports
-          })
+          body: JSON.stringify({ tour_id: tourId, items: transports })
         });
       }
 
@@ -1014,10 +1342,7 @@ const AddLadiesTour = () => {
         await fetch(`${baseurl}/api/tour-booking-poi/bulk`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            tour_id: tourId,
-            items: bookingPois
-          })
+          body: JSON.stringify({ tour_id: tourId, items: bookingPois })
         });
       }
 
@@ -1026,10 +1351,7 @@ const AddLadiesTour = () => {
         await fetch(`${baseurl}/api/tour-cancellation/bulk`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            tour_id: tourId,
-            policies: cancelPolicies
-          })
+          body: JSON.stringify({ tour_id: tourId, policies: cancelPolicies })
         });
       }
 
@@ -1038,10 +1360,7 @@ const AddLadiesTour = () => {
         await fetch(`${baseurl}/api/tour-instructions/bulk`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            tour_id: tourId,
-            items: instructions
-          })
+          body: JSON.stringify({ tour_id: tourId, items: instructions })
         });
       }
 
@@ -1055,11 +1374,14 @@ const AddLadiesTour = () => {
   };
 
   const handleSaveClick = () => {
-    // Auto-add buffered row if user forgot to click "+ Add"
     autoAddBeforeNext();
 
     if (isLastTab) {
-      finalSubmit();
+      if (isEditMode) {
+        updateTour();
+      } else {
+        createTour();
+      }
     } else {
       goNext();
     }
@@ -1072,8 +1394,6 @@ const AddLadiesTour = () => {
         return { label: '+ Add Day', onClick: handleAddItinerary };
       case 'departures':
         return { label: '+ Add Departure', onClick: handleAddDeparture };
-      case 'costs':
-        return { label: '+ Add Cost Row', onClick: addCostRow };
       case 'optionalTours':
         return { label: '+ Add Optional Tour', onClick: addOptionalTourRow };
       case 'inclusions':
@@ -1091,7 +1411,7 @@ const AddLadiesTour = () => {
       case 'instructions':
         return { label: '+ Add Instruction', onClick: addInstruction };
       default:
-        return null; // basic, emiOptions, images have no "+ Add" here
+        return null;
     }
   };
 
@@ -1100,7 +1420,7 @@ const AddLadiesTour = () => {
   return (
     <Navbar>
       <Container>
-        <h2 className="mb-4">Add Group Tour</h2>
+        <h2 className="mb-4">{isEditMode ? 'Edit Ladies Special Tour' : 'Add Ladies Special Tour'}</h2>
 
         {error && <Alert variant="danger">{error}</Alert>}
         {success && <Alert variant="success">{success}</Alert>}
@@ -1124,11 +1444,16 @@ const AddLadiesTour = () => {
                         value={formData.tour_code}
                         onChange={handleBasicChange}
                         readOnly
+                        disabled={isEditMode}
                         style={{
-                          cursor: "not-allowed",
-                          fontWeight: "bold"
+                          cursor: isEditMode ? "not-allowed" : "default",
+                          fontWeight: "bold",
+                          backgroundColor: isEditMode ? "#f8f9fa" : "white"
                         }}
                       />
+                      <Form.Text className="text-muted">
+                        {isEditMode ? "Tour code cannot be changed" : "Auto-generated tour code"}
+                      </Form.Text>
                     </Form.Group>
 
                     <Form.Group className="mb-3">
@@ -1287,13 +1612,24 @@ const AddLadiesTour = () => {
                             <td>{item.meals || '-'}</td>
                             <td>{item.description || '-'}</td>
                             <td>
-                              <Button
-                                variant="link"
-                                size="sm"
-                                onClick={() => handleRemoveItinerary(idx)}
-                              >
-                                remove
-                              </Button>
+                              <div className="d-flex gap-1">
+                                <Button
+                                  variant="outline-warning"
+                                  size="sm"
+                                  onClick={() => editItinerary(idx)}
+                                  title="Edit"
+                                >
+                                  <Pencil size={14} />
+                                </Button>
+                                <Button
+                                  variant="outline-danger"
+                                  size="sm"
+                                  onClick={() => handleRemoveItinerary(idx)}
+                                  title="Remove"
+                                >
+                                  <Trash size={14} />
+                                </Button>
+                              </div>
                             </td>
                           </tr>
                         ))}
@@ -1302,7 +1638,7 @@ const AddLadiesTour = () => {
                 )}
               </Tab>
 
-              {/* ======== DEPARTURES TAB - GROUP TOUR ======== */}
+              {/* ======== DEPARTURES TAB - LADIES SPECIAL TOUR ======== */}
               <Tab eventKey="departures" title="Departures">
                 <div>
                   {/* Departure Dates Section */}
@@ -1314,8 +1650,8 @@ const AddLadiesTour = () => {
                         <Form.Control
                           type="date"
                           name="start_date"
-                          value={groupDepartureForm.start_date}
-                          onChange={handleGroupDepartureChange}
+                          value={ladiesDepartureForm.start_date}
+                          onChange={handleLadiesDepartureChange}
                         />
                       </Form.Group>
                     </Col>
@@ -1326,19 +1662,19 @@ const AddLadiesTour = () => {
                         <Form.Control
                           type="date"
                           name="end_date"
-                          value={groupDepartureForm.end_date}
-                          onChange={handleGroupDepartureChange}
+                          value={ladiesDepartureForm.end_date}
+                          onChange={handleLadiesDepartureChange}
                         />
                       </Form.Group>
                     </Col>
 
-                    <Col md={3}>
+                    <Col md={2}>
                       <Form.Group className="mb-3">
                         <Form.Label>Status *</Form.Label>
                         <Form.Select
                           name="status"
-                          value={groupDepartureForm.status}
-                          onChange={handleGroupDepartureChange}
+                          value={ladiesDepartureForm.status}
+                          onChange={handleLadiesDepartureChange}
                         >
                           <option value="Available">Available</option>
                           <option value="Few Seats">Few Seats</option>
@@ -1348,15 +1684,28 @@ const AddLadiesTour = () => {
                       </Form.Group>
                     </Col>
 
-                    <Col md={3}>
+                    <Col md={2}>
                       <Form.Group className="mb-3">
-                        <Form.Label>Price *</Form.Label>
+                        <Form.Label>Total Seats</Form.Label>
                         <Form.Control
                           type="number"
-                          name="price"
-                          value={groupDepartureForm.price}
-                          onChange={handleGroupDepartureChange}
-                          placeholder="Enter price"
+                          name="total_seats"
+                          value={ladiesDepartureForm.total_seats}
+                          onChange={handleLadiesDepartureChange}
+                          placeholder="Total seats"
+                        />
+                      </Form.Group>
+                    </Col>
+
+                    <Col md={2}>
+                      <Form.Group className="mb-3">
+                        <Form.Label>Booked Seats</Form.Label>
+                        <Form.Control
+                          type="number"
+                          name="booked_seats"
+                          value={ladiesDepartureForm.booked_seats}
+                          onChange={handleLadiesDepartureChange}
+                          placeholder="Booked seats"
                         />
                       </Form.Group>
                     </Col>
@@ -1367,222 +1716,243 @@ const AddLadiesTour = () => {
                         <Form.Control
                           type="text"
                           name="description"
-                          value={groupDepartureForm.description}
-                          onChange={handleGroupDepartureChange}
+                          value={ladiesDepartureForm.description}
+                          onChange={handleLadiesDepartureChange}
                           placeholder="Optional description"
                         />
                       </Form.Group>
                     </Col>
                   </Row>
 
-                  {/* Tour Cost Section */}
+                  {/* 3-Star Hotel Prices */}
                   <Row className="mb-4">
-                    <h5>Tour Cost</h5>
+                    <h5>3-Star Hotel Prices</h5>
+                    <Col md={2}>
+                      <Form.Group>
+                        <Form.Label>Twin Sharing</Form.Label>
+                        <Form.Control
+                          type="number"
+                          name="three_star_twin"
+                          value={ladiesDepartureForm.three_star_twin}
+                          onChange={handleLadiesDepartureChange}
+                          placeholder="₹"
+                        />
+                      </Form.Group>
+                    </Col>
+                    <Col md={2}>
+                      <Form.Group>
+                        <Form.Label>Triple Sharing</Form.Label>
+                        <Form.Control
+                          type="number"
+                          name="three_star_triple"
+                          value={ladiesDepartureForm.three_star_triple}
+                          onChange={handleLadiesDepartureChange}
+                          placeholder="₹"
+                        />
+                      </Form.Group>
+                    </Col>
+                    <Col md={2}>
+                      <Form.Group>
+                        <Form.Label>Child With Bed</Form.Label>
+                        <Form.Control
+                          type="number"
+                          name="three_star_child_with_bed"
+                          value={ladiesDepartureForm.three_star_child_with_bed}
+                          onChange={handleLadiesDepartureChange}
+                          placeholder="₹"
+                        />
+                      </Form.Group>
+                    </Col>
+                    <Col md={2}>
+                      <Form.Group>
+                        <Form.Label>Child No Bed</Form.Label>
+                        <Form.Control
+                          type="number"
+                          name="three_star_child_without_bed"
+                          value={ladiesDepartureForm.three_star_child_without_bed}
+                          onChange={handleLadiesDepartureChange}
+                          placeholder="₹"
+                        />
+                      </Form.Group>
+                    </Col>
+                    <Col md={2}>
+                      <Form.Group>
+                        <Form.Label>Infant</Form.Label>
+                        <Form.Control
+                          type="number"
+                          name="three_star_infant"
+                          value={ladiesDepartureForm.three_star_infant}
+                          onChange={handleLadiesDepartureChange}
+                          placeholder="₹"
+                        />
+                      </Form.Group>
+                    </Col>
+                    <Col md={2}>
+                      <Form.Group>
+                        <Form.Label>Single</Form.Label>
+                        <Form.Control
+                          type="number"
+                          name="three_star_single"
+                          value={ladiesDepartureForm.three_star_single}
+                          onChange={handleLadiesDepartureChange}
+                          placeholder="₹"
+                        />
+                      </Form.Group>
+                    </Col>
+                  </Row>
 
-                    {/* Table Header */}
-                    <Table striped bordered hover size="sm">
-                      <thead>
-                        <tr>
-                          <th>Particulars</th>
-                          <th>3 Star</th>
-                          <th>4 Star</th>
-                          <th>5 Star</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {/* Per Pax on Twin Basis */}
-                        <tr>
-                          <td>Per Pax on Twin Basis</td>
-                          <td>
-                            <Form.Control
-                              type="number"
-                              name="threeStar_perPaxTwin"
-                              value={tourCostFields.threeStar.perPaxTwin}
-                              onChange={handleTourCostFieldsChange}
-                              placeholder="Enter price"
-                            />
-                          </td>
-                          <td>
-                            <Form.Control
-                              type="number"
-                              name="fourStar_perPaxTwin"
-                              value={tourCostFields.fourStar.perPaxTwin}
-                              onChange={handleTourCostFieldsChange}
-                              placeholder="Enter price"
-                            />
-                          </td>
-                          <td>
-                            <Form.Control
-                              type="number"
-                              name="fiveStar_perPaxTwin"
-                              value={tourCostFields.fiveStar.perPaxTwin}
-                              onChange={handleTourCostFieldsChange}
-                              placeholder="Enter price"
-                            />
-                          </td>
-                        </tr>
+                  {/* 4-Star Hotel Prices */}
+                  <Row className="mb-4">
+                    <h5>4-Star Hotel Prices</h5>
+                    <Col md={2}>
+                      <Form.Group>
+                        <Form.Label>Twin Sharing</Form.Label>
+                        <Form.Control
+                          type="number"
+                          name="four_star_twin"
+                          value={ladiesDepartureForm.four_star_twin}
+                          onChange={handleLadiesDepartureChange}
+                          placeholder="₹"
+                        />
+                      </Form.Group>
+                    </Col>
+                    <Col md={2}>
+                      <Form.Group>
+                        <Form.Label>Triple Sharing</Form.Label>
+                        <Form.Control
+                          type="number"
+                          name="four_star_triple"
+                          value={ladiesDepartureForm.four_star_triple}
+                          onChange={handleLadiesDepartureChange}
+                          placeholder="₹"
+                        />
+                      </Form.Group>
+                    </Col>
+                    <Col md={2}>
+                      <Form.Group>
+                        <Form.Label>Child With Bed</Form.Label>
+                        <Form.Control
+                          type="number"
+                          name="four_star_child_with_bed"
+                          value={ladiesDepartureForm.four_star_child_with_bed}
+                          onChange={handleLadiesDepartureChange}
+                          placeholder="₹"
+                        />
+                      </Form.Group>
+                    </Col>
+                    <Col md={2}>
+                      <Form.Group>
+                        <Form.Label>Child No Bed</Form.Label>
+                        <Form.Control
+                          type="number"
+                          name="four_star_child_without_bed"
+                          value={ladiesDepartureForm.four_star_child_without_bed}
+                          onChange={handleLadiesDepartureChange}
+                          placeholder="₹"
+                        />
+                      </Form.Group>
+                    </Col>
+                    <Col md={2}>
+                      <Form.Group>
+                        <Form.Label>Infant</Form.Label>
+                        <Form.Control
+                          type="number"
+                          name="four_star_infant"
+                          value={ladiesDepartureForm.four_star_infant}
+                          onChange={handleLadiesDepartureChange}
+                          placeholder="₹"
+                        />
+                      </Form.Group>
+                    </Col>
+                    <Col md={2}>
+                      <Form.Group>
+                        <Form.Label>Single</Form.Label>
+                        <Form.Control
+                          type="number"
+                          name="four_star_single"
+                          value={ladiesDepartureForm.four_star_single}
+                          onChange={handleLadiesDepartureChange}
+                          placeholder="₹"
+                        />
+                      </Form.Group>
+                    </Col>
+                  </Row>
 
-                        {/* Per Pax on Triple Basis */}
-                        <tr>
-                          <td>Per Pax on Triple Basis</td>
-                          <td>
-                            <Form.Control
-                              type="number"
-                              name="threeStar_perPaxTriple"
-                              value={tourCostFields.threeStar.perPaxTriple}
-                              onChange={handleTourCostFieldsChange}
-                              placeholder="Enter price"
-                            />
-                          </td>
-                          <td>
-                            <Form.Control
-                              type="number"
-                              name="fourStar_perPaxTriple"
-                              value={tourCostFields.fourStar.perPaxTriple}
-                              onChange={handleTourCostFieldsChange}
-                              placeholder="Enter price"
-                            />
-                          </td>
-                          <td>
-                            <Form.Control
-                              type="number"
-                              name="fiveStar_perPaxTriple"
-                              value={tourCostFields.fiveStar.perPaxTriple}
-                              onChange={handleTourCostFieldsChange}
-                              placeholder="Enter price"
-                            />
-                          </td>
-                        </tr>
-
-                        {/* Child with Bed */}
-                        <tr>
-                          <td>Child with Bed</td>
-                          <td>
-                            <Form.Control
-                              type="number"
-                              name="threeStar_childWithBed"
-                              value={tourCostFields.threeStar.childWithBed}
-                              onChange={handleTourCostFieldsChange}
-                              placeholder="Enter price"
-                            />
-                          </td>
-                          <td>
-                            <Form.Control
-                              type="number"
-                              name="fourStar_childWithBed"
-                              value={tourCostFields.fourStar.childWithBed}
-                              onChange={handleTourCostFieldsChange}
-                              placeholder="Enter price"
-                            />
-                          </td>
-                          <td>
-                            <Form.Control
-                              type="number"
-                              name="fiveStar_childWithBed"
-                              value={tourCostFields.fiveStar.childWithBed}
-                              onChange={handleTourCostFieldsChange}
-                              placeholder="Enter price"
-                            />
-                          </td>
-                        </tr>
-
-                        {/* Child without Bed */}
-                        <tr>
-                          <td>Child without Bed</td>
-                          <td>
-                            <Form.Control
-                              type="number"
-                              name="threeStar_childWithoutBed"
-                              value={tourCostFields.threeStar.childWithoutBed}
-                              onChange={handleTourCostFieldsChange}
-                              placeholder="Enter price"
-                            />
-                          </td>
-                          <td>
-                            <Form.Control
-                              type="number"
-                              name="fourStar_childWithoutBed"
-                              value={tourCostFields.fourStar.childWithoutBed}
-                              onChange={handleTourCostFieldsChange}
-                              placeholder="Enter price"
-                            />
-                          </td>
-                          <td>
-                            <Form.Control
-                              type="number"
-                              name="fiveStar_childWithoutBed"
-                              value={tourCostFields.fiveStar.childWithoutBed}
-                              onChange={handleTourCostFieldsChange}
-                              placeholder="Enter price"
-                            />
-                          </td>
-                        </tr>
-
-                        {/* Infant */}
-                        <tr>
-                          <td>Infant</td>
-                          <td>
-                            <Form.Control
-                              type="number"
-                              name="threeStar_infant"
-                              value={tourCostFields.threeStar.infant}
-                              onChange={handleTourCostFieldsChange}
-                              placeholder="Enter price"
-                            />
-                          </td>
-                          <td>
-                            <Form.Control
-                              type="number"
-                              name="fourStar_infant"
-                              value={tourCostFields.fourStar.infant}
-                              onChange={handleTourCostFieldsChange}
-                              placeholder="Enter price"
-                            />
-                          </td>
-                          <td>
-                            <Form.Control
-                              type="number"
-                              name="fiveStar_infant"
-                              value={tourCostFields.fiveStar.infant}
-                              onChange={handleTourCostFieldsChange}
-                              placeholder="Enter price"
-                            />
-                          </td>
-                        </tr>
-
-                        {/* Per Pax Single Occupancy */}
-                        <tr>
-                          <td>Per Pax Single Occupancy</td>
-                          <td>
-                            <Form.Control
-                              type="number"
-                              name="threeStar_perPaxSingle"
-                              value={tourCostFields.threeStar.perPaxSingle}
-                              onChange={handleTourCostFieldsChange}
-                              placeholder="Enter price"
-                            />
-                          </td>
-                          <td>
-                            <Form.Control
-                              type="number"
-                              name="fourStar_perPaxSingle"
-                              value={tourCostFields.fourStar.perPaxSingle}
-                              onChange={handleTourCostFieldsChange}
-                              placeholder="Enter price"
-                            />
-                          </td>
-                          <td>
-                            <Form.Control
-                              type="number"
-                              name="fiveStar_perPaxSingle"
-                              value={tourCostFields.fiveStar.perPaxSingle}
-                              onChange={handleTourCostFieldsChange}
-                              placeholder="Enter price"
-                            />
-                          </td>
-                        </tr>
-                      </tbody>
-                    </Table>
+                  {/* 5-Star Hotel Prices */}
+                  <Row className="mb-4">
+                    <h5>5-Star Hotel Prices</h5>
+                    <Col md={2}>
+                      <Form.Group>
+                        <Form.Label>Twin Sharing</Form.Label>
+                        <Form.Control
+                          type="number"
+                          name="five_star_twin"
+                          value={ladiesDepartureForm.five_star_twin}
+                          onChange={handleLadiesDepartureChange}
+                          placeholder="₹"
+                        />
+                      </Form.Group>
+                    </Col>
+                    <Col md={2}>
+                      <Form.Group>
+                        <Form.Label>Triple Sharing</Form.Label>
+                        <Form.Control
+                          type="number"
+                          name="five_star_triple"
+                          value={ladiesDepartureForm.five_star_triple}
+                          onChange={handleLadiesDepartureChange}
+                          placeholder="₹"
+                        />
+                      </Form.Group>
+                    </Col>
+                    <Col md={2}>
+                      <Form.Group>
+                        <Form.Label>Child With Bed</Form.Label>
+                        <Form.Control
+                          type="number"
+                          name="five_star_child_with_bed"
+                          value={ladiesDepartureForm.five_star_child_with_bed}
+                          onChange={handleLadiesDepartureChange}
+                          placeholder="₹"
+                        />
+                      </Form.Group>
+                    </Col>
+                    <Col md={2}>
+                      <Form.Group>
+                        <Form.Label>Child No Bed</Form.Label>
+                        <Form.Control
+                          type="number"
+                          name="five_star_child_without_bed"
+                          value={ladiesDepartureForm.five_star_child_without_bed}
+                          onChange={handleLadiesDepartureChange}
+                          placeholder="₹"
+                        />
+                      </Form.Group>
+                    </Col>
+                    <Col md={2}>
+                      <Form.Group>
+                        <Form.Label>Infant</Form.Label>
+                        <Form.Control
+                          type="number"
+                          name="five_star_infant"
+                          value={ladiesDepartureForm.five_star_infant}
+                          onChange={handleLadiesDepartureChange}
+                          placeholder="₹"
+                        />
+                      </Form.Group>
+                    </Col>
+                    <Col md={2}>
+                      <Form.Group>
+                        <Form.Label>Single</Form.Label>
+                        <Form.Control
+                          type="number"
+                          name="five_star_single"
+                          value={ladiesDepartureForm.five_star_single}
+                          onChange={handleLadiesDepartureChange}
+                          placeholder="₹"
+                        />
+                      </Form.Group>
+                    </Col>
                   </Row>
 
                   {/* Display Added Departures */}
@@ -1596,7 +1966,10 @@ const AddLadiesTour = () => {
                             <th>Start Date</th>
                             <th>End Date</th>
                             <th>Status</th>
-                            <th>Price</th>
+                            <th>Seats</th>
+                            <th>3-Star Twin</th>
+                            <th>4-Star Twin</th>
+                            <th>5-Star Twin</th>
                             <th>Action</th>
                           </tr>
                         </thead>
@@ -1607,15 +1980,29 @@ const AddLadiesTour = () => {
                               <td>{dep.start_date || '-'}</td>
                               <td>{dep.end_date || '-'}</td>
                               <td>{dep.status || '-'}</td>
-                              <td>{dep.price ? `₹${dep.price.toLocaleString()}` : '-'}</td>
+                              <td>{dep.total_seats || '-'}</td>
+                              <td>{dep.three_star_twin ? `₹${dep.three_star_twin.toLocaleString()}` : '-'}</td>
+                              <td>{dep.four_star_twin ? `₹${dep.four_star_twin.toLocaleString()}` : '-'}</td>
+                              <td>{dep.five_star_twin ? `₹${dep.five_star_twin.toLocaleString()}` : '-'}</td>
                               <td>
-                                <Button
-                                  variant="link"
-                                  size="sm"
-                                  onClick={() => handleRemoveDeparture(idx)}
-                                >
-                                  remove
-                                </Button>
+                                <div className="d-flex gap-1">
+                                  <Button
+                                    variant="outline-warning"
+                                    size="sm"
+                                    onClick={() => editDeparture(idx)}
+                                    title="Edit"
+                                  >
+                                    <Pencil size={14} />
+                                  </Button>
+                                  <Button
+                                    variant="outline-danger"
+                                    size="sm"
+                                    onClick={() => handleRemoveDeparture(idx)}
+                                    title="Remove"
+                                  >
+                                    <Trash size={14} />
+                                  </Button>
+                                </div>
                               </td>
                             </tr>
                           ))}
@@ -1627,80 +2014,6 @@ const AddLadiesTour = () => {
               </Tab>
 
               <Tab eventKey="costs" title="Tour Cost">
-                {/* <Row className="align-items-end">
-                                <Col md={2}>
-                                  <Form.Group>
-                                    <Form.Label>Pax *</Form.Label>
-                                    <Form.Control
-                                      type="number"
-                                      name="pax"
-                                      value={tourCostItem.pax}
-                                      onChange={handleCostChange}
-                                    />
-                                  </Form.Group>
-                                </Col>
-              
-                                <Col md={2}>
-                                  <Form.Group>
-                                    <Form.Label>Standard Hotel</Form.Label>
-                                    <Form.Control
-                                      type="number"
-                                      name="standard_hotel"
-                                      value={tourCostItem.standard_hotel}
-                                      onChange={handleCostChange}
-                                    />
-                                  </Form.Group>
-                                </Col>
-              
-                                <Col md={2}>
-                                  <Form.Group>
-                                    <Form.Label>Deluxe Hotel</Form.Label>
-                                    <Form.Control
-                                      type="number"
-                                      name="deluxe_hotel"
-                                      value={tourCostItem.deluxe_hotel}
-                                      onChange={handleCostChange}
-                                    />
-                                  </Form.Group>
-                                </Col>
-              
-                                <Col md={2}>
-                                  <Form.Group>
-                                    <Form.Label>Executive Hotel</Form.Label>
-                                    <Form.Control
-                                      type="number"
-                                      name="executive_hotel"
-                                      value={tourCostItem.executive_hotel}
-                                      onChange={handleCostChange}
-                                    />
-                                  </Form.Group>
-                                </Col>
-              
-                                <Col md={2}>
-                                  <Form.Group>
-                                    <Form.Label>Child With Bed</Form.Label>
-                                    <Form.Control
-                                      type="number"
-                                      name="child_with_bed"
-                                      value={tourCostItem.child_with_bed}
-                                      onChange={handleCostChange}
-                                    />
-                                  </Form.Group>
-                                </Col>
-              
-                                <Col md={2}>
-                                  <Form.Group>
-                                    <Form.Label>Child No Bed</Form.Label>
-                                    <Form.Control
-                                      type="number"
-                                      name="child_no_bed"
-                                      value={tourCostItem.child_no_bed}
-                                      onChange={handleCostChange}
-                                    />
-                                  </Form.Group>
-                                </Col>
-                              </Row> */}
-
                 <Form.Group className="mt-3">
                   <Form.Label>Cost Remarks</Form.Label>
                   <Form.Control
@@ -1722,42 +2035,7 @@ const AddLadiesTour = () => {
                     onChange={handleBasicChange}
                   />
                 </Form.Group>
-
-                {tourCosts.length > 0 && (
-                  <Table striped bordered hover size="sm" className="mt-3">
-                    <thead>
-                      <tr>
-                        <th>#</th>
-                        <th>Pax</th>
-                        <th>Standard</th>
-                        <th>Deluxe</th>
-                        <th>Executive</th>
-                        <th>Chd Bed</th>
-                        <th>Chd NoBed</th>
-                        <th></th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {tourCosts.map((c, idx) => (
-                        <tr key={idx}>
-                          <td>{idx + 1}</td>
-                          <td>{c.pax}</td>
-                          <td>{c.standard_hotel || 'NA'}</td>
-                          <td>{c.deluxe_hotel || 'NA'}</td>
-                          <td>{c.executive_hotel || 'NA'}</td>
-                          <td>{c.child_with_bed || 'NA'}</td>
-                          <td>{c.child_no_bed || 'NA'}</td>
-                          <td>
-                            <Button variant="link" size="sm" onClick={() => removeCostRow(idx)}>remove</Button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </Table>
-                )}
               </Tab>
-
-
 
               {/* ======== OPTIONAL TOURS ======== */}
               <Tab eventKey="optionalTours" title="Optional Tour">
@@ -1810,7 +2088,7 @@ const AddLadiesTour = () => {
                         <th>Tour Name</th>
                         <th>Adult Price</th>
                         <th>Child Price</th>
-                        <th></th>
+                        <th>Action</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -1821,13 +2099,24 @@ const AddLadiesTour = () => {
                           <td>{tour.adult_price || 'NA'}</td>
                           <td>{tour.child_price || 'NA'}</td>
                           <td>
-                            <Button
-                              variant="link"
-                              size="sm"
-                              onClick={() => removeOptionalTourRow(idx)}
-                            >
-                              remove
-                            </Button>
+                            <div className="d-flex gap-1">
+                              <Button
+                                variant="outline-warning"
+                                size="sm"
+                                onClick={() => editOptionalTourRow(idx)}
+                                title="Edit"
+                              >
+                                <Pencil size={14} />
+                              </Button>
+                              <Button
+                                variant="outline-danger"
+                                size="sm"
+                                onClick={() => removeOptionalTourRow(idx)}
+                                title="Remove"
+                              >
+                                <Trash size={14} />
+                              </Button>
+                            </div>
                           </td>
                         </tr>
                       ))}
@@ -1836,10 +2125,8 @@ const AddLadiesTour = () => {
                 )}
               </Tab>
 
-              {/* ======== EMI OPTIONS ======== */}
               {/* ======== EMI OPTIONS (MANUAL) ======== */}
               <Tab eventKey="emiOptions" title="EMI Options">
-
                 <Table striped bordered hover responsive className="align-middle">
                   <thead className="table-dark">
                     <tr>
@@ -1914,15 +2201,6 @@ const AddLadiesTour = () => {
                         <i className="fas fa-info-circle"></i> Fill only the options you want to offer. Leave others empty.
                       </small>
                     </div>
-                    {/* <Button
-        variant="primary"
-        onClick={() => {
-          console.log('EMI Options before validation:', emiOptions);
-          handleAddEMIOptions();
-        }}
-      >
-        Save EMI Options
-      </Button> */}
                   </Col>
                 </Row>
               </Tab>
@@ -1954,13 +2232,24 @@ const AddLadiesTour = () => {
                           <td>{idx + 1}</td>
                           <td>{item}</td>
                           <td>
-                            <Button
-                              variant="link"
-                              size="sm"
-                              onClick={() => handleRemoveInclusion(idx)}
-                            >
-                              remove
-                            </Button>
+                            <div className="d-flex gap-1">
+                              <Button
+                                variant="outline-warning"
+                                size="sm"
+                                onClick={() => editInclusion(idx)}
+                                title="Edit"
+                              >
+                                <Pencil size={14} />
+                              </Button>
+                              <Button
+                                variant="outline-danger"
+                                size="sm"
+                                onClick={() => handleRemoveInclusion(idx)}
+                                title="Remove"
+                              >
+                                <Trash size={14} />
+                              </Button>
+                            </div>
                           </td>
                         </tr>
                       ))}
@@ -1996,13 +2285,24 @@ const AddLadiesTour = () => {
                           <td>{idx + 1}</td>
                           <td>{item}</td>
                           <td>
-                            <Button
-                              variant="link"
-                              size="sm"
-                              onClick={() => handleRemoveExclusion(idx)}
-                            >
-                              remove
-                            </Button>
+                            <div className="d-flex gap-1">
+                              <Button
+                                variant="outline-warning"
+                                size="sm"
+                                onClick={() => editExclusion(idx)}
+                                title="Edit"
+                              >
+                                <Pencil size={14} />
+                              </Button>
+                              <Button
+                                variant="outline-danger"
+                                size="sm"
+                                onClick={() => handleRemoveExclusion(idx)}
+                                title="Remove"
+                              >
+                                <Trash size={14} />
+                              </Button>
+                            </div>
                           </td>
                         </tr>
                       ))}
@@ -2011,7 +2311,7 @@ const AddLadiesTour = () => {
                 )}
               </Tab>
 
-              {/* ======== TRANSPORT TAB - GROUP TOUR ======== */}
+              {/* ======== TRANSPORT TAB - LADIES SPECIAL TOUR ======== */}
               <Tab eventKey="transport" title="Transport">
                 <Row className="mt-3">
                   {/* Airline */}
@@ -2131,11 +2431,6 @@ const AddLadiesTour = () => {
                   </Col>
                 </Row>
 
-                {/* ================= ADD BUTTON ================= */}
-                <Button className="mt-3" onClick={addTransportRow}>
-                  Add
-                </Button>
-
                 {/* ================= TRANSPORT REMARKS ================= */}
                 <Form.Group className="mt-4">
                   <Form.Label>Transport Remarks</Form.Label>
@@ -2159,7 +2454,7 @@ const AddLadiesTour = () => {
                         <th>Route</th>
                         <th>Schedule</th>
                         <th>Via</th>
-                        <th></th>
+                        <th>Action</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -2176,13 +2471,24 @@ const AddLadiesTour = () => {
                           </td>
                           <td>{t.via || 'Direct'}</td>
                           <td>
-                            <Button
-                              variant="link"
-                              size="sm"
-                              onClick={() => removeTransportRow(i)}
-                            >
-                              remove
-                            </Button>
+                            <div className="d-flex gap-1">
+                              <Button
+                                variant="outline-warning"
+                                size="sm"
+                                onClick={() => editTransportRow(i)}
+                                title="Edit"
+                              >
+                                <Pencil size={14} />
+                              </Button>
+                              <Button
+                                variant="outline-danger"
+                                size="sm"
+                                onClick={() => removeTransportRow(i)}
+                                title="Remove"
+                              >
+                                <Trash size={14} />
+                              </Button>
+                            </div>
                           </td>
                         </tr>
                       ))}
@@ -2217,39 +2523,39 @@ const AddLadiesTour = () => {
                     </Form.Group>
                   </Col>
 
-                  <Col md={3}>
-                                      <Form.Group>
-                                        <Form.Label>Standard</Form.Label>
-                                        <Form.Control
-                                          type="text"
-                                          name="hotel_standard"
-                                          value={hotelItem.hotel_standard}
-                                          onChange={handleHotelChange}
-                                        />
-                                      </Form.Group>
-                                    </Col>
-                                     <Col md={3}>
-                                      <Form.Group>
-                                        <Form.Label>Deluxe</Form.Label>
-                                        <Form.Control
-                                          type="text"
-                                          name="hotel_deluxe"
-                                          value={hotelItem.hotel_deluxe}
-                                          onChange={handleHotelChange}
-                                        />
-                                      </Form.Group>
-                                    </Col>
-                                     <Col md={3}>
-                                      <Form.Group>
-                                        <Form.Label>Executive</Form.Label>
-                                        <Form.Control
-                                          type="text"
-                                          name="hotel_executive"
-                                          value={hotelItem.hotel_executive}
-                                          onChange={handleHotelChange}
-                                        />
-                                      </Form.Group>
-                                    </Col>
+                  <Col md={2}>
+                    <Form.Group>
+                      <Form.Label>Standard</Form.Label>
+                      <Form.Control
+                        type="text"
+                        name="hotel_standard"
+                        value={hotelItem.hotel_standard}
+                        onChange={handleHotelChange}
+                      />
+                    </Form.Group>
+                  </Col>
+                  <Col md={2}>
+                    <Form.Group>
+                      <Form.Label>Deluxe</Form.Label>
+                      <Form.Control
+                        type="text"
+                        name="hotel_deluxe"
+                        value={hotelItem.hotel_deluxe}
+                        onChange={handleHotelChange}
+                      />
+                    </Form.Group>
+                  </Col>
+                  <Col md={2}>
+                    <Form.Group>
+                      <Form.Label>Executive</Form.Label>
+                      <Form.Control
+                        type="text"
+                        name="hotel_executive"
+                        value={hotelItem.hotel_executive}
+                        onChange={handleHotelChange}
+                      />
+                    </Form.Group>
+                  </Col>
 
                   <Col md={3}>
                     <Form.Group>
@@ -2296,10 +2602,10 @@ const AddLadiesTour = () => {
                         <th>Hotel</th>
                         <th>Room</th>
                         <th>Nights</th>
-                          <th>Standard</th>
-                              <th>Deluxe</th>
-                                 <th>Executive</th>
-                        <th></th>
+                        <th>Standard</th>
+                        <th>Deluxe</th>
+                        <th>Executive</th>
+                        <th>Action</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -2310,11 +2616,28 @@ const AddLadiesTour = () => {
                           <td>{h.hotel_name}</td>
                           <td>{h.room_type}</td>
                           <td>{h.nights}</td>
-                           <td>{h.hotel_standard}</td>
-                            <td>{h.hotel_deluxe}</td>
-                             <td>{h.hotel_executive}</td>
+                          <td>{h.hotel_standard}</td>
+                          <td>{h.hotel_deluxe}</td>
+                          <td>{h.hotel_executive}</td>
                           <td>
-                            <Button variant="link" size="sm" onClick={() => removeHotelRow(idx)}>remove</Button>
+                            <div className="d-flex gap-1">
+                              <Button
+                                variant="outline-warning"
+                                size="sm"
+                                onClick={() => editHotelRow(idx)}
+                                title="Edit"
+                              >
+                                <Pencil size={14} />
+                              </Button>
+                              <Button
+                                variant="outline-danger"
+                                size="sm"
+                                onClick={() => removeHotelRow(idx)}
+                                title="Remove"
+                              >
+                                <Trash size={14} />
+                              </Button>
+                            </div>
                           </td>
                         </tr>
                       ))}
@@ -2367,7 +2690,7 @@ const AddLadiesTour = () => {
                         <th>#</th>
                         <th>Item</th>
                         <th>Amount Details</th>
-                        <th></th>
+                        <th>Action</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -2377,13 +2700,24 @@ const AddLadiesTour = () => {
                           <td>{p.item}</td>
                           <td>{p.amount_details}</td>
                           <td>
-                            <Button
-                              variant="link"
-                              size="sm"
-                              onClick={() => removePoi(idx)}
-                            >
-                              remove
-                            </Button>
+                            <div className="d-flex gap-1">
+                              <Button
+                                variant="outline-warning"
+                                size="sm"
+                                onClick={() => editPoi(idx)}
+                                title="Edit"
+                              >
+                                <Pencil size={14} />
+                              </Button>
+                              <Button
+                                variant="outline-danger"
+                                size="sm"
+                                onClick={() => removePoi(idx)}
+                                title="Remove"
+                              >
+                                <Trash size={14} />
+                              </Button>
+                            </div>
                           </td>
                         </tr>
                       ))}
@@ -2440,7 +2774,7 @@ const AddLadiesTour = () => {
                         <th>#</th>
                         <th>Cancellation Policy</th>
                         <th>Charges</th>
-                        <th></th>
+                        <th>Action</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -2450,13 +2784,24 @@ const AddLadiesTour = () => {
                           <td>{c.cancellation_policy}</td>
                           <td>{c.charges || "-"}</td>
                           <td>
-                            <Button
-                              variant="link"
-                              size="sm"
-                              onClick={() => removeCancelRow(idx)}
-                            >
-                              remove
-                            </Button>
+                            <div className="d-flex gap-1">
+                              <Button
+                                variant="outline-warning"
+                                size="sm"
+                                onClick={() => editCancelRow(idx)}
+                                title="Edit"
+                              >
+                                <Pencil size={14} />
+                              </Button>
+                              <Button
+                                variant="outline-danger"
+                                size="sm"
+                                onClick={() => removeCancelRow(idx)}
+                                title="Remove"
+                              >
+                                <Trash size={14} />
+                              </Button>
+                            </div>
                           </td>
                         </tr>
                       ))}
@@ -2483,7 +2828,7 @@ const AddLadiesTour = () => {
                       <tr>
                         <th>#</th>
                         <th>Instruction</th>
-                        <th></th>
+                        <th>Action</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -2492,7 +2837,24 @@ const AddLadiesTour = () => {
                           <td>{idx + 1}</td>
                           <td>{item}</td>
                           <td>
-                            <Button variant="link" size="sm" onClick={() => removeInstruction(idx)}>remove</Button>
+                            <div className="d-flex gap-1">
+                              <Button
+                                variant="outline-warning"
+                                size="sm"
+                                onClick={() => editInstruction(idx)}
+                                title="Edit"
+                              >
+                                <Pencil size={14} />
+                              </Button>
+                              <Button
+                                variant="outline-danger"
+                                size="sm"
+                                onClick={() => removeInstruction(idx)}
+                                title="Remove"
+                              >
+                                <Trash size={14} />
+                              </Button>
+                            </div>
                           </td>
                         </tr>
                       ))}
@@ -2569,7 +2931,7 @@ const AddLadiesTour = () => {
                 onClick={handleSaveClick}
                 disabled={loading}
               >
-                {isLastTab ? (loading ? 'Saving...' : 'Save All') : 'Save & Continue'}
+                {loading ? 'Saving...' : isLastTab ? (isEditMode ? 'Update All' : 'Save All') : 'Save & Continue'}
               </Button>
             </div>
           </Card.Body>

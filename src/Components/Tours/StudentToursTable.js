@@ -1,16 +1,19 @@
 // StudentTours.js
 import React, { useState, useEffect } from 'react';
-import { Container, Card, Alert, Spinner } from 'react-bootstrap';
+import { Container, Card, Alert, Spinner, Modal, Button } from 'react-bootstrap';
 import Navbar from '../../Shared/Navbar/Navbar';
 import { baseurl } from '../../Api/Baseurl';
 import ReusableTable from '../../Shared/TableLayout/DataTable';
 import { useNavigate } from 'react-router-dom';
-import { Eye } from 'react-bootstrap-icons';
+import { Eye, Pencil, Trash } from 'react-bootstrap-icons';
 
 const StudentTours = () => {
   const [tours, setTours] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [tourToDelete, setTourToDelete] = useState(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
   const navigate = useNavigate();
 
   // Fetch Tours - Filter for Student tours
@@ -47,6 +50,59 @@ const StudentTours = () => {
 
   const handleViewTour = (tourId) => {
     navigate(`/student-tour-details/${tourId}`);
+  };
+
+  // Handle edit tour
+  const handleEditTour = (tourId) => {
+    // Navigate to edit page with tour ID
+    navigate(`/edit-student-tour/${tourId}`);
+  };
+
+  // Handle delete tour - show confirmation modal
+  const handleDeleteClick = (tour) => {
+    setTourToDelete(tour);
+    setShowDeleteModal(true);
+  };
+
+  // Confirm and delete tour
+  const handleConfirmDelete = async () => {
+    if (!tourToDelete) return;
+
+    try {
+      setDeleteLoading(true);
+      const response = await fetch(`${baseurl}/api/tours/bulk/${tourToDelete.tour_id}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        // Remove the tour from state
+        setTours(prevTours => prevTours.filter(tour => tour.tour_id !== tourToDelete.tour_id));
+        
+        // Show success message
+        setError('Student tour deleted successfully!');
+        
+        // Close modal
+        setShowDeleteModal(false);
+        setTourToDelete(null);
+        
+        // Clear success message after 3 seconds
+        setTimeout(() => setError(''), 3000);
+      } else {
+        const result = await response.json();
+        setError(result.message || 'Failed to delete student tour');
+      }
+    } catch (err) {
+      console.error('Error deleting student tour:', err);
+      setError('Error deleting student tour. Please try again.');
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
+
+  // Cancel delete
+  const handleCancelDelete = () => {
+    setShowDeleteModal(false);
+    setTourToDelete(null);
   };
 
   // Columns (same structure)
@@ -106,7 +162,7 @@ const StudentTours = () => {
       key: 'actions',
       title: 'Actions',
       render: (item) => (
-        <div className="d-flex gap-2">
+        <div className="d-flex gap-2 justify-content-center">
           <button
             className="btn btn-outline-primary btn-sm"
             onClick={() => handleViewTour(item.tour_id)}
@@ -114,9 +170,23 @@ const StudentTours = () => {
           >
             <Eye size={16} />
           </button>
+          <button
+            className="btn btn-outline-warning btn-sm"
+            onClick={() => handleEditTour(item.tour_id)}
+            title="Edit Tour"
+          >
+            <Pencil size={16} />
+          </button>
+          <button
+            className="btn btn-outline-danger btn-sm"
+            onClick={() => handleDeleteClick(item)}
+            title="Delete Tour"
+          >
+            <Trash size={16} />
+          </button>
         </div>
       ),
-      style: { textAlign: 'center' }
+      style: { textAlign: 'center', minWidth: '140px' }
     }
   ];
 
@@ -140,13 +210,13 @@ const StudentTours = () => {
               className="btn btn-success"
               onClick={() => navigate('/add-student-tour')}
             >
-              + Add Tour
+              + Add Student Tour
             </button>
           </div>
         </div>
 
         {error && (
-          <Alert variant="danger" className="mb-4">
+          <Alert variant={error.includes('successfully') ? 'success' : 'danger'} className="mb-4">
             {error}
           </Alert>
         )}
@@ -156,7 +226,7 @@ const StudentTours = () => {
             {loading ? (
               <div className="text-center py-5">
                 <Spinner animation="border" role="status" className="me-2" />
-                Loading tours...
+                Loading student tours...
               </div>
             ) : (
               <ReusableTable
@@ -164,7 +234,7 @@ const StudentTours = () => {
                 data={tableData}
                 columns={columns}
                 initialEntriesPerPage={5}
-                searchPlaceholder="Search tours..."
+                searchPlaceholder="Search student tours..."
                 showSearch={true}
                 showEntriesSelector={true}
                 showPagination={true}
@@ -172,6 +242,40 @@ const StudentTours = () => {
             )}
           </Card.Body>
         </Card>
+
+        {/* Delete Confirmation Modal */}
+        <Modal show={showDeleteModal} onHide={handleCancelDelete} centered>
+          <Modal.Header closeButton>
+            <Modal.Title>Confirm Delete</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <p>
+              Are you sure you want to delete the student tour "<strong>{tourToDelete?.title}</strong>" (Tour Code: {tourToDelete?.tour_code})?
+            </p>
+            <p className="text-danger">
+              <strong>Warning:</strong> This action cannot be undone.
+            </p>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={handleCancelDelete} disabled={deleteLoading}>
+              Cancel
+            </Button>
+            <Button 
+              variant="danger" 
+              onClick={handleConfirmDelete}
+              disabled={deleteLoading}
+            >
+              {deleteLoading ? (
+                <>
+                  <Spinner as="span" animation="border" size="sm" className="me-2" />
+                  Deleting...
+                </>
+              ) : (
+                'Delete'
+              )}
+            </Button>
+          </Modal.Footer>
+        </Modal>
       </Container>
     </Navbar>
   );
