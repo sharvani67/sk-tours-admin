@@ -159,26 +159,32 @@ const GroupTourDetails = () => {
 
         {/* ================= HOTELS ================= */}
         <h4>Hotels</h4>
-        <Table bordered>
-          <thead>
-            <tr>
-              <th>City</th>
-              <th>Hotel</th>
-              <th>Room</th>
-              <th>Nights</th>
-            </tr>
-          </thead>
-          <tbody>
-            {t.hotels?.map(h => (
-              <tr key={h.hotel_id}>
-                <td>{h.city}</td>
-                <td>{h.hotel_name}</td>
-                <td>{h.room_type}</td>
-                <td>{h.nights}</td>
-              </tr>
-            ))}
-          </tbody>
-        </Table>
+               <Table bordered>
+                 <thead>
+                   <tr>
+                     <th>City</th>
+                     <th>Hotel</th>
+                     <th>Standard</th>
+                     <th>Deluxe</th>
+                     <th>Executive</th>
+                     <th>Room Type</th>
+                     <th>Nights</th>
+                   </tr>
+                 </thead>
+                 <tbody>
+                   {t.hotels?.map(h => (
+                     <tr key={h.hotel_id}>
+                       <td>{h.city}</td>
+                       <td>{h.hotel_name}</td>
+                        <td>{h.hotel_standard}</td>
+                         <td>{h.hotel_deluxe}</td>
+                          <td>{h.hotel_executive}</td>
+                       <td>{h.room_type}</td>
+                       <td>{h.nights}</td>
+                     </tr>
+                   ))}
+                 </tbody>
+               </Table>
 
         <hr />
 

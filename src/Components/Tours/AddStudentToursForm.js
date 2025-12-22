@@ -2518,7 +2518,7 @@ const AddStudentTour = () => {
                     <Form.Group>
                       <Form.Label>Standard</Form.Label>
                       <Form.Control
-                        type="text"
+                        type="number"
                         name="hotel_standard"
                         value={hotelItem.hotel_standard}
                         onChange={handleHotelChange}
@@ -2529,7 +2529,7 @@ const AddStudentTour = () => {
                     <Form.Group>
                       <Form.Label>Deluxe</Form.Label>
                       <Form.Control
-                        type="text"
+                        type="number"
                         name="hotel_deluxe"
                         value={hotelItem.hotel_deluxe}
                         onChange={handleHotelChange}
@@ -2540,7 +2540,7 @@ const AddStudentTour = () => {
                     <Form.Group>
                       <Form.Label>Executive</Form.Label>
                       <Form.Control
-                        type="text"
+                        type="number"
                         name="hotel_executive"
                         value={hotelItem.hotel_executive}
                         onChange={handleHotelChange}
