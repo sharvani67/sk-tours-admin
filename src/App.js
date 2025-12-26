@@ -42,7 +42,6 @@ import AdminVideoManager from "./Components/Home/AdminVideoManager";
 import AdminDomesticTours from "./Components/Home/AdminDomesticTours";
 import AdminLeads from "./Components/Home/AdminLeads";
 import ContactUs from "./Components/ContactUs/ContactUs";
-// import EditTour from "./Components/Tours/EditTour";
 
 
 function App() {
@@ -79,36 +78,34 @@ function App() {
              <Route path="/ladies-special-tour-details/:tourId" element={<LadiesTourDetails />} />
                <Route path="/senior-citizen-tour-details/:tourId" element={<SeniorCitizenTourDetails />} />
                  <Route path="/student-tour-details/:tourId" element={<StudentTourDetails />} />
-                    <Route path="/honeymoon-tour-details/:tourId" element={<HoneymoonTourDetails />} />
-        {/* Catch-all Route */}
-
+                  <Route path="/honeymoon-tour-details/:tourId" element={<HoneymoonTourDetails />} />
        
-          <Route path="/ladies-special-tours" element={<LadiesSpecialTours />} />
-          <Route path="/add-ladies-special-tour" element={<AddLadiesSpecialTour />} />
-          <Route path="/edit-ladies-special-tour/:id" element={<AddLadiesSpecialTour />} /> 
+                <Route path="/ladies-special-tours" element={<LadiesSpecialTours />} />
+                <Route path="/add-ladies-special-tour" element={<AddLadiesSpecialTour />} />
+                <Route path="/edit-ladies-special-tour/:id" element={<AddLadiesSpecialTour />} /> 
 
-          <Route path="/senior-citizen-tours" element={<SeniorCitizenTours />} />
-          <Route path="/add-senior-citizen-tour" element={<AddSeniorCitizenTour />} />
-          <Route path="/edit-senior-citizen-tour/:id" element={<AddSeniorCitizenTour />} />
-          {/* <Route path="/senior-citizen-tour-details/:id" element={<TourDetails />} /> */}
+                <Route path="/senior-citizen-tours" element={<SeniorCitizenTours />} />
+                <Route path="/add-senior-citizen-tour" element={<AddSeniorCitizenTour />} />
+                <Route path="/edit-senior-citizen-tour/:id" element={<AddSeniorCitizenTour />} />
+                {/* <Route path="/senior-citizen-tour-details/:id" element={<TourDetails />} /> */}
 
-          <Route path="/student-tours" element={<StudentTours />} />
-          <Route path="/add-student-tour" element={<AddStudentTour />} />
-          <Route path="/edit-student-tour/:id" element={<AddStudentTour />} />
-          {/* <Route path="/student-tour-details/:id" element={<TourDetails />} /> */}
+                <Route path="/student-tours" element={<StudentTours />} />
+                <Route path="/add-student-tour" element={<AddStudentTour />} />
+                <Route path="/edit-student-tour/:id" element={<AddStudentTour />} />
+                {/* <Route path="/student-tour-details/:id" element={<TourDetails />} /> */}
 
-          <Route path="/honeymoon-tours" element={<HoneymoonTours />} />
-          <Route path="/add-honeymoon-tour" element={<AddHoneymoonTour />} />
-          <Route path="/edit-honeymoon-tour/:id" element={<AddHoneymoonTour />} />
-          {/* <Route path="/honeymoon-tour-details/:id" element={<TourDetails />} /> */}
-          
-          <Route path="/add-video" element={<AdminVideoManager />} /> 
-          <Route path="/add-card" element={<AdminDomesticTours />} />
-          <Route path="/leadspopup" element={<AdminLeads />} />
+                <Route path="/honeymoon-tours" element={<HoneymoonTours />} />
+                <Route path="/add-honeymoon-tour" element={<AddHoneymoonTour />} />
+                <Route path="/edit-honeymoon-tour/:id" element={<AddHoneymoonTour />} />
+                {/* <Route path="/honeymoon-tour-details/:id" element={<TourDetails />} /> */}
+                
+                <Route path="/add-video" element={<AdminVideoManager />} /> 
+                <Route path="/add-card" element={<AdminDomesticTours />} />
+                <Route path="/leadspopup" element={<AdminLeads />} />
 
 
-           <Route path="/contact-us" element={<ContactUs />} />
-        
+                <Route path="/contact-us" element={<ContactUs />} />
+              
 
       </Routes>
     </BrowserRouter>
