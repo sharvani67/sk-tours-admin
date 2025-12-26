@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import "./Login.css"
 import 'bootstrap/dist/css/bootstrap.min.css';
-import skLogo from "../Images/sktourslogo.png"
+import skLogo from "../Images/png[3].png"
 import { useNavigate } from 'react-router-dom';
 
 const SignInForm = () => {

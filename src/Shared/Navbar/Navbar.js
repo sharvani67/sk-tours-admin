@@ -302,7 +302,7 @@ const Navbar = ({ children }) => {
                     <Dropdown.Item
                       onClick={() => {
                         localStorage.removeItem("admin_user");
-                        navigate("/login");
+                        navigate("/");
                       }}
                     >
                       Logout
