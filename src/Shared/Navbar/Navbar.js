@@ -99,12 +99,12 @@ const Navbar = ({ children }) => {
     icon: <FiVideo className="sidebar-icon" />,   // tours = map routes
     // matchPaths: ["/categories-tour","/add-video"],
   },
-  {
-    label: "Add Cards",
-    path: "/add-card",
-    icon: <FaIdCard className="sidebar-icon" />,   // tours = map routes
-    // matchPaths: ["/categories-tour","/add-video"],
-  },
+  // {
+  //   label: "Add Cards",
+  //   path: "/add-card",
+  //   icon: <FaIdCard className="sidebar-icon" />,   // tours = map routes
+  //   // matchPaths: ["/categories-tour","/add-video"],
+  // },
   {
     label: "PopUp Leads",
     path: "/leadspopup",
