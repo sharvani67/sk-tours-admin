@@ -1131,7 +1131,7 @@ const AddTour = () => {
         duration_days: Number(formData.duration_days) || 0,
         overview: formData.overview || '',
         base_price_adult: Number(formData.base_price_adult) || 0,
-        emi_price: Number(formData.emi_price) || 0, // ← Add this line
+        emi_price: formData.emi_price ? Number(formData.emi_price) : null, // ← Allow null
         is_international: Number(formData.is_international) || 0,
         cost_remarks: formData.cost_remarks || '',
         hotel_remarks: formData.hotel_remarks || '',

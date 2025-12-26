@@ -59,6 +59,7 @@ const AddLadiesTour = () => {
     duration_days: '',
     overview: '',
     base_price_adult: '',
+    emi_price: '', // ← Add this line
     is_international: 0,
     cost_remarks: "",
     hotel_remarks: "",
@@ -466,6 +467,7 @@ const AddLadiesTour = () => {
           duration_days: basic.duration_days || '',
           overview: basic.overview || '',
           base_price_adult: basic.base_price_adult || '',
+          emi_price: basic.emi_price || '', // ← Add this line
           is_international: basic.is_international || 0,
           cost_remarks: basic.cost_remarks || '',
           hotel_remarks: basic.hotel_remarks || '',
@@ -617,6 +619,7 @@ const AddLadiesTour = () => {
     const numericFields = [
       'duration_days',
       'base_price_adult',
+      'emi_price', // ← Add this line
       'category_id',
       'primary_destination_id',
       'is_international'
@@ -962,6 +965,7 @@ const AddLadiesTour = () => {
         duration_days: Number(formData.duration_days) || 0,
         overview: formData.overview || '',
         base_price_adult: Number(formData.base_price_adult) || 0,
+        emi_price: Number(formData.emi_price) || 0, // ← Add this line
         is_international: Number(formData.is_international) || 0,
         cost_remarks: formData.cost_remarks || '',
         hotel_remarks: formData.hotel_remarks || '',
@@ -1451,9 +1455,9 @@ const AddLadiesTour = () => {
                           backgroundColor: isEditMode ? "#f8f9fa" : "white"
                         }}
                       />
-                      <Form.Text className="text-muted">
+                      {/* <Form.Text className="text-muted">
                         {isEditMode ? "Tour code cannot be changed" : "Auto-generated tour code"}
-                      </Form.Text>
+                      </Form.Text> */}
                     </Form.Group>
 
                     <Form.Group className="mb-3">
@@ -1517,6 +1521,20 @@ const AddLadiesTour = () => {
                         value={formData.base_price_adult}
                         onChange={handleBasicChange}
                       />
+                    </Form.Group>
+
+                     <Form.Group className="mb-3">
+                      <Form.Label>EMI Price</Form.Label>
+                      <Form.Control
+                        type="number"
+                        name="emi_price"
+                        value={formData.emi_price}
+                        onChange={handleBasicChange}
+                        placeholder="Optional EMI price"
+                      />
+                      <Form.Text className="text-muted">
+                        This is the price used for EMI calculations (if different from tour price)
+                      </Form.Text>
                     </Form.Group>
                   </Col>
                 </Row>
