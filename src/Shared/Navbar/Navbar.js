@@ -215,6 +215,13 @@ const Navbar = ({ children }) => {
     icon: <FiMapPin className="sidebar-icon" />,
     matchPaths: ["/visa-appointments"],
   },
+
+    {
+    label: "Contact Us",
+    path: "/contact-us",
+    icon: <FiUsers className="sidebar-icon" />, // You might want to use a more appropriate icon like FiMail
+    matchPaths: ["/contact-us"],
+  },
   
 ];
   const handleNavClick = (label, path) => {
