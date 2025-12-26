@@ -41,6 +41,7 @@ import HoneymoonTourDetails from "./Components/Tours/HoneyMoonTour";
 import AdminVideoManager from "./Components/Home/AdminVideoManager";
 import AdminDomesticTours from "./Components/Home/AdminDomesticTours";
 import AdminLeads from "./Components/Home/AdminLeads";
+import ContactUs from "./Components/ContactUs/ContactUs";
 // import EditTour from "./Components/Tours/EditTour";
 
 
@@ -104,6 +105,9 @@ function App() {
           <Route path="/add-video" element={<AdminVideoManager />} /> 
           <Route path="/add-card" element={<AdminDomesticTours />} />
           <Route path="/leadspopup" element={<AdminLeads />} />
+
+
+           <Route path="/contact-us" element={<ContactUs />} />
         
 
       </Routes>
