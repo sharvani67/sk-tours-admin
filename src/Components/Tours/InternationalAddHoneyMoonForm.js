@@ -17,7 +17,7 @@ import Navbar from '../../Shared/Navbar/Navbar';
 import { baseurl } from '../../Api/Baseurl';
 import { Pencil, Trash } from 'react-bootstrap-icons';
 
-const AddLadiesTour = () => {
+const AddHoneyMoonTour = () => {
   const navigate = useNavigate();
   const { id } = useParams(); // Get tour ID from URL for edit mode
   const isEditMode = !!id;
@@ -52,7 +52,7 @@ const AddLadiesTour = () => {
   // BASIC DETAILS
   const [formData, setFormData] = useState({
     tour_code: '',
-    tour_type: "ladiesspecial",
+    tour_type: "honeymoon",
     title: '',
     category_id: 1,
     primary_destination_id: '',
@@ -60,7 +60,7 @@ const AddLadiesTour = () => {
     overview: '',
     base_price_adult: '',
     emi_price: '', // ← Add this line
-    is_international: 0,
+     is_international: 1, 
     cost_remarks: "",
     hotel_remarks: "",
     transport_remarks: "",
@@ -69,39 +69,16 @@ const AddLadiesTour = () => {
     emi_remarks: ""
   });
 
-  // =======================
-  // DEPARTURES FOR LADIES SPECIAL TOURS - SIMILAR TO GROUP TOURS
-  // =======================
-  const [ladiesDepartureForm, setLadiesDepartureForm] = useState({
-    start_date: '',
-    end_date: '',
-    status: 'Available',
-    total_seats: 40,
-    booked_seats: 0,
+  // DEPARTURES (multiple)
+  const [departureForm, setDepartureForm] = useState({
+    departure_date: '',
+    return_date: '',
+    adult_price: '',
+    child_price: '',
+    infant_price: '',
     description: '',
-    // 3-Star Hotel Prices
-    three_star_twin: '',
-    three_star_triple: '',
-    three_star_child_with_bed: '',
-    three_star_child_without_bed: '',
-    three_star_infant: '',
-    three_star_single: '',
-    // 4-Star Hotel Prices
-    four_star_twin: '',
-    four_star_triple: '',
-    four_star_child_with_bed: '',
-    four_star_child_without_bed: '',
-    four_star_infant: '',
-    four_star_single: '',
-    // 5-Star Hotel Prices
-    five_star_twin: '',
-    five_star_triple: '',
-    five_star_child_with_bed: '',
-    five_star_child_without_bed: '',
-    five_star_infant: '',
-    five_star_single: ''
+    total_seats: ''
   });
-
   const [departures, setDepartures] = useState([]);
 
   // EXCLUSIONS
@@ -116,6 +93,49 @@ const AddLadiesTour = () => {
   const [imageFiles, setImageFiles] = useState([]);
   const [imagePreviews, setImagePreviews] = useState([]);
   const [imageCaption, setImageCaption] = useState('');
+
+  // =======================
+  // TOUR COST
+  // =======================
+  const [tourCostItem, setTourCostItem] = useState({
+    pax: '',
+    standard_hotel: '',
+    deluxe_hotel: '',
+    executive_hotel: '',
+    child_with_bed: '',
+    child_no_bed: '',
+    remarks: ''
+  });
+  const [tourCosts, setTourCosts] = useState([]);
+
+  const handleCostChange = (e) => {
+    const { name, value } = e.target;
+    setTourCostItem(prev => ({ ...prev, [name]: value }));
+  };
+
+  const addCostRow = () => {
+    if (!tourCostItem.pax) return;
+    setTourCosts(prev => [...prev, { ...tourCostItem }]);
+    setTourCostItem({
+      pax: '',
+      standard_hotel: '',
+      deluxe_hotel: '',
+      executive_hotel: '',
+      child_with_bed: '',
+      child_no_bed: '',
+      remarks: ''
+    });
+  };
+
+  const editCostRow = (idx) => {
+    const item = tourCosts[idx];
+    setTourCostItem(item);
+    setTourCosts(prev => prev.filter((_, i) => i !== idx));
+  };
+
+  const removeCostRow = (idx) => {
+    setTourCosts(prev => prev.filter((_, i) => i !== idx));
+  };
 
   // =======================
   // OPTIONAL TOURS
@@ -160,11 +180,8 @@ const AddLadiesTour = () => {
   };
 
   const removeOptionalTourRow = (idx) => {
-  const confirmDelete = window.confirm('Are you sure you want to remove this optional tour?');
-  if (confirmDelete) {
     setOptionalTours(prev => prev.filter((_, i) => i !== idx));
-  }
-};
+  };
 
   // =======================
   // EMI OPTIONS
@@ -232,29 +249,24 @@ const AddLadiesTour = () => {
     setHotelRows(prev => prev.filter((_, i) => i !== idx));
   };
 
- const removeHotelRow = (idx) => {
-  const confirmDelete = window.confirm('Are you sure you want to remove this hotel?');
-  if (confirmDelete) {
+  const removeHotelRow = (idx) => {
     setHotelRows(prev => prev.filter((_, i) => i !== idx));
-  }
-};
+  };
+
   // =======================
-  // TRANSPORT FOR LADIES SPECIAL TOURS
+  // TRANSPORT
   // =======================
   const [transportItem, setTransportItem] = useState({
-    description: '',
-    airline: '',
-    flight_no: '',
+    mode: '',
     from_city: '',
-    from_date: '',
-    from_time: '',
     to_city: '',
-    to_date: '',
-    to_time: '',
-    via: '',
-    sort_order: 1
+    carrier: '',
+    number_code: '',
+    departure_datetime: '',
+    arrival_datetime: '',
+    description: '',
+    remarks: ''
   });
-
   const [transports, setTransports] = useState([]);
 
   const handleTransportChange = (e) => {
@@ -263,24 +275,18 @@ const AddLadiesTour = () => {
   };
 
   const addTransportRow = () => {
-    if (!transportItem.airline || !transportItem.flight_no || !transportItem.from_city || !transportItem.to_city) {
-      return;
-    }
-
-    setTransports(prev => [...prev, { ...transportItem, sort_order: prev.length + 1 }]);
-
+    if (!transportItem.description.trim()) return;
+    setTransports(prev => [...prev, { ...transportItem }]);
     setTransportItem({
-      description: '',
-      airline: '',
-      flight_no: '',
+      mode: '',
       from_city: '',
-      from_date: '',
-      from_time: '',
       to_city: '',
-      to_date: '',
-      to_time: '',
-      via: '',
-      sort_order: transports.length + 2
+      carrier: '',
+      number_code: '',
+      departure_datetime: '',
+      arrival_datetime: '',
+      description: '',
+      remarks: ''
     });
   };
 
@@ -290,12 +296,9 @@ const AddLadiesTour = () => {
     setTransports(prev => prev.filter((_, i) => i !== idx));
   };
 
- const removeTransportRow = (idx) => {
-  const confirmDelete = window.confirm('Are you sure you want to remove this transport?');
-  if (confirmDelete) {
+  const removeTransportRow = (idx) => {
     setTransports(prev => prev.filter((_, i) => i !== idx));
-  }
-};
+  };
 
   // =======================
   // BOOKING POI
@@ -309,7 +312,7 @@ const AddLadiesTour = () => {
     if (!txt) return;
     setBookingPois([
       ...bookingPois,
-      { item: poiText, amount_details: poiAmount, sort_order: bookingPois.length + 1 }
+      { item: poiText, amount_details: poiAmount }
     ]);
     setPoiText('');
     setPoiAmount("");
@@ -322,20 +325,16 @@ const AddLadiesTour = () => {
     setBookingPois(prev => prev.filter((_, i) => i !== idx));
   };
 
- const removePoi = (idx) => {
-  const confirmDelete = window.confirm('Are you sure you want to remove this booking POI?');
-  if (confirmDelete) {
+  const removePoi = (idx) => {
     setBookingPois(prev => prev.filter((_, i) => i !== idx));
-  }
-};
+  };
 
   // =======================
   // CANCELLATION
   // =======================
   const [cancelItem, setCancelItem] = useState({
     cancellation_policy: "",
-    charges: "",
-    sort_order: 1
+    charges: ""
   });
 
   const [cancelPolicies, setCancelPolicies] = useState([]);
@@ -347,8 +346,8 @@ const AddLadiesTour = () => {
 
   const addCancelRow = () => {
     if (!cancelItem.cancellation_policy.trim()) return;
-    setCancelPolicies(prev => [...prev, { ...cancelItem, sort_order: prev.length + 1 }]);
-    setCancelItem({ cancellation_policy: "", charges: "", sort_order: cancelPolicies.length + 2 });
+    setCancelPolicies(prev => [...prev, { ...cancelItem }]);
+    setCancelItem({ cancellation_policy: "", charges: "" });
   };
 
   const editCancelRow = (idx) => {
@@ -357,12 +356,9 @@ const AddLadiesTour = () => {
     setCancelPolicies(prev => prev.filter((_, i) => i !== idx));
   };
 
-const removeCancelRow = (idx) => {
-  const confirmDelete = window.confirm('Are you sure you want to remove this cancellation policy?');
-  if (confirmDelete) {
+  const removeCancelRow = (idx) => {
     setCancelPolicies(prev => prev.filter((_, i) => i !== idx));
-  }
-};
+  };
 
   // =======================
   // INSTRUCTIONS
@@ -383,12 +379,9 @@ const removeCancelRow = (idx) => {
     setInstructions(prev => prev.filter((_, i) => i !== idx));
   };
 
- const removeInstruction = (idx) => {
-  const confirmDelete = window.confirm('Are you sure you want to remove this instruction?');
-  if (confirmDelete) {
+  const removeInstruction = (idx) => {
     setInstructions(prev => prev.filter((_, i) => i !== idx));
-  }
-};
+  };
 
   // ITINERARIES
   const [itineraryItem, setItineraryItem] = useState({
@@ -403,7 +396,7 @@ const removeCancelRow = (idx) => {
   });
   const [itineraries, setItineraries] = useState([]);
 
-  // Edit function for itineraries
+  // Edit functions for itineraries
   const editItinerary = (idx) => {
     const item = itineraries[idx];
     
@@ -422,43 +415,54 @@ const removeCancelRow = (idx) => {
       meals: meals
     });
     
+    // Remove from list so user can re-add with changes
     setItineraries(prev => prev.filter((_, i) => i !== idx));
   };
 
-  // Fetch dropdowns and tour data
+  // Fetch tour data for edit mode
   useEffect(() => {
-    const loadDropdownsAndTourCode = async () => {
-      try {
-        // Load dropdowns
-        const catRes = await fetch(`${baseurl}/api/categories/all-tours`);
-        const categoryData = await catRes.json();
-        setCategories(Array.isArray(categoryData) ? categoryData : []);
+  const loadDropdownsAndTourCode = async () => {
+    try {
+      // Load dropdowns
+      const catRes = await fetch(`${baseurl}/api/categories/all-tours`);
+      const categoryData = await catRes.json();
+      setCategories(Array.isArray(categoryData) ? categoryData : []);
 
-        const destRes = await fetch(`${baseurl}/api/destinations`);
-        const destData = await destRes.json();
-        setDestinations(Array.isArray(destData) ? destData : []);
+      const destRes = await fetch(`${baseurl}/api/destinations`);
+      const destData = await destRes.json();
+      setDestinations(Array.isArray(destData) ? destData : []);
 
-        if (isEditMode) {
-          // Load existing tour data for edit
-          await loadTourData();
-        } else {
-          // Load next tour code for add mode
-          const tourCodeRes = await fetch(`${baseurl}/api/tours/next-tour-code?tour_type=ladies`);
-          if (tourCodeRes.ok) {
-            const tourCodeData = await tourCodeRes.json();
-            setFormData(prev => ({
-              ...prev,
-              tour_code: tourCodeData.next_tour_code
-            }));
-          }
+      if (isEditMode) {
+        // Load existing tour data for edit
+        await loadTourData();
+      } else {
+        // Set is_international to 1 for honeymoon tours (assuming they're international)
+        setFormData(prev => ({
+          ...prev,
+          is_international: 1
+        }));
+        
+        // Fetch tour code with both tour_type and is_international parameters
+        const tourCodeRes = await fetch(
+          `${baseurl}/api/tours/next-tour-code?tour_type=honeymoon&is_international=1`
+        );
+        
+        if (tourCodeRes.ok) {
+          const tourCodeData = await tourCodeRes.json();
+          setFormData(prev => ({
+            ...prev,
+            tour_code: tourCodeData.next_tour_code,
+            is_international: 1
+          }));
         }
-      } catch (err) {
-        setError('Failed to load dropdown data');
       }
-    };
+    } catch (err) {
+      setError('Failed to load dropdown data');
+    }
+  };
 
-    loadDropdownsAndTourCode();
-  }, [id]);
+  loadDropdownsAndTourCode();
+}, [id]);
 
   // Load tour data for editing
   const loadTourData = async () => {
@@ -466,8 +470,8 @@ const removeCancelRow = (idx) => {
       setLoading(true);
       setError('');
       
-      // Fetch full tour data
-      const response = await fetch(`${baseurl}/api/tours/tour/full/ladiesspecial/${id}`);
+      // Fetch full tour data for honeymoon
+      const response = await fetch(`${baseurl}/api/tours/tour/full/honeymoon/${id}`);
       if (!response.ok) throw new Error('Failed to fetch tour data');
       
       const data = await response.json();
@@ -477,14 +481,14 @@ const removeCancelRow = (idx) => {
         const basic = data.basic_details;
         setFormData({
           tour_code: basic.tour_code || '',
-          tour_type: basic.tour_type || 'ladiesspecial',
+          tour_type: basic.tour_type || 'honeymoon',
           title: basic.title || '',
           category_id: basic.category_id || 1,
           primary_destination_id: basic.primary_destination_id || '',
           duration_days: basic.duration_days || '',
           overview: basic.overview || '',
           base_price_adult: basic.base_price_adult || '',
-          emi_price: basic.emi_price || '', // ← Add this line
+          emi_price: '', // ← Add this line
           is_international: basic.is_international || 0,
           cost_remarks: basic.cost_remarks || '',
           hotel_remarks: basic.hotel_remarks || '',
@@ -505,36 +509,16 @@ const removeCancelRow = (idx) => {
           setItineraries(formattedItineraries);
         }
 
-        // Set departures - Ladies special tours have similar structure to group tours
+        // Set departures
         if (data.departures && Array.isArray(data.departures)) {
           const formattedDepartures = data.departures.map(dept => ({
-            start_date: dept.start_date ? dept.start_date.split('T')[0] : '',
-            end_date: dept.end_date ? dept.end_date.split('T')[0] : '',
-            status: dept.status || 'Available',
-            total_seats: dept.total_seats || 40,
-            booked_seats: dept.booked_seats || 0,
+            departure_date: dept.departure_date || '',
+            return_date: dept.return_date || '',
+            adult_price: dept.adult_price || '',
+            child_price: dept.child_price || '',
+            infant_price: dept.infant_price || '',
             description: dept.description || '',
-            // 3-Star Hotel Prices
-            three_star_twin: dept.three_star_twin || '',
-            three_star_triple: dept.three_star_triple || '',
-            three_star_child_with_bed: dept.three_star_child_with_bed || '',
-            three_star_child_without_bed: dept.three_star_child_without_bed || '',
-            three_star_infant: dept.three_star_infant || '',
-            three_star_single: dept.three_star_single || '',
-            // 4-Star Hotel Prices
-            four_star_twin: dept.four_star_twin || '',
-            four_star_triple: dept.four_star_triple || '',
-            four_star_child_with_bed: dept.four_star_child_with_bed || '',
-            four_star_child_without_bed: dept.four_star_child_without_bed || '',
-            four_star_infant: dept.four_star_infant || '',
-            four_star_single: dept.four_star_single || '',
-            // 5-Star Hotel Prices
-            five_star_twin: dept.five_star_twin || '',
-            five_star_triple: dept.five_star_triple || '',
-            five_star_child_with_bed: dept.five_star_child_with_bed || '',
-            five_star_child_without_bed: dept.five_star_child_without_bed || '',
-            five_star_infant: dept.five_star_infant || '',
-            five_star_single: dept.five_star_single || ''
+            total_seats: dept.total_seats || ''
           }));
           setDepartures(formattedDepartures);
         }
@@ -549,6 +533,11 @@ const removeCancelRow = (idx) => {
         if (data.exclusions && Array.isArray(data.exclusions)) {
           const exclusionItems = data.exclusions.map(exc => exc.item);
           setExclusions(exclusionItems);
+        }
+
+        // Set tour costs
+        if (data.costs && Array.isArray(data.costs)) {
+          setTourCosts(data.costs);
         }
 
         // Set optional tours
@@ -652,20 +641,12 @@ const removeCancelRow = (idx) => {
     }));
   };
 
-  // DEPARTURE FORM CHANGE - Ladies Special (SIMILAR TO GROUP)
-  const handleLadiesDepartureChange = (e) => {
+  // DEPARTURE FORM CHANGE
+  const handleDepartureChange = (e) => {
     const { name, value } = e.target;
-    const numericFields = [
-      'total_seats', 'booked_seats',
-      'three_star_twin', 'three_star_triple', 'three_star_child_with_bed',
-      'three_star_child_without_bed', 'three_star_infant', 'three_star_single',
-      'four_star_twin', 'four_star_triple', 'four_star_child_with_bed',
-      'four_star_child_without_bed', 'four_star_infant', 'four_star_single',
-      'five_star_twin', 'five_star_triple', 'five_star_child_with_bed',
-      'five_star_child_without_bed', 'five_star_infant', 'five_star_single'
-    ];
+    const numericFields = ['adult_price', 'child_price', 'total_seats', 'infant_price'];
 
-    setLadiesDepartureForm((prev) => ({
+    setDepartureForm((prev) => ({
       ...prev,
       [name]: numericFields.includes(name)
         ? value === '' ? '' : Number(value)
@@ -674,77 +655,32 @@ const removeCancelRow = (idx) => {
   };
 
   const handleAddDeparture = () => {
-    if (!ladiesDepartureForm.start_date || !ladiesDepartureForm.end_date) return;
+    if (!departureForm.description.trim()) return;
+    setDepartures((prev) => [
+      ...prev,
+      { ...departureForm }
+    ]);
 
-    const departureData = {
-      ...ladiesDepartureForm,
-      // Ensure all price fields are numbers or null
-      three_star_twin: ladiesDepartureForm.three_star_twin || null,
-      three_star_triple: ladiesDepartureForm.three_star_triple || null,
-      three_star_child_with_bed: ladiesDepartureForm.three_star_child_with_bed || null,
-      three_star_child_without_bed: ladiesDepartureForm.three_star_child_without_bed || null,
-      three_star_infant: ladiesDepartureForm.three_star_infant || null,
-      three_star_single: ladiesDepartureForm.three_star_single || null,
-      four_star_twin: ladiesDepartureForm.four_star_twin || null,
-      four_star_triple: ladiesDepartureForm.four_star_triple || null,
-      four_star_child_with_bed: ladiesDepartureForm.four_star_child_with_bed || null,
-      four_star_child_without_bed: ladiesDepartureForm.four_star_child_without_bed || null,
-      four_star_infant: ladiesDepartureForm.four_star_infant || null,
-      four_star_single: ladiesDepartureForm.four_star_single || null,
-      five_star_twin: ladiesDepartureForm.five_star_twin || null,
-      five_star_triple: ladiesDepartureForm.five_star_triple || null,
-      five_star_child_with_bed: ladiesDepartureForm.five_star_child_with_bed || null,
-      five_star_child_without_bed: ladiesDepartureForm.five_star_child_without_bed || null,
-      five_star_infant: ladiesDepartureForm.five_star_infant || null,
-      five_star_single: ladiesDepartureForm.five_star_single || null
-    };
-
-    setDepartures((prev) => [...prev, departureData]);
-
-    // Reset form
-    setLadiesDepartureForm({
-      start_date: '',
-      end_date: '',
-      status: 'Available',
-      total_seats: 40,
-      booked_seats: 0,
+    setDepartureForm({
+      departure_date: '',
+      return_date: '',
+      adult_price: '',
+      child_price: '',
+      infant_price: '',
       description: '',
-      // 3-Star Hotel Prices
-      three_star_twin: '',
-      three_star_triple: '',
-      three_star_child_with_bed: '',
-      three_star_child_without_bed: '',
-      three_star_infant: '',
-      three_star_single: '',
-      // 4-Star Hotel Prices
-      four_star_twin: '',
-      four_star_triple: '',
-      four_star_child_with_bed: '',
-      four_star_child_without_bed: '',
-      four_star_infant: '',
-      four_star_single: '',
-      // 5-Star Hotel Prices
-      five_star_twin: '',
-      five_star_triple: '',
-      five_star_child_with_bed: '',
-      five_star_child_without_bed: '',
-      five_star_infant: '',
-      five_star_single: ''
+      total_seats: ''
     });
   };
 
   const editDeparture = (idx) => {
     const departure = departures[idx];
-    setLadiesDepartureForm(departure);
+    setDepartureForm(departure);
     setDepartures(prev => prev.filter((_, i) => i !== idx));
   };
 
- const handleRemoveDeparture = (idx) => {
-  const confirmDelete = window.confirm('Are you sure you want to remove this departure?');
-  if (confirmDelete) {
+  const handleRemoveDeparture = (idx) => {
     setDepartures((prev) => prev.filter((_, i) => i !== idx));
-  }
-};
+  };
 
   // EXCLUSIONS
   const handleAddExclusion = () => {
@@ -760,12 +696,9 @@ const removeCancelRow = (idx) => {
     setExclusions(prev => prev.filter((_, i) => i !== idx));
   };
 
-const handleRemoveExclusion = (idx) => {
-  const confirmDelete = window.confirm('Are you sure you want to remove this exclusion?');
-  if (confirmDelete) {
+  const handleRemoveExclusion = (idx) => {
     setExclusions((prev) => prev.filter((_, i) => i !== idx));
-  }
-};
+  };
 
   // INCLUSIONS
   const handleAddInclusion = () => {
@@ -781,12 +714,9 @@ const handleRemoveExclusion = (idx) => {
     setInclusions(prev => prev.filter((_, i) => i !== idx));
   };
 
- const handleRemoveInclusion = (idx) => {
-  const confirmDelete = window.confirm('Are you sure you want to remove this inclusion?');
-  if (confirmDelete) {
-    setInclusions(prev => prev.filter((_, i) => i !== idx));
-  }
-};
+  const handleRemoveInclusion = (idx) => {
+    setInclusions((prev) => prev.filter((_, i) => i !== idx));
+  };
 
   // IMAGES
   const handleImageChange = (e) => {
@@ -862,11 +792,8 @@ const handleRemoveExclusion = (idx) => {
   };
 
   const handleRemoveItinerary = (idx) => {
-  const confirmDelete = window.confirm('Are you sure you want to remove this itinerary?');
-  if (confirmDelete) {
-    setItineraries(prev => prev.filter((_, i) => i !== idx));
-  }
-};
+    setItineraries((prev) => prev.filter((_, i) => i !== idx));
+  };
 
   // NAVIGATION
   const goNext = () => {
@@ -884,7 +811,7 @@ const handleRemoveExclusion = (idx) => {
   };
 
   const handleCancel = () => {
-    navigate('/ladies-special-tours');
+    navigate('/tours');
   };
 
   const isLastTab = activeTab === TAB_LIST[TAB_LIST.length - 1];
@@ -899,8 +826,14 @@ const handleRemoveExclusion = (idx) => {
         break;
 
       case 'departures':
-        if (ladiesDepartureForm.start_date && ladiesDepartureForm.end_date) {
+        if (departureForm.description && departureForm.description.trim()) {
           handleAddDeparture();
+        }
+        break;
+
+      case 'costs':
+        if (tourCostItem.pax) {
+          addCostRow();
         }
         break;
 
@@ -928,7 +861,7 @@ const handleRemoveExclusion = (idx) => {
         break;
 
       case 'transport':
-        if (transportItem.airline && transportItem.flight_no) {
+        if (transportItem.description && transportItem.description.trim()) {
           addTransportRow();
         }
         break;
@@ -989,7 +922,7 @@ const handleRemoveExclusion = (idx) => {
       // 1) PREPARE BASIC TOUR DATA FOR UPDATE
       const tourUpdateData = {
         title: formData.title.trim(),
-        tour_type: formData.tour_type || 'ladiesspecial',
+        tour_type: formData.tour_type || 'honeymoon',
         primary_destination_id: formData.primary_destination_id,
         duration_days: Number(formData.duration_days) || 0,
         overview: formData.overview || '',
@@ -1003,8 +936,6 @@ const handleRemoveExclusion = (idx) => {
         booking_poi_remarks: formData.booking_poi_remarks || '',
         cancellation_remarks: formData.cancellation_remarks || ''
       };
-
-      console.log('Updating tour with data:', tourUpdateData);
 
       // 1) UPDATE TOUR BASIC DETAILS
       const tourRes = await fetch(`${baseurl}/api/tours/${id}`, {
@@ -1022,6 +953,7 @@ const handleRemoveExclusion = (idx) => {
       // 2) DELETE EXISTING DATA
       const deleteEndpoints = [
         `${baseurl}/api/departures/bulk/${id}`,
+        `${baseurl}/api/tour-costs/tour/${id}`,
         `${baseurl}/api/optional-tours/tour/${id}`,
         `${baseurl}/api/emi-options/tour/${id}`,
         `${baseurl}/api/tour-hotels/tour/${id}`,
@@ -1043,44 +975,21 @@ const handleRemoveExclusion = (idx) => {
       }
 
       // 3) RE-ADD ALL DATA
-      // Departures - Ladies special tours (similar to group)
+      // Departures
       if (departures.length > 0) {
-        const formattedDepartures = departures.map(dept => ({
-          tour_type: 'ladiesspecial',
-          start_date: dept.start_date,
-          end_date: dept.end_date,
-          status: dept.status,
-          total_seats: dept.total_seats || 40,
-          booked_seats: dept.booked_seats || 0,
-          description: dept.description || null,
-          adult_price: dept.three_star_twin || 0,
-          // 3-Star Hotel Prices
-          three_star_twin: dept.three_star_twin || null,
-          three_star_triple: dept.three_star_triple || null,
-          three_star_child_with_bed: dept.three_star_child_with_bed || null,
-          three_star_child_without_bed: dept.three_star_child_without_bed || null,
-          three_star_infant: dept.three_star_infant || null,
-          three_star_single: dept.three_star_single || null,
-          // 4-Star Hotel Prices
-          four_star_twin: dept.four_star_twin || null,
-          four_star_triple: dept.four_star_triple || null,
-          four_star_child_with_bed: dept.four_star_child_with_bed || null,
-          four_star_child_without_bed: dept.four_star_child_without_bed || null,
-          four_star_infant: dept.four_star_infant || null,
-          four_star_single: dept.four_star_single || null,
-          // 5-Star Hotel Prices
-          five_star_twin: dept.five_star_twin || null,
-          five_star_triple: dept.five_star_triple || null,
-          five_star_child_with_bed: dept.five_star_child_with_bed || null,
-          five_star_child_without_bed: dept.five_star_child_without_bed || null,
-          five_star_infant: dept.five_star_infant || null,
-          five_star_single: dept.five_star_single || null
-        }));
-
         await fetch(`${baseurl}/api/departures/bulk`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ tour_id: id, departures: formattedDepartures })
+          body: JSON.stringify({ tour_id: id, departures })
+        });
+      }
+
+      // Tour Costs
+      if (tourCosts.length > 0) {
+        await fetch(`${baseurl}/api/tour-costs/bulk`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tour_id: id, costs: tourCosts })
         });
       }
 
@@ -1201,7 +1110,7 @@ const handleRemoveExclusion = (idx) => {
       }
 
       setSuccess('Tour updated successfully!');
-      setTimeout(() => navigate('/ladies-special-tours'), 1500);
+      setTimeout(() => navigate('/honeymoon-tours'), 1500);
     } catch (err) {
       console.error('Error updating tour:', err);
       setError(err.message || 'Failed to update tour');
@@ -1243,94 +1152,25 @@ const handleRemoveExclusion = (idx) => {
       const tourData = await tourRes.json();
       const tourId = tourData.tour_id || tourData.id || tourData.insertId;
 
-      // 2) DEPARTURES BULK - LADIES SPECIAL TOURS
+      // 2) DEPARTURES BULK
       if (departures.length > 0) {
-        const formattedDepartures = departures.map(dept => ({
-          tour_type: 'ladiesspecial',
-          start_date: dept.start_date,
-          end_date: dept.end_date,
-          status: dept.status,
-          total_seats: dept.total_seats || 40,
-          booked_seats: dept.booked_seats || 0,
-          description: dept.description || null,
-          adult_price: dept.three_star_twin || 0,
-          // 3-Star Hotel Prices
-          three_star_twin: dept.three_star_twin || null,
-          three_star_triple: dept.three_star_triple || null,
-          three_star_child_with_bed: dept.three_star_child_with_bed || null,
-          three_star_child_without_bed: dept.three_star_child_without_bed || null,
-          three_star_infant: dept.three_star_infant || null,
-          three_star_single: dept.three_star_single || null,
-          // 4-Star Hotel Prices
-          four_star_twin: dept.four_star_twin || null,
-          four_star_triple: dept.four_star_triple || null,
-          four_star_child_with_bed: dept.four_star_child_with_bed || null,
-          four_star_child_without_bed: dept.four_star_child_without_bed || null,
-          four_star_infant: dept.four_star_infant || null,
-          four_star_single: dept.four_star_single || null,
-          // 5-Star Hotel Prices
-          five_star_twin: dept.five_star_twin || null,
-          five_star_triple: dept.five_star_triple || null,
-          five_star_child_with_bed: dept.five_star_child_with_bed || null,
-          five_star_child_without_bed: dept.five_star_child_without_bed || null,
-          five_star_infant: dept.five_star_infant || null,
-          five_star_single: dept.five_star_single || null
-        }));
-
         await fetch(`${baseurl}/api/departures/bulk`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ tour_id: tourId, departures: formattedDepartures })
+          body: JSON.stringify({ tour_id: tourId, departures })
         });
       }
 
-      // 3) EXCLUSIONS
-      if (exclusions.length > 0) {
-        await fetch(`${baseurl}/api/exclusions/bulk`, {
+      // 3) TOUR COSTS BULK
+      if (tourCosts.length > 0) {
+        await fetch(`${baseurl}/api/tour-costs/bulk`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ tour_id: tourId, items: exclusions })
+          body: JSON.stringify({ tour_id: tourId, costs: tourCosts })
         });
       }
 
-      // 4) IMAGES
-      if (imageFiles.length > 0) {
-        const formDataImages = new FormData();
-        imageFiles.forEach((file) => {
-          formDataImages.append('images', file);
-        });
-        if (imageCaption.trim()) {
-          formDataImages.append('caption', imageCaption.trim());
-        }
-        await fetch(`${baseurl}/api/images/upload/${tourId}`, {
-          method: 'POST',
-          body: formDataImages
-        });
-      }
-
-      // 5) INCLUSIONS
-      if (inclusions.length > 0) {
-        await fetch(`${baseurl}/api/inclusions/bulk`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ tour_id: tourId, items: inclusions })
-        });
-      }
-
-      // 6) ITINERARY DAYS
-      if (itineraries.length > 0) {
-        const payload = itineraries.map((item) => ({
-          ...item,
-          tour_id: tourId
-        }));
-        await fetch(`${baseurl}/api/itineraries/bulk`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-      }
-
-      // 7) OPTIONAL TOURS BULK
+      // 4) OPTIONAL TOURS BULK
       if (optionalTours.length > 0) {
         await fetch(`${baseurl}/api/optional-tours/bulk`, {
           method: 'POST',
@@ -1339,7 +1179,7 @@ const handleRemoveExclusion = (idx) => {
         });
       }
 
-      // 8) EMI OPTIONS BULK
+      // 5) EMI OPTIONS BULK
       const validEmiOptions = emiOptions.filter(opt =>
         opt.loan_amount && opt.loan_amount > 0 && opt.emi && opt.emi > 0
       );
@@ -1352,7 +1192,7 @@ const handleRemoveExclusion = (idx) => {
         });
       }
 
-      // 9) HOTELS BULK
+      // 6) HOTELS BULK
       if (hotelRows.length > 0) {
         await fetch(`${baseurl}/api/tour-hotels/bulk`, {
           method: 'POST',
@@ -1361,7 +1201,7 @@ const handleRemoveExclusion = (idx) => {
         });
       }
 
-      // 10) TRANSPORT BULK
+      // 7) TRANSPORT BULK
       if (transports.length > 0) {
         await fetch(`${baseurl}/api/tour-transports/bulk`, {
           method: 'POST',
@@ -1370,7 +1210,7 @@ const handleRemoveExclusion = (idx) => {
         });
       }
 
-      // 11) BOOKING POI BULK
+      // 8) BOOKING POI BULK
       if (bookingPois.length > 0) {
         await fetch(`${baseurl}/api/tour-booking-poi/bulk`, {
           method: 'POST',
@@ -1379,7 +1219,7 @@ const handleRemoveExclusion = (idx) => {
         });
       }
 
-      // 12) CANCELLATION BULK
+      // 9) CANCELLATION BULK
       if (cancelPolicies.length > 0) {
         await fetch(`${baseurl}/api/tour-cancellation/bulk`, {
           method: 'POST',
@@ -1388,7 +1228,7 @@ const handleRemoveExclusion = (idx) => {
         });
       }
 
-      // 13) INSTRUCTIONS BULK
+      // 10) INSTRUCTIONS BULK
       if (instructions.length > 0) {
         await fetch(`${baseurl}/api/tour-instructions/bulk`, {
           method: 'POST',
@@ -1397,8 +1237,57 @@ const handleRemoveExclusion = (idx) => {
         });
       }
 
+      // 11) EXCLUSIONS
+      if (exclusions.length > 0) {
+        await fetch(`${baseurl}/api/exclusions/bulk`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tour_id: tourId, items: exclusions })
+        });
+      }
+
+      // 12) IMAGES
+      if (imageFiles.length > 0) {
+        const formDataImages = new FormData();
+        imageFiles.forEach((file) => {
+          formDataImages.append('images', file);
+        });
+
+        if (imageCaption.trim()) {
+          formDataImages.append('caption', imageCaption.trim());
+        }
+
+        await fetch(`${baseurl}/api/images/upload/${tourId}`, {
+          method: 'POST',
+          body: formDataImages
+        });
+      }
+
+      // 13) INCLUSIONS
+      if (inclusions.length > 0) {
+        await fetch(`${baseurl}/api/inclusions/bulk`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tour_id: tourId, items: inclusions })
+        });
+      }
+
+      // 14) ITINERARY DAYS
+      if (itineraries.length > 0) {
+        const payload = itineraries.map((item) => ({
+          ...item,
+          tour_id: tourId
+        }));
+
+        await fetch(`${baseurl}/api/itineraries/bulk`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+      }
+
       setSuccess('Tour saved successfully!');
-      setTimeout(() => navigate('/ladies-special-tours'), 1500);
+      setTimeout(() => navigate('/honeymoon-tours'), 1500);
     } catch (err) {
       setError(err.message || 'Failed to save tour');
     } finally {
@@ -1420,6 +1309,27 @@ const handleRemoveExclusion = (idx) => {
     }
   };
 
+  const handleDepartureDateSelect = (e) => {
+    const departureDate = e.target.value;
+    const duration = formData.duration_days;
+
+    if (!departureDate || !duration) {
+      setDepartureForm(prev => ({ ...prev, departure_date: departureDate }));
+      return;
+    }
+
+    const dateObj = new Date(departureDate);
+    dateObj.setDate(dateObj.getDate() + Number(duration));
+
+    const returnISO = dateObj.toISOString().split("T")[0];
+
+    setDepartureForm(prev => ({
+      ...prev,
+      departure_date: departureDate,
+      return_date: returnISO
+    }));
+  };
+
   // Dynamic "+ Add ..." button for bottom bar
   const getAddConfigForTab = (tabKey) => {
     switch (tabKey) {
@@ -1427,6 +1337,8 @@ const handleRemoveExclusion = (idx) => {
         return { label: '+ Add Day', onClick: handleAddItinerary };
       case 'departures':
         return { label: '+ Add Departure', onClick: handleAddDeparture };
+      case 'costs':
+        return { label: '+ Add Cost Row', onClick: addCostRow };
       case 'optionalTours':
         return { label: '+ Add Optional Tour', onClick: addOptionalTourRow };
       case 'inclusions':
@@ -1453,7 +1365,7 @@ const handleRemoveExclusion = (idx) => {
   return (
     <Navbar>
       <Container>
-        <h2 className="mb-4">{isEditMode ? 'Edit Ladies Special Tour' : 'Add Ladies Special Tour'}</h2>
+        <h2 className="mb-4">{isEditMode ? 'Edit Honeymoon Tour' : 'Add Honeymoon Tour'}</h2>
 
         {error && <Alert variant="danger">{error}</Alert>}
         {success && <Alert variant="success">{success}</Alert>}
@@ -1484,9 +1396,9 @@ const handleRemoveExclusion = (idx) => {
                           backgroundColor: isEditMode ? "#f8f9fa" : "white"
                         }}
                       />
-                      {/* <Form.Text className="text-muted">
+                      <Form.Text className="text-muted">
                         {isEditMode ? "Tour code cannot be changed" : "Auto-generated tour code"}
-                      </Form.Text> */}
+                      </Form.Text>
                     </Form.Group>
 
                     <Form.Group className="mb-3">
@@ -1552,19 +1464,22 @@ const handleRemoveExclusion = (idx) => {
                       />
                     </Form.Group>
 
-                     <Form.Group className="mb-3">
-                      <Form.Label>EMI Price</Form.Label>
-                      <Form.Control
-                        type="number"
-                        name="emi_price"
-                        value={formData.emi_price}
-                        onChange={handleBasicChange}
-                        placeholder="Optional EMI price"
-                      />
-                      <Form.Text className="text-muted">
-                        This is the price used for EMI calculations (if different from tour price)
-                      </Form.Text>
-                    </Form.Group>
+
+                    {/* ADD THIS NEW FIELD */}
+                       <Form.Group className="mb-3">
+                            <Form.Label>EMI Price</Form.Label>
+                                <Form.Control
+                                      type="number"
+                                      name="emi_price"
+                                      value={formData.emi_price}
+                                      onChange={handleBasicChange}
+                                      placeholder="Optional EMI price"
+                                />
+                                <Form.Text className="text-muted">
+                                      This is the price used for EMI calculations (if different from tour price)
+                                </Form.Text>
+                        </Form.Group>
+
                   </Col>
                 </Row>
               </Tab>
@@ -1685,382 +1600,138 @@ const handleRemoveExclusion = (idx) => {
                 )}
               </Tab>
 
-              {/* ======== DEPARTURES TAB - LADIES SPECIAL TOUR ======== */}
               <Tab eventKey="departures" title="Departures">
-                <div>
-                  {/* Departure Dates Section */}
-                  <Row className="mb-4">
-                    <h5>Departure Dates</h5>
-                    <Col md={3}>
-                      <Form.Group className="mb-3">
-                        <Form.Label>Start Date *</Form.Label>
-                        <Form.Control
-                          type="date"
-                          name="start_date"
-                          value={ladiesDepartureForm.start_date}
-                          onChange={handleLadiesDepartureChange}
-                        />
-                      </Form.Group>
-                    </Col>
+                <Row>
+                  <Col md={12}>
+                    <Form.Group className="mb-3">
+                      <Form.Label>Free Flow Description</Form.Label>
+                      <Form.Control
+                        as="textarea"
+                        rows={4}
+                        name="description"
+                        value={departureForm.description}
+                        onChange={handleDepartureChange}
+                      />
+                    </Form.Group>
+                  </Col>
+                </Row>
 
-                    <Col md={3}>
-                      <Form.Group className="mb-3">
-                        <Form.Label>End Date *</Form.Label>
-                        <Form.Control
-                          type="date"
-                          name="end_date"
-                          value={ladiesDepartureForm.end_date}
-                          onChange={handleLadiesDepartureChange}
-                        />
-                      </Form.Group>
-                    </Col>
-
-                    <Col md={2}>
-                      <Form.Group className="mb-3">
-                        <Form.Label>Status *</Form.Label>
-                        <Form.Select
-                          name="status"
-                          value={ladiesDepartureForm.status}
-                          onChange={handleLadiesDepartureChange}
-                        >
-                          <option value="Available">Available</option>
-                          <option value="Few Seats">Few Seats</option>
-                          <option value="Sold Out">Sold Out</option>
-                          <option value="Fast Filling">Fast Filling</option>
-                        </Form.Select>
-                      </Form.Group>
-                    </Col>
-
-                    <Col md={2}>
-                      <Form.Group className="mb-3">
-                        <Form.Label>Total Seats</Form.Label>
-                        <Form.Control
-                          type="number"
-                          name="total_seats"
-                          value={ladiesDepartureForm.total_seats}
-                          onChange={handleLadiesDepartureChange}
-                          placeholder="Total seats"
-                        />
-                      </Form.Group>
-                    </Col>
-
-                    <Col md={2}>
-                      <Form.Group className="mb-3">
-                        <Form.Label>Booked Seats</Form.Label>
-                        <Form.Control
-                          type="number"
-                          name="booked_seats"
-                          value={ladiesDepartureForm.booked_seats}
-                          onChange={handleLadiesDepartureChange}
-                          placeholder="Booked seats"
-                        />
-                      </Form.Group>
-                    </Col>
-
-                    <Col md={12}>
-                      <Form.Group className="mb-3">
-                        <Form.Label>Description</Form.Label>
-                        <Form.Control
-                          type="text"
-                          name="description"
-                          value={ladiesDepartureForm.description}
-                          onChange={handleLadiesDepartureChange}
-                          placeholder="Optional description"
-                        />
-                      </Form.Group>
-                    </Col>
-                  </Row>
-
-                  {/* 3-Star Hotel Prices */}
-                  <Row className="mb-4">
-                    <h5>3-Star Hotel Prices</h5>
-                    <Col md={2}>
-                      <Form.Group>
-                        <Form.Label>Twin Sharing</Form.Label>
-                        <Form.Control
-                          type="number"
-                          name="three_star_twin"
-                          value={ladiesDepartureForm.three_star_twin}
-                          onChange={handleLadiesDepartureChange}
-                          placeholder="₹"
-                        />
-                      </Form.Group>
-                    </Col>
-                    <Col md={2}>
-                      <Form.Group>
-                        <Form.Label>Triple Sharing</Form.Label>
-                        <Form.Control
-                          type="number"
-                          name="three_star_triple"
-                          value={ladiesDepartureForm.three_star_triple}
-                          onChange={handleLadiesDepartureChange}
-                          placeholder="₹"
-                        />
-                      </Form.Group>
-                    </Col>
-                    <Col md={2}>
-                      <Form.Group>
-                        <Form.Label>Child With Bed</Form.Label>
-                        <Form.Control
-                          type="number"
-                          name="three_star_child_with_bed"
-                          value={ladiesDepartureForm.three_star_child_with_bed}
-                          onChange={handleLadiesDepartureChange}
-                          placeholder="₹"
-                        />
-                      </Form.Group>
-                    </Col>
-                    <Col md={2}>
-                      <Form.Group>
-                        <Form.Label>Child No Bed</Form.Label>
-                        <Form.Control
-                          type="number"
-                          name="three_star_child_without_bed"
-                          value={ladiesDepartureForm.three_star_child_without_bed}
-                          onChange={handleLadiesDepartureChange}
-                          placeholder="₹"
-                        />
-                      </Form.Group>
-                    </Col>
-                    <Col md={2}>
-                      <Form.Group>
-                        <Form.Label>Infant</Form.Label>
-                        <Form.Control
-                          type="number"
-                          name="three_star_infant"
-                          value={ladiesDepartureForm.three_star_infant}
-                          onChange={handleLadiesDepartureChange}
-                          placeholder="₹"
-                        />
-                      </Form.Group>
-                    </Col>
-                    <Col md={2}>
-                      <Form.Group>
-                        <Form.Label>Single</Form.Label>
-                        <Form.Control
-                          type="number"
-                          name="three_star_single"
-                          value={ladiesDepartureForm.three_star_single}
-                          onChange={handleLadiesDepartureChange}
-                          placeholder="₹"
-                        />
-                      </Form.Group>
-                    </Col>
-                  </Row>
-
-                  {/* 4-Star Hotel Prices */}
-                  <Row className="mb-4">
-                    <h5>4-Star Hotel Prices</h5>
-                    <Col md={2}>
-                      <Form.Group>
-                        <Form.Label>Twin Sharing</Form.Label>
-                        <Form.Control
-                          type="number"
-                          name="four_star_twin"
-                          value={ladiesDepartureForm.four_star_twin}
-                          onChange={handleLadiesDepartureChange}
-                          placeholder="₹"
-                        />
-                      </Form.Group>
-                    </Col>
-                    <Col md={2}>
-                      <Form.Group>
-                        <Form.Label>Triple Sharing</Form.Label>
-                        <Form.Control
-                          type="number"
-                          name="four_star_triple"
-                          value={ladiesDepartureForm.four_star_triple}
-                          onChange={handleLadiesDepartureChange}
-                          placeholder="₹"
-                        />
-                      </Form.Group>
-                    </Col>
-                    <Col md={2}>
-                      <Form.Group>
-                        <Form.Label>Child With Bed</Form.Label>
-                        <Form.Control
-                          type="number"
-                          name="four_star_child_with_bed"
-                          value={ladiesDepartureForm.four_star_child_with_bed}
-                          onChange={handleLadiesDepartureChange}
-                          placeholder="₹"
-                        />
-                      </Form.Group>
-                    </Col>
-                    <Col md={2}>
-                      <Form.Group>
-                        <Form.Label>Child No Bed</Form.Label>
-                        <Form.Control
-                          type="number"
-                          name="four_star_child_without_bed"
-                          value={ladiesDepartureForm.four_star_child_without_bed}
-                          onChange={handleLadiesDepartureChange}
-                          placeholder="₹"
-                        />
-                      </Form.Group>
-                    </Col>
-                    <Col md={2}>
-                      <Form.Group>
-                        <Form.Label>Infant</Form.Label>
-                        <Form.Control
-                          type="number"
-                          name="four_star_infant"
-                          value={ladiesDepartureForm.four_star_infant}
-                          onChange={handleLadiesDepartureChange}
-                          placeholder="₹"
-                        />
-                      </Form.Group>
-                    </Col>
-                    <Col md={2}>
-                      <Form.Group>
-                        <Form.Label>Single</Form.Label>
-                        <Form.Control
-                          type="number"
-                          name="four_star_single"
-                          value={ladiesDepartureForm.four_star_single}
-                          onChange={handleLadiesDepartureChange}
-                          placeholder="₹"
-                        />
-                      </Form.Group>
-                    </Col>
-                  </Row>
-
-                  {/* 5-Star Hotel Prices */}
-                  <Row className="mb-4">
-                    <h5>5-Star Hotel Prices</h5>
-                    <Col md={2}>
-                      <Form.Group>
-                        <Form.Label>Twin Sharing</Form.Label>
-                        <Form.Control
-                          type="number"
-                          name="five_star_twin"
-                          value={ladiesDepartureForm.five_star_twin}
-                          onChange={handleLadiesDepartureChange}
-                          placeholder="₹"
-                        />
-                      </Form.Group>
-                    </Col>
-                    <Col md={2}>
-                      <Form.Group>
-                        <Form.Label>Triple Sharing</Form.Label>
-                        <Form.Control
-                          type="number"
-                          name="five_star_triple"
-                          value={ladiesDepartureForm.five_star_triple}
-                          onChange={handleLadiesDepartureChange}
-                          placeholder="₹"
-                        />
-                      </Form.Group>
-                    </Col>
-                    <Col md={2}>
-                      <Form.Group>
-                        <Form.Label>Child With Bed</Form.Label>
-                        <Form.Control
-                          type="number"
-                          name="five_star_child_with_bed"
-                          value={ladiesDepartureForm.five_star_child_with_bed}
-                          onChange={handleLadiesDepartureChange}
-                          placeholder="₹"
-                        />
-                      </Form.Group>
-                    </Col>
-                    <Col md={2}>
-                      <Form.Group>
-                        <Form.Label>Child No Bed</Form.Label>
-                        <Form.Control
-                          type="number"
-                          name="five_star_child_without_bed"
-                          value={ladiesDepartureForm.five_star_child_without_bed}
-                          onChange={handleLadiesDepartureChange}
-                          placeholder="₹"
-                        />
-                      </Form.Group>
-                    </Col>
-                    <Col md={2}>
-                      <Form.Group>
-                        <Form.Label>Infant</Form.Label>
-                        <Form.Control
-                          type="number"
-                          name="five_star_infant"
-                          value={ladiesDepartureForm.five_star_infant}
-                          onChange={handleLadiesDepartureChange}
-                          placeholder="₹"
-                        />
-                      </Form.Group>
-                    </Col>
-                    <Col md={2}>
-                      <Form.Group>
-                        <Form.Label>Single</Form.Label>
-                        <Form.Control
-                          type="number"
-                          name="five_star_single"
-                          value={ladiesDepartureForm.five_star_single}
-                          onChange={handleLadiesDepartureChange}
-                          placeholder="₹"
-                        />
-                      </Form.Group>
-                    </Col>
-                  </Row>
-
-                  {/* Display Added Departures */}
-                  {departures.length > 0 && (
-                    <div className="mt-4">
-                      <h6>Added Departures:</h6>
-                      <Table striped bordered hover size="sm">
-                        <thead>
-                          <tr>
-                            <th>#</th>
-                            <th>Start Date</th>
-                            <th>End Date</th>
-                            <th>Status</th>
-                            <th>Seats</th>
-                            <th>3-Star Twin</th>
-                            <th>4-Star Twin</th>
-                            <th>5-Star Twin</th>
-                            <th>Action</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {departures.map((dep, idx) => (
-                            <tr key={idx}>
-                              <td>{idx + 1}</td>
-                              <td>{dep.start_date || '-'}</td>
-                              <td>{dep.end_date || '-'}</td>
-                              <td>{dep.status || '-'}</td>
-                              <td>{dep.total_seats || '-'}</td>
-                              <td>{dep.three_star_twin ? `₹${dep.three_star_twin.toLocaleString()}` : '-'}</td>
-                              <td>{dep.four_star_twin ? `₹${dep.four_star_twin.toLocaleString()}` : '-'}</td>
-                              <td>{dep.five_star_twin ? `₹${dep.five_star_twin.toLocaleString()}` : '-'}</td>
-                              <td>
-                                <div className="d-flex gap-1">
-                                  <Button
-                                    variant="outline-warning"
-                                    size="sm"
-                                    onClick={() => editDeparture(idx)}
-                                    title="Edit"
-                                  >
-                                    <Pencil size={14} />
-                                  </Button>
-                                  <Button
-                                    variant="outline-danger"
-                                    size="sm"
-                                    onClick={() => handleRemoveDeparture(idx)}
-                                    title="Remove"
-                                  >
-                                    <Trash size={14} />
-                                  </Button>
-                                </div>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </Table>
-                    </div>
-                  )}
-                </div>
+                {departures.length > 0 && (
+                  <Table striped bordered hover size="sm">
+                    <thead>
+                      <tr>
+                        <th>#</th>
+                        <th>Description</th>
+                        <th>Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {departures.map((dep, idx) => (
+                        <tr key={idx}>
+                          <td>{idx + 1}</td>
+                          <td>{dep.description || '-'}</td>
+                          <td>
+                            <div className="d-flex gap-1">
+                              <Button
+                                variant="outline-warning"
+                                size="sm"
+                                onClick={() => editDeparture(idx)}
+                                title="Edit"
+                              >
+                                <Pencil size={14} />
+                              </Button>
+                              <Button
+                                variant="outline-danger"
+                                size="sm"
+                                onClick={() => handleRemoveDeparture(idx)}
+                                title="Remove"
+                              >
+                                <Trash size={14} />
+                              </Button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </Table>
+                )}
               </Tab>
 
               <Tab eventKey="costs" title="Tour Cost">
+                <Row className="align-items-end">
+                  <Col md={2}>
+                    <Form.Group>
+                      <Form.Label>Pax *</Form.Label>
+                      <Form.Control
+                        type="number"
+                        name="pax"
+                        value={tourCostItem.pax}
+                        onChange={handleCostChange}
+                      />
+                    </Form.Group>
+                  </Col>
+
+                  <Col md={2}>
+                    <Form.Group>
+                      <Form.Label>Standard Hotel</Form.Label>
+                      <Form.Control
+                        type="number"
+                        name="standard_hotel"
+                        value={tourCostItem.standard_hotel}
+                        onChange={handleCostChange}
+                      />
+                    </Form.Group>
+                  </Col>
+
+                  <Col md={2}>
+                    <Form.Group>
+                      <Form.Label>Deluxe Hotel</Form.Label>
+                      <Form.Control
+                        type="number"
+                        name="deluxe_hotel"
+                        value={tourCostItem.deluxe_hotel}
+                        onChange={handleCostChange}
+                      />
+                    </Form.Group>
+                  </Col>
+
+                  <Col md={2}>
+                    <Form.Group>
+                      <Form.Label>Executive Hotel</Form.Label>
+                      <Form.Control
+                        type="number"
+                        name="executive_hotel"
+                        value={tourCostItem.executive_hotel}
+                        onChange={handleCostChange}
+                      />
+                    </Form.Group>
+                  </Col>
+
+                  <Col md={2}>
+                    <Form.Group>
+                      <Form.Label>Child With Bed</Form.Label>
+                      <Form.Control
+                        type="number"
+                        name="child_with_bed"
+                        value={tourCostItem.child_with_bed}
+                        onChange={handleCostChange}
+                      />
+                    </Form.Group>
+                  </Col>
+
+                  <Col md={2}>
+                    <Form.Group>
+                      <Form.Label>Child No Bed</Form.Label>
+                      <Form.Control
+                        type="number"
+                        name="child_no_bed"
+                        value={tourCostItem.child_no_bed}
+                        onChange={handleCostChange}
+                      />
+                    </Form.Group>
+                  </Col>
+                </Row>
+
                 <Form.Group className="mt-3">
                   <Form.Label>Cost Remarks</Form.Label>
                   <Form.Control
@@ -2082,9 +1753,58 @@ const handleRemoveExclusion = (idx) => {
                     onChange={handleBasicChange}
                   />
                 </Form.Group>
+
+                {tourCosts.length > 0 && (
+                  <Table striped bordered hover size="sm" className="mt-3">
+                    <thead>
+                      <tr>
+                        <th>#</th>
+                        <th>Pax</th>
+                        <th>Standard</th>
+                        <th>Deluxe</th>
+                        <th>Executive</th>
+                        <th>Chd Bed</th>
+                        <th>Chd NoBed</th>
+                        <th>Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {tourCosts.map((c, idx) => (
+                        <tr key={idx}>
+                          <td>{idx + 1}</td>
+                          <td>{c.pax}</td>
+                          <td>{c.standard_hotel || 'NA'}</td>
+                          <td>{c.deluxe_hotel || 'NA'}</td>
+                          <td>{c.executive_hotel || 'NA'}</td>
+                          <td>{c.child_with_bed || 'NA'}</td>
+                          <td>{c.child_no_bed || 'NA'}</td>
+                          <td>
+                            <div className="d-flex gap-1">
+                              <Button
+                                variant="outline-warning"
+                                size="sm"
+                                onClick={() => editCostRow(idx)}
+                                title="Edit"
+                              >
+                                <Pencil size={14} />
+                              </Button>
+                              <Button
+                                variant="outline-danger"
+                                size="sm"
+                                onClick={() => removeCostRow(idx)}
+                                title="Remove"
+                              >
+                                <Trash size={14} />
+                              </Button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </Table>
+                )}
               </Tab>
 
-              {/* ======== OPTIONAL TOURS ======== */}
               <Tab eventKey="optionalTours" title="Optional Tour">
                 <Row className="align-items-end">
                   <Col md={4}>
@@ -2172,7 +1892,6 @@ const handleRemoveExclusion = (idx) => {
                 )}
               </Tab>
 
-              {/* ======== EMI OPTIONS (MANUAL) ======== */}
               <Tab eventKey="emiOptions" title="EMI Options">
                 <Table striped bordered hover responsive className="align-middle">
                   <thead className="table-dark">
@@ -2240,16 +1959,6 @@ const handleRemoveExclusion = (idx) => {
                     ))}
                   </tbody>
                 </Table>
-
-                <Row className="mt-3">
-                  <Col md={12} className="d-flex justify-content-between align-items-center">
-                    <div>
-                      <small className="text-muted">
-                        <i className="fas fa-info-circle"></i> Fill only the options you want to offer. Leave others empty.
-                      </small>
-                    </div>
-                  </Col>
-                </Row>
               </Tab>
 
               <Tab eventKey="inclusions" title="Inclusions">
@@ -2358,128 +2067,23 @@ const handleRemoveExclusion = (idx) => {
                 )}
               </Tab>
 
-              {/* ======== TRANSPORT TAB - LADIES SPECIAL TOUR ======== */}
               <Tab eventKey="transport" title="Transport">
                 <Row className="mt-3">
-                  {/* Airline */}
-                  <Col md={4}>
+                  <Col md={12}>
                     <Form.Group>
-                      <Form.Label>Airline</Form.Label>
+                      <Form.Label>Flights/Train or Transport Details</Form.Label>
                       <Form.Control
-                        name="airline"
-                        value={transportItem.airline}
-                        onChange={handleTransportChange}
-                      />
-                    </Form.Group>
-                  </Col>
-
-                  {/* Flight No */}
-                  <Col md={4}>
-                    <Form.Group>
-                      <Form.Label>Flight No</Form.Label>
-                      <Form.Control
-                        name="flight_no"
-                        value={transportItem.flight_no}
-                        onChange={handleTransportChange}
-                      />
-                    </Form.Group>
-                  </Col>
-
-                  {/* Via */}
-                  <Col md={4}>
-                    <Form.Group>
-                      <Form.Label>Via</Form.Label>
-                      <Form.Control
-                        name="via"
-                        value={transportItem.via}
-                        onChange={handleTransportChange}
-                      />
-                    </Form.Group>
-                  </Col>
-
-                  {/* FROM */}
-                  <Col md={12} className="mt-3">
-                    <Form.Label className="fw-bold">From</Form.Label>
-                  </Col>
-
-                  <Col md={4}>
-                    <Form.Group>
-                      <Form.Label>City</Form.Label>
-                      <Form.Control
-                        name="from_city"
-                        value={transportItem.from_city}
-                        onChange={handleTransportChange}
-                      />
-                    </Form.Group>
-                  </Col>
-
-                  <Col md={4}>
-                    <Form.Group>
-                      <Form.Label>Date</Form.Label>
-                      <Form.Control
-                        type="date"
-                        name="from_date"
-                        value={transportItem.from_date}
-                        onChange={handleTransportChange}
-                      />
-                    </Form.Group>
-                  </Col>
-
-                  <Col md={4}>
-                    <Form.Group>
-                      <Form.Label>Time</Form.Label>
-                      <Form.Control
-                        type="time"
-                        name="from_time"
-                        value={transportItem.from_time}
-                        onChange={handleTransportChange}
-                      />
-                    </Form.Group>
-                  </Col>
-
-                  {/* TO */}
-                  <Col md={12} className="mt-3">
-                    <Form.Label className="fw-bold">To</Form.Label>
-                  </Col>
-
-                  <Col md={4}>
-                    <Form.Group>
-                      <Form.Label>City</Form.Label>
-                      <Form.Control
-                        name="to_city"
-                        value={transportItem.to_city}
-                        onChange={handleTransportChange}
-                      />
-                    </Form.Group>
-                  </Col>
-
-                  <Col md={4}>
-                    <Form.Group>
-                      <Form.Label>Date</Form.Label>
-                      <Form.Control
-                        type="date"
-                        name="to_date"
-                        value={transportItem.to_date}
-                        onChange={handleTransportChange}
-                      />
-                    </Form.Group>
-                  </Col>
-
-                  <Col md={4}>
-                    <Form.Group>
-                      <Form.Label>Time</Form.Label>
-                      <Form.Control
-                        type="time"
-                        name="to_time"
-                        value={transportItem.to_time}
+                        as="textarea"
+                        rows={4}
+                        name="description"
+                        value={transportItem.description}
                         onChange={handleTransportChange}
                       />
                     </Form.Group>
                   </Col>
                 </Row>
 
-                {/* ================= TRANSPORT REMARKS ================= */}
-                <Form.Group className="mt-4">
+                <Form.Group className="mt-3">
                   <Form.Label>Transport Remarks</Form.Label>
                   <Form.Control
                     as="textarea"
@@ -2490,39 +2094,26 @@ const handleRemoveExclusion = (idx) => {
                   />
                 </Form.Group>
 
-                {/* ================= TABLE ================= */}
                 {transports.length > 0 && (
-                  <Table bordered hover size="sm" className="mt-3">
+                  <Table striped bordered hover size="sm" className="mt-3">
                     <thead>
                       <tr>
                         <th>#</th>
-                        <th>Airline</th>
-                        <th>Flight</th>
-                        <th>Route</th>
-                        <th>Schedule</th>
-                        <th>Via</th>
+                        <th>Description</th>
                         <th>Action</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {transports.map((t, i) => (
-                        <tr key={i}>
-                          <td>{i + 1}</td>
-                          <td>{t.airline}</td>
-                          <td>{t.flight_no}</td>
-                          <td>{t.from_city} → {t.to_city}</td>
-                          <td>
-                            {t.from_date} {t.from_time}
-                            <br />
-                            {t.to_date} {t.to_time}
-                          </td>
-                          <td>{t.via || 'Direct'}</td>
+                      {transports.map((t, idx) => (
+                        <tr key={idx}>
+                          <td>{idx + 1}</td>
+                          <td>{t.description || 'NA'}</td>
                           <td>
                             <div className="d-flex gap-1">
                               <Button
                                 variant="outline-warning"
                                 size="sm"
-                                onClick={() => editTransportRow(i)}
+                                onClick={() => editTransportRow(idx)}
                                 title="Edit"
                               >
                                 <Pencil size={14} />
@@ -2530,7 +2121,7 @@ const handleRemoveExclusion = (idx) => {
                               <Button
                                 variant="outline-danger"
                                 size="sm"
-                                onClick={() => removeTransportRow(i)}
+                                onClick={() => removeTransportRow(idx)}
                                 title="Remove"
                               >
                                 <Trash size={14} />
@@ -2570,7 +2161,7 @@ const handleRemoveExclusion = (idx) => {
                     </Form.Group>
                   </Col>
 
-                  <Col md={2}>
+                  <Col md={3}>
                     <Form.Group>
                       <Form.Label>Standard</Form.Label>
                       <Form.Control
@@ -2581,7 +2172,7 @@ const handleRemoveExclusion = (idx) => {
                       />
                     </Form.Group>
                   </Col>
-                  <Col md={2}>
+                  <Col md={3}>
                     <Form.Group>
                       <Form.Label>Deluxe</Form.Label>
                       <Form.Control
@@ -2592,7 +2183,7 @@ const handleRemoveExclusion = (idx) => {
                       />
                     </Form.Group>
                   </Col>
-                  <Col md={2}>
+                  <Col md={3}>
                     <Form.Group>
                       <Form.Label>Executive</Form.Label>
                       <Form.Control
@@ -2728,6 +2319,7 @@ const handleRemoveExclusion = (idx) => {
                       onChange={handleBasicChange}
                     />
                   </Form.Group>
+
                 </Form.Group>
 
                 {bookingPois.length > 0 && (
@@ -2988,4 +2580,4 @@ const handleRemoveExclusion = (idx) => {
   );
 };
 
-export default AddLadiesTour;
+export default AddHoneyMoonTour;

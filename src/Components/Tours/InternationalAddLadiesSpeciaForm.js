@@ -60,7 +60,7 @@ const AddLadiesTour = () => {
     overview: '',
     base_price_adult: '',
     emi_price: '', // ← Add this line
-    is_international: 0,
+    is_international: 1,
     cost_remarks: "",
     hotel_remarks: "",
     transport_remarks: "",
@@ -160,11 +160,8 @@ const AddLadiesTour = () => {
   };
 
   const removeOptionalTourRow = (idx) => {
-  const confirmDelete = window.confirm('Are you sure you want to remove this optional tour?');
-  if (confirmDelete) {
     setOptionalTours(prev => prev.filter((_, i) => i !== idx));
-  }
-};
+  };
 
   // =======================
   // EMI OPTIONS
@@ -232,12 +229,10 @@ const AddLadiesTour = () => {
     setHotelRows(prev => prev.filter((_, i) => i !== idx));
   };
 
- const removeHotelRow = (idx) => {
-  const confirmDelete = window.confirm('Are you sure you want to remove this hotel?');
-  if (confirmDelete) {
+  const removeHotelRow = (idx) => {
     setHotelRows(prev => prev.filter((_, i) => i !== idx));
-  }
-};
+  };
+
   // =======================
   // TRANSPORT FOR LADIES SPECIAL TOURS
   // =======================
@@ -290,12 +285,9 @@ const AddLadiesTour = () => {
     setTransports(prev => prev.filter((_, i) => i !== idx));
   };
 
- const removeTransportRow = (idx) => {
-  const confirmDelete = window.confirm('Are you sure you want to remove this transport?');
-  if (confirmDelete) {
+  const removeTransportRow = (idx) => {
     setTransports(prev => prev.filter((_, i) => i !== idx));
-  }
-};
+  };
 
   // =======================
   // BOOKING POI
@@ -322,12 +314,9 @@ const AddLadiesTour = () => {
     setBookingPois(prev => prev.filter((_, i) => i !== idx));
   };
 
- const removePoi = (idx) => {
-  const confirmDelete = window.confirm('Are you sure you want to remove this booking POI?');
-  if (confirmDelete) {
+  const removePoi = (idx) => {
     setBookingPois(prev => prev.filter((_, i) => i !== idx));
-  }
-};
+  };
 
   // =======================
   // CANCELLATION
@@ -357,12 +346,9 @@ const AddLadiesTour = () => {
     setCancelPolicies(prev => prev.filter((_, i) => i !== idx));
   };
 
-const removeCancelRow = (idx) => {
-  const confirmDelete = window.confirm('Are you sure you want to remove this cancellation policy?');
-  if (confirmDelete) {
+  const removeCancelRow = (idx) => {
     setCancelPolicies(prev => prev.filter((_, i) => i !== idx));
-  }
-};
+  };
 
   // =======================
   // INSTRUCTIONS
@@ -383,12 +369,9 @@ const removeCancelRow = (idx) => {
     setInstructions(prev => prev.filter((_, i) => i !== idx));
   };
 
- const removeInstruction = (idx) => {
-  const confirmDelete = window.confirm('Are you sure you want to remove this instruction?');
-  if (confirmDelete) {
+  const removeInstruction = (idx) => {
     setInstructions(prev => prev.filter((_, i) => i !== idx));
-  }
-};
+  };
 
   // ITINERARIES
   const [itineraryItem, setItineraryItem] = useState({
@@ -426,39 +409,54 @@ const removeCancelRow = (idx) => {
   };
 
   // Fetch dropdowns and tour data
-  useEffect(() => {
-    const loadDropdownsAndTourCode = async () => {
-      try {
-        // Load dropdowns
-        const catRes = await fetch(`${baseurl}/api/categories/all-tours`);
-        const categoryData = await catRes.json();
-        setCategories(Array.isArray(categoryData) ? categoryData : []);
+ useEffect(() => {
+  const loadDropdownsAndTourCode = async () => {
+    try {
+      // Load dropdowns
+      const catRes = await fetch(`${baseurl}/api/categories/all-tours`);
+      const categoryData = await catRes.json();
+      setCategories(Array.isArray(categoryData) ? categoryData : []);
 
-        const destRes = await fetch(`${baseurl}/api/destinations`);
-        const destData = await destRes.json();
-        setDestinations(Array.isArray(destData) ? destData : []);
+      const destRes = await fetch(`${baseurl}/api/destinations`);
+      const destData = await destRes.json();
+      setDestinations(Array.isArray(destData) ? destData : []);
 
-        if (isEditMode) {
-          // Load existing tour data for edit
-          await loadTourData();
+      if (isEditMode) {
+        // Load existing tour data for edit
+        await loadTourData();
+      } else {
+        // Set is_international to 1 for international tours
+        setFormData(prev => ({
+          ...prev,
+          is_international: 1
+        }));
+        
+        // Fetch tour code with is_international=1 parameter
+        // Note: Check if your backend expects "ladiesspecial" or "ladies" for tour_type
+        const tourCodeRes = await fetch(
+          `${baseurl}/api/tours/next-tour-code?tour_type=ladiesspecial&is_international=1`
+        );
+        
+        if (tourCodeRes.ok) {
+          const tourCodeData = await tourCodeRes.json();
+          setFormData(prev => ({
+            ...prev,
+            tour_code: tourCodeData.next_tour_code,
+            is_international: 1
+          }));
         } else {
-          // Load next tour code for add mode
-          const tourCodeRes = await fetch(`${baseurl}/api/tours/next-tour-code?tour_type=ladies`);
-          if (tourCodeRes.ok) {
-            const tourCodeData = await tourCodeRes.json();
-            setFormData(prev => ({
-              ...prev,
-              tour_code: tourCodeData.next_tour_code
-            }));
-          }
+          // Fallback or handle error
+          console.error('Failed to fetch tour code');
         }
-      } catch (err) {
-        setError('Failed to load dropdown data');
       }
-    };
+    } catch (err) {
+      setError('Failed to load dropdown data');
+    }
+  };
 
-    loadDropdownsAndTourCode();
-  }, [id]);
+  loadDropdownsAndTourCode();
+}, [id]);
+
 
   // Load tour data for editing
   const loadTourData = async () => {
@@ -739,12 +737,9 @@ const removeCancelRow = (idx) => {
     setDepartures(prev => prev.filter((_, i) => i !== idx));
   };
 
- const handleRemoveDeparture = (idx) => {
-  const confirmDelete = window.confirm('Are you sure you want to remove this departure?');
-  if (confirmDelete) {
+  const handleRemoveDeparture = (idx) => {
     setDepartures((prev) => prev.filter((_, i) => i !== idx));
-  }
-};
+  };
 
   // EXCLUSIONS
   const handleAddExclusion = () => {
@@ -760,12 +755,9 @@ const removeCancelRow = (idx) => {
     setExclusions(prev => prev.filter((_, i) => i !== idx));
   };
 
-const handleRemoveExclusion = (idx) => {
-  const confirmDelete = window.confirm('Are you sure you want to remove this exclusion?');
-  if (confirmDelete) {
+  const handleRemoveExclusion = (idx) => {
     setExclusions((prev) => prev.filter((_, i) => i !== idx));
-  }
-};
+  };
 
   // INCLUSIONS
   const handleAddInclusion = () => {
@@ -781,12 +773,9 @@ const handleRemoveExclusion = (idx) => {
     setInclusions(prev => prev.filter((_, i) => i !== idx));
   };
 
- const handleRemoveInclusion = (idx) => {
-  const confirmDelete = window.confirm('Are you sure you want to remove this inclusion?');
-  if (confirmDelete) {
+  const handleRemoveInclusion = (idx) => {
     setInclusions(prev => prev.filter((_, i) => i !== idx));
-  }
-};
+  };
 
   // IMAGES
   const handleImageChange = (e) => {
@@ -862,11 +851,8 @@ const handleRemoveExclusion = (idx) => {
   };
 
   const handleRemoveItinerary = (idx) => {
-  const confirmDelete = window.confirm('Are you sure you want to remove this itinerary?');
-  if (confirmDelete) {
     setItineraries(prev => prev.filter((_, i) => i !== idx));
-  }
-};
+  };
 
   // NAVIGATION
   const goNext = () => {

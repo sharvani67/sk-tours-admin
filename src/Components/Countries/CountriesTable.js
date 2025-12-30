@@ -1,5 +1,7 @@
+// Countries.js
 import React, { useState, useEffect } from 'react';
 import { Container, Card, Alert, Spinner } from 'react-bootstrap';
+import { Eye, Pencil, Trash } from 'react-bootstrap-icons';
 import Navbar from '../../Shared/Navbar/Navbar';
 import { baseurl } from '../../Api/Baseurl';
 import ReusableTable from '../../Shared/TableLayout/DataTable';
@@ -22,7 +24,6 @@ const Countries = () => {
 
       // Sort countries by ID in descending order (newest first)
       const sortedCountries = result.sort((a, b) => {
-        // Sort by country_id descending (higher IDs = more recent)
         return b.country_id - a.country_id;
       });
 
@@ -38,6 +39,36 @@ const Countries = () => {
   useEffect(() => {
     fetchCountries();
   }, []);
+
+  // Handle Delete Country
+  const handleDelete = async (countryId) => {
+    if (!window.confirm('Are you sure you want to delete this country?')) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`${baseurl}/api/countries/${countryId}`, {
+        method: 'DELETE',
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        alert(result.message || 'Country deleted successfully');
+        fetchCountries(); // Refresh the list
+      } else {
+        alert(result.message || result.error || 'Failed to delete country');
+      }
+    } catch (err) {
+      console.error('Error deleting country:', err);
+      alert('Error deleting country. Please try again.');
+    }
+  };
+
+  // Handle Edit - Navigate to add/edit form with ID
+  const handleEdit = (countryId) => {
+    navigate(`/add-country/${countryId}`);
+  };
 
   // Columns for ReusableTable
   const columns = [
@@ -58,14 +89,29 @@ const Countries = () => {
       render: (item) => item.is_domestic ? "Yes" : "No",
       style: { textAlign: "center" }
     },
-    // {
-    //   key: 'created_at',
-    //   title: 'Created At',
-    //   render: (item) =>
-    //     item.created_at
-    //       ? new Date(item.created_at).toLocaleDateString('en-US')
-    //       : 'N/A'
-    // }
+    {
+      key: 'actions',
+      title: 'Actions',
+      render: (item) => (
+        <div className="d-flex gap-2 justify-content-center">
+          <button
+            className="btn btn-sm btn-outline-primary"
+            onClick={() => handleEdit(item.country_id)}
+            title="Edit"
+          >
+            <Pencil />
+          </button>
+          <button
+            className="btn btn-sm btn-outline-danger"
+            onClick={() => handleDelete(item.country_id)}
+            title="Delete"
+          >
+            <Trash />
+          </button>
+        </div>
+      ),
+      style: { textAlign: 'center', minWidth: '100px' }
+    }
   ];
 
   return (

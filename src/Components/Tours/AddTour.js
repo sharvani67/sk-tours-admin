@@ -560,50 +560,86 @@ const AddTour = () => {
   // REMOVE FUNCTIONS
   // ========================
 
-  const handleRemoveItinerary = (idx) => {
+ // ========================
+// REMOVE FUNCTIONS (WITH ALERTS)
+// ========================
+
+const handleRemoveItinerary = (idx) => {
+  const confirmDelete = window.confirm('Are you sure you want to remove this itinerary?');
+  if (confirmDelete) {
     setItineraries(prev => prev.filter((_, i) => i !== idx));
-  };
+  }
+};
 
-  const handleRemoveDeparture = (idx) => {
+const handleRemoveDeparture = (idx) => {
+  const confirmDelete = window.confirm('Are you sure you want to remove this departure?');
+  if (confirmDelete) {
     setDepartures(prev => prev.filter((_, i) => i !== idx));
-  };
+  }
+};
 
-  const removeCostRow = (idx) => {
+const removeCostRow = (idx) => {
+  const confirmDelete = window.confirm('Are you sure you want to remove this cost row?');
+  if (confirmDelete) {
     setTourCosts(prev => prev.filter((_, i) => i !== idx));
-  };
+  }
+};
 
-  const removeOptionalTourRow = (idx) => {
+const removeOptionalTourRow = (idx) => {
+  const confirmDelete = window.confirm('Are you sure you want to remove this optional tour?');
+  if (confirmDelete) {
     setOptionalTours(prev => prev.filter((_, i) => i !== idx));
-  };
+  }
+};
 
-  const removeHotelRow = (idx) => {
+const removeHotelRow = (idx) => {
+  const confirmDelete = window.confirm('Are you sure you want to remove this hotel?');
+  if (confirmDelete) {
     setHotelRows(prev => prev.filter((_, i) => i !== idx));
-  };
+  }
+};
 
-  const removeTransportRow = (idx) => {
+const removeTransportRow = (idx) => {
+  const confirmDelete = window.confirm('Are you sure you want to remove this transport?');
+  if (confirmDelete) {
     setTransports(prev => prev.filter((_, i) => i !== idx));
-  };
+  }
+};
 
-  const handleRemoveInclusion = (idx) => {
+const handleRemoveInclusion = (idx) => {
+  const confirmDelete = window.confirm('Are you sure you want to remove this inclusion?');
+  if (confirmDelete) {
     setInclusions(prev => prev.filter((_, i) => i !== idx));
-  };
+  }
+};
 
-  const handleRemoveExclusion = (idx) => {
+const handleRemoveExclusion = (idx) => {
+  const confirmDelete = window.confirm('Are you sure you want to remove this exclusion?');
+  if (confirmDelete) {
     setExclusions(prev => prev.filter((_, i) => i !== idx));
-  };
+  }
+};
 
-  const removePoi = (idx) => {
+const removePoi = (idx) => {
+  const confirmDelete = window.confirm('Are you sure you want to remove this booking POI?');
+  if (confirmDelete) {
     setBookingPois(prev => prev.filter((_, i) => i !== idx));
-  };
+  }
+};
 
-  const removeCancelRow = (idx) => {
+const removeCancelRow = (idx) => {
+  const confirmDelete = window.confirm('Are you sure you want to remove this cancellation policy?');
+  if (confirmDelete) {
     setCancelPolicies(prev => prev.filter((_, i) => i !== idx));
-  };
+  }
+};
 
-  const removeInstruction = (idx) => {
+const removeInstruction = (idx) => {
+  const confirmDelete = window.confirm('Are you sure you want to remove this instruction?');
+  if (confirmDelete) {
     setInstructions(prev => prev.filter((_, i) => i !== idx));
-  };
-
+  }
+};
   // ========================
   // HANDLER FUNCTIONS
   // ========================

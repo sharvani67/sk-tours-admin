@@ -1,9 +1,12 @@
+// DestinationsTable.js
 import React, { useState, useEffect } from 'react';
 import { Container, Card, Alert, Spinner } from 'react-bootstrap';
+import { FaEdit, FaTrash } from 'react-icons/fa';
 import Navbar from '../../Shared/Navbar/Navbar';
 import { baseurl } from '../../Api/Baseurl';
 import ReusableTable from '../../Shared/TableLayout/DataTable';
 import { useNavigate } from 'react-router-dom';
+import { Pencil, Trash } from 'react-bootstrap-icons';
 
 const DestinationsTable = () => {
   const [destinations, setDestinations] = useState([]);
@@ -48,6 +51,36 @@ const DestinationsTable = () => {
     fetchDestinations();
   }, []);
 
+  // Handle Delete Destination
+  const handleDelete = async (destinationId) => {
+    if (!window.confirm('Are you sure you want to delete this destination?')) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`${baseurl}/api/destinations/${destinationId}`, {
+        method: 'DELETE',
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        alert(result.message || 'Destination deleted successfully');
+        fetchDestinations(); // Refresh the list
+      } else {
+        alert(result.message || result.error || 'Failed to delete destination');
+      }
+    } catch (err) {
+      console.error('Error deleting destination:', err);
+      alert('Error deleting destination. Please try again.');
+    }
+  };
+
+  // Handle Edit - Navigate to add/edit form with ID
+  const handleEdit = (destinationId) => {
+    navigate(`/add-destination/${destinationId}`);
+  };
+
   // Define table columns
   const columns = [
     {
@@ -76,12 +109,12 @@ const DestinationsTable = () => {
       title: 'Country',
       render: (item) => item.country_name || "N/A"
     },
-    // {
-    //   key: 'is_domestic',
-    //   title: 'Domestic?',
-    //   render: (item) => item.is_domestic ? "Yes" : "No",
-    //   style: { textAlign: "center" }
-    // },
+    {
+      key: 'is_domestic',
+      title: 'Type',
+      render: (item) => item.is_domestic ? "Domestic" : "International",
+      style: { textAlign: "center" }
+    },
     {
       key: 'created_at',
       title: 'Created At',
@@ -90,7 +123,6 @@ const DestinationsTable = () => {
         
         try {
           const date = new Date(item.created_at);
-          // Check if date is valid
           if (isNaN(date.getTime())) {
             return 'Invalid Date';
           }
@@ -100,6 +132,29 @@ const DestinationsTable = () => {
           return 'Invalid Date';
         }
       }
+    },
+    {
+      key: 'actions',
+      title: 'Actions',
+      render: (item) => (
+        <div className="d-flex gap-2 justify-content-center">
+          <button
+            className="btn btn-sm btn-outline-primary"
+            onClick={() => handleEdit(item.destination_id)}
+            title="Edit"
+          >
+            <Pencil />
+          </button>
+          <button
+            className="btn btn-sm btn-outline-danger"
+            onClick={() => handleDelete(item.destination_id)}
+            title="Delete"
+          >
+            <Trash />
+          </button>
+        </div>
+      ),
+      style: { textAlign: 'center', minWidth: '100px' }
     }
   ];
 

@@ -17,12 +17,11 @@ import Navbar from '../../Shared/Navbar/Navbar';
 import { baseurl } from '../../Api/Baseurl';
 import { Pencil, Trash } from 'react-bootstrap-icons';
 
-const AddLadiesTour = () => {
+const AddSeniorTour = () => {
   const navigate = useNavigate();
-  const { id } = useParams(); // Get tour ID from URL for edit mode
+  const { id } = useParams();
   const isEditMode = !!id;
 
-  // TAB ORDER MUST MATCH JSX ORDER
   const TAB_LIST = [
     'basic',
     'itineraries',
@@ -52,15 +51,15 @@ const AddLadiesTour = () => {
   // BASIC DETAILS
   const [formData, setFormData] = useState({
     tour_code: '',
-    tour_type: "ladiesspecial",
+    tour_type: "seniorcitizen",
     title: '',
     category_id: 1,
     primary_destination_id: '',
     duration_days: '',
     overview: '',
     base_price_adult: '',
-    emi_price: '', // ← Add this line
-    is_international: 0,
+     emi_price: '', // ← Add this line
+    is_international: 1,
     cost_remarks: "",
     hotel_remarks: "",
     transport_remarks: "",
@@ -70,9 +69,9 @@ const AddLadiesTour = () => {
   });
 
   // =======================
-  // DEPARTURES FOR LADIES SPECIAL TOURS - SIMILAR TO GROUP TOURS
+  // DEPARTURES FOR SENIOR CITIZEN TOURS - UPDATED WITH HOTEL PRICE FIELDS
   // =======================
-  const [ladiesDepartureForm, setLadiesDepartureForm] = useState({
+  const [seniorDepartureForm, setSeniorDepartureForm] = useState({
     start_date: '',
     end_date: '',
     status: 'Available',
@@ -160,11 +159,8 @@ const AddLadiesTour = () => {
   };
 
   const removeOptionalTourRow = (idx) => {
-  const confirmDelete = window.confirm('Are you sure you want to remove this optional tour?');
-  if (confirmDelete) {
     setOptionalTours(prev => prev.filter((_, i) => i !== idx));
-  }
-};
+  };
 
   // =======================
   // EMI OPTIONS
@@ -232,14 +228,12 @@ const AddLadiesTour = () => {
     setHotelRows(prev => prev.filter((_, i) => i !== idx));
   };
 
- const removeHotelRow = (idx) => {
-  const confirmDelete = window.confirm('Are you sure you want to remove this hotel?');
-  if (confirmDelete) {
+  const removeHotelRow = (idx) => {
     setHotelRows(prev => prev.filter((_, i) => i !== idx));
-  }
-};
+  };
+
   // =======================
-  // TRANSPORT FOR LADIES SPECIAL TOURS
+  // TRANSPORT FOR SENIOR CITIZEN TOURS
   // =======================
   const [transportItem, setTransportItem] = useState({
     description: '',
@@ -290,12 +284,9 @@ const AddLadiesTour = () => {
     setTransports(prev => prev.filter((_, i) => i !== idx));
   };
 
- const removeTransportRow = (idx) => {
-  const confirmDelete = window.confirm('Are you sure you want to remove this transport?');
-  if (confirmDelete) {
+  const removeTransportRow = (idx) => {
     setTransports(prev => prev.filter((_, i) => i !== idx));
-  }
-};
+  };
 
   // =======================
   // BOOKING POI
@@ -322,12 +313,9 @@ const AddLadiesTour = () => {
     setBookingPois(prev => prev.filter((_, i) => i !== idx));
   };
 
- const removePoi = (idx) => {
-  const confirmDelete = window.confirm('Are you sure you want to remove this booking POI?');
-  if (confirmDelete) {
+  const removePoi = (idx) => {
     setBookingPois(prev => prev.filter((_, i) => i !== idx));
-  }
-};
+  };
 
   // =======================
   // CANCELLATION
@@ -357,12 +345,9 @@ const AddLadiesTour = () => {
     setCancelPolicies(prev => prev.filter((_, i) => i !== idx));
   };
 
-const removeCancelRow = (idx) => {
-  const confirmDelete = window.confirm('Are you sure you want to remove this cancellation policy?');
-  if (confirmDelete) {
+  const removeCancelRow = (idx) => {
     setCancelPolicies(prev => prev.filter((_, i) => i !== idx));
-  }
-};
+  };
 
   // =======================
   // INSTRUCTIONS
@@ -383,12 +368,9 @@ const removeCancelRow = (idx) => {
     setInstructions(prev => prev.filter((_, i) => i !== idx));
   };
 
- const removeInstruction = (idx) => {
-  const confirmDelete = window.confirm('Are you sure you want to remove this instruction?');
-  if (confirmDelete) {
+  const removeInstruction = (idx) => {
     setInstructions(prev => prev.filter((_, i) => i !== idx));
-  }
-};
+  };
 
   // ITINERARIES
   const [itineraryItem, setItineraryItem] = useState({
@@ -407,7 +389,6 @@ const removeCancelRow = (idx) => {
   const editItinerary = (idx) => {
     const item = itineraries[idx];
     
-    // Parse meals string back to checkboxes
     const mealsArray = item.meals ? item.meals.split(', ') : [];
     const meals = {
       breakfast: mealsArray.includes('Breakfast'),
@@ -426,58 +407,70 @@ const removeCancelRow = (idx) => {
   };
 
   // Fetch dropdowns and tour data
-  useEffect(() => {
-    const loadDropdownsAndTourCode = async () => {
-      try {
-        // Load dropdowns
-        const catRes = await fetch(`${baseurl}/api/categories/all-tours`);
-        const categoryData = await catRes.json();
-        setCategories(Array.isArray(categoryData) ? categoryData : []);
+ useEffect(() => {
+  const loadDropdownsAndTourCode = async () => {
+    try {
+      // Load dropdowns
+      const catRes = await fetch(`${baseurl}/api/categories/all-tours`);
+      const categoryData = await catRes.json();
+      setCategories(Array.isArray(categoryData) ? categoryData : []);
 
-        const destRes = await fetch(`${baseurl}/api/destinations`);
-        const destData = await destRes.json();
-        setDestinations(Array.isArray(destData) ? destData : []);
+      const destRes = await fetch(`${baseurl}/api/destinations`);
+      const destData = await destRes.json();
+      setDestinations(Array.isArray(destData) ? destData : []);
 
-        if (isEditMode) {
-          // Load existing tour data for edit
-          await loadTourData();
+      if (isEditMode) {
+        // Load existing tour data for edit
+        await loadTourData();
+      } else {
+        // Set is_international to 1 for international tours
+        setFormData(prev => ({
+          ...prev,
+          is_international: 1
+        }));
+        
+        // Fetch tour code with is_international=1 parameter
+        // Note: The tour_type should be "seniorcitizen" as per your formData
+        const tourCodeRes = await fetch(
+          `${baseurl}/api/tours/next-tour-code?tour_type=seniorcitizen&is_international=1`
+        );
+        
+        if (tourCodeRes.ok) {
+          const tourCodeData = await tourCodeRes.json();
+          setFormData(prev => ({
+            ...prev,
+            tour_code: tourCodeData.next_tour_code,
+            is_international: 1
+          }));
         } else {
-          // Load next tour code for add mode
-          const tourCodeRes = await fetch(`${baseurl}/api/tours/next-tour-code?tour_type=ladies`);
-          if (tourCodeRes.ok) {
-            const tourCodeData = await tourCodeRes.json();
-            setFormData(prev => ({
-              ...prev,
-              tour_code: tourCodeData.next_tour_code
-            }));
-          }
+          // Fallback or handle error
+          console.error('Failed to fetch tour code');
         }
-      } catch (err) {
-        setError('Failed to load dropdown data');
       }
-    };
+    } catch (err) {
+      setError('Failed to load dropdown data');
+    }
+  };
 
-    loadDropdownsAndTourCode();
-  }, [id]);
+  loadDropdownsAndTourCode();
+}, [id]);
 
-  // Load tour data for editing
+  // Load tour data for editing - UPDATED TO INCLUDE HOTEL PRICE FIELDS
   const loadTourData = async () => {
     try {
       setLoading(true);
       setError('');
       
-      // Fetch full tour data
-      const response = await fetch(`${baseurl}/api/tours/tour/full/ladiesspecial/${id}`);
+      const response = await fetch(`${baseurl}/api/tours/tour/full/seniorcitizen/${id}`);
       if (!response.ok) throw new Error('Failed to fetch tour data');
       
       const data = await response.json();
       
       if (data.success) {
-        // Set basic form data
         const basic = data.basic_details;
         setFormData({
           tour_code: basic.tour_code || '',
-          tour_type: basic.tour_type || 'ladiesspecial',
+          tour_type: basic.tour_type || 'seniorcitizen',
           title: basic.title || '',
           category_id: basic.category_id || 1,
           primary_destination_id: basic.primary_destination_id || '',
@@ -505,7 +498,7 @@ const removeCancelRow = (idx) => {
           setItineraries(formattedItineraries);
         }
 
-        // Set departures - Ladies special tours have similar structure to group tours
+        // Set departures - Now with hotel price fields like Ladies Tour
         if (data.departures && Array.isArray(data.departures)) {
           const formattedDepartures = data.departures.map(dept => ({
             start_date: dept.start_date ? dept.start_date.split('T')[0] : '',
@@ -652,8 +645,8 @@ const removeCancelRow = (idx) => {
     }));
   };
 
-  // DEPARTURE FORM CHANGE - Ladies Special (SIMILAR TO GROUP)
-  const handleLadiesDepartureChange = (e) => {
+  // DEPARTURE FORM CHANGE - UPDATED WITH HOTEL PRICE FIELDS
+  const handleSeniorDepartureChange = (e) => {
     const { name, value } = e.target;
     const numericFields = [
       'total_seats', 'booked_seats',
@@ -665,7 +658,7 @@ const removeCancelRow = (idx) => {
       'five_star_child_without_bed', 'five_star_infant', 'five_star_single'
     ];
 
-    setLadiesDepartureForm((prev) => ({
+    setSeniorDepartureForm((prev) => ({
       ...prev,
       [name]: numericFields.includes(name)
         ? value === '' ? '' : Number(value)
@@ -674,35 +667,35 @@ const removeCancelRow = (idx) => {
   };
 
   const handleAddDeparture = () => {
-    if (!ladiesDepartureForm.start_date || !ladiesDepartureForm.end_date) return;
+    if (!seniorDepartureForm.start_date || !seniorDepartureForm.end_date) return;
 
     const departureData = {
-      ...ladiesDepartureForm,
+      ...seniorDepartureForm,
       // Ensure all price fields are numbers or null
-      three_star_twin: ladiesDepartureForm.three_star_twin || null,
-      three_star_triple: ladiesDepartureForm.three_star_triple || null,
-      three_star_child_with_bed: ladiesDepartureForm.three_star_child_with_bed || null,
-      three_star_child_without_bed: ladiesDepartureForm.three_star_child_without_bed || null,
-      three_star_infant: ladiesDepartureForm.three_star_infant || null,
-      three_star_single: ladiesDepartureForm.three_star_single || null,
-      four_star_twin: ladiesDepartureForm.four_star_twin || null,
-      four_star_triple: ladiesDepartureForm.four_star_triple || null,
-      four_star_child_with_bed: ladiesDepartureForm.four_star_child_with_bed || null,
-      four_star_child_without_bed: ladiesDepartureForm.four_star_child_without_bed || null,
-      four_star_infant: ladiesDepartureForm.four_star_infant || null,
-      four_star_single: ladiesDepartureForm.four_star_single || null,
-      five_star_twin: ladiesDepartureForm.five_star_twin || null,
-      five_star_triple: ladiesDepartureForm.five_star_triple || null,
-      five_star_child_with_bed: ladiesDepartureForm.five_star_child_with_bed || null,
-      five_star_child_without_bed: ladiesDepartureForm.five_star_child_without_bed || null,
-      five_star_infant: ladiesDepartureForm.five_star_infant || null,
-      five_star_single: ladiesDepartureForm.five_star_single || null
+      three_star_twin: seniorDepartureForm.three_star_twin || null,
+      three_star_triple: seniorDepartureForm.three_star_triple || null,
+      three_star_child_with_bed: seniorDepartureForm.three_star_child_with_bed || null,
+      three_star_child_without_bed: seniorDepartureForm.three_star_child_without_bed || null,
+      three_star_infant: seniorDepartureForm.three_star_infant || null,
+      three_star_single: seniorDepartureForm.three_star_single || null,
+      four_star_twin: seniorDepartureForm.four_star_twin || null,
+      four_star_triple: seniorDepartureForm.four_star_triple || null,
+      four_star_child_with_bed: seniorDepartureForm.four_star_child_with_bed || null,
+      four_star_child_without_bed: seniorDepartureForm.four_star_child_without_bed || null,
+      four_star_infant: seniorDepartureForm.four_star_infant || null,
+      four_star_single: seniorDepartureForm.four_star_single || null,
+      five_star_twin: seniorDepartureForm.five_star_twin || null,
+      five_star_triple: seniorDepartureForm.five_star_triple || null,
+      five_star_child_with_bed: seniorDepartureForm.five_star_child_with_bed || null,
+      five_star_child_without_bed: seniorDepartureForm.five_star_child_without_bed || null,
+      five_star_infant: seniorDepartureForm.five_star_infant || null,
+      five_star_single: seniorDepartureForm.five_star_single || null
     };
 
     setDepartures((prev) => [...prev, departureData]);
 
     // Reset form
-    setLadiesDepartureForm({
+    setSeniorDepartureForm({
       start_date: '',
       end_date: '',
       status: 'Available',
@@ -735,16 +728,13 @@ const removeCancelRow = (idx) => {
 
   const editDeparture = (idx) => {
     const departure = departures[idx];
-    setLadiesDepartureForm(departure);
+    setSeniorDepartureForm(departure);
     setDepartures(prev => prev.filter((_, i) => i !== idx));
   };
 
- const handleRemoveDeparture = (idx) => {
-  const confirmDelete = window.confirm('Are you sure you want to remove this departure?');
-  if (confirmDelete) {
+  const handleRemoveDeparture = (idx) => {
     setDepartures((prev) => prev.filter((_, i) => i !== idx));
-  }
-};
+  };
 
   // EXCLUSIONS
   const handleAddExclusion = () => {
@@ -760,12 +750,9 @@ const removeCancelRow = (idx) => {
     setExclusions(prev => prev.filter((_, i) => i !== idx));
   };
 
-const handleRemoveExclusion = (idx) => {
-  const confirmDelete = window.confirm('Are you sure you want to remove this exclusion?');
-  if (confirmDelete) {
+  const handleRemoveExclusion = (idx) => {
     setExclusions((prev) => prev.filter((_, i) => i !== idx));
-  }
-};
+  };
 
   // INCLUSIONS
   const handleAddInclusion = () => {
@@ -781,12 +768,9 @@ const handleRemoveExclusion = (idx) => {
     setInclusions(prev => prev.filter((_, i) => i !== idx));
   };
 
- const handleRemoveInclusion = (idx) => {
-  const confirmDelete = window.confirm('Are you sure you want to remove this inclusion?');
-  if (confirmDelete) {
+  const handleRemoveInclusion = (idx) => {
     setInclusions(prev => prev.filter((_, i) => i !== idx));
-  }
-};
+  };
 
   // IMAGES
   const handleImageChange = (e) => {
@@ -862,11 +846,8 @@ const handleRemoveExclusion = (idx) => {
   };
 
   const handleRemoveItinerary = (idx) => {
-  const confirmDelete = window.confirm('Are you sure you want to remove this itinerary?');
-  if (confirmDelete) {
     setItineraries(prev => prev.filter((_, i) => i !== idx));
-  }
-};
+  };
 
   // NAVIGATION
   const goNext = () => {
@@ -884,7 +865,7 @@ const handleRemoveExclusion = (idx) => {
   };
 
   const handleCancel = () => {
-    navigate('/ladies-special-tours');
+    navigate('/senior-citizen-tours');
   };
 
   const isLastTab = activeTab === TAB_LIST[TAB_LIST.length - 1];
@@ -899,7 +880,7 @@ const handleRemoveExclusion = (idx) => {
         break;
 
       case 'departures':
-        if (ladiesDepartureForm.start_date && ladiesDepartureForm.end_date) {
+        if (seniorDepartureForm.start_date && seniorDepartureForm.end_date) {
           handleAddDeparture();
         }
         break;
@@ -968,7 +949,7 @@ const handleRemoveExclusion = (idx) => {
     }
   };
 
-  // UPDATE EXISTING TOUR
+  // UPDATE EXISTING TOUR - UPDATED WITH HOTEL PRICE FIELDS
   const updateTour = async () => {
     if (!formData.tour_code.trim()) {
       setError('Tour code is required');
@@ -986,10 +967,9 @@ const handleRemoveExclusion = (idx) => {
       setError('');
       setSuccess('');
 
-      // 1) PREPARE BASIC TOUR DATA FOR UPDATE
       const tourUpdateData = {
         title: formData.title.trim(),
-        tour_type: formData.tour_type || 'ladiesspecial',
+        tour_type: formData.tour_type || 'seniorcitizen',
         primary_destination_id: formData.primary_destination_id,
         duration_days: Number(formData.duration_days) || 0,
         overview: formData.overview || '',
@@ -1006,7 +986,6 @@ const handleRemoveExclusion = (idx) => {
 
       console.log('Updating tour with data:', tourUpdateData);
 
-      // 1) UPDATE TOUR BASIC DETAILS
       const tourRes = await fetch(`${baseurl}/api/tours/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -1019,7 +998,7 @@ const handleRemoveExclusion = (idx) => {
         throw new Error(tourResponse.error || tourResponse.message || 'Failed to update tour');
       }
 
-      // 2) DELETE EXISTING DATA
+      // DELETE EXISTING DATA
       const deleteEndpoints = [
         `${baseurl}/api/departures/bulk/${id}`,
         `${baseurl}/api/optional-tours/tour/${id}`,
@@ -1042,11 +1021,11 @@ const handleRemoveExclusion = (idx) => {
         }
       }
 
-      // 3) RE-ADD ALL DATA
-      // Departures - Ladies special tours (similar to group)
+      // RE-ADD ALL DATA
+      // Departures - Updated with hotel price fields
       if (departures.length > 0) {
         const formattedDepartures = departures.map(dept => ({
-          tour_type: 'ladiesspecial',
+          tour_type: 'Group',
           start_date: dept.start_date,
           end_date: dept.end_date,
           status: dept.status,
@@ -1201,7 +1180,7 @@ const handleRemoveExclusion = (idx) => {
       }
 
       setSuccess('Tour updated successfully!');
-      setTimeout(() => navigate('/ladies-special-tours'), 1500);
+      setTimeout(() => navigate('/senior-citizen-tours'), 1500);
     } catch (err) {
       console.error('Error updating tour:', err);
       setError(err.message || 'Failed to update tour');
@@ -1210,7 +1189,7 @@ const handleRemoveExclusion = (idx) => {
     }
   };
 
-  // CREATE NEW TOUR
+  // CREATE NEW TOUR - UPDATED WITH HOTEL PRICE FIELDS
   const createTour = async () => {
     if (!formData.tour_code.trim()) {
       setError('Tour code is required');
@@ -1243,10 +1222,10 @@ const handleRemoveExclusion = (idx) => {
       const tourData = await tourRes.json();
       const tourId = tourData.tour_id || tourData.id || tourData.insertId;
 
-      // 2) DEPARTURES BULK - LADIES SPECIAL TOURS
+      // 2) DEPARTURES BULK - UPDATED WITH HOTEL PRICE FIELDS
       if (departures.length > 0) {
         const formattedDepartures = departures.map(dept => ({
-          tour_type: 'ladiesspecial',
+          tour_type: 'Group',
           start_date: dept.start_date,
           end_date: dept.end_date,
           status: dept.status,
@@ -1398,7 +1377,7 @@ const handleRemoveExclusion = (idx) => {
       }
 
       setSuccess('Tour saved successfully!');
-      setTimeout(() => navigate('/ladies-special-tours'), 1500);
+      setTimeout(() => navigate('/senior-citizen-tours'), 1500);
     } catch (err) {
       setError(err.message || 'Failed to save tour');
     } finally {
@@ -1453,7 +1432,7 @@ const handleRemoveExclusion = (idx) => {
   return (
     <Navbar>
       <Container>
-        <h2 className="mb-4">{isEditMode ? 'Edit Ladies Special Tour' : 'Add Ladies Special Tour'}</h2>
+        <h2 className="mb-4">{isEditMode ? 'Edit Senior Citizen Tour' : 'Add Senior Citizen Tour'}</h2>
 
         {error && <Alert variant="danger">{error}</Alert>}
         {success && <Alert variant="success">{success}</Alert>}
@@ -1484,9 +1463,9 @@ const handleRemoveExclusion = (idx) => {
                           backgroundColor: isEditMode ? "#f8f9fa" : "white"
                         }}
                       />
-                      {/* <Form.Text className="text-muted">
+                      <Form.Text className="text-muted">
                         {isEditMode ? "Tour code cannot be changed" : "Auto-generated tour code"}
-                      </Form.Text> */}
+                      </Form.Text>
                     </Form.Group>
 
                     <Form.Group className="mb-3">
@@ -1553,18 +1532,20 @@ const handleRemoveExclusion = (idx) => {
                     </Form.Group>
 
                      <Form.Group className="mb-3">
-                      <Form.Label>EMI Price</Form.Label>
-                      <Form.Control
-                        type="number"
-                        name="emi_price"
-                        value={formData.emi_price}
-                        onChange={handleBasicChange}
-                        placeholder="Optional EMI price"
-                      />
-                      <Form.Text className="text-muted">
-                        This is the price used for EMI calculations (if different from tour price)
-                      </Form.Text>
+                        <Form.Label>EMI Price</Form.Label>
+                        <Form.Control
+                          type="number"
+                          name="emi_price"
+                          value={formData.emi_price}
+                          onChange={handleBasicChange}
+                          placeholder="Optional EMI price"
+                        />
+                        <Form.Text className="text-muted">
+                          This is the price used for EMI calculations (if different from tour price)
+                        </Form.Text>
                     </Form.Group>
+
+
                   </Col>
                 </Row>
               </Tab>
@@ -1685,7 +1666,7 @@ const handleRemoveExclusion = (idx) => {
                 )}
               </Tab>
 
-              {/* ======== DEPARTURES TAB - LADIES SPECIAL TOUR ======== */}
+              {/* ======== DEPARTURES TAB - SENIOR CITIZEN TOUR (UPDATED) ======== */}
               <Tab eventKey="departures" title="Departures">
                 <div>
                   {/* Departure Dates Section */}
@@ -1697,8 +1678,8 @@ const handleRemoveExclusion = (idx) => {
                         <Form.Control
                           type="date"
                           name="start_date"
-                          value={ladiesDepartureForm.start_date}
-                          onChange={handleLadiesDepartureChange}
+                          value={seniorDepartureForm.start_date}
+                          onChange={handleSeniorDepartureChange}
                         />
                       </Form.Group>
                     </Col>
@@ -1709,8 +1690,8 @@ const handleRemoveExclusion = (idx) => {
                         <Form.Control
                           type="date"
                           name="end_date"
-                          value={ladiesDepartureForm.end_date}
-                          onChange={handleLadiesDepartureChange}
+                          value={seniorDepartureForm.end_date}
+                          onChange={handleSeniorDepartureChange}
                         />
                       </Form.Group>
                     </Col>
@@ -1720,8 +1701,8 @@ const handleRemoveExclusion = (idx) => {
                         <Form.Label>Status *</Form.Label>
                         <Form.Select
                           name="status"
-                          value={ladiesDepartureForm.status}
-                          onChange={handleLadiesDepartureChange}
+                          value={seniorDepartureForm.status}
+                          onChange={handleSeniorDepartureChange}
                         >
                           <option value="Available">Available</option>
                           <option value="Few Seats">Few Seats</option>
@@ -1737,8 +1718,8 @@ const handleRemoveExclusion = (idx) => {
                         <Form.Control
                           type="number"
                           name="total_seats"
-                          value={ladiesDepartureForm.total_seats}
-                          onChange={handleLadiesDepartureChange}
+                          value={seniorDepartureForm.total_seats}
+                          onChange={handleSeniorDepartureChange}
                           placeholder="Total seats"
                         />
                       </Form.Group>
@@ -1750,8 +1731,8 @@ const handleRemoveExclusion = (idx) => {
                         <Form.Control
                           type="number"
                           name="booked_seats"
-                          value={ladiesDepartureForm.booked_seats}
-                          onChange={handleLadiesDepartureChange}
+                          value={seniorDepartureForm.booked_seats}
+                          onChange={handleSeniorDepartureChange}
                           placeholder="Booked seats"
                         />
                       </Form.Group>
@@ -1763,8 +1744,8 @@ const handleRemoveExclusion = (idx) => {
                         <Form.Control
                           type="text"
                           name="description"
-                          value={ladiesDepartureForm.description}
-                          onChange={handleLadiesDepartureChange}
+                          value={seniorDepartureForm.description}
+                          onChange={handleSeniorDepartureChange}
                           placeholder="Optional description"
                         />
                       </Form.Group>
@@ -1780,8 +1761,8 @@ const handleRemoveExclusion = (idx) => {
                         <Form.Control
                           type="number"
                           name="three_star_twin"
-                          value={ladiesDepartureForm.three_star_twin}
-                          onChange={handleLadiesDepartureChange}
+                          value={seniorDepartureForm.three_star_twin}
+                          onChange={handleSeniorDepartureChange}
                           placeholder="₹"
                         />
                       </Form.Group>
@@ -1792,8 +1773,8 @@ const handleRemoveExclusion = (idx) => {
                         <Form.Control
                           type="number"
                           name="three_star_triple"
-                          value={ladiesDepartureForm.three_star_triple}
-                          onChange={handleLadiesDepartureChange}
+                          value={seniorDepartureForm.three_star_triple}
+                          onChange={handleSeniorDepartureChange}
                           placeholder="₹"
                         />
                       </Form.Group>
@@ -1804,8 +1785,8 @@ const handleRemoveExclusion = (idx) => {
                         <Form.Control
                           type="number"
                           name="three_star_child_with_bed"
-                          value={ladiesDepartureForm.three_star_child_with_bed}
-                          onChange={handleLadiesDepartureChange}
+                          value={seniorDepartureForm.three_star_child_with_bed}
+                          onChange={handleSeniorDepartureChange}
                           placeholder="₹"
                         />
                       </Form.Group>
@@ -1816,8 +1797,8 @@ const handleRemoveExclusion = (idx) => {
                         <Form.Control
                           type="number"
                           name="three_star_child_without_bed"
-                          value={ladiesDepartureForm.three_star_child_without_bed}
-                          onChange={handleLadiesDepartureChange}
+                          value={seniorDepartureForm.three_star_child_without_bed}
+                          onChange={handleSeniorDepartureChange}
                           placeholder="₹"
                         />
                       </Form.Group>
@@ -1828,8 +1809,8 @@ const handleRemoveExclusion = (idx) => {
                         <Form.Control
                           type="number"
                           name="three_star_infant"
-                          value={ladiesDepartureForm.three_star_infant}
-                          onChange={handleLadiesDepartureChange}
+                          value={seniorDepartureForm.three_star_infant}
+                          onChange={handleSeniorDepartureChange}
                           placeholder="₹"
                         />
                       </Form.Group>
@@ -1840,8 +1821,8 @@ const handleRemoveExclusion = (idx) => {
                         <Form.Control
                           type="number"
                           name="three_star_single"
-                          value={ladiesDepartureForm.three_star_single}
-                          onChange={handleLadiesDepartureChange}
+                          value={seniorDepartureForm.three_star_single}
+                          onChange={handleSeniorDepartureChange}
                           placeholder="₹"
                         />
                       </Form.Group>
@@ -1857,8 +1838,8 @@ const handleRemoveExclusion = (idx) => {
                         <Form.Control
                           type="number"
                           name="four_star_twin"
-                          value={ladiesDepartureForm.four_star_twin}
-                          onChange={handleLadiesDepartureChange}
+                          value={seniorDepartureForm.four_star_twin}
+                          onChange={handleSeniorDepartureChange}
                           placeholder="₹"
                         />
                       </Form.Group>
@@ -1869,8 +1850,8 @@ const handleRemoveExclusion = (idx) => {
                         <Form.Control
                           type="number"
                           name="four_star_triple"
-                          value={ladiesDepartureForm.four_star_triple}
-                          onChange={handleLadiesDepartureChange}
+                          value={seniorDepartureForm.four_star_triple}
+                          onChange={handleSeniorDepartureChange}
                           placeholder="₹"
                         />
                       </Form.Group>
@@ -1881,8 +1862,8 @@ const handleRemoveExclusion = (idx) => {
                         <Form.Control
                           type="number"
                           name="four_star_child_with_bed"
-                          value={ladiesDepartureForm.four_star_child_with_bed}
-                          onChange={handleLadiesDepartureChange}
+                          value={seniorDepartureForm.four_star_child_with_bed}
+                          onChange={handleSeniorDepartureChange}
                           placeholder="₹"
                         />
                       </Form.Group>
@@ -1893,8 +1874,8 @@ const handleRemoveExclusion = (idx) => {
                         <Form.Control
                           type="number"
                           name="four_star_child_without_bed"
-                          value={ladiesDepartureForm.four_star_child_without_bed}
-                          onChange={handleLadiesDepartureChange}
+                          value={seniorDepartureForm.four_star_child_without_bed}
+                          onChange={handleSeniorDepartureChange}
                           placeholder="₹"
                         />
                       </Form.Group>
@@ -1905,8 +1886,8 @@ const handleRemoveExclusion = (idx) => {
                         <Form.Control
                           type="number"
                           name="four_star_infant"
-                          value={ladiesDepartureForm.four_star_infant}
-                          onChange={handleLadiesDepartureChange}
+                          value={seniorDepartureForm.four_star_infant}
+                          onChange={handleSeniorDepartureChange}
                           placeholder="₹"
                         />
                       </Form.Group>
@@ -1917,8 +1898,8 @@ const handleRemoveExclusion = (idx) => {
                         <Form.Control
                           type="number"
                           name="four_star_single"
-                          value={ladiesDepartureForm.four_star_single}
-                          onChange={handleLadiesDepartureChange}
+                          value={seniorDepartureForm.four_star_single}
+                          onChange={handleSeniorDepartureChange}
                           placeholder="₹"
                         />
                       </Form.Group>
@@ -1934,8 +1915,8 @@ const handleRemoveExclusion = (idx) => {
                         <Form.Control
                           type="number"
                           name="five_star_twin"
-                          value={ladiesDepartureForm.five_star_twin}
-                          onChange={handleLadiesDepartureChange}
+                          value={seniorDepartureForm.five_star_twin}
+                          onChange={handleSeniorDepartureChange}
                           placeholder="₹"
                         />
                       </Form.Group>
@@ -1946,8 +1927,8 @@ const handleRemoveExclusion = (idx) => {
                         <Form.Control
                           type="number"
                           name="five_star_triple"
-                          value={ladiesDepartureForm.five_star_triple}
-                          onChange={handleLadiesDepartureChange}
+                          value={seniorDepartureForm.five_star_triple}
+                          onChange={handleSeniorDepartureChange}
                           placeholder="₹"
                         />
                       </Form.Group>
@@ -1958,8 +1939,8 @@ const handleRemoveExclusion = (idx) => {
                         <Form.Control
                           type="number"
                           name="five_star_child_with_bed"
-                          value={ladiesDepartureForm.five_star_child_with_bed}
-                          onChange={handleLadiesDepartureChange}
+                          value={seniorDepartureForm.five_star_child_with_bed}
+                          onChange={handleSeniorDepartureChange}
                           placeholder="₹"
                         />
                       </Form.Group>
@@ -1970,8 +1951,8 @@ const handleRemoveExclusion = (idx) => {
                         <Form.Control
                           type="number"
                           name="five_star_child_without_bed"
-                          value={ladiesDepartureForm.five_star_child_without_bed}
-                          onChange={handleLadiesDepartureChange}
+                          value={seniorDepartureForm.five_star_child_without_bed}
+                          onChange={handleSeniorDepartureChange}
                           placeholder="₹"
                         />
                       </Form.Group>
@@ -1982,8 +1963,8 @@ const handleRemoveExclusion = (idx) => {
                         <Form.Control
                           type="number"
                           name="five_star_infant"
-                          value={ladiesDepartureForm.five_star_infant}
-                          onChange={handleLadiesDepartureChange}
+                          value={seniorDepartureForm.five_star_infant}
+                          onChange={handleSeniorDepartureChange}
                           placeholder="₹"
                         />
                       </Form.Group>
@@ -1994,8 +1975,8 @@ const handleRemoveExclusion = (idx) => {
                         <Form.Control
                           type="number"
                           name="five_star_single"
-                          value={ladiesDepartureForm.five_star_single}
-                          onChange={handleLadiesDepartureChange}
+                          value={seniorDepartureForm.five_star_single}
+                          onChange={handleSeniorDepartureChange}
                           placeholder="₹"
                         />
                       </Form.Group>
@@ -2358,7 +2339,7 @@ const handleRemoveExclusion = (idx) => {
                 )}
               </Tab>
 
-              {/* ======== TRANSPORT TAB - LADIES SPECIAL TOUR ======== */}
+              {/* ======== TRANSPORT TAB - SENIOR CITIZEN TOUR ======== */}
               <Tab eventKey="transport" title="Transport">
                 <Row className="mt-3">
                   {/* Airline */}
@@ -2988,4 +2969,4 @@ const handleRemoveExclusion = (idx) => {
   );
 };
 
-export default AddLadiesTour;
+export default AddSeniorTour;
