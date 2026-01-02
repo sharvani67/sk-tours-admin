@@ -1,20 +1,20 @@
-// AddDestination.js
+// AddInternationalDestination.js
 import React, { useState, useEffect } from 'react';
 import { Container, Card, Form, Button, Alert, Spinner, Row, Col } from 'react-bootstrap';
 import { useNavigate, useParams } from 'react-router-dom';
 import Navbar from '../../Shared/Navbar/Navbar';
 import { baseurl } from '../../Api/Baseurl';
 
-const AddDestination = () => {
+const AddInternationalDestination = () => {
   const navigate = useNavigate();
-  const { id } = useParams(); // Get destination ID from URL if editing
+  const { id } = useParams();
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(false);
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
   const [isEditMode, setIsEditMode] = useState(false);
 
-  // Dropdown data for countries - only domestic
+  // Dropdown data for international countries only
   const [countries, setCountries] = useState([]);
 
   // Form state
@@ -24,21 +24,15 @@ const AddDestination = () => {
     short_desc: ''
   });
 
-  // Load countries dropdown - Only domestic countries
+  // Load international countries dropdown
   const fetchCountries = async () => {
     try {
-      const response = await fetch(`${baseurl}/api/countries`);
+      const response = await fetch(`${baseurl}/api/countries/international`);
       const data = await response.json();
-      
-      // Filter only domestic countries (is_domestic == 1)
-      const domesticCountries = Array.isArray(data) 
-        ? data.filter(country => country.is_domestic == 1)
-        : [];
-      
-      setCountries(domesticCountries);
+      setCountries(Array.isArray(data) ? data : []);
     } catch (err) {
-      console.error("Countries load error", err);
-      setError("Failed to load domestic countries");
+      console.error("International countries load error", err);
+      setError("Failed to load international countries");
     }
   };
 
@@ -58,14 +52,9 @@ const AddDestination = () => {
           name: result.name || '',
           short_desc: result.short_desc || ''
         });
-
-        // If we need to fetch the country info for editing, ensure it's domestic
-        if (result.country_id && result.is_domestic !== 1) {
-          setError("Warning: This destination is currently linked to an international country. Please select a domestic country.");
-        }
       } else {
         setError(result.message || 'Failed to fetch destination data');
-        setTimeout(() => navigate('/destinations'), 2000);
+        setTimeout(() => navigate('/intl-destinations'), 2000);
       }
     } catch (err) {
       console.error('Error fetching destination:', err);
@@ -90,7 +79,7 @@ const AddDestination = () => {
     }));
   };
 
-  const handleBack = () => navigate('/destinations');
+  const handleBack = () => navigate('/intl-destinations');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -101,7 +90,7 @@ const AddDestination = () => {
       return;
     }
     if (!formData.country_id) {
-      setError("Please select a country");
+      setError("Please select an international country");
       return;
     }
 
@@ -128,13 +117,13 @@ const AddDestination = () => {
 
       if (response.ok) {
         const message = isEditMode 
-          ? "Destination updated successfully!" 
-          : "Destination added successfully!";
+          ? "International destination updated successfully!" 
+          : "International destination added successfully!";
         
         setSuccess(message);
 
         setTimeout(() => {
-          navigate('/destinations');
+          navigate('/intl-destinations');
         }, 1500);
       } else {
         setError(result.message || result.error || 
@@ -152,7 +141,7 @@ const AddDestination = () => {
     <Navbar>
       <Container>
         <div className="d-flex justify-content-between align-items-center mb-4">
-          <h2 className="mb-0">{isEditMode ? 'Edit Domestic Destination' : 'Add Domestic Destination'}</h2>
+          <h2 className="mb-0">{isEditMode ? 'Edit International Destination' : 'Add International Destination'}</h2>
         </div>
 
         {error && <Alert variant="danger">{error}</Alert>}
@@ -176,13 +165,10 @@ const AddDestination = () => {
                         name="name"
                         value={formData.name}
                         onChange={handleChange}
-                        placeholder="e.g., Kerala, Goa, Rajasthan"
+                        placeholder="e.g., Bangkok, Paris, Dubai"
                         required
                         disabled={loading}
                       />
-                      {/* <Form.Text className="text-muted">
-                        Name of the domestic destination within India
-                      </Form.Text> */}
                     </Form.Group>
 
                     <Form.Group className="mb-3">
@@ -194,21 +180,16 @@ const AddDestination = () => {
                         required
                         disabled={loading}
                       >
-                        <option value="">Select Domestic Country</option>
+                        <option value="">Select International Country</option>
                         {countries.map((country) => (
                           <option key={country.country_id} value={country.country_id}>
-                            {country.name} 
+                            {country.name} (International)
                           </option>
                         ))}
                       </Form.Select>
-                      {/* <Form.Text className="text-muted">
-                        Only domestic countries (is_domestic = 1) are shown here
-                      </Form.Text> */}
-                      {countries.length === 0 && (
-                        <Alert variant="warning" className="mt-2 py-1">
-                          <small>No domestic countries found. Please add domestic countries first.</small>
-                        </Alert>
-                      )}
+                      <Form.Text className="text-muted">
+                        Only international countries are shown here
+                      </Form.Text>
                     </Form.Group>
                   </Col>
 
@@ -221,25 +202,13 @@ const AddDestination = () => {
                         name="short_desc"
                         value={formData.short_desc}
                         onChange={handleChange}
-                        placeholder="Brief description of the domestic destination..."
+                        placeholder="Brief description of the international destination..."
                         disabled={loading}
                       />
-                      {/* <Form.Text className="text-muted">
-                        Optional: A short description about this domestic destination
-                      </Form.Text> */}
+                      <Form.Text className="text-muted">
+                        Optional: A short description about this destination
+                      </Form.Text>
                     </Form.Group>
-
-                    {/* Information box about domestic destinations */}
-                    {/* <div className="p-3 bg-light rounded mb-3">
-                      <h6 className="text-success mb-2">ℹ️ Domestic Destination Information</h6>
-                      <p className="mb-1 text-muted" style={{ fontSize: '0.875rem' }}>
-                        <strong>Note:</strong> This form is for adding domestic destinations only.
-                      </p>
-                      <p className="mb-0 text-muted" style={{ fontSize: '0.875rem' }}>
-                        Domestic destinations are locations within India (e.g., Kerala, Goa, Rajasthan).
-                        For international destinations, please use the "Add International Destination" form.
-                      </p>
-                    </div> */}
                   </Col>
                 </Row>
 
@@ -257,7 +226,7 @@ const AddDestination = () => {
                         <Spinner animation="border" size="sm" /> 
                         {isEditMode ? 'Updating...' : 'Saving...'}
                       </>
-                    ) : isEditMode ? 'Update Domestic Destination' : 'Add Domestic Destination'}
+                    ) : isEditMode ? 'Update Destination' : 'Add Destination'}
                   </Button>
                 </div>
               </Form>
@@ -269,4 +238,4 @@ const AddDestination = () => {
   );
 };
 
-export default AddDestination;
+export default AddInternationalDestination;

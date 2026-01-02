@@ -119,6 +119,13 @@ const Navbar = ({ children }) => {
     matchPaths: ["/countries"],
   },
 
+    {
+    label: "International Countries",
+    path: "/intl-countries",
+    icon: <FiFlag className="sidebar-icon" />,   // more relevant
+    matchPaths: ["/intl-countries","/intl-add-countries"],
+  },
+
   // { 
   //   label: "Customers", 
   //   path: "/customers", 
@@ -129,14 +136,14 @@ const Navbar = ({ children }) => {
     label: "DOM-Individual-Tours",
     path: "/tours",
     icon: <FiMap className="sidebar-icon" />,   // tours = map routes
-    matchPaths: ["/tours", "add-tour"],
+    matchPaths: ["/tours", "/add-tour"],
   },
 
    {
     label: "DOM-Group-Tours", 
     path: "/group-tours",
     icon: <FiUsers className="sidebar-icon" />, 
-    matchPaths: ["/group-tours", "add-group-tour"],
+    matchPaths: ["/group-tours", "/add-group-tour"],
   },
 
   
@@ -145,72 +152,72 @@ const Navbar = ({ children }) => {
     label: "DOM-Ladies Special Tours",
     path: "/ladies-special-tours",
     icon: <FiUsers className="sidebar-icon" />,
-    matchPaths: ["/ladies-special-tours", "add-ladies-special-tour"],
+    matchPaths: ["/ladies-special-tours", "/add-ladies-special-tour"],
   },
 
   {
     label: "DOM-Senior Citizen Tours",
     path: "/senior-citizen-tours",
     icon: <FiUsers className="sidebar-icon" />,
-    matchPaths: ["/senior-citizen-tours", "add-senior-citizen-tour"],
+    matchPaths: ["/senior-citizen-tours", "/add-senior-citizen-tour"],
   },
 
   {
     label: "DOM-Student Tours",
     path: "/student-tours",
     icon: <FiUsers className="sidebar-icon" />,
-    matchPaths: ["/student-tours", "add-student-tour"],
+    matchPaths: ["/student-tours", "/add-student-tour"],
   },
 
   {
     label: "DOM-Honeymoon Tours",
     path: "/honeymoon-tours",
     icon: <FiMap className="sidebar-icon" />,
-    matchPaths: ["/honeymoon-tours", "add-honeymoon-tour"],
+    matchPaths: ["/honeymoon-tours", "/add-honeymoon-tour"],
   },
 
 
-  // {
-  //   label: "INTL-Individual-Tours",
-  //   path: "/intl-tours",
-  //   icon: <FiMap className="sidebar-icon" />,   // tours = map routes
-  //   matchPaths: ["/intl-tours", "/intl-add-tour"],
-  // },
+  {
+    label: "INTL-Individual-Tours",
+    path: "/intl-tours",
+    icon: <FiMap className="sidebar-icon" />,   // tours = map routes
+    matchPaths: ["/intl-tours", "/intl-add-tour"],
+  },
 
-  //  {
-  //   label: "INTL-Group-Tours", 
-  //   path: "/intl-group-tours",
-  //   icon: <FiUsers className="sidebar-icon" />, 
-  //   matchPaths: ["/intl-group-tours", "/intl-add-group-tour"],
-  // },
+   {
+    label: "INTL-Group-Tours", 
+    path: "/intl-group-tours",
+    icon: <FiUsers className="sidebar-icon" />, 
+    matchPaths: ["/intl-group-tours", "/intl-add-group-tour"],
+  },
 
-  // {
-  //   label: "INTL-Ladies-Special-Tours",
-  //   path: "/intl-ladies-special-tours",
-  //   icon: <FiUsers className="sidebar-icon" />,
-  //   matchPaths: ["/intl-ladies-special-tours", "/intl-add-ladies-special-tour"],
-  // },
+  {
+    label: "INTL-Ladies-Special-Tours",
+    path: "/intl-ladies-special-tours",
+    icon: <FiUsers className="sidebar-icon" />,
+    matchPaths: ["/intl-ladies-special-tours", "/intl-add-ladies-special-tour"],
+  },
 
-  // {
-  //   label: "INTL-Senior-Citizen-Tours",
-  //   path: "/intl-senior-citizen-tours",
-  //   icon: <FiUsers className="sidebar-icon" />,
-  //   matchPaths: ["/intl-senior-citizen-tours", "/intl-add-senior-citizen-tour"],
-  // },
+  {
+    label: "INTL-Senior-Citizen-Tours",
+    path: "/intl-senior-citizen-tours",
+    icon: <FiUsers className="sidebar-icon" />,
+    matchPaths: ["/intl-senior-citizen-tours", "/intl-add-senior-citizen-tour"],
+  },
 
-  // {
-  //   label: "INTL-Student-Tours",
-  //   path: "/intl-student-tours",
-  //   icon: <FiUsers className="sidebar-icon" />,
-  //   matchPaths: ["/intl-student-tours", "/intl-add-student-tour"],
-  // },
+  {
+    label: "INTL-Student-Tours",
+    path: "/intl-student-tours",
+    icon: <FiUsers className="sidebar-icon" />,
+    matchPaths: ["/intl-student-tours", "/intl-add-student-tour"],
+  },
 
-  // {
-  //   label: "INTL-Honeymoon-Tours",
-  //   path: "/intl-honeymoon-tours",
-  //   icon: <FiMap className="sidebar-icon" />,
-  //   matchPaths: ["/intl-honeymoon-tours", "/intl-add-honeymoon-tour"],
-  // },
+  {
+    label: "INTL-Honeymoon-Tours",
+    path: "/intl-honeymoon-tours",
+    icon: <FiMap className="sidebar-icon" />,
+    matchPaths: ["/intl-honeymoon-tours", "/intl-add-honeymoon-tour"],
+  },
 
    {
     label: "Tours-categories",
@@ -232,6 +239,13 @@ const Navbar = ({ children }) => {
     path: "/destinations",
     icon: <FiMapPin className="sidebar-icon" />, // place pin
     matchPaths: ["/destinations", "/add-destination"],
+  },
+
+   {
+    label: "International Destinations",
+    path: "/intl-destinations",
+    icon: <FiMapPin className="sidebar-icon" />, // place pin
+    matchPaths: ["/intl-destinations", "/intl-add-destination"],
   },
 
   // {

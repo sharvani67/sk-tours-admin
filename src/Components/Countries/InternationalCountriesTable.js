@@ -1,20 +1,20 @@
-// Countries.js
+// InternationalCountries.js
 import React, { useState, useEffect } from 'react';
 import { Container, Card, Alert, Spinner } from 'react-bootstrap';
-import { Eye, Pencil, Trash } from 'react-bootstrap-icons';
+import { Pencil, Trash } from 'react-bootstrap-icons';
 import Navbar from '../../Shared/Navbar/Navbar';
 import { baseurl } from '../../Api/Baseurl';
 import ReusableTable from '../../Shared/TableLayout/DataTable';
 import { useNavigate } from 'react-router-dom';
 
-const Countries = () => {
+const InternationalCountries = () => {
   const [countries, setCountries] = useState([]);
   const [filteredCountries, setFilteredCountries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  // Fetch Countries
+  // Fetch International Countries
   const fetchCountries = async () => {
     try {
       setLoading(true);
@@ -28,13 +28,13 @@ const Countries = () => {
         return b.country_id - a.country_id;
       });
 
-      // Filter for domestic countries only (is_domestic == 1)
-      const domesticCountries = sortedCountries.filter(country => 
-        country.is_domestic == 1
+      // Filter for international countries only (is_domestic == 0)
+      const internationalCountries = sortedCountries.filter(country => 
+        country.is_domestic == 0
       );
 
       setCountries(sortedCountries);
-      setFilteredCountries(domesticCountries);
+      setFilteredCountries(internationalCountries);
     } catch (err) {
       console.error('Error fetching countries:', err);
       setError('Error fetching countries. Please try again.');
@@ -72,9 +72,14 @@ const Countries = () => {
     }
   };
 
-  // Handle Edit - Navigate to add/edit form with ID
+  // Handle Edit - Navigate to international edit form
   const handleEdit = (countryId) => {
-    navigate(`/add-country/${countryId}`);
+    navigate(`/intl-add-country/${countryId}`);
+  };
+
+  // Handle Add International Country
+  const handleAdd = () => {
+    navigate('/intl-add-country');
   };
 
   // Columns for ReusableTable
@@ -92,8 +97,8 @@ const Countries = () => {
     },
     {
       key: 'is_domestic',
-      title: 'Domestic?',
-      render: (item) => item.is_domestic ? "Yes" : "No",
+      title: 'Type',
+      render: (item) => item.is_domestic ? "Domestic" : "International",
       style: { textAlign: "center" }
     },
     {
@@ -125,13 +130,13 @@ const Countries = () => {
     <Navbar>
       <Container>
         <div className="d-flex justify-content-between align-items-center mb-4">
-          <h2 className="mb-0">Domestic Countries</h2>
+          <h2 className="mb-0">International Countries</h2>
           <div>
             <button
               className="btn btn-success"
-              onClick={() => navigate('/add-country')}
+              onClick={handleAdd}
             >
-              + Add Domestic Country
+              + Add International Country
             </button>
           </div>
         </div>
@@ -147,15 +152,15 @@ const Countries = () => {
             {loading ? (
               <div className="text-center py-5">
                 <Spinner animation="border" role="status" className="me-2" />
-                Loading domestic countries...
+                Loading international countries...
               </div>
             ) : (
               <ReusableTable
-                title="Domestic Countries (is_domestic = 1)"
+                title="International Countries (is_domestic = 0)"
                 data={filteredCountries}
                 columns={columns}
                 initialEntriesPerPage={5}
-                searchPlaceholder="Search domestic countries..."
+                searchPlaceholder="Search international countries..."
                 showSearch={true}
                 showEntriesSelector={true}
                 showPagination={true}
@@ -168,4 +173,4 @@ const Countries = () => {
   );
 };
 
-export default Countries;
+export default InternationalCountries;

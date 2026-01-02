@@ -116,6 +116,14 @@ const AddSeniorTour = () => {
   const [imagePreviews, setImagePreviews] = useState([]);
   const [imageCaption, setImageCaption] = useState('');
 
+
+  // IMAGES
+// const [imageFiles, setImageFiles] = useState([]);
+const [existingImages, setExistingImages] = useState([]); // For images already in DB
+const [editingImageId, setEditingImageId] = useState(null); // For tracking which image is being edited
+const [replacementFile, setReplacementFile] = useState(null); // For file replacement during edit
+const [replacementPreview, setReplacementPreview] = useState(null);
+
   // =======================
   // OPTIONAL TOURS
   // =======================
@@ -435,7 +443,15 @@ const removeTransportRow = (idx) => {
 
         const destRes = await fetch(`${baseurl}/api/destinations`);
         const destData = await destRes.json();
-        setDestinations(Array.isArray(destData) ? destData : []);
+
+
+        // Filter for domestic destinations only (is_domestic == 1)
+      const domesticDestinations = Array.isArray(destData) 
+        ? destData.filter(destination => destination.is_domestic == 1)
+        : [];
+      
+      setDestinations(domesticDestinations);
+        
 
         if (isEditMode) {
           await loadTourData();
@@ -611,8 +627,7 @@ const removeTransportRow = (idx) => {
 
         // Set images (previews only, not files)
         if (data.images && Array.isArray(data.images)) {
-          const imageUrls = data.images.map(img => img.url);
-          setImagePreviews(imageUrls);
+            setExistingImages(data.images);
         }
 
         setSuccess('Tour data loaded successfully');
@@ -784,14 +799,157 @@ const handleRemoveDeparture = (idx) => {
   }
 };
 
-  // IMAGES
-  const handleImageChange = (e) => {
-    const files = e.target.files ? Array.from(e.target.files) : [];
-    setImageFiles(files);
+ // Add these new functions for image operations:
 
-    const previews = files.map((file) => URL.createObjectURL(file));
-    setImagePreviews(prev => [...prev, ...previews]);
+// ========================
+// IMAGE FUNCTIONS
+// ========================
+
+// Handle image upload/selection for new images
+const handleImageChange = (e) => {
+  const files = e.target.files ? Array.from(e.target.files) : [];
+  setImageFiles(files);
+};
+
+// Handle file selection for replacement
+const handleReplacementFileChange = (e) => {
+  const file = e.target.files ? e.target.files[0] : null;
+  setReplacementFile(file);
+  if (file) {
+    const preview = URL.createObjectURL(file);
+    setReplacementPreview(preview);
+  }
+};
+
+// Start editing an image
+const startEditImage = (image) => {
+  setEditingImageId(image.image_id);
+  setReplacementFile(null);
+  setReplacementPreview(null);
+};
+
+// Cancel editing
+const cancelEditImage = () => {
+  setEditingImageId(null);
+  setReplacementFile(null);
+  setReplacementPreview(null);
+  // Clear the file input
+  const fileInput = document.getElementById('replacementFileInput');
+  if (fileInput) fileInput.value = '';
+};
+
+// Update existing image (replace with new file)
+const updateImage = async (imageId) => {
+  if (!replacementFile) {
+    alert('Please select a new image file to replace the existing one');
+    return;
+  }
+
+  try {
+    setLoading(true);
+    setError('');
+    
+    // First delete the old image
+    const deleteResponse = await fetch(`${baseurl}/api/images/${imageId}`, {
+      method: 'DELETE'
+    });
+    
+    if (!deleteResponse.ok) {
+      throw new Error('Failed to delete old image');
+    }
+
+    // Then upload the new image
+    const formData = new FormData();
+    formData.append('images', replacementFile);
+    
+    const uploadResponse = await fetch(`${baseurl}/api/images/upload/${id}`, {
+      method: 'POST',
+      body: formData
+    });
+
+    if (!uploadResponse.ok) {
+      throw new Error('Failed to upload new image');
+    }
+
+    // Refresh the images list
+    await loadTourData();
+    
+    setSuccess('Image updated successfully');
+    cancelEditImage();
+  } catch (err) {
+    setError('Failed to update image: ' + err.message);
+  } finally {
+    setLoading(false);
+  }
+};
+
+// Delete image
+const deleteImage = async (imageId) => {
+  const confirmDelete = window.confirm('Are you sure you want to delete this image?');
+  if (!confirmDelete) return;
+
+  try {
+    setLoading(true);
+    setError('');
+    
+    const response = await fetch(`${baseurl}/api/images/${imageId}`, {
+      method: 'DELETE'
+    });
+    
+    if (!response.ok) {
+      throw new Error('Failed to delete image');
+    }
+
+    // Update local state
+    setExistingImages(prev => prev.filter(img => img.image_id !== imageId));
+    
+    setSuccess('Image deleted successfully');
+  } catch (err) {
+    setError('Failed to delete image: ' + err.message);
+  } finally {
+    setLoading(false);
+  }
+};
+
+// Set cover image
+const setCoverImage = async (imageId) => {
+  try {
+    setLoading(true);
+    setError('');
+    
+    const response = await fetch(`${baseurl}/api/images/cover/${imageId}`, {
+      method: 'PUT'
+    });
+    
+    if (!response.ok) {
+      throw new Error('Failed to set cover image');
+    }
+
+    // Update local state
+    setExistingImages(prev => 
+      prev.map(img => ({
+        ...img,
+        is_cover: img.image_id === imageId ? 1 : 0
+      }))
+    );
+    
+    setSuccess('Cover image updated successfully');
+  } catch (err) {
+    setError('Failed to set cover image: ' + err.message);
+  } finally {
+    setLoading(false);
+  }
+};
+
+// Cleanup effect for blob URLs
+useEffect(() => {
+  return () => {
+    if (replacementPreview && replacementPreview.startsWith('blob:')) {
+      URL.revokeObjectURL(replacementPreview);
+    }
   };
+}, [replacementPreview]);
+
 
   useEffect(() => {
     return () => {
@@ -1179,22 +1337,20 @@ const handleRemoveDeparture = (idx) => {
       }
 
       // Images (only if new files added)
+
       if (imageFiles.length > 0) {
-        const formDataImages = new FormData();
-        imageFiles.forEach((file) => {
-          formDataImages.append('images', file);
-        });
+  const formDataImages = new FormData();
+  imageFiles.forEach((file) => {
+    formDataImages.append('images', file);
+  });
+  await fetch(`${baseurl}/api/images/upload/${id}`, {
+    method: 'POST',
+    body: formDataImages
+  });
+}
 
-        if (imageCaption.trim()) {
-          formDataImages.append('caption', imageCaption.trim());
-        }
 
-        await fetch(`${baseurl}/api/images/upload/${id}`, {
-          method: 'POST',
-          body: formDataImages
-        });
-      }
-
+    
       setSuccess('Tour updated successfully!');
       setTimeout(() => navigate('/senior-citizen-tours'), 1500);
     } catch (err) {
@@ -1289,19 +1445,17 @@ const handleRemoveDeparture = (idx) => {
       }
 
       // 4) IMAGES
-      if (imageFiles.length > 0) {
-        const formDataImages = new FormData();
-        imageFiles.forEach((file) => {
-          formDataImages.append('images', file);
-        });
-        if (imageCaption.trim()) {
-          formDataImages.append('caption', imageCaption.trim());
-        }
-        await fetch(`${baseurl}/api/images/upload/${tourId}`, {
-          method: 'POST',
-          body: formDataImages
-        });
-      }
+     if (imageFiles.length > 0) {
+  const formDataImages = new FormData();
+  imageFiles.forEach((file) => {
+    formDataImages.append('images', file);
+  });
+  await fetch(`${baseurl}/api/images/upload/${tourId}`, {
+    method: 'POST',
+    body: formDataImages
+  });
+}
+
 
       // 5) INCLUSIONS
       if (inclusions.length > 0) {
@@ -1479,9 +1633,9 @@ const handleRemoveDeparture = (idx) => {
                           backgroundColor: isEditMode ? "#f8f9fa" : "white"
                         }}
                       />
-                      <Form.Text className="text-muted">
+                      {/* <Form.Text className="text-muted">
                         {isEditMode ? "Tour code cannot be changed" : "Auto-generated tour code"}
-                      </Form.Text>
+                      </Form.Text> */}
                     </Form.Group>
 
                     <Form.Group className="mb-3">
@@ -1494,7 +1648,7 @@ const handleRemoveDeparture = (idx) => {
                       />
                     </Form.Group>
 
-                    <Form.Group className="mb-3">
+                    {/* <Form.Group className="mb-3">
                       <Form.Label>International Tour?</Form.Label>
                       <Form.Select
                         name="is_international"
@@ -1504,28 +1658,45 @@ const handleRemoveDeparture = (idx) => {
                         <option value={0}>No</option>
                         <option value={1}>Yes</option>
                       </Form.Select>
+                    </Form.Group> */}
+
+                     <Form.Group className="mb-3">
+                      <Form.Label>Tour Price *</Form.Label>
+                      <Form.Control
+                        type="number"
+                        name="base_price_adult"
+                        value={formData.base_price_adult}
+                        onChange={handleBasicChange}
+                      />
                     </Form.Group>
+
+                    
                   </Col>
 
                   <Col md={6}>
-                    <Form.Group className="mb-3">
-                      <Form.Label>Indian States *</Form.Label>
-                      <Form.Select
-                        name="primary_destination_id"
-                        value={formData.primary_destination_id}
-                        onChange={handleBasicChange}
-                      >
-                        <option value="">Select Destination</option>
-                        {destinations.map((d) => (
-                          <option
-                            key={d.destination_id}
-                            value={d.destination_id}
-                          >
-                            {d.name}
-                          </option>
-                        ))}
-                      </Form.Select>
-                    </Form.Group>
+
+                  <Form.Group className="mb-3">
+                    <Form.Label>Indian States *</Form.Label>
+                    <Form.Select
+                      name="primary_destination_id"
+                      value={formData.primary_destination_id}
+                      onChange={handleBasicChange}
+                    >
+                      <option value="">Select Domestic Destination</option>
+                      {destinations.map((d) => (
+                        <option
+                          key={d.destination_id}
+                          value={d.destination_id}
+                        >
+                          {d.name}
+                        </option>
+                      ))}
+                    </Form.Select>
+                    {/* <Form.Text className="text-muted">
+                      Showing domestic destinations only
+                    </Form.Text> */}
+                  </Form.Group>
+                   
 
                     <Form.Group className="mb-3">
                       <Form.Label>Duration Days *</Form.Label>
@@ -1533,16 +1704,6 @@ const handleRemoveDeparture = (idx) => {
                         type="number"
                         name="duration_days"
                         value={formData.duration_days}
-                        onChange={handleBasicChange}
-                      />
-                    </Form.Group>
-
-                    <Form.Group className="mb-3">
-                      <Form.Label>Tour Price *</Form.Label>
-                      <Form.Control
-                        type="number"
-                        name="base_price_adult"
-                        value={formData.base_price_adult}
                         onChange={handleBasicChange}
                       />
                     </Form.Group>
@@ -1556,9 +1717,9 @@ const handleRemoveDeparture = (idx) => {
                           onChange={handleBasicChange}
                           placeholder="Optional EMI price"
                         />
-                        <Form.Text className="text-muted">
+                        {/* <Form.Text className="text-muted">
                           This is the price used for EMI calculations (if different from tour price)
-                        </Form.Text>
+                        </Form.Text> */}
                     </Form.Group>
 
 
@@ -2907,39 +3068,203 @@ const handleRemoveDeparture = (idx) => {
                 )}
               </Tab>
 
+              
               <Tab eventKey="images" title="Images">
-                <Form.Group className="mb-3">
-                  <Form.Label>Upload Images</Form.Label>
-                  <Form.Control
-                    type="file"
-                    multiple
-                    onChange={handleImageChange}
-                  />
-                </Form.Group>
+                {/* Section for adding NEW images */}
+                <Card className="mb-4">
+                  <Card.Header>Add New Images</Card.Header>
+                  <Card.Body>
+                    <Form.Group className="mb-3">
+                      <Form.Label>Upload New Images</Form.Label>
+                      <Form.Control
+                        type="file"
+                        multiple
+                        onChange={handleImageChange}
+                        accept="image/jpeg,image/jpg,image/png,image/webp"
+                      />
+                      <Form.Text className="text-muted">
+                        You can select multiple images (JPEG, PNG, WebP). Max 5MB per image.
+                      </Form.Text>
+                    </Form.Group>
+                    
+                    {imageFiles.length > 0 && (
+                      <div className="mt-3">
+                        <p className="mb-2">
+                          <strong>{imageFiles.length} new image(s) ready to upload:</strong>
+                        </p>
+                        <Row>
+                          {imageFiles.map((file, idx) => (
+                            <Col md={3} key={idx} className="mb-3">
+                              <div className="position-relative">
+                                <img
+                                  src={URL.createObjectURL(file)}
+                                  alt={`new-${idx}`}
+                                  style={{
+                                    width: '100%',
+                                    height: '150px',
+                                    objectFit: 'cover',
+                                    borderRadius: '8px'
+                                  }}
+                                />
+                                <div className="position-absolute top-0 end-0 bg-dark bg-opacity-50 text-white p-1 rounded">
+                                  {file.name}
+                                </div>
+                              </div>
+                            </Col>
+                          ))}
+                        </Row>
+                      </div>
+                    )}
+                  </Card.Body>
+                </Card>
 
-                <Form.Group className="mb-3">
-                  <Form.Label>Caption (optional)</Form.Label>
-                  <Form.Control
-                    type="text"
-                    value={imageCaption}
-                    onChange={(e) => setImageCaption(e.target.value)}
-                  />
-                </Form.Group>
-
-                {imagePreviews.length > 0 && (
-                  <Row>
-                    {imagePreviews.map((src, idx) => (
-                      <Col md={3} key={idx}>
-                        <img
-                          src={src}
-                          alt="preview"
-                          style={{ width: '100%', borderRadius: 8 }}
-                        />
-                      </Col>
-                    ))}
-                  </Row>
-                )}
+                {/* Section for EXISTING images with edit/delete */}
+                <Card>
+                  <Card.Header>Existing Images</Card.Header>
+                  <Card.Body>
+                    {existingImages.length === 0 ? (
+                      <div className="text-center py-4">
+                        <p className="text-muted">No images uploaded yet.</p>
+                      </div>
+                    ) : (
+                      <Row>
+                        {existingImages.map((image) => (
+                          <Col md={4} lg={3} key={image.image_id} className="mb-4">
+                            <Card className="h-100">
+                              <Card.Body className="p-2">
+                                <div className="position-relative">
+                                  <img
+                                    src={image.url}
+                                    alt={`tour-image-${image.image_id}`}
+                                    style={{
+                                      width: '100%',
+                                      height: '150px',
+                                      objectFit: 'cover',
+                                      borderRadius: '6px'
+                                    }}
+                                    className="mb-2"
+                                  />
+                                  
+                                  {image.is_cover === 1 && (
+                                    <div className="position-absolute top-0 start-0 bg-warning text-dark px-2 py-1 rounded-end">
+                                      <strong>★ Cover</strong>
+                                    </div>
+                                  )}
+                                  
+                                  {editingImageId === image.image_id ? (
+                                    <div className="mt-3 border p-3 rounded">
+                                      <Form.Group>
+                                        <Form.Label>Replace with new image:</Form.Label>
+                                        <Form.Control
+                                          id="replacementFileInput"
+                                          type="file"
+                                          onChange={handleReplacementFileChange}
+                                          accept="image/jpeg,image/jpg,image/png,image/webp"
+                                        />
+                                      </Form.Group>
+                                      
+                                      {replacementPreview && (
+                                        <div className="mt-2">
+                                          <p><strong>New preview:</strong></p>
+                                          <img
+                                            src={replacementPreview}
+                                            alt="replacement"
+                                            style={{
+                                              width: '100%',
+                                              height: '100px',
+                                              objectFit: 'cover',
+                                              borderRadius: '4px'
+                                            }}
+                                          />
+                                        </div>
+                                      )}
+                                      
+                                      <div className="d-flex gap-2 mt-3">
+                                        <Button
+                                          variant="success"
+                                          size="sm"
+                                          onClick={() => updateImage(image.image_id)}
+                                          disabled={!replacementFile || loading}
+                                        >
+                                          {loading ? 'Updating...' : 'Update'}
+                                        </Button>
+                                        <Button
+                                          variant="outline-secondary"
+                                          size="sm"
+                                          onClick={cancelEditImage}
+                                          disabled={loading}
+                                        >
+                                          Cancel
+                                        </Button>
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    <div className="mt-2">
+                                      <div className="d-flex flex-wrap gap-1 justify-content-center">
+                                        {/* Set as Cover Button */}
+                                        {image.is_cover === 0 && (
+                                          <Button
+                                            variant="outline-warning"
+                                            size="sm"
+                                            onClick={() => setCoverImage(image.image_id)}
+                                            title="Set as Cover"
+                                            disabled={loading}
+                                          >
+                                            ★ Set Cover
+                                          </Button>
+                                        )}
+                                        
+                                        {/* Edit Button */}
+                                        <Button
+                                          variant="outline-primary"
+                                          size="sm"
+                                          onClick={() => startEditImage(image)}
+                                          title="Replace Image"
+                                          disabled={loading}
+                                        >
+                                          <Pencil size={14} /> Replace
+                                        </Button>
+                                        
+                                        {/* Delete Button */}
+                                        <Button
+                                          variant="outline-danger"
+                                          size="sm"
+                                          onClick={() => deleteImage(image.image_id)}
+                                          title="Delete Image"
+                                          disabled={loading}
+                                        >
+                                          <Trash size={14} />
+                                        </Button>
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+                              </Card.Body>
+                              <Card.Footer className="bg-transparent border-0 pt-0">
+                                <small className="text-muted">
+                                  {image.caption ? `Caption: ${image.caption}` : 'No caption'}
+                                </small>
+                              </Card.Footer>
+                            </Card>
+                          </Col>
+                        ))}
+                      </Row>
+                    )}
+                    
+                    {/* Show existing image count */}
+                    {existingImages.length > 0 && (
+                      <div className="mt-3 text-center">
+                        <p className="text-muted">
+                          Total images: {existingImages.length} | 
+                          Cover image: {existingImages.find(img => img.is_cover === 1) ? 'Set' : 'Not set'}
+                        </p>
+                      </div>
+                    )}
+                  </Card.Body>
+                </Card>
               </Tab>
+
+             
             </Tabs>
 
             {/* ======== BUTTONS ======== */}

@@ -1,23 +1,23 @@
-// AddCountry.js
+// AddInternationalCountry.js
 import React, { useState, useEffect } from 'react';
 import { Container, Card, Form, Button, Alert, Spinner, Row, Col } from 'react-bootstrap';
 import { useNavigate, useParams } from 'react-router-dom';
 import Navbar from '../../Shared/Navbar/Navbar';
 import { baseurl } from '../../Api/Baseurl';
 
-const AddCountry = () => {
+const AddInternationalCountry = () => {
   const navigate = useNavigate();
-  const { id } = useParams(); // Get country ID from URL if editing
+  const { id } = useParams();
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(false);
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
   const [isEditMode, setIsEditMode] = useState(false);
 
-  // Form state - Domestic countries always have is_domestic = 1
+  // Form state - International countries always have is_domestic = 0
   const [formData, setFormData] = useState({
     name: '',
-    is_domestic: 1 // Always 1 for domestic
+    is_domestic: 0 // Always 0 for international
   });
 
   // Fetch country data if in edit mode
@@ -37,11 +37,11 @@ const AddCountry = () => {
         setIsEditMode(true);
         setFormData({
           name: result.name || '',
-          is_domestic: result.is_domestic || 1
+          is_domestic: result.is_domestic || 0
         });
       } else {
         setError(result.message || 'Failed to fetch country data');
-        setTimeout(() => navigate('/countries'), 2000);
+        setTimeout(() => navigate('/intl-countries'), 2000);
       }
     } catch (err) {
       console.error('Error fetching country:', err);
@@ -59,7 +59,7 @@ const AddCountry = () => {
     }));
   };
 
-  const handleBack = () => navigate('/countries');
+  const handleBack = () => navigate('/international-countries');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -88,7 +88,7 @@ const AddCountry = () => {
         },
         body: JSON.stringify({
           name: formData.name.trim(),
-          is_domestic: 1 // Always domestic
+          is_domestic: 0 // Always international
         })
       });
 
@@ -96,13 +96,13 @@ const AddCountry = () => {
 
       if (response.ok) {
         const message = isEditMode 
-          ? "Domestic country updated successfully!" 
-          : "Domestic country added successfully!";
+          ? "International country updated successfully!" 
+          : "International country added successfully!";
         
         setSuccess(message);
 
         setTimeout(() => {
-          navigate('/countries');
+          navigate('/international-countries');
         }, 1500);
       } else {
         setError(result.message || result.error || 
@@ -120,7 +120,7 @@ const AddCountry = () => {
     <Navbar>
       <Container>
         <div className="d-flex justify-content-between align-items-center mb-4">
-          <h2 className="mb-0">{isEditMode ? 'Edit Domestic Country' : 'Add Domestic Country'}</h2>
+          <h2 className="mb-0">{isEditMode ? 'Edit International Country' : 'Add International Country'}</h2>
         </div>
 
         {error && <Alert variant="danger">{error}</Alert>}
@@ -144,21 +144,21 @@ const AddCountry = () => {
                         name="name"
                         value={formData.name}
                         onChange={handleChange}
-                        placeholder="Enter domestic country name (e.g., India, Andaman)"
+                        placeholder="Enter international country name (e.g., USA, UK, Australia)"
                         required
                         disabled={loading}
                       />
-                      {/* <Form.Text className="text-muted">
-                        This will be marked as domestic country (is_domestic = 1) automatically.
-                      </Form.Text> */}
+                      <Form.Text className="text-muted">
+                        This will be marked as international country (is_domestic = 0) automatically.
+                      </Form.Text>
                     </Form.Group>
 
-                    {/* Hidden field to show info about domestic status */}
-                    {/* <div className="mb-3 p-2 bg-light rounded">
-                      <small className="text-success">
-                        <strong>Note:</strong> This country will be saved as a domestic country.
+                    {/* Hidden field to show info about international status */}
+                    <div className="mb-3 p-2 bg-light rounded">
+                      <small className="text-info">
+                        <strong>Note:</strong> This country will be saved as an international country.
                       </small>
-                    </div> */}
+                    </div>
                   </Col>
                 </Row>
 
@@ -172,7 +172,7 @@ const AddCountry = () => {
                         <Spinner animation="border" size="sm" /> 
                         {isEditMode ? 'Updating...' : 'Saving...'}
                       </>
-                    ) : isEditMode ? 'Update Domestic Country' : 'Add Domestic Country'}
+                    ) : isEditMode ? 'Update Country' : 'Add Country'}
                   </Button>
                 </div>
               </Form>
@@ -184,4 +184,4 @@ const AddCountry = () => {
   );
 };
 
-export default AddCountry;
+export default AddInternationalCountry;

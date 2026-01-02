@@ -419,7 +419,14 @@ const AddGroupTour = () => {
 
       const destRes = await fetch(`${baseurl}/api/destinations`);
       const destData = await destRes.json();
-      setDestinations(Array.isArray(destData) ? destData : []);
+
+        // Filter for international destinations only (is_domestic == 0)
+      const internationalDestinations = Array.isArray(destData) 
+        ? destData.filter(destination => destination.is_domestic == 0)
+        : [];
+      
+      setDestinations(internationalDestinations);
+      
 
       if (isEditMode) {
         // Load existing tour data for edit
@@ -865,7 +872,7 @@ const AddGroupTour = () => {
   };
 
   const handleCancel = () => {
-    navigate('/group-tours');
+    navigate('/intl-group-tours');
   };
 
   const isLastTab = activeTab === TAB_LIST[TAB_LIST.length - 1];
@@ -1182,7 +1189,7 @@ const AddGroupTour = () => {
       }
 
       setSuccess('Tour updated successfully!');
-      setTimeout(() => navigate('/group-tours'), 1500);
+      setTimeout(() => navigate('/intl-group-tours'), 1500);
     } catch (err) {
       console.error('Error updating tour:', err);
       setError(err.message || 'Failed to update tour');
@@ -1379,7 +1386,7 @@ const AddGroupTour = () => {
       }
 
       setSuccess('Tour saved successfully!');
-      setTimeout(() => navigate('/group-tours'), 1500);
+      setTimeout(() => navigate('/intl-group-tours'), 1500);
     } catch (err) {
       setError(err.message || 'Failed to save tour');
     } finally {
@@ -1465,9 +1472,9 @@ const AddGroupTour = () => {
                           backgroundColor: isEditMode ? "#f8f9fa" : "white"
                         }}
                       />
-                      <Form.Text className="text-muted">
+                      {/* <Form.Text className="text-muted">
                         {isEditMode ? "Tour code cannot be changed" : "Auto-generated tour code"}
-                      </Form.Text>
+                      </Form.Text> */}
                     </Form.Group>
 
                     <Form.Group className="mb-3">
@@ -1480,7 +1487,7 @@ const AddGroupTour = () => {
                       />
                     </Form.Group>
 
-                    <Form.Group className="mb-3">
+                    {/* <Form.Group className="mb-3">
                       <Form.Label>International Tour?</Form.Label>
                       <Form.Select
                         name="is_international"
@@ -1490,28 +1497,44 @@ const AddGroupTour = () => {
                         <option value={0}>No</option>
                         <option value={1}>Yes</option>
                       </Form.Select>
+                    </Form.Group> */}
+
+
+                     <Form.Group className="mb-3">
+                      <Form.Label>Tour Price *</Form.Label>
+                      <Form.Control
+                        type="number"
+                        name="base_price_adult"
+                        value={formData.base_price_adult}
+                        onChange={handleBasicChange}
+                      />
                     </Form.Group>
+
+
                   </Col>
 
                   <Col md={6}>
-                    <Form.Group className="mb-3">
-                      <Form.Label>Indian States *</Form.Label>
-                      <Form.Select
-                        name="primary_destination_id"
-                        value={formData.primary_destination_id}
-                        onChange={handleBasicChange}
-                      >
-                        <option value="">Select Destination</option>
-                        {destinations.map((d) => (
-                          <option
-                            key={d.destination_id}
-                            value={d.destination_id}
-                          >
-                            {d.name}
-                          </option>
-                        ))}
-                      </Form.Select>
-                    </Form.Group>
+                   <Form.Group className="mb-3">
+                        <Form.Label>International States *</Form.Label>
+                           <Form.Select
+                                name="primary_destination_id"
+                                value={formData.primary_destination_id}
+                                onChange={handleBasicChange}
+                            >
+                                <option value="">Select Destination</option>
+                                     {destinations.map((d) => (
+                                        <option
+                                            key={d.destination_id}
+                                            value={d.destination_id}
+                                        >
+                                           {d.name}
+                                         </option>
+                                      ))}
+                             </Form.Select>
+                          </Form.Group>
+
+
+                          
 
                     <Form.Group className="mb-3">
                       <Form.Label>Duration Days *</Form.Label>
@@ -1523,15 +1546,8 @@ const AddGroupTour = () => {
                       />
                     </Form.Group>
 
-                    <Form.Group className="mb-3">
-                      <Form.Label>Tour Price *</Form.Label>
-                      <Form.Control
-                        type="number"
-                        name="base_price_adult"
-                        value={formData.base_price_adult}
-                        onChange={handleBasicChange}
-                      />
-                    </Form.Group>
+                    
+
 
                      {/* ADD EMI PRICE FIELD HERE */}
                     <Form.Group className="mb-3">
@@ -1543,9 +1559,9 @@ const AddGroupTour = () => {
                         onChange={handleBasicChange}
                         placeholder="Optional EMI price"
                       />
-                      <Form.Text className="text-muted">
+                      {/* <Form.Text className="text-muted">
                         This is the price used for EMI calculations (if different from tour price)
-                      </Form.Text>
+                      </Form.Text> */}
                     </Form.Group>
 
                     

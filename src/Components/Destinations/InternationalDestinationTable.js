@@ -1,4 +1,4 @@
-// DestinationsTable.js
+// InternationalDestinationsTable.js
 import React, { useState, useEffect } from 'react';
 import { Container, Card, Alert, Spinner, Button } from 'react-bootstrap';
 import Navbar from '../../Shared/Navbar/Navbar';
@@ -7,7 +7,7 @@ import ReusableTable from '../../Shared/TableLayout/DataTable';
 import { useNavigate } from 'react-router-dom';
 import { Pencil, Trash } from 'react-bootstrap-icons';
 
-const DestinationsTable = () => {
+const InternationalDestinationsTable = () => {
   const [destinations, setDestinations] = useState([]);
   const [filteredDestinations, setFilteredDestinations] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -32,13 +32,13 @@ const DestinationsTable = () => {
           })
         : [];
 
-      // Filter for domestic destinations only (is_domestic == 1)
-      const domesticDestinations = sortedDestinations.filter(destination => 
-        destination.is_domestic == 1
+      // Filter for international destinations only (is_domestic == 0)
+      const internationalDestinations = sortedDestinations.filter(destination => 
+        destination.is_domestic == 0
       );
 
       // Add serial numbers to the data directly as a fallback
-      const destinationsWithSerialNo = domesticDestinations.map((item, index) => ({
+      const destinationsWithSerialNo = internationalDestinations.map((item, index) => ({
         ...item,
         serial_no: index + 1
       }));
@@ -82,9 +82,14 @@ const DestinationsTable = () => {
     }
   };
 
-  // Handle Edit - Navigate to add/edit form with ID
+  // Handle Edit - Navigate to international edit form
   const handleEdit = (destinationId) => {
-    navigate(`/add-destination/${destinationId}`);
+    navigate(`/intl-add-destination/${destinationId}`);
+  };
+
+  // Handle Add International Destination
+  const handleAdd = () => {
+    navigate('/intl-add-destination');
   };
 
   // Define table columns
@@ -93,7 +98,6 @@ const DestinationsTable = () => {
       key: 'serial_no',
       title: 'S.No',
       render: (item, index) => {
-        // Multiple fallback methods to ensure serial number is displayed
         if (item.serial_no) return item.serial_no;
         if (index !== undefined) return index + 1;
         return 'N/A';
@@ -118,7 +122,7 @@ const DestinationsTable = () => {
     {
       key: 'is_domestic',
       title: 'Type',
-      render: (item) => item.is_domestic ? "Domestic" : "International",
+      render: (item) => "International", // Always international in this component
       style: { textAlign: "center" }
     },
     {
@@ -168,13 +172,20 @@ const DestinationsTable = () => {
     <Navbar>
       <Container>
         <div className="d-flex justify-content-between align-items-center mb-4">
-          <h2 className="mb-0">Domestic Destinations</h2>
+          <h2 className="mb-0">International Destinations</h2>
           <div>
+            {/* <Button
+              variant="outline-secondary"
+              onClick={() => navigate('/destinations')}
+              className="me-2"
+            >
+              View Domestic
+            </Button> */}
             <button
               className="btn btn-success"
-              onClick={() => navigate('/add-destination')}
+              onClick={handleAdd}
             >
-              + Add Domestic Destination
+              + Add International Destination
             </button>
           </div>
         </div>
@@ -190,15 +201,15 @@ const DestinationsTable = () => {
             {loading ? (
               <div className="text-center py-5">
                 <Spinner animation="border" role="status" className="me-2" />
-                Loading domestic destinations...
+                Loading international destinations...
               </div>
             ) : (
               <ReusableTable
-                title="Domestic Destinations (Type: Domestic)"
+                title="International Destinations (Type: International)"
                 data={filteredDestinations}
                 columns={columns}
                 initialEntriesPerPage={5}
-                searchPlaceholder="Search domestic destinations..."
+                searchPlaceholder="Search international destinations..."
                 showSearch={true}
                 showEntriesSelector={true}
                 showPagination={true}
@@ -211,4 +222,4 @@ const DestinationsTable = () => {
   );
 };
 
-export default DestinationsTable;
+export default InternationalDestinationsTable;

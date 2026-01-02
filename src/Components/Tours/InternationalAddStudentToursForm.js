@@ -417,7 +417,14 @@ const AddStudentTour = () => {
 
       const destRes = await fetch(`${baseurl}/api/destinations`);
       const destData = await destRes.json();
-      setDestinations(Array.isArray(destData) ? destData : []);
+
+        // Filter for international destinations only (is_domestic == 0)
+      const internationalDestinations = Array.isArray(destData) 
+        ? destData.filter(destination => destination.is_domestic == 0)
+        : [];
+      
+      setDestinations(internationalDestinations);
+      
 
       if (isEditMode) {
         // Load existing tour data for edit
@@ -864,7 +871,7 @@ const AddStudentTour = () => {
   };
 
   const handleCancel = () => {
-    navigate('/student-tours');
+    navigate('/intl-student-tours');
   };
 
   const isLastTab = activeTab === TAB_LIST[TAB_LIST.length - 1];
@@ -1179,7 +1186,7 @@ const AddStudentTour = () => {
       }
 
       setSuccess('Student tour updated successfully!');
-      setTimeout(() => navigate('/student-tours'), 1500);
+      setTimeout(() => navigate('/intl-student-tours'), 1500);
     } catch (err) {
       console.error('Error updating student tour:', err);
       setError(err.message || 'Failed to update tour');
@@ -1376,7 +1383,7 @@ const AddStudentTour = () => {
       }
 
       setSuccess('Student tour saved successfully!');
-      setTimeout(() => navigate('/student-tours'), 1500);
+      setTimeout(() => navigate('/intl-student-tours'), 1500);
     } catch (err) {
       setError(err.message || 'Failed to save student tour');
     } finally {
@@ -1462,9 +1469,9 @@ const AddStudentTour = () => {
                           backgroundColor: isEditMode ? "#f8f9fa" : "white"
                         }}
                       />
-                      <Form.Text className="text-muted">
+                      {/* <Form.Text className="text-muted">
                         {isEditMode ? "Tour code cannot be changed" : "Auto-generated tour code"}
-                      </Form.Text>
+                      </Form.Text> */}
                     </Form.Group>
 
                     <Form.Group className="mb-3">
@@ -1477,7 +1484,7 @@ const AddStudentTour = () => {
                       />
                     </Form.Group>
 
-                    <Form.Group className="mb-3">
+                    {/* <Form.Group className="mb-3">
                       <Form.Label>International Tour?</Form.Label>
                       <Form.Select
                         name="is_international"
@@ -1487,38 +1494,7 @@ const AddStudentTour = () => {
                         <option value={0}>No</option>
                         <option value={1}>Yes</option>
                       </Form.Select>
-                    </Form.Group>
-                  </Col>
-
-                  <Col md={6}>
-                    <Form.Group className="mb-3">
-                      <Form.Label>Indian States *</Form.Label>
-                      <Form.Select
-                        name="primary_destination_id"
-                        value={formData.primary_destination_id}
-                        onChange={handleBasicChange}
-                      >
-                        <option value="">Select Destination</option>
-                        {destinations.map((d) => (
-                          <option
-                            key={d.destination_id}
-                            value={d.destination_id}
-                          >
-                            {d.name}
-                          </option>
-                        ))}
-                      </Form.Select>
-                    </Form.Group>
-
-                    <Form.Group className="mb-3">
-                      <Form.Label>Duration Days *</Form.Label>
-                      <Form.Control
-                        type="number"
-                        name="duration_days"
-                        value={formData.duration_days}
-                        onChange={handleBasicChange}
-                      />
-                    </Form.Group>
+                    </Form.Group> */}
 
                     <Form.Group className="mb-3">
                       <Form.Label>Tour Price *</Form.Label>
@@ -1530,6 +1506,40 @@ const AddStudentTour = () => {
                       />
                     </Form.Group>
 
+
+                  </Col>
+
+                  <Col md={6}>
+                   <Form.Group className="mb-3">
+                        <Form.Label>International States *</Form.Label>
+                              <Form.Select
+                                  name="primary_destination_id"
+                                  value={formData.primary_destination_id}
+                                  onChange={handleBasicChange}
+                              >
+                                  <option value="">Select Destination</option>
+                                      {destinations.map((d) => (
+                                         <option
+                                             key={d.destination_id}
+                                             value={d.destination_id}
+                                          >
+                                             {d.name}
+                                          </option>
+                                     ))}
+                               </Form.Select>
+                        </Form.Group>
+
+                    <Form.Group className="mb-3">
+                      <Form.Label>Duration Days *</Form.Label>
+                      <Form.Control
+                        type="number"
+                        name="duration_days"
+                        value={formData.duration_days}
+                        onChange={handleBasicChange}
+                      />
+                    </Form.Group>
+
+
                     {/* ADD THIS NEW FIELD */}
                     <Form.Group className="mb-3">
                         <Form.Label>EMI Price</Form.Label>
@@ -1540,9 +1550,9 @@ const AddStudentTour = () => {
                               onChange={handleBasicChange}
                               placeholder="Optional EMI price"
                           />
-                          <Form.Text className="text-muted">
+                          {/* <Form.Text className="text-muted">
                                This is the price used for EMI calculations (if different from tour price)
-                          </Form.Text>
+                          </Form.Text> */}
                       </Form.Group>
 
                   </Col>

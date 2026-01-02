@@ -9,10 +9,24 @@ import Visaappointments from "./Components/Cruisebookings/Visaappoinments/Visaap
 import VisaAppointmentDetails from "./Components/Cruisebookings/Visaappoinments/VisaappoinmentsDetails";
 import TourCategoriesTable from "./Components/ToursCategories/TourCategoriesTable";
 import AddTourCategory from "./Components/ToursCategories/ToursCategoriesForm"; // Add this import
+
+
+
 import Countries from "./Components/Countries/CountriesTable";
  import AddCountry from './Components/Countries/CountriesForm';
+
+import InternationalCountries from "./Components/Countries/InternationalCountriesTable";
+import InternationalAddCountry from "./Components/Countries/InternationalCountriesForm" 
+
+
+
 import Destinations from "./Components/Destinations/DestinationsTable";
 import AddDestination from './Components/Destinations/AddDestinationsForm';
+
+import InternationalDestinations from "./Components/Destinations/InternationalDestinationTable"
+import InternationalAddDestination from "./Components/Destinations/InternationalDestinationForm"
+
+
 import Tours from "./Components/Tours/Tours";
 import AddTour from "./Components/Tours/AddTour";
 // import EditTour from "./Components/Tours/EditTour"
@@ -93,28 +107,44 @@ function App() {
         <Route path="/visa-appointment-details" element={<VisaAppointmentDetails />} />
          <Route path="/categories-tours" element={<TourCategoriesTable />} />
         <Route path="/add-category" element={<AddTourCategory />} /> {/* Add this route */}
+
+
          <Route path="/countries" element={<Countries />} />
          <Route path="/add-country" element={<AddCountry />} />
             <Route path="/add-country/:id" element={<AddCountry />} /> 
 
+            <Route path="/intl-countries" element={<InternationalCountries />} />
+         <Route path="/intl-add-country" element={<InternationalAddCountry />} />
+            <Route path="/intl-add-country/:id" element={<InternationalAddCountry />} /> 
+
          <Route path="/destinations" element={<Destinations />} />
          <Route path="/add-destination" element={<AddDestination />} />
           <Route path="/add-destination/:id" element={<AddDestination />} />
+
+
+          <Route path="/intl-destinations" element={<InternationalDestinations />} />
+         <Route path="/intl-add-destination" element={<InternationalAddDestination />} />
+          <Route path="/intl-add-destination/:id" element={<InternationalAddDestination />} />
+          
+
+
+
+
          <Route path="/tours" element={<Tours />} />
           <Route path="/add-tour" element={<AddTour />} />
           <Route path="/edit-tour/:id" element={<AddTour />} />
 
           <Route path="/intl-tours" element={<INTLTours />} />
           <Route path="/intl-add-tour" element={<INTLAddTour />} />
-
+           <Route path="/intl-edit-tour/:id" element={<INTLAddTour />} />
 
            <Route path="/group-tours" element={<GroupTours />} />
           <Route path="/add-group-tour" element={<AddGroupTour />} /> 
            <Route path="/edit-group-tour/:id" element={<AddGroupTour />} />
 
-              <Route path="/intl-group-tours" element={<INTLGroupTours />} />
+          <Route path="/intl-group-tours" element={<INTLGroupTours />} />
           <Route path="/intl-add-group-tour" element={<INTLAddGroupTour />} /> 
-
+          <Route path="/intl-edit-group-tour/:id" element={<INTLAddGroupTour />} />
 
 
           <Route path="/tour-details/:tourId" element={<TourDetails />} />
@@ -131,7 +161,7 @@ function App() {
 
                  <Route path="/intl-ladies-special-tours" element={<INTLLadiesSpecialTours />} />
                 <Route path="/intl-add-ladies-special-tour" element={<INTLAddLadiesSpecialTour />} />
-
+                <Route path="/intl-edit-ladies-special-tour/:id" element={<INTLAddLadiesSpecialTour />} /> 
 
 
                 <Route path="/senior-citizen-tours" element={<SeniorCitizenTours />} />
@@ -141,7 +171,7 @@ function App() {
 
                  <Route path="/intl-senior-citizen-tours" element={<INTLSeniorCitizenTours />} />
                 <Route path="/intl-add-senior-citizen-tour" element={<INTLAddSeniorCitizenTour />} />
-
+                <Route path="/intl-edit-senior-citizen-tour/:id" element={<INTLAddSeniorCitizenTour />} />
 
 
                 <Route path="/student-tours" element={<StudentTours />} />
@@ -150,9 +180,9 @@ function App() {
                 {/* <Route path="/student-tour-details/:id" element={<TourDetails />} /> */}
 
 
-                  <Route path="/intl-student-tours" element={<INTLStudentTours />} />
+                <Route path="/intl-student-tours" element={<INTLStudentTours />} />
                 <Route path="/intl-add-student-tour" element={<INTLAddStudentTour />} />
-
+                <Route path="/intl-edit-student-tour/:id" element={<INTLAddStudentTour />} />
 
 
                 <Route path="/honeymoon-tours" element={<HoneymoonTours />} />
@@ -163,7 +193,7 @@ function App() {
 
                 <Route path="/intl-honeymoon-tours" element={<INTLHoneymoonTours />} />
                 <Route path="/intl-add-honeymoon-tour" element={<INTLAddHoneymoonTour />} />
-
+                <Route path="/intl-edit-honeymoon-tour/:id" element={<INTLAddHoneymoonTour />} />
 
 
                 

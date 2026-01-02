@@ -731,7 +731,14 @@ useEffect(() => {
 
       const destRes = await fetch(`${baseurl}/api/destinations`);
       const destData = await destRes.json();
-      setDestinations(Array.isArray(destData) ? destData : []);
+
+       // Filter for international destinations only (is_domestic == 0)
+      const internationalDestinations = Array.isArray(destData) 
+        ? destData.filter(destination => destination.is_domestic == 0)
+        : [];
+      
+      setDestinations(internationalDestinations);
+      
 
       if (isEditMode) {
         await loadTourData();
@@ -933,7 +940,7 @@ useEffect(() => {
   };
 
   const handleCancel = () => {
-    navigate('/tours');
+    navigate('/intl-tours');
   };
 
   const isLastTab = activeTab === TAB_LIST[TAB_LIST.length - 1];
@@ -1107,7 +1114,7 @@ useEffect(() => {
       }
 
       setSuccess('Tour created successfully!');
-      setTimeout(() => navigate('/tours'), 1500);
+      setTimeout(() => navigate('/intl-tours'), 1500);
     } catch (err) {
       setError(err.message || 'Failed to create tour');
     } finally {
@@ -1318,7 +1325,7 @@ useEffect(() => {
       }
 
       setSuccess('Tour updated successfully!');
-      setTimeout(() => navigate('/tours'), 1500);
+      setTimeout(() => navigate('/intl-tours'), 1500);
     } catch (err) {
       console.error('Error updating tour:', err);
       setError(err.message || 'Failed to update tour');
@@ -1457,7 +1464,17 @@ useEffect(() => {
                       />
                     </Form.Group>
 
-                    <Form.Group className="mb-3">
+                     <Form.Group className="mb-3">
+                      <Form.Label>Tour Price *</Form.Label>
+                      <Form.Control
+                        type="number"
+                        name="base_price_adult"
+                        value={formData.base_price_adult}
+                        onChange={handleBasicChange}
+                      />
+                    </Form.Group>
+
+                    {/* <Form.Group className="mb-3">
                       <Form.Label>International Tour?</Form.Label>
                       <Form.Select
                         name="is_international"
@@ -1467,12 +1484,12 @@ useEffect(() => {
                         <option value={0}>No</option>
                         <option value={1}>Yes</option>
                       </Form.Select>
-                    </Form.Group>
+                    </Form.Group> */}
                   </Col>
 
                   <Col md={6}>
                     <Form.Group className="mb-3">
-                      <Form.Label>Indian States *</Form.Label>
+                      <Form.Label>International States *</Form.Label>
                       <Form.Select
                         name="primary_destination_id"
                         value={formData.primary_destination_id}
@@ -1500,15 +1517,7 @@ useEffect(() => {
                       />
                     </Form.Group>
 
-                    <Form.Group className="mb-3">
-                      <Form.Label>Tour Price *</Form.Label>
-                      <Form.Control
-                        type="number"
-                        name="base_price_adult"
-                        value={formData.base_price_adult}
-                        onChange={handleBasicChange}
-                      />
-                    </Form.Group>
+                   
 
                     {/* ADD THIS NEW FIELD */}
                       <Form.Group className="mb-3">
@@ -1520,9 +1529,9 @@ useEffect(() => {
                           onChange={handleBasicChange}
                           placeholder="Optional EMI price"
                         />
-                        <Form.Text className="text-muted">
+                        {/* <Form.Text className="text-muted">
                           This is the price used for EMI calculations (if different from tour price)
-                        </Form.Text>
+                        </Form.Text> */}
                       </Form.Group>
                   </Col>
                 </Row>
