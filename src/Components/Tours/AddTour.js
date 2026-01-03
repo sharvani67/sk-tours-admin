@@ -72,7 +72,8 @@ const AddTour = () => {
     transport_remarks: "",
     booking_poi_remarks: "",
     cancellation_remarks: "",
-    emi_remarks: ""
+    emi_remarks: "",
+    optional_tour_remarks: "" // Add this
   });
 
   // DEPARTURES
@@ -134,13 +135,11 @@ const AddTour = () => {
   // HOTELS
   const [hotelItem, setHotelItem] = useState({
     city: '',
-    hotel_name: '',
-    room_type: '',
     nights: '',
-    remarks: '',
-    hotel_standard: '',
-    hotel_deluxe: '',
-    hotel_executive: ''
+    standard_hotel_name: '', 
+    deluxe_hotel_name: '',   
+    executive_hotel_name: '',
+    remarks: ''
   });
   const [hotelRows, setHotelRows] = useState([]);
 
@@ -428,29 +427,29 @@ const [replacementPreview, setReplacementPreview] = useState(null);
     resetEditing();
   };
 
+  
   const addHotelRow = () => {
-    if (!hotelItem.city.trim() || !hotelItem.hotel_name.trim()) return;
-    
-    if (editingType === 'hotel' && editIndex !== -1) {
-      const updated = [...hotelRows];
-      updated[editIndex] = { ...hotelItem };
-      setHotelRows(updated);
-    } else {
-      setHotelRows(prev => [...prev, { ...hotelItem }]);
-    }
+  if (!hotelItem.city.trim()) return;
+  
+  if (editingType === 'hotel' && editIndex !== -1) {
+    const updated = [...hotelRows];
+    updated[editIndex] = { ...hotelItem };
+    setHotelRows(updated);
+  } else {
+    setHotelRows(prev => [...prev, { ...hotelItem }]);
+  }
 
-    setHotelItem({
-      city: '',
-      hotel_name: '',
-      room_type: '',
-      nights: '',
-      remarks: '',
-      hotel_standard: '',
-      hotel_deluxe: '',
-      hotel_executive: ''
-    });
-    resetEditing();
-  };
+  setHotelItem({
+    city: '',
+    nights: '',
+      standard_hotel_name: '', 
+    deluxe_hotel_name: '',   
+    executive_hotel_name: '', 
+    remarks: ''
+  });
+  resetEditing();
+};
+
 
   const addTransportRow = () => {
     if (!transportItem.description.trim()) return;
@@ -968,7 +967,8 @@ const setCoverImage = async (imageId) => {
           transport_remarks: basic.transport_remarks || '',
           booking_poi_remarks: basic.booking_poi_remarks || '',
           cancellation_remarks: basic.cancellation_remarks || '',
-          emi_remarks: basic.emi_remarks || ''
+          emi_remarks: basic.emi_remarks || '',
+          optional_tour_remarks: basic.optional_tour_remarks || ''
         });
 
         // Set itineraries
@@ -1043,8 +1043,15 @@ const setCoverImage = async (imageId) => {
         }
 
         // Set hotels
+       // Set hotels
         if (data.hotels && Array.isArray(data.hotels)) {
-          setHotelRows(data.hotels);
+          const formattedHotels = data.hotels.map(hotel => ({
+            ...hotel,
+            standard_hotel_name: hotel.standard_hotel_name || '',
+            deluxe_hotel_name: hotel.deluxe_hotel_name || '',
+            executive_hotel_name: hotel.executive_hotel_name || ''
+          }));
+          setHotelRows(formattedHotels);
         }
 
         // Set transport
@@ -1143,7 +1150,10 @@ const setCoverImage = async (imageId) => {
       const tourRes = await fetch(`${baseurl}/api/tours`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
+        body: JSON.stringify({
+        ...formData,
+        optional_tour_remarks: formData.optional_tour_remarks || '' // Ensure it's included
+      })
       });
 
       if (!tourRes.ok) {
@@ -1324,8 +1334,11 @@ const setCoverImage = async (imageId) => {
         transport_remarks: formData.transport_remarks || '',
         emi_remarks: formData.emi_remarks || '',
         booking_poi_remarks: formData.booking_poi_remarks || '',
-        cancellation_remarks: formData.cancellation_remarks || ''
+        cancellation_remarks: formData.cancellation_remarks || '',
+        optional_tour_remarks: formData.optional_tour_remarks || '' // Add this
       };
+
+        console.log('Sending update data:', tourUpdateData); // Add this for debugging
 
       const tourRes = await fetch(`${baseurl}/api/tours/${id}`, {
         method: 'PUT',
@@ -1974,17 +1987,6 @@ useEffect(() => {
                   />
                 </Form.Group>
 
-                <Form.Group className="mt-3">
-                  <Form.Label>EMI Remarks</Form.Label>
-                  <Form.Control
-                    as="textarea"
-                    rows={3}
-                    name="emi_remarks"
-                    value={formData.emi_remarks}
-                    onChange={handleBasicChange}
-                  />
-                </Form.Group>
-
                 {tourCosts.length > 0 && (
                   <Table striped bordered hover size="sm" className="mt-3">
                     <thead>
@@ -2077,6 +2079,19 @@ useEffect(() => {
                     </Form.Group>
                   </Col>
                 </Row>
+
+                 {/* Add this new form group for Optional Tour Remarks */}
+                <Form.Group className="mt-3">
+                  <Form.Label>Optional Tour Remarks</Form.Label>
+                  <Form.Control
+                    as="textarea"
+                    rows={3}
+                    name="optional_tour_remarks"
+                    value={formData.optional_tour_remarks || ''}
+                    onChange={handleBasicChange}
+                    placeholder="Enter any remarks for optional tours..."
+                  />
+                </Form.Group>
 
                 {optionalTours.length > 0 && (
                   <Table striped bordered hover size="sm" className="mt-3">
@@ -2190,6 +2205,18 @@ useEffect(() => {
                     ))}
                   </tbody>
                 </Table>
+
+                 <Form.Group className="mt-4">
+                    <Form.Label>EMI Remarks</Form.Label>
+                    <Form.Control
+                      as="textarea"
+                      rows={3}
+                      name="emi_remarks"
+                      value={formData.emi_remarks}
+                      onChange={handleBasicChange}
+                      placeholder="Enter any EMI-related remarks or notes..."
+                    />
+                  </Form.Group>
               </Tab>
 
               <Tab eventKey="inclusions" title="Inclusions">
@@ -2368,7 +2395,7 @@ useEffect(() => {
 
               <Tab eventKey="hotels" title="Hotels">
                 <Row className="align-items-end">
-                  <Col md={3}>
+                  <Col md={6}>
                     <Form.Group>
                       <Form.Label>City *</Form.Label>
                       <Form.Control
@@ -2376,69 +2403,12 @@ useEffect(() => {
                         name="city"
                         value={hotelItem.city}
                         onChange={handleHotelChange}
+                        placeholder="Enter city name"
                       />
                     </Form.Group>
                   </Col>
 
-                  <Col md={3}>
-                    <Form.Group>
-                      <Form.Label>Hotel Name *</Form.Label>
-                      <Form.Control
-                        type="text"
-                        name="hotel_name"
-                        value={hotelItem.hotel_name}
-                        onChange={handleHotelChange}
-                      />
-                    </Form.Group>
-                  </Col>
- 
-                   <Col md={3}>
-                    <Form.Group>
-                      <Form.Label>Standard</Form.Label>
-                      <Form.Control
-                        type="number"
-                        name="hotel_standard"
-                        value={hotelItem.hotel_standard}
-                        onChange={handleHotelChange}
-                      />
-                    </Form.Group>
-                  </Col>
-                   <Col md={3}>
-                    <Form.Group>
-                      <Form.Label>Deluxe</Form.Label>
-                      <Form.Control
-                        type="number"
-                        name="hotel_deluxe"
-                        value={hotelItem.hotel_deluxe}
-                        onChange={handleHotelChange}
-                      />
-                    </Form.Group>
-                  </Col>
-                   <Col md={3}>
-                    <Form.Group>
-                      <Form.Label>Executive</Form.Label>
-                      <Form.Control
-                        type="number"
-                        name="hotel_executive"
-                        value={hotelItem.hotel_executive}
-                        onChange={handleHotelChange}
-                      />
-                    </Form.Group>
-                  </Col>
-
-                  <Col md={3}>
-                    <Form.Group>
-                      <Form.Label>Room Type</Form.Label>
-                      <Form.Control
-                        type="text"
-                        name="room_type"
-                        value={hotelItem.room_type}
-                        onChange={handleHotelChange}
-                      />
-                    </Form.Group>
-                  </Col>
-
-                  <Col md={2}>
+                   <Col md={6}>
                     <Form.Group>
                       <Form.Label>Nights</Form.Label>
                       <Form.Control
@@ -2449,6 +2419,46 @@ useEffect(() => {
                       />
                     </Form.Group>
                   </Col>
+ 
+                   <Col md={4}>
+                    <Form.Group className="mt-3">
+                      <Form.Label>Standard Hotel Name</Form.Label>
+                      <Form.Control
+                        type="text"
+                        name="standard_hotel_name"
+                        value={hotelItem.standard_hotel_name}
+                        onChange={handleHotelChange}
+                        placeholder="Enter standard hotel name"
+                      />
+                    </Form.Group>
+                  </Col>
+
+                   <Col md={4}>
+                    <Form.Group className="mt-3">
+                      <Form.Label>Deluxe Hotel Name</Form.Label>
+                      <Form.Control
+                        type="text"
+                        name="deluxe_hotel_name"
+                        value={hotelItem.deluxe_hotel_name}
+                        onChange={handleHotelChange}
+                         placeholder="Enter deluxe hotel name"
+                      />
+                    </Form.Group>
+                  </Col>
+
+                   <Col md={4}>
+                    <Form.Group className="mt-3">
+                      <Form.Label>Executive Hotel Name</Form.Label>
+                      <Form.Control
+                        type="text"
+                        name="executive_hotel_name"
+                        value={hotelItem.executive_hotel_name}
+                        onChange={handleHotelChange}
+                         placeholder="Enter executive hotel name"
+                      />
+                    </Form.Group>
+                  </Col>
+
                 </Row>
 
                 <Form.Group className="mt-3">
@@ -2468,12 +2478,11 @@ useEffect(() => {
                       <tr>
                         <th>#</th>
                         <th>City</th>
-                        <th>Hotel</th>
-                        <th>Room</th>
-                        <th>Nights</th>
-                           <th>Standard</th>
-                              <th>Deluxe</th>
-                                 <th>Executive</th>
+                         <th>Nights</th>
+                          <th>Standard Hotel</th>
+                           <th>Deluxe Hotel</th>
+                            <th>Executive Hotel</th>
+                           {/* <th>Remarks</th> */}
                         <th>Action</th>
                       </tr>
                     </thead>
@@ -2482,12 +2491,11 @@ useEffect(() => {
                         <tr key={idx}>
                           <td>{idx + 1}</td>
                           <td>{h.city}</td>
-                          <td>{h.hotel_name}</td>
-                          <td>{h.room_type}</td>
                           <td>{h.nights}</td>
-                           <td>{h.hotel_standard}</td>
-                            <td>{h.hotel_deluxe}</td>
-                             <td>{h.hotel_executive}</td>
+                          <td>{h.standard_hotel_name || '-'}</td>
+                          <td>{h.deluxe_hotel_name || '-'}</td>
+                          <td>{h.executive_hotel_name || '-'}</td>
+                          {/* <td>{h.remarks || '-'}</td> */}
                           <td>
                             <div className="d-flex gap-1">
                               <Button
