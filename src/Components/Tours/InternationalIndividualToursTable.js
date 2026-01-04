@@ -8,7 +8,7 @@ import { Eye, Pencil, Trash } from 'react-bootstrap-icons';
 import Form from 'react-bootstrap/Form';
 
 
-const Tours = () => {
+const INTLTours = () => {
   const [tours, setTours] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -28,7 +28,7 @@ const Tours = () => {
 
       // Filter tours where tour_type is "Individual" (case-sensitive check)
       const filteredTours = result.filter(tour => 
-        tour.tour_type && tour.tour_type.toLowerCase() === "individual"
+        tour.tour_type && tour.tour_type.toLowerCase() === "individual" &&  tour.is_international === 1
       );
 
       // Add serial numbers to the filtered data
@@ -58,7 +58,7 @@ const Tours = () => {
   // Handle edit tour
   const handleEditTour = (tourId) => {
     // Navigate to edit page with tour ID
-    navigate(`/edit-tour/${tourId}`);
+    navigate(`/intl-edit-tour/${tourId}`);
   };
 
   // Handle delete tour - show confirmation modal
@@ -336,4 +336,4 @@ const Tours = () => {
   );
 };
 
-export default Tours;
+export default INTLTours;

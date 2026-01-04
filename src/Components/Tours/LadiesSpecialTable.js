@@ -26,7 +26,7 @@ const LadiesSpecialTours = () => {
 
       // Filter tours where tour_type is "Ladies Special" (case-insensitive check)
       const filteredTours = result.filter(tour => 
-        tour.tour_type && tour.tour_type.toLowerCase() === "ladiesspecial"
+        tour.tour_type && tour.tour_type.toLowerCase() === "ladiesspecial" && tour.is_international === 0
       );
 
       // Add serial numbers to the filtered data

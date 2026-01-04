@@ -27,7 +27,7 @@ const SeniorCitizenTours = () => {
 
       // Filter tours where tour_type is "Senior Citizen"
       const filteredTours = result.filter(tour => 
-        tour.tour_type && tour.tour_type.toLowerCase() === "seniorcitizen"
+        tour.tour_type && tour.tour_type.toLowerCase() === "seniorcitizen" && tour.is_international === 0
       );
 
       // Add serial numbers

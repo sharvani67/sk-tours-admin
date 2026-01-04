@@ -23,23 +23,6 @@ const INTLAddTour = () => {
   const { id } = useParams();
   const isEditMode = !!id;
 
-  const TAB_LIST = [
-    'basic',
-    'itineraries',
-    'departures',
-    'costs',
-    'optionalTours',
-    'emiOptions',
-    'inclusions',
-    'exclusions',
-    'transport',
-    'hotels',
-    'bookingPoi',
-    'cancellation',
-    'instructions',
-    'images'
-  ];
-
   const [activeTab, setActiveTab] = useState('basic');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -66,7 +49,7 @@ const INTLAddTour = () => {
     overview: '',
     base_price_adult: '',
     emi_price: '',
-    is_international: 0,
+    is_international: 1,
     cost_remarks: "",
     hotel_remarks: "",
     transport_remarks: "",
@@ -74,6 +57,25 @@ const INTLAddTour = () => {
     cancellation_remarks: "",
     emi_remarks: ""
   });
+
+  
+  const TAB_LIST = [
+    'basic',
+    'itineraries',
+    'departures',
+    'costs',
+    'optionalTours',
+    'emiOptions',
+    'inclusions',
+    'exclusions',
+    'transport',
+    'hotels',
+    ...(formData.is_international === 1 ? ['visa'] : []), // Conditionally add visa tab
+    'bookingPoi',
+    'cancellation',
+    'instructions',
+    'images'
+  ];
 
   // DEPARTURES
   const [departureForm, setDepartureForm] = useState({
@@ -134,13 +136,11 @@ const INTLAddTour = () => {
   // HOTELS
   const [hotelItem, setHotelItem] = useState({
     city: '',
-    hotel_name: '',
-    room_type: '',
     nights: '',
-    remarks: '',
-    hotel_standard: '',
-    hotel_deluxe: '',
-    hotel_executive: ''
+    standard_hotel_name: '', 
+    deluxe_hotel_name: '',   
+    executive_hotel_name: '',
+    remarks: ''
   });
   const [hotelRows, setHotelRows] = useState([]);
 
@@ -186,6 +186,75 @@ const INTLAddTour = () => {
     }
   });
   const [itineraries, setItineraries] = useState([]);
+
+  // ========================
+// VISA STATE
+// ========================
+
+// Tourist Visa
+const [touristVisaItems, setTouristVisaItems] = useState([]);
+const [touristVisaForm, setTouristVisaForm] = useState({ description: '' });
+
+// Add this near other state declarations
+const [activeVisaSubTab, setActiveVisaSubTab] = useState('tourist');
+
+// Transit Visa
+const [transitVisaItems, setTransitVisaItems] = useState([]);
+const [transitVisaForm, setTransitVisaForm] = useState({ description: '' });
+
+// Business Visa
+const [businessVisaItems, setBusinessVisaItems] = useState([]);
+const [businessVisaForm, setBusinessVisaForm] = useState({ description: '' });
+
+// Visa Form
+const [visaFormItems, setVisaFormItems] = useState([
+  {
+    type: 'Tourist Visa',
+    download_text: 'Tourist Visa Form Download',
+    download_action: 'Download',
+    fill_action: 'Fill Manually'
+  },
+  {
+    type: 'Transit Visa',
+    download_text: 'Transit Visa Form Download',
+    download_action: 'Download',
+    fill_action: 'Fill Manually'
+  },
+  {
+    type: 'Business Visa',
+    download_text: 'Business Visa Form Download',
+    download_action: 'Download',
+    fill_action: 'Fill Manually'
+  }
+]);
+
+// Photo
+const [photoItems, setPhotoItems] = useState([]);
+const [photoForm, setPhotoForm] = useState({ description: '' });
+
+// Visa Fees
+const [visaFeesRows, setVisaFeesRows] = useState([
+  { type: 'Tourist Visa', tourist: '', transit: '', business: '', charges: '' },
+  { type: 'Free Flow Entry', tourist: '', transit: '', business: '', charges: '' },
+  { type: 'Free Flow Entry', tourist: '', transit: '', business: '', charges: '' },
+  { type: 'Free Flow Entry', tourist: '', transit: '', business: '', charges: '' },
+  { type: 'Free Flow Entry', tourist: '', transit: '', business: '', charges: '' },
+  { type: 'Free Flow Entry', tourist: '', transit: '', business: '', charges: '' },
+  { type: 'Extendable as per requirement', tourist: '', transit: '', business: '', charges: '' }
+]);
+
+// Submission & Pick Up
+const [submissionRows, setSubmissionRows] = useState([
+  { label: 'Below article you write as this is going to be fix and below that keep lines empty', tourist: '', transit: '', business: '' },
+  { label: 'Passport Submission Day', tourist: '', transit: '', business: '' },
+  { label: 'Passport Submission Time', tourist: '', transit: '', business: '' },
+  { label: 'Passport pick up Days', tourist: '', transit: '', business: '' },
+  { label: 'Passport Pick Up Time', tourist: '', transit: '', business: '' },
+  { label: 'Biometric requirement', tourist: '', transit: '', business: '' },
+  { label: 'Free Flow Entry', tourist: '', transit: '', business: '' },
+  { label: 'Free Flow Entry', tourist: '', transit: '', business: '' },
+  { label: 'Free Flow Entry', tourist: '', transit: '', business: '' }
+]);
 
   // ========================
   // EDIT FUNCTIONS - FIXED
@@ -301,6 +370,42 @@ const INTLAddTour = () => {
     setEditingType('instruction');
     setEditIndex(idx);
   };
+
+  // Edit Tourist Visa
+const editTouristVisa = (idx) => {
+  const item = touristVisaItems[idx];
+  setTouristVisaForm({ description: item.description });
+  setEditingItem(item);
+  setEditingType('touristVisa');
+  setEditIndex(idx);
+};
+
+// Edit Transit Visa
+const editTransitVisa = (idx) => {
+  const item = transitVisaItems[idx];
+  setTransitVisaForm({ description: item.description });
+  setEditingItem(item);
+  setEditingType('transitVisa');
+  setEditIndex(idx);
+};
+
+// Edit Business Visa
+const editBusinessVisa = (idx) => {
+  const item = businessVisaItems[idx];
+  setBusinessVisaForm({ description: item.description });
+  setEditingItem(item);
+  setEditingType('businessVisa');
+  setEditIndex(idx);
+};
+
+// Edit Photo
+const editPhoto = (idx) => {
+  const item = photoItems[idx];
+  setPhotoForm({ description: item.description });
+  setEditingItem(item);
+  setEditingType('photo');
+  setEditIndex(idx);
+};
 
   // ========================
   // ADD FUNCTIONS - FIXED
@@ -419,8 +524,14 @@ const INTLAddTour = () => {
   };
 
   const addHotelRow = () => {
-    if (!hotelItem.city.trim() || !hotelItem.hotel_name.trim()) return;
-    
+
+    if (!hotelItem.city.trim() || 
+      (!hotelItem.standard_hotel_name.trim() && 
+       !hotelItem.deluxe_hotel_name.trim() && 
+       !hotelItem.executive_hotel_name.trim())) {
+    setError('Please enter city and at least one hotel name');
+    return;
+  }
     if (editingType === 'hotel' && editIndex !== -1) {
       const updated = [...hotelRows];
       updated[editIndex] = { ...hotelItem };
@@ -429,16 +540,15 @@ const INTLAddTour = () => {
       setHotelRows(prev => [...prev, { ...hotelItem }]);
     }
 
-    setHotelItem({
-      city: '',
-      hotel_name: '',
-      room_type: '',
-      nights: '',
-      remarks: '',
-      hotel_standard: '',
-      hotel_deluxe: '',
-      hotel_executive: ''
-    });
+   setHotelItem({
+    city: '',
+    nights: '',
+    standard_hotel_name: '', 
+    deluxe_hotel_name: '',   
+    executive_hotel_name: '',
+    remarks: ''
+  });
+  
     resetEditing();
   };
 
@@ -549,6 +659,77 @@ const INTLAddTour = () => {
     resetEditing();
   };
 
+
+  // Add Tourist Visa
+const addTouristVisa = () => {
+  const trimmed = touristVisaForm.description.trim();
+  if (!trimmed) return;
+  
+  if (editingType === 'touristVisa' && editIndex !== -1) {
+    const updated = [...touristVisaItems];
+    updated[editIndex] = { description: trimmed };
+    setTouristVisaItems(updated);
+  } else {
+    setTouristVisaItems(prev => [...prev, { description: trimmed }]);
+  }
+  
+  setTouristVisaForm({ description: '' });
+  resetEditing();
+};
+
+// Add Transit Visa
+const addTransitVisa = () => {
+  const trimmed = transitVisaForm.description.trim();
+  if (!trimmed) return;
+  
+  if (editingType === 'transitVisa' && editIndex !== -1) {
+    const updated = [...transitVisaItems];
+    updated[editIndex] = { description: trimmed };
+    setTransitVisaItems(updated);
+  } else {
+    setTransitVisaItems(prev => [...prev, { description: trimmed }]);
+  }
+  
+  setTransitVisaForm({ description: '' });
+  resetEditing();
+};
+
+// Add Business Visa
+const addBusinessVisa = () => {
+  const trimmed = businessVisaForm.description.trim();
+  if (!trimmed) return;
+  
+  if (editingType === 'businessVisa' && editIndex !== -1) {
+    const updated = [...businessVisaItems];
+    updated[editIndex] = { description: trimmed };
+    setBusinessVisaItems(updated);
+  } else {
+    setBusinessVisaItems(prev => [...prev, { description: trimmed }]);
+  }
+  
+  setBusinessVisaForm({ description: '' });
+  resetEditing();
+};
+
+// Add Photo
+const addPhoto = () => {
+  const trimmed = photoForm.description.trim();
+  if (!trimmed) return;
+  
+  if (editingType === 'photo' && editIndex !== -1) {
+    const updated = [...photoItems];
+    updated[editIndex] = { description: trimmed };
+    setPhotoItems(updated);
+  } else {
+    setPhotoItems(prev => [...prev, { description: trimmed }]);
+  }
+  
+  setPhotoForm({ description: '' });
+  resetEditing();
+};
+
+
+
   // Reset editing context
   const resetEditing = () => {
     setEditingItem(null);
@@ -603,6 +784,28 @@ const INTLAddTour = () => {
   const removeInstruction = (idx) => {
     setInstructions(prev => prev.filter((_, i) => i !== idx));
   };
+
+
+  // Remove Tourist Visa
+const removeTouristVisa = (idx) => {
+  setTouristVisaItems(prev => prev.filter((_, i) => i !== idx));
+};
+
+// Remove Transit Visa
+const removeTransitVisa = (idx) => {
+  setTransitVisaItems(prev => prev.filter((_, i) => i !== idx));
+};
+
+// Remove Business Visa
+const removeBusinessVisa = (idx) => {
+  setBusinessVisaItems(prev => prev.filter((_, i) => i !== idx));
+};
+
+// Remove Photo
+const removePhoto = (idx) => {
+  setPhotoItems(prev => prev.filter((_, i) => i !== idx));
+};
+
 
   // ========================
   // HANDLER FUNCTIONS
@@ -705,6 +908,41 @@ const INTLAddTour = () => {
     setImagePreviews(prev => [...prev, ...previews]);
   };
 
+  // Visa Form Change Handlers
+const handleTouristVisaChange = (e) => {
+  const { name, value } = e.target;
+  setTouristVisaForm(prev => ({ ...prev, [name]: value }));
+};
+
+const handleTransitVisaChange = (e) => {
+  const { name, value } = e.target;
+  setTransitVisaForm(prev => ({ ...prev, [name]: value }));
+};
+
+const handleBusinessVisaChange = (e) => {
+  const { name, value } = e.target;
+  setBusinessVisaForm(prev => ({ ...prev, [name]: value }));
+};
+
+const handlePhotoChange = (e) => {
+  const { name, value } = e.target;
+  setPhotoForm(prev => ({ ...prev, [name]: value }));
+};
+
+const handleVisaFeesChange = (index, field, value) => {
+  const updated = [...visaFeesRows];
+  updated[index][field] = value;
+  setVisaFeesRows(updated);
+};
+
+const handleSubmissionChange = (index, field, value) => {
+  const updated = [...submissionRows];
+  updated[index][field] = value;
+  setSubmissionRows(updated);
+};
+
+
+
   useEffect(() => {
     return () => {
       imagePreviews.forEach((url) => {
@@ -744,13 +982,16 @@ useEffect(() => {
         await loadTourData();
       } else {
         // Set is_international to 1 for international tours
+          // You might want to get this from a URL parameter or other context
+  const isInternational = window.location.pathname.includes('intl') ? 1 : 0;
+
         setFormData(prev => ({
           ...prev,
           is_international: 1
         }));
         
         // Fetch tour code with is_international=1 parameter
-        const tourCodeRes = await fetch(`${baseurl}/api/tours/next-tour-code?tour_type=individual&is_international=1`);
+        const tourCodeRes = await fetch(`${baseurl}/api/tours/next-tour-code?tour_type=individual&is_international=${isInternational}`);
         if (tourCodeRes.ok) {
           const tourCodeData = await tourCodeRes.json();
           setFormData(prev => ({
@@ -873,14 +1114,43 @@ useEffect(() => {
         }
 
         // Set hotels
-        if (data.hotels && Array.isArray(data.hotels)) {
-          setHotelRows(data.hotels);
+       if (data.hotels && Array.isArray(data.hotels)) {
+          const formattedHotels = data.hotels.map(hotel => ({
+            ...hotel,
+            standard_hotel_name: hotel.standard_hotel_name || '',
+            deluxe_hotel_name: hotel.deluxe_hotel_name || '',
+            executive_hotel_name: hotel.executive_hotel_name || ''
+          }));
+          setHotelRows(formattedHotels);
         }
 
         // Set transport
         if (data.transport && Array.isArray(data.transport)) {
           setTransports(data.transport);
         }
+
+        // Load Visa Data
+if (data.visa_details && Array.isArray(data.visa_details)) {
+  const touristItems = data.visa_details.filter(v => v.type === 'tourist');
+  const transitItems = data.visa_details.filter(v => v.type === 'transit');
+  const businessItems = data.visa_details.filter(v => v.type === 'business');
+  const photoItems = data.visa_details.filter(v => v.type === 'photo');
+  
+  setTouristVisaItems(touristItems);
+  setTransitVisaItems(transitItems);
+  setBusinessVisaItems(businessItems);
+  setPhotoItems(photoItems);
+}
+
+// Load Visa Fees
+if (data.visa_fees && Array.isArray(data.visa_fees)) {
+  setVisaFeesRows(data.visa_fees);
+}
+
+// Load Submission Data
+if (data.visa_submission && Array.isArray(data.visa_submission)) {
+  setSubmissionRows(data.visa_submission);
+}
 
         // Set booking POI
         if (data.booking_poi && Array.isArray(data.booking_poi)) {
@@ -1043,6 +1313,24 @@ useEffect(() => {
           body: JSON.stringify({ tour_id: tourId, hotels: hotelRows })
         });
       }
+
+         const visaData = {
+            tourist_visa: touristVisaItems,
+            transit_visa: transitVisaItems,
+            business_visa: businessVisaItems,
+            visa_forms: visaFormItems,
+            photo: photoItems,
+            visa_fees: visaFeesRows,
+            submission: submissionRows
+          };
+
+          if (touristVisaItems.length > 0 || transitVisaItems.length > 0 || businessVisaItems.length > 0 || photoItems.length > 0) {
+            await fetch(`${baseurl}/api/visa/bulk`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ tour_id: tourId, ...visaData })
+            });
+          }
 
       // 8) TRANSPORT
       if (transports.length > 0) {
@@ -1282,6 +1570,32 @@ useEffect(() => {
         });
       }
 
+      // Delete existing visa data
+      try {
+        await fetch(`${baseurl}/api/visa/tour/${id}`, { method: 'DELETE' });
+      } catch (err) {
+        console.warn('Failed to delete visa data:', err.message);
+      }
+
+      // Add visa data
+      const visaData = {
+        tourist_visa: touristVisaItems,
+        transit_visa: transitVisaItems,
+        business_visa: businessVisaItems,
+        visa_forms: visaFormItems,
+        photo: photoItems,
+        visa_fees: visaFeesRows,
+        submission: submissionRows
+      };
+
+      if (touristVisaItems.length > 0 || transitVisaItems.length > 0 || businessVisaItems.length > 0 || photoItems.length > 0) {
+        await fetch(`${baseurl}/api/visa/bulk`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tour_id: id, ...visaData })
+        });
+      }
+
       // Booking POI
       if (bookingPois.length > 0) {
         await fetch(`${baseurl}/api/tour-booking-poi/bulk`, {
@@ -1392,6 +1706,32 @@ useEffect(() => {
           label: editingType === 'hotel' ? 'Update Hotel' : '+ Add Hotel', 
           onClick: addHotelRow 
         };
+
+    case 'visa':
+      // Check which subtab is active
+      if (activeVisaSubTab === 'tourist') {
+        return { 
+          label: editingType === 'touristVisa' ? 'Update Tourist Visa' : '+ Add Tourist Visa', 
+          onClick: addTouristVisa 
+        };
+      } else if (activeVisaSubTab === 'transit') {
+        return { 
+          label: editingType === 'transitVisa' ? 'Update Transit Visa' : '+ Add Transit Visa', 
+          onClick: addTransitVisa 
+        };
+      } else if (activeVisaSubTab === 'business') {
+        return { 
+          label: editingType === 'businessVisa' ? 'Update Business Visa' : '+ Add Business Visa', 
+          onClick: addBusinessVisa 
+        };
+      } else if (activeVisaSubTab === 'photo') {
+        return { 
+          label: editingType === 'photo' ? 'Update Photo' : '+ Add Photo', 
+          onClick: addPhoto 
+        };
+      }
+      return null;
+
       case 'bookingPoi':
         return { 
           label: editingType === 'poi' ? 'Update POI' : '+ Add POI', 
@@ -1796,16 +2136,6 @@ useEffect(() => {
                   />
                 </Form.Group>
 
-                <Form.Group className="mt-3">
-                  <Form.Label>EMI Remarks</Form.Label>
-                  <Form.Control
-                    as="textarea"
-                    rows={3}
-                    name="emi_remarks"
-                    value={formData.emi_remarks}
-                    onChange={handleBasicChange}
-                  />
-                </Form.Group>
 
                 {tourCosts.length > 0 && (
                   <Table striped bordered hover size="sm" className="mt-3">
@@ -1899,6 +2229,18 @@ useEffect(() => {
                     </Form.Group>
                   </Col>
                 </Row>
+
+                <Form.Group className="mt-3">
+                      <Form.Label>Optional Tour Remarks</Form.Label>
+                          <Form.Control
+                              as="textarea"
+                              rows={3}
+                              name="optional_tour_remarks"
+                              value={formData.optional_tour_remarks || ''}
+                              onChange={handleBasicChange}
+                              placeholder="Enter any remarks for optional tours..."
+                          />
+                </Form.Group>
 
                 {optionalTours.length > 0 && (
                   <Table striped bordered hover size="sm" className="mt-3">
@@ -2012,6 +2354,16 @@ useEffect(() => {
                     ))}
                   </tbody>
                 </Table>
+                 <Form.Group className="mt-3">
+                  <Form.Label>EMI Remarks</Form.Label>
+                  <Form.Control
+                    as="textarea"
+                    rows={3}
+                    name="emi_remarks"
+                    value={formData.emi_remarks}
+                    onChange={handleBasicChange}
+                  />
+                </Form.Group>
               </Tab>
 
               <Tab eventKey="inclusions" title="Inclusions">
@@ -2188,153 +2540,516 @@ useEffect(() => {
                 )}
               </Tab>
 
-              <Tab eventKey="hotels" title="Hotels">
-                <Row className="align-items-end">
-                  <Col md={3}>
-                    <Form.Group>
-                      <Form.Label>City *</Form.Label>
-                      <Form.Control
-                        type="text"
-                        name="city"
-                        value={hotelItem.city}
-                        onChange={handleHotelChange}
-                      />
-                    </Form.Group>
-                  </Col>
+             <Tab eventKey="hotels" title="Hotels">
+                             <Row className="align-items-end">
+                               <Col md={6}>
+                                 <Form.Group>
+                                   <Form.Label>City *</Form.Label>
+                                   <Form.Control
+                                     type="text"
+                                     name="city"
+                                     value={hotelItem.city}
+                                     onChange={handleHotelChange}
+                                     placeholder="Enter city name"
+                                   />
+                                 </Form.Group>
+                               </Col>
+             
+                                <Col md={6}>
+                                 <Form.Group>
+                                   <Form.Label>Nights</Form.Label>
+                                   <Form.Control
+                                     type="number"
+                                     name="nights"
+                                     value={hotelItem.nights}
+                                     onChange={handleHotelChange}
+                                   />
+                                 </Form.Group>
+                               </Col>
+              
+                                <Col md={4}>
+                                 <Form.Group className="mt-3">
+                                   <Form.Label>Standard Hotel Name</Form.Label>
+                                   <Form.Control
+                                     type="text"
+                                     name="standard_hotel_name"
+                                     value={hotelItem.standard_hotel_name}
+                                     onChange={handleHotelChange}
+                                     placeholder="Enter standard hotel name"
+                                   />
+                                 </Form.Group>
+                               </Col>
+             
+                                <Col md={4}>
+                                 <Form.Group className="mt-3">
+                                   <Form.Label>Deluxe Hotel Name</Form.Label>
+                                   <Form.Control
+                                     type="text"
+                                     name="deluxe_hotel_name"
+                                     value={hotelItem.deluxe_hotel_name}
+                                     onChange={handleHotelChange}
+                                      placeholder="Enter deluxe hotel name"
+                                   />
+                                 </Form.Group>
+                               </Col>
+             
+                                <Col md={4}>
+                                 <Form.Group className="mt-3">
+                                   <Form.Label>Executive Hotel Name</Form.Label>
+                                   <Form.Control
+                                     type="text"
+                                     name="executive_hotel_name"
+                                     value={hotelItem.executive_hotel_name}
+                                     onChange={handleHotelChange}
+                                      placeholder="Enter executive hotel name"
+                                   />
+                                 </Form.Group>
+                               </Col>
+             
+                             </Row>
+             
+                             <Form.Group className="mt-3">
+                               <Form.Label>Hotel Remarks</Form.Label>
+                               <Form.Control
+                                 as="textarea"
+                                 rows={3}
+                                 name="hotel_remarks"
+                                 value={formData.hotel_remarks}
+                                 onChange={handleBasicChange}
+                               />
+                             </Form.Group>
+             
+                             {hotelRows.length > 0 && (
+                               <Table striped bordered hover size="sm" className="mt-3">
+                                 <thead>
+                                   <tr>
+                                     <th>#</th>
+                                     <th>City</th>
+                                      <th>Nights</th>
+                                       <th>Standard Hotel</th>
+                                        <th>Deluxe Hotel</th>
+                                         <th>Executive Hotel</th>
+                                        {/* <th>Remarks</th> */}
+                                     <th>Action</th>
+                                   </tr>
+                                 </thead>
+                                 <tbody>
+                                   {hotelRows.map((h, idx) => (
+                                     <tr key={idx}>
+                                       <td>{idx + 1}</td>
+                                       <td>{h.city}</td>
+                                       <td>{h.nights}</td>
+                                       <td>{h.standard_hotel_name || '-'}</td>
+                                       <td>{h.deluxe_hotel_name || '-'}</td>
+                                       <td>{h.executive_hotel_name || '-'}</td>
+                                       {/* <td>{h.remarks || '-'}</td> */}
+                                       <td>
+                                         <div className="d-flex gap-1">
+                                           <Button
+                                             variant="outline-warning"
+                                             size="sm"
+                                             onClick={() => editHotelRow(idx)}
+                                             title="Edit"
+                                           >
+                                             <Pencil size={14} />
+                                           </Button>
+                                           <Button
+                                             variant="outline-danger"
+                                             size="sm"
+                                             onClick={() => removeHotelRow(idx)}
+                                             title="Remove"
+                                           >
+                                             <Trash size={14} />
+                                           </Button>
+                                         </div>
+                                       </td>
+                                     </tr>
+                                   ))}
+                                 </tbody>
+                               </Table>
+                             )}
+                           </Tab>
 
-                  <Col md={3}>
-                    <Form.Group>
-                      <Form.Label>Hotel Name *</Form.Label>
+              <Tab eventKey="visa" title="Visa">
+                <Tabs
+                  activeKey={activeVisaSubTab}
+                  onSelect={(k) => setActiveVisaSubTab(k)}
+                  className="mb-4"
+                >
+                  {/* Subtab 1: Tourist Visa */}
+                  <Tab eventKey="tourist" title="Tourist Visa">
+                    <Form.Group className="mb-3">
+                      <Form.Label>Free Flow Entry (Same like departure field)</Form.Label>
                       <Form.Control
-                        type="text"
-                        name="hotel_name"
-                        value={hotelItem.hotel_name}
-                        onChange={handleHotelChange}
+                        as="textarea"
+                        rows={4}
+                        name="description"
+                        value={touristVisaForm.description}
+                        onChange={handleTouristVisaChange}
+                        placeholder="Enter tourist visa details"
                       />
                     </Form.Group>
-                  </Col>
- 
-                   <Col md={3}>
-                    <Form.Group>
-                      <Form.Label>Standard</Form.Label>
-                      <Form.Control
-                        type="number"
-                        name="hotel_standard"
-                        value={hotelItem.hotel_standard}
-                        onChange={handleHotelChange}
-                      />
-                    </Form.Group>
-                  </Col>
-                   <Col md={3}>
-                    <Form.Group>
-                      <Form.Label>Deluxe</Form.Label>
-                      <Form.Control
-                        type="number"
-                        name="hotel_deluxe"
-                        value={hotelItem.hotel_deluxe}
-                        onChange={handleHotelChange}
-                      />
-                    </Form.Group>
-                  </Col>
-                   <Col md={3}>
-                    <Form.Group>
-                      <Form.Label>Executive</Form.Label>
-                      <Form.Control
-                        type="number"
-                        name="hotel_executive"
-                        value={hotelItem.hotel_executive}
-                        onChange={handleHotelChange}
-                      />
-                    </Form.Group>
-                  </Col>
 
-                  <Col md={3}>
-                    <Form.Group>
-                      <Form.Label>Room Type</Form.Label>
+                    {touristVisaItems.length > 0 && (
+                      <Table striped bordered hover size="sm" className="mt-3">
+                        <thead>
+                          <tr>
+                            <th>#</th>
+                            <th>Description</th>
+                            <th>Action</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {touristVisaItems.map((item, idx) => (
+                            <tr key={idx}>
+                              <td>{idx + 1}</td>
+                              <td>{item.description || '-'}</td>
+                              <td>
+                                <div className="d-flex gap-1">
+                                  <Button
+                                    variant="outline-warning"
+                                    size="sm"
+                                    onClick={() => editTouristVisa(idx)}
+                                    title="Edit"
+                                  >
+                                    <Pencil size={14} />
+                                  </Button>
+                                  <Button
+                                    variant="outline-danger"
+                                    size="sm"
+                                    onClick={() => removeTouristVisa(idx)}
+                                    title="Remove"
+                                  >
+                                    <Trash size={14} />
+                                  </Button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </Table>
+                    )}
+                  </Tab>
+
+                  {/* Subtab 2: Transit Visa */}
+                  <Tab eventKey="transit" title="Transit Visa">
+                    <Form.Group className="mb-3">
+                      <Form.Label>Free Flow Entry (Same like departure field)</Form.Label>
                       <Form.Control
-                        type="text"
-                        name="room_type"
-                        value={hotelItem.room_type}
-                        onChange={handleHotelChange}
+                        as="textarea"
+                        rows={4}
+                        name="description"
+                        value={transitVisaForm.description}
+                        onChange={handleTransitVisaChange}
+                        placeholder="Enter transit visa details"
                       />
                     </Form.Group>
-                  </Col>
 
-                  <Col md={2}>
-                    <Form.Group>
-                      <Form.Label>Nights</Form.Label>
+                    {transitVisaItems.length > 0 && (
+                      <Table striped bordered hover size="sm" className="mt-3">
+                        <thead>
+                          <tr>
+                            <th>#</th>
+                            <th>Description</th>
+                            <th>Action</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {transitVisaItems.map((item, idx) => (
+                            <tr key={idx}>
+                              <td>{idx + 1}</td>
+                              <td>{item.description || '-'}</td>
+                              <td>
+                                <div className="d-flex gap-1">
+                                  <Button
+                                    variant="outline-warning"
+                                    size="sm"
+                                    onClick={() => editTransitVisa(idx)}
+                                    title="Edit"
+                                  >
+                                    <Pencil size={14} />
+                                  </Button>
+                                  <Button
+                                    variant="outline-danger"
+                                    size="sm"
+                                    onClick={() => removeTransitVisa(idx)}
+                                    title="Remove"
+                                  >
+                                    <Trash size={14} />
+                                  </Button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </Table>
+                    )}
+                  </Tab>
+
+                  {/* Subtab 3: Business Visa */}
+                  <Tab eventKey="business" title="Business Visa">
+                    <Form.Group className="mb-3">
+                      <Form.Label>Free Flow Entry (Same like departure field)</Form.Label>
                       <Form.Control
-                        type="number"
-                        name="nights"
-                        value={hotelItem.nights}
-                        onChange={handleHotelChange}
+                        as="textarea"
+                        rows={4}
+                        name="description"
+                        value={businessVisaForm.description}
+                        onChange={handleBusinessVisaChange}
+                        placeholder="Enter business visa details"
                       />
                     </Form.Group>
-                  </Col>
-                </Row>
 
-                <Form.Group className="mt-3">
-                  <Form.Label>Hotel Remarks</Form.Label>
-                  <Form.Control
-                    as="textarea"
-                    rows={3}
-                    name="hotel_remarks"
-                    value={formData.hotel_remarks}
-                    onChange={handleBasicChange}
-                  />
-                </Form.Group>
+                    {businessVisaItems.length > 0 && (
+                      <Table striped bordered hover size="sm" className="mt-3">
+                        <thead>
+                          <tr>
+                            <th>#</th>
+                            <th>Description</th>
+                            <th>Action</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {businessVisaItems.map((item, idx) => (
+                            <tr key={idx}>
+                              <td>{idx + 1}</td>
+                              <td>{item.description || '-'}</td>
+                              <td>
+                                <div className="d-flex gap-1">
+                                  <Button
+                                    variant="outline-warning"
+                                    size="sm"
+                                    onClick={() => editBusinessVisa(idx)}
+                                    title="Edit"
+                                  >
+                                    <Pencil size={14} />
+                                  </Button>
+                                  <Button
+                                    variant="outline-danger"
+                                    size="sm"
+                                    onClick={() => removeBusinessVisa(idx)}
+                                    title="Remove"
+                                  >
+                                    <Trash size={14} />
+                                  </Button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </Table>
+                    )}
+                  </Tab>
 
-                {hotelRows.length > 0 && (
-                  <Table striped bordered hover size="sm" className="mt-3">
-                    <thead>
-                      <tr>
-                        <th>#</th>
-                        <th>City</th>
-                        <th>Hotel</th>
-                        <th>Room</th>
-                        <th>Nights</th>
-                           <th>Standard</th>
-                              <th>Deluxe</th>
-                                 <th>Executive</th>
-                        <th>Action</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {hotelRows.map((h, idx) => (
-                        <tr key={idx}>
-                          <td>{idx + 1}</td>
-                          <td>{h.city}</td>
-                          <td>{h.hotel_name}</td>
-                          <td>{h.room_type}</td>
-                          <td>{h.nights}</td>
-                           <td>{h.hotel_standard}</td>
-                            <td>{h.hotel_deluxe}</td>
-                             <td>{h.hotel_executive}</td>
-                          <td>
-                            <div className="d-flex gap-1">
-                              <Button
-                                variant="outline-warning"
-                                size="sm"
-                                onClick={() => editHotelRow(idx)}
-                                title="Edit"
-                              >
-                                <Pencil size={14} />
-                              </Button>
-                              <Button
-                                variant="outline-danger"
-                                size="sm"
-                                onClick={() => removeHotelRow(idx)}
-                                title="Remove"
-                              >
-                                <Trash size={14} />
-                              </Button>
-                            </div>
-                          </td>
+                  {/* Subtab 4: Visa Form */}
+                  <Tab eventKey="form" title="Visa Form">
+                    <Table striped bordered hover size="sm">
+                      <thead>
+                        <tr>
+                          <th>Visa Type</th>
+                          <th>Form Download</th>
+                          <th>Action 1</th>
+                          <th>Action 2</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </Table>
-                )}
+                      </thead>
+                      <tbody>
+                        {visaFormItems.map((item, idx) => (
+                          <tr key={idx}>
+                            <td>{item.type}</td>
+                            <td>{item.download_text}</td>
+                            <td>
+                              <Button variant="outline-primary" size="sm">
+                                {item.download_action}
+                              </Button>
+                            </td>
+                            <td>
+                              <Button variant="outline-secondary" size="sm">
+                                {item.fill_action}
+                              </Button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </Table>
+
+                    <Card className="mt-3">
+                      <Card.Header><strong>Remarks</strong></Card.Header>
+                      <Card.Body>
+                        <p className="mb-2">
+                          <strong>When Mention Download PDF:</strong> PDF to be Auto Fillable & then take a print and then sign where ever necessary
+                        </p>
+                        <p className="mb-0">
+                          <strong>Fill Manually means:</strong> Just fill in all the details in the form created by us and send it to us no need to Sign
+                        </p>
+                      </Card.Body>
+                    </Card>
+                  </Tab>
+
+                  {/* Subtab 5: Photo */}
+                  <Tab eventKey="photo" title="Photo">
+                    <Form.Group className="mb-3">
+                      <Form.Label>Free Flow Entry (I want in lines don't keep box empty for free flow)</Form.Label>
+                      <Form.Control
+                        as="textarea"
+                        rows={4}
+                        name="description"
+                        value={photoForm.description}
+                        onChange={handlePhotoChange}
+                        placeholder="Enter photo requirements"
+                      />
+                    </Form.Group>
+
+                    {photoItems.length > 0 && (
+                      <Table striped bordered hover size="sm" className="mt-3">
+                        <thead>
+                          <tr>
+                            <th>#</th>
+                            <th>Description</th>
+                            <th>Action</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {photoItems.map((item, idx) => (
+                            <tr key={idx}>
+                              <td>{idx + 1}</td>
+                              <td>{item.description || '-'}</td>
+                              <td>
+                                <div className="d-flex gap-1">
+                                  <Button
+                                    variant="outline-warning"
+                                    size="sm"
+                                    onClick={() => editPhoto(idx)}
+                                    title="Edit"
+                                  >
+                                    <Pencil size={14} />
+                                  </Button>
+                                  <Button
+                                    variant="outline-danger"
+                                    size="sm"
+                                    onClick={() => removePhoto(idx)}
+                                    title="Remove"
+                                  >
+                                    <Trash size={14} />
+                                  </Button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </Table>
+                    )}
+                  </Tab>
+
+                  {/* Subtab 6: Visa Fees */}
+                  <Tab eventKey="fees" title="Visa Fees">
+                    <Table striped bordered hover size="sm">
+                      <thead>
+                        <tr>
+                          <th>Type</th>
+                          <th>Tourist Visa</th>
+                          <th>Transit Visa</th>
+                          <th>Business Visa</th>
+                          <th>Visa & VFS & Other Charges</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {visaFeesRows.map((row, idx) => (
+                          <tr key={idx}>
+                            <td>{row.type}</td>
+                            <td>
+                              <Form.Control
+                                type="text"
+                                value={row.tourist}
+                                onChange={(e) => handleVisaFeesChange(idx, 'tourist', e.target.value)}
+                                placeholder="Free flow entry"
+                                size="sm"
+                              />
+                            </td>
+                            <td>
+                              <Form.Control
+                                type="text"
+                                value={row.transit}
+                                onChange={(e) => handleVisaFeesChange(idx, 'transit', e.target.value)}
+                                placeholder="Free flow entry"
+                                size="sm"
+                              />
+                            </td>
+                            <td>
+                              <Form.Control
+                                type="text"
+                                value={row.business}
+                                onChange={(e) => handleVisaFeesChange(idx, 'business', e.target.value)}
+                                placeholder="Free flow entry"
+                                size="sm"
+                              />
+                            </td>
+                            <td>
+                              {row.type === 'Extendable as per requirement' ? (
+                                <span>{row.type}</span>
+                              ) : (
+                                <Form.Control
+                                  type="text"
+                                  value={row.charges}
+                                  onChange={(e) => handleVisaFeesChange(idx, 'charges', e.target.value)}
+                                  placeholder="Charges"
+                                  size="sm"
+                                />
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </Table>
+                  </Tab>
+
+                  {/* Subtab 7: Submission & Pick Up */}
+                  <Tab eventKey="submission" title="Submission & Pick Up">
+                    <Table striped bordered hover size="sm">
+                      <thead>
+                        <tr>
+                          <th>Item</th>
+                          <th>Tourist Visa</th>
+                          <th>Transit Visa</th>
+                          <th>Business Visa</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {submissionRows.map((row, idx) => (
+                          <tr key={idx}>
+                            <td>{row.label}</td>
+                            <td>
+                              <Form.Control
+                                type="text"
+                                value={row.tourist}
+                                onChange={(e) => handleSubmissionChange(idx, 'tourist', e.target.value)}
+                                placeholder="Free flow alphanumeric"
+                                size="sm"
+                              />
+                            </td>
+                            <td>
+                              <Form.Control
+                                type="text"
+                                value={row.transit}
+                                onChange={(e) => handleSubmissionChange(idx, 'transit', e.target.value)}
+                                placeholder="Free flow alphanumeric"
+                                size="sm"
+                              />
+                            </td>
+                            <td>
+                              <Form.Control
+                                type="text"
+                                value={row.business}
+                                onChange={(e) => handleSubmissionChange(idx, 'business', e.target.value)}
+                                placeholder="Free flow alphanumeric"
+                                size="sm"
+                              />
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </Table>
+                  </Tab>
+                </Tabs>
               </Tab>
 
               <Tab eventKey="bookingPoi" title="Booking POI">

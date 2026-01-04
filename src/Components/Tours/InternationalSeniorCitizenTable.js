@@ -27,7 +27,7 @@ const SeniorCitizenTours = () => {
 
       // Filter tours where tour_type is "Senior Citizen"
       const filteredTours = result.filter(tour => 
-        tour.tour_type && tour.tour_type.toLowerCase() === "seniorcitizen"
+        tour.tour_type && tour.tour_type.toLowerCase() === "seniorcitizen" && tour.is_international === 1
       );
 
       // Add serial numbers
@@ -56,7 +56,7 @@ const SeniorCitizenTours = () => {
 
   // Handle edit tour
   const handleEditTour = (tourId) => {
-    navigate(`/edit-senior-citizen-tour/${tourId}`);
+    navigate(`/intl-edit-senior-citizen-tour/${tourId}`);
   };
 
   // Handle delete tour - show confirmation modal

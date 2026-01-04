@@ -27,7 +27,7 @@ const GroupTours = () => {
 
       // Filter tours where tour_type is "Group" (case-insensitive check)
       const filteredTours = result.filter(tour => 
-        tour.tour_type && tour.tour_type.toLowerCase() === "group"
+        tour.tour_type && tour.tour_type.toLowerCase() === "group" && tour.is_international === 0
       );
 
       // Add serial numbers to the filtered data

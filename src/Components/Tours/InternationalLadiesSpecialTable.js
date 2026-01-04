@@ -26,7 +26,7 @@ const LadiesSpecialTours = () => {
 
       // Filter tours where tour_type is "Ladies Special" (case-insensitive check)
       const filteredTours = result.filter(tour => 
-        tour.tour_type && tour.tour_type.toLowerCase() === "ladiesspecial"
+        tour.tour_type && tour.tour_type.toLowerCase() === "ladiesspecial" && tour.is_international === 1
       );
 
       // Add serial numbers to the filtered data
@@ -56,7 +56,7 @@ const LadiesSpecialTours = () => {
   // Handle edit tour
   const handleEditTour = (tourId) => {
     // Navigate to edit page with tour ID
-    navigate(`/edit-ladies-special-tour/${tourId}`);
+    navigate(`/intl-edit-ladies-special-tour/${tourId}`);
   };
 
   // Handle delete tour - show confirmation modal

@@ -27,7 +27,7 @@ const HoneymoonTours = () => {
 
       // Filter tours where tour_type is "Honeymoon"
       const filteredTours = result.filter(tour => 
-        tour.tour_type && tour.tour_type.toLowerCase() === "honeymoon"
+        tour.tour_type && tour.tour_type.toLowerCase() === "honeymoon" && tour.is_international === 1
       );
 
       const toursWithSerialNo = filteredTours.map((item, index) => ({
@@ -55,7 +55,7 @@ const HoneymoonTours = () => {
   // Handle edit tour
   const handleEditTour = (tourId) => {
     // Navigate to edit page with tour ID
-    navigate(`/edit-honeymoon-tour/${tourId}`);
+    navigate(`/intl-edit-honeymoon-tour/${tourId}`);
   };
 
   // Handle delete tour - show confirmation modal

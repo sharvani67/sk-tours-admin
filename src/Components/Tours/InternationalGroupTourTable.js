@@ -27,7 +27,7 @@ const GroupTours = () => {
 
       // Filter tours where tour_type is "Group" (case-insensitive check)
       const filteredTours = result.filter(tour => 
-        tour.tour_type && tour.tour_type.toLowerCase() === "group"
+        tour.tour_type && tour.tour_type.toLowerCase() === "group" && tour.is_international === 1
       );
 
       // Add serial numbers to the filtered data
@@ -57,7 +57,7 @@ const GroupTours = () => {
   // Handle edit tour
   const handleEditTour = (tourId) => {
     // Navigate to edit page with tour ID
-    navigate(`/edit-group-tour/${tourId}`);
+    navigate(`/intl-edit-group-tour/${tourId}`);
   };
 
   // Handle delete tour - show confirmation modal

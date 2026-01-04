@@ -27,7 +27,7 @@ const StudentTours = () => {
 
       // Filter tours where tour_type is "Student"
       const filteredTours = result.filter(tour => 
-        tour.tour_type && tour.tour_type.toLowerCase() === "student"
+        tour.tour_type && tour.tour_type.toLowerCase() === "student" && tour.is_international === 1
       );
 
       const toursWithSerialNo = filteredTours.map((item, index) => ({
@@ -55,7 +55,7 @@ const StudentTours = () => {
   // Handle edit tour
   const handleEditTour = (tourId) => {
     // Navigate to edit page with tour ID
-    navigate(`/edit-student-tour/${tourId}`);
+    navigate(`/intl-edit-student-tour/${tourId}`);
   };
 
   // Handle delete tour - show confirmation modal
