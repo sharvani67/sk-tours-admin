@@ -253,54 +253,217 @@ const [businessVisaItems, setBusinessVisaItems] = useState([]);
 const [businessVisaForm, setBusinessVisaForm] = useState({ description: '' });
 
 // Visa Form
+// Update visaFormItems state with file uploads
 const [visaFormItems, setVisaFormItems] = useState([
   {
     type: 'Tourist Visa',
     download_text: 'Tourist Visa Form Download',
     download_action: 'Download',
-    fill_action: 'Fill Manually'
+    fill_action: 'Fill Manually',
+    action1_file: null, // PDF upload
+    action2_file: null  // Word document upload
   },
   {
     type: 'Transit Visa',
     download_text: 'Transit Visa Form Download',
     download_action: 'Download',
-    fill_action: 'Fill Manually'
+    fill_action: 'Fill Manually',
+    action1_file: null,
+    action2_file: null
   },
   {
     type: 'Business Visa',
     download_text: 'Business Visa Form Download',
     download_action: 'Download',
-    fill_action: 'Fill Manually'
+    fill_action: 'Fill Manually',
+    action1_file: null,
+    action2_file: null
   }
 ]);
+
+// Add tourist visa remarks state
+const [touristVisaRemarks, setTouristVisaRemarks] = useState('');
+
+// Add file upload handler
+const handleVisaFormFileChange = (index, action, file) => {
+  const updated = [...visaFormItems];
+  if (action === 'action1') {
+    updated[index].action1_file = file;
+  } else if (action === 'action2') {
+    updated[index].action2_file = file;
+  }
+  setVisaFormItems(updated);
+};
+
+// Add tourist visa remarks handler
+const handleTouristVisaRemarksChange = (e) => {
+  setTouristVisaRemarks(e.target.value);
+};
 
 // Photo
 const [photoItems, setPhotoItems] = useState([]);
 const [photoForm, setPhotoForm] = useState({ description: '' });
 
+
+// Add these states for free flow photo entries
+const [freeFlowPhotoEntries, setFreeFlowPhotoEntries] = useState([]);
+const [freeFlowPhotoText, setFreeFlowPhotoText] = useState('');
+
+// Add these functions for free flow photo entries
+const addFreeFlowPhotoEntry = () => {
+  const trimmed = freeFlowPhotoText.trim();
+  if (!trimmed) return;
+  
+  setFreeFlowPhotoEntries(prev => [...prev, { description: trimmed }]);
+  setFreeFlowPhotoText('');
+};
+
+const editFreeFlowPhotoEntry = (idx) => {
+  const item = freeFlowPhotoEntries[idx];
+  setFreeFlowPhotoText(item.description);
+  setFreeFlowPhotoEntries(prev => prev.filter((_, i) => i !== idx));
+};
+
+const removeFreeFlowPhotoEntry = (idx) => {
+  setFreeFlowPhotoEntries(prev => prev.filter((_, i) => i !== idx));
+};
+
 // Visa Fees
+// Update visaFeesRows state
 const [visaFeesRows, setVisaFeesRows] = useState([
-  { type: 'Tourist Visa', tourist: '', transit: '', business: '', charges: '' },
-  { type: 'Free Flow Entry', tourist: '', transit: '', business: '', charges: '' },
-  { type: 'Free Flow Entry', tourist: '', transit: '', business: '', charges: '' },
-  { type: 'Free Flow Entry', tourist: '', transit: '', business: '', charges: '' },
-  { type: 'Free Flow Entry', tourist: '', transit: '', business: '', charges: '' },
-  { type: 'Free Flow Entry', tourist: '', transit: '', business: '', charges: '' },
-  { type: 'Extendable as per requirement', tourist: '', transit: '', business: '', charges: '' }
+  { 
+    id: 1,
+    type: 'Visa Fee', 
+    tourist: '', 
+    transit: '', 
+    business: '', 
+    tourist_charges: '', // Separate for Tourist
+    transit_charges: '', // Separate for Transit
+    business_charges: '' // Separate for Business
+  },
+  { 
+    id: 2,
+    type: 'VFS Fee', 
+    tourist: '', 
+    transit: '', 
+    business: '', 
+    tourist_charges: '',
+    transit_charges: '',
+    business_charges: ''
+  },
+  { 
+    id: 3,
+    type: 'Other Charges', 
+    tourist: '', 
+    transit: '', 
+    business: '', 
+    tourist_charges: '',
+    transit_charges: '',
+    business_charges: ''
+  }
 ]);
 
+// Add visa fees management functions
+const addVisaFeesRow = () => {
+  const newId = visaFeesRows.length > 0 
+    ? Math.max(...visaFeesRows.map(row => row.id)) + 1 
+    : 1;
+  
+  setVisaFeesRows([
+    ...visaFeesRows,
+    { 
+      id: newId,
+      type: 'Free Flow Entry', 
+      tourist: '', 
+      transit: '', 
+      business: '', 
+      tourist_charges: '',
+      transit_charges: '',
+      business_charges: ''
+    }
+  ]);
+};
+
+const removeVisaFeesRow = (id) => {
+  setVisaFeesRows(visaFeesRows.filter(row => row.id !== id));
+};
+
+
 // Submission & Pick Up
+// Update submissionRows state
 const [submissionRows, setSubmissionRows] = useState([
-  { label: 'Below article you write as this is going to be fix and below that keep lines empty', tourist: '', transit: '', business: '' },
-  { label: 'Passport Submission Day', tourist: '', transit: '', business: '' },
-  { label: 'Passport Submission Time', tourist: '', transit: '', business: '' },
-  { label: 'Passport pick up Days', tourist: '', transit: '', business: '' },
-  { label: 'Passport Pick Up Time', tourist: '', transit: '', business: '' },
-  { label: 'Biometric requirement', tourist: '', transit: '', business: '' },
-  { label: 'Free Flow Entry', tourist: '', transit: '', business: '' },
-  { label: 'Free Flow Entry', tourist: '', transit: '', business: '' },
-  { label: 'Free Flow Entry', tourist: '', transit: '', business: '' }
+  { 
+    id: 1,
+    label: 'Passport Submission Day', 
+    tourist: '', 
+    transit: '', 
+    business: '' 
+  },
+  { 
+    id: 2,
+    label: 'Passport Submission Time', 
+    tourist: '', 
+    transit: '', 
+    business: '' 
+  },
+  { 
+    id: 3,
+    label: 'Passport pick up Days', 
+    tourist: '', 
+    transit: '', 
+    business: '' 
+  },
+  { 
+    id: 4,
+    label: 'Passport Pick Up Time', 
+    tourist: '', 
+    transit: '', 
+    business: '' 
+  },
+  { 
+    id: 5,
+    label: 'Biometric requirement', 
+    tourist: '', 
+    transit: '', 
+    business: '' 
+  }
 ]);
+
+// Add submission management functions
+const addSubmissionRow = () => {
+  const newId = submissionRows.length > 0 
+    ? Math.max(...submissionRows.map(row => row.id)) + 1 
+    : 1;
+  
+  setSubmissionRows([
+    ...submissionRows,
+    { 
+      id: newId,
+      label: 'Free Flow Entry', 
+      tourist: '', 
+      transit: '', 
+      business: '' 
+    }
+  ]);
+};
+
+const removeSubmissionRow = (id) => {
+  setSubmissionRows(submissionRows.filter(row => row.id !== id));
+};
+
+const handleSubmissionLabelChange = (id, value) => {
+  const updated = submissionRows.map(row => 
+    row.id === id ? { ...row, label: value } : row
+  );
+  setSubmissionRows(updated);
+};
+
+const handleSubmissionValueChange = (id, field, value) => {
+  const updated = submissionRows.map(row => 
+    row.id === id ? { ...row, [field]: value } : row
+  );
+  setSubmissionRows(updated);
+};
 
 // Edit Tourist Visa
 const editTouristVisa = (idx) => {
@@ -789,12 +952,31 @@ if (data.visa_details && Array.isArray(data.visa_details)) {
 
 // Load Visa Fees
 if (data.visa_fees && Array.isArray(data.visa_fees)) {
-  setVisaFeesRows(data.visa_fees);
+   // Separate the extendable row from other rows
+  const regularRows = data.visa_fees.filter(row => row.row_type !== 'Extendable as per requirement');
+  const extendableRowData = data.visa_fees.find(row => row.row_type === 'Extendable as per requirement');
+  
+  setVisaFeesRows(regularRows.map(row => ({
+    id: row.fee_id || row.id,
+    type: row.row_type,
+    tourist: row.tourist || '',
+    transit: row.transit || '',
+    business: row.business || '',
+    tourist_charges: row.tourist_charges || '',
+    transit_charges: row.transit_charges || '',
+    business_charges: row.business_charges || ''
+  })));
 }
 
 // Load Submission Data
 if (data.visa_submission && Array.isArray(data.visa_submission)) {
-  setSubmissionRows(data.visa_submission);
+  setSubmissionRows(data.visa_submission.map(item => ({
+    id: item.submission_id || item.id,
+    label: item.label || '',
+    tourist: item.tourist || '',
+    transit: item.transit || '',
+    business: item.business || ''
+  })));
 }
 
         // Set transport
@@ -1344,7 +1526,8 @@ if (formData.is_international === 1) {
     visa_forms: visaFormItems,
     photo: photoItems,
     visa_fees: visaFeesRows,
-    submission: submissionRows
+    submission: submissionRows,
+     tourist_visa_remarks: touristVisaRemarks
   };
 
   if (touristVisaItems.length > 0 || transitVisaItems.length > 0 || 
@@ -1611,9 +1794,10 @@ if (formData.is_international === 1) {
     transit_visa: transitVisaItems,
     business_visa: businessVisaItems,
     visa_forms: visaFormItems,
-    photo: photoItems,
+       photo: [...photoItems, ...freeFlowPhotoEntries],
     visa_fees: visaFeesRows,
-    submission: submissionRows
+    submission: submissionRows,
+      tourist_visa_remarks: touristVisaRemarks
   };
 
   if (touristVisaItems.length > 0 || transitVisaItems.length > 0 || 
@@ -2639,391 +2823,6 @@ if (formData.is_international === 1) {
                 )}
               </Tab>
 
-              {/* ======== VISA TAB ======== */}
-{formData.is_international === 1 && (
-  <Tab eventKey="visa" title="Visa">
-    <Tabs
-      activeKey={activeVisaSubTab}
-      onSelect={(k) => setActiveVisaSubTab(k)}
-      className="mb-4"
-    >
-      {/* Subtab 1: Tourist Visa */}
-      <Tab eventKey="tourist" title="Tourist Visa">
-        <Form.Group className="mb-3">
-          <Form.Label>Free Flow Entry (Same like departure field)</Form.Label>
-          <Form.Control
-            as="textarea"
-            rows={4}
-            name="description"
-            value={touristVisaForm.description}
-            onChange={handleTouristVisaChange}
-            placeholder="Enter tourist visa details"
-          />
-        </Form.Group>
-
-        {touristVisaItems.length > 0 && (
-          <Table striped bordered hover size="sm" className="mt-3">
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Description</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {touristVisaItems.map((item, idx) => (
-                <tr key={idx}>
-                  <td>{idx + 1}</td>
-                  <td>{item.description || '-'}</td>
-                  <td>
-                    <div className="d-flex gap-1">
-                      <Button
-                        variant="outline-warning"
-                        size="sm"
-                        onClick={() => editTouristVisa(idx)}
-                        title="Edit"
-                      >
-                        <Pencil size={14} />
-                      </Button>
-                      <Button
-                        variant="outline-danger"
-                        size="sm"
-                        onClick={() => removeTouristVisa(idx)}
-                        title="Remove"
-                      >
-                        <Trash size={14} />
-                      </Button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </Table>
-        )}
-      </Tab>
-
-      {/* Subtab 2: Transit Visa */}
-      <Tab eventKey="transit" title="Transit Visa">
-        <Form.Group className="mb-3">
-          <Form.Label>Free Flow Entry (Same like departure field)</Form.Label>
-          <Form.Control
-            as="textarea"
-            rows={4}
-            name="description"
-            value={transitVisaForm.description}
-            onChange={handleTransitVisaChange}
-            placeholder="Enter transit visa details"
-          />
-        </Form.Group>
-
-        {transitVisaItems.length > 0 && (
-          <Table striped bordered hover size="sm" className="mt-3">
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Description</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {transitVisaItems.map((item, idx) => (
-                <tr key={idx}>
-                  <td>{idx + 1}</td>
-                  <td>{item.description || '-'}</td>
-                  <td>
-                    <div className="d-flex gap-1">
-                      <Button
-                        variant="outline-warning"
-                        size="sm"
-                        onClick={() => editTransitVisa(idx)}
-                        title="Edit"
-                      >
-                        <Pencil size={14} />
-                      </Button>
-                      <Button
-                        variant="outline-danger"
-                        size="sm"
-                        onClick={() => removeTransitVisa(idx)}
-                        title="Remove"
-                      >
-                        <Trash size={14} />
-                      </Button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </Table>
-        )}
-      </Tab>
-
-      {/* Subtab 3: Business Visa */}
-      <Tab eventKey="business" title="Business Visa">
-        <Form.Group className="mb-3">
-          <Form.Label>Free Flow Entry (Same like departure field)</Form.Label>
-          <Form.Control
-            as="textarea"
-            rows={4}
-            name="description"
-            value={businessVisaForm.description}
-            onChange={handleBusinessVisaChange}
-            placeholder="Enter business visa details"
-          />
-        </Form.Group>
-
-        {businessVisaItems.length > 0 && (
-          <Table striped bordered hover size="sm" className="mt-3">
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Description</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {businessVisaItems.map((item, idx) => (
-                <tr key={idx}>
-                  <td>{idx + 1}</td>
-                  <td>{item.description || '-'}</td>
-                  <td>
-                    <div className="d-flex gap-1">
-                      <Button
-                        variant="outline-warning"
-                        size="sm"
-                        onClick={() => editBusinessVisa(idx)}
-                        title="Edit"
-                      >
-                        <Pencil size={14} />
-                      </Button>
-                      <Button
-                        variant="outline-danger"
-                        size="sm"
-                        onClick={() => removeBusinessVisa(idx)}
-                        title="Remove"
-                      >
-                        <Trash size={14} />
-                      </Button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </Table>
-        )}
-      </Tab>
-
-      {/* Subtab 4: Visa Form */}
-      <Tab eventKey="form" title="Visa Form">
-        <Table striped bordered hover size="sm">
-          <thead>
-            <tr>
-              <th>Visa Type</th>
-              <th>Form Download</th>
-              <th>Action 1</th>
-              <th>Action 2</th>
-            </tr>
-          </thead>
-          <tbody>
-            {visaFormItems.map((item, idx) => (
-              <tr key={idx}>
-                <td>{item.type}</td>
-                <td>{item.download_text}</td>
-                <td>
-                  <Button variant="outline-primary" size="sm">
-                    {item.download_action}
-                  </Button>
-                </td>
-                <td>
-                  <Button variant="outline-secondary" size="sm">
-                    {item.fill_action}
-                  </Button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </Table>
-
-        <Card className="mt-3">
-          <Card.Header><strong>Remarks</strong></Card.Header>
-          <Card.Body>
-            <p className="mb-2">
-              <strong>When Mention Download PDF:</strong> PDF to be Auto Fillable & then take a print and then sign where ever necessary
-            </p>
-            <p className="mb-0">
-              <strong>Fill Manually means:</strong> Just fill in all the details in the form created by us and send it to us no need to Sign
-            </p>
-          </Card.Body>
-        </Card>
-      </Tab>
-
-      {/* Subtab 5: Photo */}
-      <Tab eventKey="photo" title="Photo">
-        <Form.Group className="mb-3">
-          <Form.Label>Free Flow Entry (I want in lines don't keep box empty for free flow)</Form.Label>
-          <Form.Control
-            as="textarea"
-            rows={4}
-            name="description"
-            value={photoForm.description}
-            onChange={handlePhotoChange}
-            placeholder="Enter photo requirements"
-          />
-        </Form.Group>
-
-        {photoItems.length > 0 && (
-          <Table striped bordered hover size="sm" className="mt-3">
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Description</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {photoItems.map((item, idx) => (
-                <tr key={idx}>
-                  <td>{idx + 1}</td>
-                  <td>{item.description || '-'}</td>
-                  <td>
-                    <div className="d-flex gap-1">
-                      <Button
-                        variant="outline-warning"
-                        size="sm"
-                        onClick={() => editPhoto(idx)}
-                        title="Edit"
-                      >
-                        <Pencil size={14} />
-                      </Button>
-                      <Button
-                        variant="outline-danger"
-                        size="sm"
-                        onClick={() => removePhoto(idx)}
-                        title="Remove"
-                      >
-                        <Trash size={14} />
-                      </Button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </Table>
-        )}
-      </Tab>
-
-      {/* Subtab 6: Visa Fees */}
-      <Tab eventKey="fees" title="Visa Fees">
-        <Table striped bordered hover size="sm">
-          <thead>
-            <tr>
-              <th>Type</th>
-              <th>Tourist Visa</th>
-              <th>Transit Visa</th>
-              <th>Business Visa</th>
-              <th>Visa & VFS & Other Charges</th>
-            </tr>
-          </thead>
-          <tbody>
-            {visaFeesRows.map((row, idx) => (
-              <tr key={idx}>
-                <td>{row.type}</td>
-                <td>
-                  <Form.Control
-                    type="text"
-                    value={row.tourist}
-                    onChange={(e) => handleVisaFeesChange(idx, 'tourist', e.target.value)}
-                    placeholder="Free flow entry"
-                    size="sm"
-                  />
-                </td>
-                <td>
-                  <Form.Control
-                    type="text"
-                    value={row.transit}
-                    onChange={(e) => handleVisaFeesChange(idx, 'transit', e.target.value)}
-                    placeholder="Free flow entry"
-                    size="sm"
-                  />
-                </td>
-                <td>
-                  <Form.Control
-                    type="text"
-                    value={row.business}
-                    onChange={(e) => handleVisaFeesChange(idx, 'business', e.target.value)}
-                    placeholder="Free flow entry"
-                    size="sm"
-                  />
-                </td>
-                <td>
-                  {row.type === 'Extendable as per requirement' ? (
-                    <span>{row.type}</span>
-                  ) : (
-                    <Form.Control
-                      type="text"
-                      value={row.charges}
-                      onChange={(e) => handleVisaFeesChange(idx, 'charges', e.target.value)}
-                      placeholder="Charges"
-                      size="sm"
-                    />
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </Table>
-      </Tab>
-
-      {/* Subtab 7: Submission & Pick Up */}
-      <Tab eventKey="submission" title="Submission & Pick Up">
-        <Table striped bordered hover size="sm">
-          <thead>
-            <tr>
-              <th>Item</th>
-              <th>Tourist Visa</th>
-              <th>Transit Visa</th>
-              <th>Business Visa</th>
-            </tr>
-          </thead>
-          <tbody>
-            {submissionRows.map((row, idx) => (
-              <tr key={idx}>
-                <td>{row.label}</td>
-                <td>
-                  <Form.Control
-                    type="text"
-                    value={row.tourist}
-                    onChange={(e) => handleSubmissionChange(idx, 'tourist', e.target.value)}
-                    placeholder="Free flow alphanumeric"
-                    size="sm"
-                  />
-                </td>
-                <td>
-                  <Form.Control
-                    type="text"
-                    value={row.transit}
-                    onChange={(e) => handleSubmissionChange(idx, 'transit', e.target.value)}
-                    placeholder="Free flow alphanumeric"
-                    size="sm"
-                  />
-                </td>
-                <td>
-                  <Form.Control
-                    type="text"
-                    value={row.business}
-                    onChange={(e) => handleSubmissionChange(idx, 'business', e.target.value)}
-                    placeholder="Free flow alphanumeric"
-                    size="sm"
-                  />
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </Table>
-      </Tab>
-    </Tabs>
-  </Tab>
-)}
-
               {/* ======== TRANSPORT TAB - SENIOR CITIZEN TOUR ======== */}
               <Tab eventKey="transport" title="Transport">
                 <Row className="mt-3">
@@ -3358,6 +3157,558 @@ if (formData.is_international === 1) {
                   </Table>
                 )}
               </Tab>
+
+                            {/* ======== VISA TAB ======== */}
+{formData.is_international === 1 && (
+  <Tab eventKey="visa" title="Visa">
+    <Tabs
+      activeKey={activeVisaSubTab}
+      onSelect={(k) => setActiveVisaSubTab(k)}
+      className="mb-4"
+    >
+      {/* Subtab 1: Tourist Visa */}
+      <Tab eventKey="tourist" title="Tourist Visa">
+        <Form.Group className="mb-3">
+          <Form.Label>Free Flow Entry (Same like departure field)</Form.Label>
+          <Form.Control
+            as="textarea"
+            rows={4}
+            name="description"
+            value={touristVisaForm.description}
+            onChange={handleTouristVisaChange}
+            placeholder="Enter tourist visa details"
+          />
+        </Form.Group>
+
+        {touristVisaItems.length > 0 && (
+          <Table striped bordered hover size="sm" className="mt-3">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Description</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {touristVisaItems.map((item, idx) => (
+                <tr key={idx}>
+                  <td>{idx + 1}</td>
+                  <td>{item.description || '-'}</td>
+                  <td>
+                    <div className="d-flex gap-1">
+                      <Button
+                        variant="outline-warning"
+                        size="sm"
+                        onClick={() => editTouristVisa(idx)}
+                        title="Edit"
+                      >
+                        <Pencil size={14} />
+                      </Button>
+                      <Button
+                        variant="outline-danger"
+                        size="sm"
+                        onClick={() => removeTouristVisa(idx)}
+                        title="Remove"
+                      >
+                        <Trash size={14} />
+                      </Button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
+        )}
+      </Tab>
+
+      {/* Subtab 2: Transit Visa */}
+      <Tab eventKey="transit" title="Transit Visa">
+        <Form.Group className="mb-3">
+          <Form.Label>Free Flow Entry (Same like departure field)</Form.Label>
+          <Form.Control
+            as="textarea"
+            rows={4}
+            name="description"
+            value={transitVisaForm.description}
+            onChange={handleTransitVisaChange}
+            placeholder="Enter transit visa details"
+          />
+        </Form.Group>
+
+        {transitVisaItems.length > 0 && (
+          <Table striped bordered hover size="sm" className="mt-3">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Description</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {transitVisaItems.map((item, idx) => (
+                <tr key={idx}>
+                  <td>{idx + 1}</td>
+                  <td>{item.description || '-'}</td>
+                  <td>
+                    <div className="d-flex gap-1">
+                      <Button
+                        variant="outline-warning"
+                        size="sm"
+                        onClick={() => editTransitVisa(idx)}
+                        title="Edit"
+                      >
+                        <Pencil size={14} />
+                      </Button>
+                      <Button
+                        variant="outline-danger"
+                        size="sm"
+                        onClick={() => removeTransitVisa(idx)}
+                        title="Remove"
+                      >
+                        <Trash size={14} />
+                      </Button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
+        )}
+      </Tab>
+
+      {/* Subtab 3: Business Visa */}
+      <Tab eventKey="business" title="Business Visa">
+        <Form.Group className="mb-3">
+          <Form.Label>Free Flow Entry (Same like departure field)</Form.Label>
+          <Form.Control
+            as="textarea"
+            rows={4}
+            name="description"
+            value={businessVisaForm.description}
+            onChange={handleBusinessVisaChange}
+            placeholder="Enter business visa details"
+          />
+        </Form.Group>
+
+        {businessVisaItems.length > 0 && (
+          <Table striped bordered hover size="sm" className="mt-3">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Description</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {businessVisaItems.map((item, idx) => (
+                <tr key={idx}>
+                  <td>{idx + 1}</td>
+                  <td>{item.description || '-'}</td>
+                  <td>
+                    <div className="d-flex gap-1">
+                      <Button
+                        variant="outline-warning"
+                        size="sm"
+                        onClick={() => editBusinessVisa(idx)}
+                        title="Edit"
+                      >
+                        <Pencil size={14} />
+                      </Button>
+                      <Button
+                        variant="outline-danger"
+                        size="sm"
+                        onClick={() => removeBusinessVisa(idx)}
+                        title="Remove"
+                      >
+                        <Trash size={14} />
+                      </Button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
+        )}
+      </Tab>
+
+      {/* Subtab 4: Visa Form */}
+     {/* Subtab 4: Visa Form */}
+<Tab eventKey="form" title="Visa Form">
+  <Table striped bordered hover size="sm">
+    <thead>
+      <tr>
+        <th>Visa Type</th>
+        <th>Form Download</th>
+        <th>Action 1 (Upload PDF)</th>
+        <th>Action 2 (Upload Word)</th>
+      </tr>
+    </thead>
+    <tbody>
+      {visaFormItems.map((item, idx) => (
+        <tr key={idx}>
+          <td>{item.type}</td>
+          <td>{item.download_text}</td>
+          <td>
+            <div className="mb-2">
+              <Button 
+                variant="outline-primary" 
+                size="sm"
+                onClick={() => document.getElementById(`pdf-upload-${idx}`).click()}
+              >
+                {item.action1_file ? 'Change PDF' : 'Upload PDF'}
+              </Button>
+              <Form.Control
+                type="file"
+                id={`pdf-upload-${idx}`}
+                accept=".pdf"
+                className="d-none"
+                onChange={(e) => handleVisaFormFileChange(idx, 'action1', e.target.files[0])}
+              />
+              {item.action1_file && (
+                <div className="mt-1 small">
+                  <span className="text-success">✓ {item.action1_file.name}</span>
+                </div>
+              )}
+            </div>
+          </td>
+          <td>
+            <div className="mb-2">
+              <Button 
+                variant="outline-secondary" 
+                size="sm"
+                onClick={() => document.getElementById(`word-upload-${idx}`).click()}
+              >
+                {item.action2_file ? 'Change Word' : 'Upload Word'}
+              </Button>
+              <Form.Control
+                type="file"
+                id={`word-upload-${idx}`}
+                accept=".doc,.docx"
+                className="d-none"
+                onChange={(e) => handleVisaFormFileChange(idx, 'action2', e.target.files[0])}
+              />
+              {item.action2_file && (
+                <div className="mt-1 small">
+                  <span className="text-success">✓ {item.action2_file.name}</span>
+                </div>
+              )}
+            </div>
+          </td>
+        </tr>
+      ))}
+    </tbody>
+  </Table>
+
+  <Card className="mt-3">
+    <Card.Body>
+      <Form.Group>
+        <Form.Label>Free Flow Remarks (Same like Tourist Visa)</Form.Label>
+        <Form.Control
+          as="textarea"
+          rows={4}
+          value={touristVisaRemarks}
+          onChange={handleTouristVisaRemarksChange}
+          placeholder="Enter remarks about visa forms..."
+        />
+      </Form.Group>
+    </Card.Body>
+  </Card>
+</Tab>
+
+      {/* Subtab 5: Photo */}
+     {/* Subtab 5: Photo */}
+<Tab eventKey="photo" title="Photo">
+  {/* Free Flow Entry Section */}
+  <Card className="mb-3">
+    <Card.Body>
+      <Form.Group className="mb-3">
+        <Form.Label>Add Free Flow Entry</Form.Label>
+        <div className="d-flex gap-2">
+          <Form.Control
+            as="textarea"
+            rows={2}
+            value={freeFlowPhotoText}
+            onChange={(e) => setFreeFlowPhotoText(e.target.value)}
+            placeholder="Type free flow entry"
+          />
+          <Button 
+            variant="success" 
+            onClick={addFreeFlowPhotoEntry}
+            className="align-self-start"
+          >
+            + Add Free Flow
+          </Button>
+        </div>
+      </Form.Group>
+
+      {freeFlowPhotoEntries.length > 0 && (
+        <Table striped bordered hover size="sm">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Free Flow Entry</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {freeFlowPhotoEntries.map((item, idx) => (
+              <tr key={idx}>
+                <td>{idx + 1}</td>
+                <td>{item.description || '-'}</td>
+                <td>
+                  <div className="d-flex gap-1">
+                    <Button
+                      variant="outline-warning"
+                      size="sm"
+                      onClick={() => editFreeFlowPhotoEntry(idx)}
+                      title="Edit"
+                    >
+                      <Pencil size={14} />
+                    </Button>
+                    <Button
+                      variant="outline-danger"
+                      size="sm"
+                      onClick={() => removeFreeFlowPhotoEntry(idx)}
+                      title="Remove"
+                    >
+                      <Trash size={14} />
+                    </Button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </Table>
+      )}
+    </Card.Body>
+  </Card>
+
+  {/* Existing Photo Items Table */}
+  {photoItems.length > 0 && (
+    <Card>
+      <Card.Body>
+        <h6>Photo Requirements List</h6>
+        <Table striped bordered hover size="sm">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Description</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {photoItems.map((item, idx) => (
+              <tr key={idx}>
+                <td>{idx + 1}</td>
+                <td>{item.description || '-'}</td>
+                <td>
+                  <div className="d-flex gap-1">
+                    <Button
+                      variant="outline-warning"
+                      size="sm"
+                      onClick={() => editPhoto(idx)}
+                      title="Edit"
+                    >
+                      <Pencil size={14} />
+                    </Button>
+                    <Button
+                      variant="outline-danger"
+                      size="sm"
+                      onClick={() => removePhoto(idx)}
+                      title="Remove"
+                    >
+                      <Trash size={14} />
+                    </Button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </Table>
+      </Card.Body>
+    </Card>
+  )}
+</Tab>
+
+      {/* Subtab 6: Visa Fees */}
+      {/* Subtab 6: Visa Fees */}
+<Tab eventKey="fees" title="Visa Fees">
+  <div className="mb-3">
+    <Button 
+      variant="outline-success" 
+      size="sm" 
+      onClick={addVisaFeesRow}
+    >
+      + Add Free Flow Entry
+    </Button>
+  </div>
+  
+  <Table striped bordered hover size="sm">
+    <thead>
+      <tr>
+        <th>Tourist Visa</th>
+        <th>Tourist Visa Charges</th>
+        <th>Transit Visa</th>
+        <th>Transit Visa Charges</th>
+        <th>Business Visa</th>
+        <th>Business Visa Charges</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {visaFeesRows.map((row) => (
+        <tr key={row.id}>
+          <td>
+            <Form.Control
+              type="text"
+              value={row.tourist}
+              onChange={(e) => handleVisaFeesChange(row.id, 'tourist', e.target.value)}
+              placeholder="Free flow entry"
+              size="sm"
+            />
+          </td>
+          <td>
+            <Form.Control
+              type="text"
+              value={row.tourist_charges}
+              onChange={(e) => handleVisaFeesChange(row.id, 'tourist_charges', e.target.value)}
+              placeholder="Charges for Tourist"
+              size="sm"
+            />
+          </td>
+          <td>
+            <Form.Control
+              type="text"
+              value={row.transit}
+              onChange={(e) => handleVisaFeesChange(row.id, 'transit', e.target.value)}
+              placeholder="Free flow entry"
+              size="sm"
+            />
+          </td>
+          <td>
+            <Form.Control
+              type="text"
+              value={row.transit_charges}
+              onChange={(e) => handleVisaFeesChange(row.id, 'transit_charges', e.target.value)}
+              placeholder="Charges for Transit"
+              size="sm"
+            />
+          </td>
+          <td>
+            <Form.Control
+              type="text"
+              value={row.business}
+              onChange={(e) => handleVisaFeesChange(row.id, 'business', e.target.value)}
+              placeholder="Free flow entry"
+              size="sm"
+            />
+          </td>
+          <td>
+            <Form.Control
+              type="text"
+              value={row.business_charges}
+              onChange={(e) => handleVisaFeesChange(row.id, 'business_charges', e.target.value)}
+              placeholder="Charges for Business"
+              size="sm"
+            />
+          </td>
+          <td>
+            <Button
+              variant="outline-danger"
+              size="sm"
+              onClick={() => removeVisaFeesRow(row.id)}
+              title="Remove"
+              disabled={row.id <= 3} // Prevent removing first 3 rows
+            >
+              <Trash size={14} />
+            </Button>
+          </td>
+        </tr>
+      ))}
+    </tbody>
+  </Table>
+</Tab>
+
+      {/* Subtab 7: Submission & Pick Up */}
+      {/* Subtab 7: Submission & Pick Up */}
+<Tab eventKey="submission" title="Submission & Pick Up">
+  <div className="mb-3">
+    <Button 
+      variant="outline-success" 
+      size="sm" 
+      onClick={addSubmissionRow}
+    >
+      + Add Free Flow Entry
+    </Button>
+  </div>
+  
+  <Table striped bordered hover size="sm">
+    <thead>
+      <tr>
+        <th width="25%">Item</th>
+        <th width="25%">Tourist Visa</th>
+        <th width="25%">Transit Visa</th>
+        <th width="25%">Business Visa</th>
+        <th width="5%">Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {submissionRows.map((row) => (
+        <tr key={row.id}>
+          <td>
+            <Form.Control
+              type="text"
+              value={row.label}
+              onChange={(e) => handleSubmissionLabelChange(row.id, e.target.value)}
+              placeholder="Enter item label"
+              size="sm"
+            />
+          </td>
+          <td>
+            <Form.Control
+              type="text"
+              value={row.tourist}
+              onChange={(e) => handleSubmissionValueChange(row.id, 'tourist', e.target.value)}
+              placeholder="Free flow alphanumeric"
+              size="sm"
+            />
+          </td>
+          <td>
+            <Form.Control
+              type="text"
+              value={row.transit}
+              onChange={(e) => handleSubmissionValueChange(row.id, 'transit', e.target.value)}
+              placeholder="Free flow alphanumeric"
+              size="sm"
+            />
+          </td>
+          <td>
+            <Form.Control
+              type="text"
+              value={row.business}
+              onChange={(e) => handleSubmissionValueChange(row.id, 'business', e.target.value)}
+              placeholder="Free flow alphanumeric"
+              size="sm"
+            />
+          </td>
+          <td>
+            <Button
+              variant="outline-danger"
+              size="sm"
+              onClick={() => removeSubmissionRow(row.id)}
+              title="Remove"
+            >
+              <Trash size={14} />
+            </Button>
+          </td>
+        </tr>
+      ))}
+    </tbody>
+  </Table>
+</Tab>
+    </Tabs>
+  </Tab>
+)}
 
               <Tab eventKey="bookingPoi" title="Booking POI">
                 <Form.Group className="mb-3">

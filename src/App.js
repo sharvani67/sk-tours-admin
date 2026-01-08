@@ -91,6 +91,12 @@ import AdminLeads from "./Components/Home/AdminLeads";
 import ContactUs from "./Components/ContactUs/ContactUs";
 
 
+import ExhibitionTable from './Components/Exhibitions/ExhibitionTable';
+import AddExhibition from './Components/Exhibitions/AddExhibition';
+
+import Exhibition from "./Components/Exhibitions/Exhibition";
+
+
 function App() {
   return (
     <BrowserRouter>
@@ -194,6 +200,21 @@ function App() {
                 <Route path="/intl-honeymoon-tours" element={<INTLHoneymoonTours />} />
                 <Route path="/intl-add-honeymoon-tour" element={<INTLAddHoneymoonTour />} />
                 <Route path="/intl-edit-honeymoon-tour/:id" element={<INTLAddHoneymoonTour />} />
+
+
+                 <Route path="/exhibition" element={<Exhibition />} />
+                  <Route path="/domestic-exhibitions" element={<ExhibitionTable exhibitionType="domestic" />} />
+                  <Route path="/international-exhibitions" element={<ExhibitionTable exhibitionType="international" />} />
+                  <Route path="/about-exhibition" element={<ExhibitionTable exhibitionType="about" />} />
+                  <Route path="/add-exhibition/domestic" element={<AddExhibition exhibitionType="domestic" />} />
+                  <Route path="/add-exhibition/international" element={<AddExhibition exhibitionType="international" />} />
+                  <Route path="/add-exhibition-faq" element={<AddExhibition exhibitionType="about" />} />
+                  <Route path="/edit-exhibition/domestic/:id" element={<AddExhibition exhibitionType="domestic" />} />
+                  <Route path="/edit-exhibition/international/:id" element={<AddExhibition exhibitionType="international" />} />
+                  <Route path="/edit-exhibition-faq/:id" element={<AddExhibition exhibitionType="about" />} />
+
+
+
 
 
                 

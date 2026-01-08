@@ -10,7 +10,7 @@ import {
 } from "react-bootstrap";
 import {
   FiMenu,FiHome,FiUsers,FiUser, FiLogOut,FiX, FiBell,FiClock,FiFlag,FiMap,FiMapPin,FiGift,FiArchive,FiAnchor,FiSettings,
-  FiVideo
+  FiVideo,FiInfo,FiGlobe
 } from "react-icons/fi";
 
 import { useNavigate, useLocation } from "react-router-dom";
@@ -248,6 +248,41 @@ const Navbar = ({ children }) => {
     matchPaths: ["/intl-destinations", "/intl-add-destination"],
   },
 
+  // Add this to your navStructure array in Navbar.js, after "International Destinations"
+{
+  label: "Exhibition",
+  path: "/exhibition",
+  icon: <FiArchive className="sidebar-icon" />,
+  matchPaths: [
+    "/exhibition",
+    "/about-exhibition",
+    "/domestic-exhibitions",
+    "/international-exhibitions",
+    "/add-exhibition/domestic",
+    "/add-exhibition/international",
+    "/add-exhibition-faq",
+    "/edit-exhibition/domestic/:id",
+    "/edit-exhibition/international/:id",
+    "/edit-exhibition-faq/:id"
+  ],
+  submenu: [
+    {
+      label: "About Exhibition",
+      path: "/about-exhibition",
+      icon: <FiInfo className="sidebar-icon" />,
+    },
+    {
+      label: "Domestic Exhibition",
+      path: "/domestic-exhibitions",
+      icon: <FiHome className="sidebar-icon" />,
+    },
+    {
+      label: "International Exhibition",
+      path: "/international-exhibitions",
+      icon: <FiGlobe className="sidebar-icon" />,
+    },
+  ],
+},
   // {
   //   label: "Bookings",
   //   path: "/bookings",
