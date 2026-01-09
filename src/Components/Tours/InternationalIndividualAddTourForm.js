@@ -1254,8 +1254,7 @@ const handlePhotoChange = (e) => {
 };
 
 // Add this function to handle file uploads for visa forms
-// Update the handleVisaFormFileChange function
-// Update the handleVisaFormFileChange function
+
 const handleVisaFormFileChange = async (index, action, file) => {
   if (!file) return;
   
@@ -1283,7 +1282,6 @@ const handleVisaFormFileChange = async (index, action, file) => {
 };
 // Add this function to your frontend component
 // Update this function in your frontend code
-// In frontend - Update handleVisaFormFileUpload function
 const handleVisaFormFileUpload = async (tourId, visaType, actionType, file) => {
   try {
     const formData = new FormData();
@@ -3462,225 +3460,225 @@ const visaData = {
       </Form.Group>
     </Card.Body>
   </Card>
-</Tab>
+`                 </Tab>
 
 
                   {/* Subtab 5: Photo */}
                  {/* Subtab 5: Photo */}
-<Tab eventKey="photo" title="Photo">
+                <Tab eventKey="photo" title="Photo">
 
-  {/* Free Flow Entry Section */}
-  <Card className="mb-3">
-    <Card.Body>
-      <Form.Group className="mb-3">
-        <Form.Label>Add Free Flow Entry</Form.Label>
-        <div className="d-flex gap-2">
-          <Form.Control
-            as="textarea"
-            rows={2}
-            value={freeFlowPhotoText}
-            onChange={handleFreeFlowPhotoChange}
-            placeholder="Type free flow entry"
-          />
-          <Button 
-            variant="success" 
-            onClick={addFreeFlowPhotoEntry}
-            className="align-self-start"
-          >
-            + Add Free Flow
-          </Button>
-        </div>
-      </Form.Group>
+                  {/* Free Flow Entry Section */}
+                  <Card className="mb-3">
+                    <Card.Body>
+                      <Form.Group className="mb-3">
+                        <Form.Label>Add Free Flow Entry</Form.Label>
+                        <div className="d-flex gap-2">
+                          <Form.Control
+                            as="textarea"
+                            rows={2}
+                            value={freeFlowPhotoText}
+                            onChange={handleFreeFlowPhotoChange}
+                            placeholder="Type free flow entry"
+                          />
+                          <Button 
+                            variant="success" 
+                            onClick={addFreeFlowPhotoEntry}
+                            className="align-self-start"
+                          >
+                            + Add Free Flow
+                          </Button>
+                        </div>
+                      </Form.Group>
 
-      {freeFlowPhotoEntries.length > 0 && (
-        <Table striped bordered hover size="sm">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Free Flow Entry</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {freeFlowPhotoEntries.map((item, idx) => (
-              <tr key={idx}>
-                <td>{idx + 1}</td>
-                <td>{item.description || '-'}</td>
-                <td>
-                  <div className="d-flex gap-1">
-                    <Button
-                      variant="outline-warning"
-                      size="sm"
-                      onClick={() => editFreeFlowPhotoEntry(idx)}
-                      title="Edit"
-                    >
-                      <Pencil size={14} />
-                    </Button>
-                    <Button
-                      variant="outline-danger"
-                      size="sm"
-                      onClick={() => removeFreeFlowPhotoEntry(idx)}
-                      title="Remove"
-                    >
-                      <Trash size={14} />
-                    </Button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </Table>
-      )}
-    </Card.Body>
-  </Card>
+                      {freeFlowPhotoEntries.length > 0 && (
+                        <Table striped bordered hover size="sm">
+                          <thead>
+                            <tr>
+                              <th>#</th>
+                              <th>Free Flow Entry</th>
+                              <th>Action</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {freeFlowPhotoEntries.map((item, idx) => (
+                              <tr key={idx}>
+                                <td>{idx + 1}</td>
+                                <td>{item.description || '-'}</td>
+                                <td>
+                                  <div className="d-flex gap-1">
+                                    <Button
+                                      variant="outline-warning"
+                                      size="sm"
+                                      onClick={() => editFreeFlowPhotoEntry(idx)}
+                                      title="Edit"
+                                    >
+                                      <Pencil size={14} />
+                                    </Button>
+                                    <Button
+                                      variant="outline-danger"
+                                      size="sm"
+                                      onClick={() => removeFreeFlowPhotoEntry(idx)}
+                                      title="Remove"
+                                    >
+                                      <Trash size={14} />
+                                    </Button>
+                                  </div>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </Table>
+                      )}
+                    </Card.Body>
+                  </Card>
 
-  {/* Existing Photo Items Table */}
-  {photoItems.length > 0 && (
-    <Card>
-      <Card.Body>
-        <h6>Photo Requirements List</h6>
-        <Table striped bordered hover size="sm">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Description</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {photoItems.map((item, idx) => (
-              <tr key={idx}>
-                <td>{idx + 1}</td>
-                <td>{item.description || '-'}</td>
-                <td>
-                  <div className="d-flex gap-1">
-                    <Button
-                      variant="outline-warning"
-                      size="sm"
-                      onClick={() => editPhoto(idx)}
-                      title="Edit"
-                    >
-                      <Pencil size={14} />
-                    </Button>
-                    <Button
-                      variant="outline-danger"
-                      size="sm"
-                      onClick={() => removePhoto(idx)}
-                      title="Remove"
-                    >
-                      <Trash size={14} />
-                    </Button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </Table>
-      </Card.Body>
-    </Card>
-  )}
-</Tab>
+                  {/* Existing Photo Items Table */}
+                  {photoItems.length > 0 && (
+                    <Card>
+                      <Card.Body>
+                        <h6>Photo Requirements List</h6>
+                        <Table striped bordered hover size="sm">
+                          <thead>
+                            <tr>
+                              <th>#</th>
+                              <th>Description</th>
+                              <th>Action</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {photoItems.map((item, idx) => (
+                              <tr key={idx}>
+                                <td>{idx + 1}</td>
+                                <td>{item.description || '-'}</td>
+                                <td>
+                                  <div className="d-flex gap-1">
+                                    <Button
+                                      variant="outline-warning"
+                                      size="sm"
+                                      onClick={() => editPhoto(idx)}
+                                      title="Edit"
+                                    >
+                                      <Pencil size={14} />
+                                    </Button>
+                                    <Button
+                                      variant="outline-danger"
+                                      size="sm"
+                                      onClick={() => removePhoto(idx)}
+                                      title="Remove"
+                                    >
+                                      <Trash size={14} />
+                                    </Button>
+                                  </div>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </Table>
+                      </Card.Body>
+                    </Card>
+                  )}
+                </Tab>
 
                   {/* Subtab 6: Visa Fees */}
                   {/* Subtab 6: Visa Fees */}
-<Tab eventKey="fees" title="Visa Fees">
-  <div className="mb-3">
-    <Button 
-      variant="outline-success" 
-      size="sm" 
-      onClick={addVisaFeesRow}
-    >
-      + Add Free Flow Entry
-    </Button>
-  </div>
-  
-  <Table striped bordered hover size="sm">
-    <thead>
-      <tr>
-        {/* <th>Tabs</th> */}
-        <th>Tourist Visa</th>
-        <th>Toursit Visa Charges</th>
-        <th>Transit Visa</th>
-        <th>Transit Visa Charges</th>
-        <th>Business Visa</th>
-        <th>Business Visa Charges</th>
-        <th>Action</th>
-      </tr>
-    </thead>
-    <tbody>
-      {/* Render all rows including free flow entries */}
-      {visaFeesRows.map((row) => (
-        <tr key={row.id}>
-          <td>
-            <Form.Control
-              type="text"
-              value={row.tourist}
-              onChange={(e) => handleVisaFeesChange(row.id, 'tourist', e.target.value)}
-              placeholder="Free flow entry"
-              size="sm"
-            />
-          </td>
-          <td>
-            <Form.Control
-              type="text"
-              value={row.tourist_charges}
-              onChange={(e) => handleVisaFeesChange(row.id, 'tourist_charges', e.target.value)}
-              placeholder="Charges for Tourist"
-              size="sm"
-            />
-          </td>
-          <td>
-            <Form.Control
-              type="text"
-              value={row.transit}
-              onChange={(e) => handleVisaFeesChange(row.id, 'transit', e.target.value)}
-              placeholder="Free flow entry"
-              size="sm"
-            />
-          </td>
-          <td>
-            <Form.Control
-              type="text"
-              value={row.transit_charges}
-              onChange={(e) => handleVisaFeesChange(row.id, 'transit_charges', e.target.value)}
-              placeholder="Charges for Transit"
-              size="sm"
-            />
-          </td>
-          <td>
-            <Form.Control
-              type="text"
-              value={row.business}
-              onChange={(e) => handleVisaFeesChange(row.id, 'business', e.target.value)}
-              placeholder="Free flow entry"
-              size="sm"
-            />
-          </td>
-          <td>
-            <Form.Control
-              type="text"
-              value={row.business_charges}
-              onChange={(e) => handleVisaFeesChange(row.id, 'business_charges', e.target.value)}
-              placeholder="Charges for Business"
-              size="sm"
-            />
-          </td>
-          <td>
-            <Button
-              variant="outline-danger"
-              size="sm"
-              onClick={() => removeVisaFeesRow(row.id)}
-              title="Remove"
-              disabled={row.id <= 3} // Prevent removing first 3 rows
-            >
-              <Trash size={14} />
-            </Button>
-          </td>
-        </tr>
-      ))}
-    </tbody>
-  </Table>
-</Tab>
+              <Tab eventKey="fees" title="Visa Fees">
+                <div className="mb-3">
+                  <Button 
+                    variant="outline-success" 
+                    size="sm" 
+                    onClick={addVisaFeesRow}
+                  >
+                    + Add Free Flow Entry
+                  </Button>
+                </div>
+                
+                <Table striped bordered hover size="sm">
+                  <thead>
+                    <tr>
+                      {/* <th>Tabs</th> */}
+                      <th>Tourist Visa</th>
+                      <th>Toursit Visa Charges</th>
+                      <th>Transit Visa</th>
+                      <th>Transit Visa Charges</th>
+                      <th>Business Visa</th>
+                      <th>Business Visa Charges</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {/* Render all rows including free flow entries */}
+                    {visaFeesRows.map((row) => (
+                      <tr key={row.id}>
+                        <td>
+                          <Form.Control
+                            type="text"
+                            value={row.tourist}
+                            onChange={(e) => handleVisaFeesChange(row.id, 'tourist', e.target.value)}
+                            placeholder="Free flow entry"
+                            size="sm"
+                          />
+                        </td>
+                        <td>
+                          <Form.Control
+                            type="text"
+                            value={row.tourist_charges}
+                            onChange={(e) => handleVisaFeesChange(row.id, 'tourist_charges', e.target.value)}
+                            placeholder="Charges for Tourist"
+                            size="sm"
+                          />
+                        </td>
+                        <td>
+                          <Form.Control
+                            type="text"
+                            value={row.transit}
+                            onChange={(e) => handleVisaFeesChange(row.id, 'transit', e.target.value)}
+                            placeholder="Free flow entry"
+                            size="sm"
+                          />
+                        </td>
+                        <td>
+                          <Form.Control
+                            type="text"
+                            value={row.transit_charges}
+                            onChange={(e) => handleVisaFeesChange(row.id, 'transit_charges', e.target.value)}
+                            placeholder="Charges for Transit"
+                            size="sm"
+                          />
+                        </td>
+                        <td>
+                          <Form.Control
+                            type="text"
+                            value={row.business}
+                            onChange={(e) => handleVisaFeesChange(row.id, 'business', e.target.value)}
+                            placeholder="Free flow entry"
+                            size="sm"
+                          />
+                        </td>
+                        <td>
+                          <Form.Control
+                            type="text"
+                            value={row.business_charges}
+                            onChange={(e) => handleVisaFeesChange(row.id, 'business_charges', e.target.value)}
+                            placeholder="Charges for Business"
+                            size="sm"
+                          />
+                        </td>
+                        <td>
+                          <Button
+                            variant="outline-danger"
+                            size="sm"
+                            onClick={() => removeVisaFeesRow(row.id)}
+                            title="Remove"
+                            disabled={row.id <= 3} // Prevent removing first 3 rows
+                          >
+                            <Trash size={14} />
+                          </Button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </Table>
+              </Tab>
 
 
 
@@ -3986,210 +3984,210 @@ const visaData = {
                 )}
               </Tab>
 
-            <Tab eventKey="images" title="Images">
-  {/* Section for adding NEW images */}
-  <Card className="mb-4">
-    <Card.Header>Add New Images</Card.Header>
-    <Card.Body>
-      <Form.Group className="mb-3">
-        <Form.Label>Upload New Images</Form.Label>
-        <Form.Control
-          type="file"
-          multiple
-          onChange={handleImageChange}
-          accept="image/jpeg,image/jpg,image/png,image/webp"
-        />
-        <Form.Text className="text-muted">
-          You can select multiple images (JPEG, PNG, WebP). Max 5MB per image.
-        </Form.Text>
-      </Form.Group>
-      
-      <Form.Group className="mb-3">
-        <Form.Label>Caption (optional - applies to all new images)</Form.Label>
-        <Form.Control
-          type="text"
-          value={imageCaption}
-          onChange={(e) => setImageCaption(e.target.value)}
-          placeholder="Enter a caption for the new images"
-        />
-      </Form.Group>
-      
-      {imagePreviews.length > 0 && (
-        <div className="mt-3">
-          <p className="mb-2">
-            <strong>{imagePreviews.length} new image(s) ready to upload:</strong>
-          </p>
-          <Row>
-            {imageFiles.map((file, idx) => (
-              <Col md={3} key={idx} className="mb-3">
-                <div className="position-relative">
-                  <img
-                    src={imagePreviews[idx]}
-                    alt={`new-${idx}`}
-                    style={{
-                      width: '100%',
-                      height: '150px',
-                      objectFit: 'cover',
-                      borderRadius: '8px'
-                    }}
-                  />
-                  <div className="position-absolute top-0 end-0 bg-dark bg-opacity-50 text-white p-1 rounded">
-                    {file.name}
-                  </div>
-                </div>
-              </Col>
-            ))}
-          </Row>
-        </div>
-      )}
-    </Card.Body>
-  </Card>
-
-  {/* Section for EXISTING images with edit/delete */}
-  <Card>
-    <Card.Header>Existing Images</Card.Header>
-    <Card.Body>
-      {existingImages.length === 0 ? (
-        <div className="text-center py-4">
-          <p className="text-muted">No images uploaded yet.</p>
-        </div>
-      ) : (
-        <Row>
-          {existingImages.map((image) => (
-            <Col md={4} lg={3} key={image.image_id} className="mb-4">
-              <Card className="h-100">
-                <Card.Body className="p-2">
+              <Tab eventKey="images" title="Images">
+    {/* Section for adding NEW images */}
+    <Card className="mb-4">
+      <Card.Header>Add New Images</Card.Header>
+      <Card.Body>
+        <Form.Group className="mb-3">
+          <Form.Label>Upload New Images</Form.Label>
+          <Form.Control
+            type="file"
+            multiple
+            onChange={handleImageChange}
+            accept="image/jpeg,image/jpg,image/png,image/webp"
+          />
+          <Form.Text className="text-muted">
+            You can select multiple images (JPEG, PNG, WebP). Max 5MB per image.
+          </Form.Text>
+        </Form.Group>
+        
+        <Form.Group className="mb-3">
+          <Form.Label>Caption (optional - applies to all new images)</Form.Label>
+          <Form.Control
+            type="text"
+            value={imageCaption}
+            onChange={(e) => setImageCaption(e.target.value)}
+            placeholder="Enter a caption for the new images"
+          />
+        </Form.Group>
+        
+        {imagePreviews.length > 0 && (
+          <div className="mt-3">
+            <p className="mb-2">
+              <strong>{imagePreviews.length} new image(s) ready to upload:</strong>
+            </p>
+            <Row>
+              {imageFiles.map((file, idx) => (
+                <Col md={3} key={idx} className="mb-3">
                   <div className="position-relative">
                     <img
-                      src={image.url}
-                      alt={`tour-image-${image.image_id}`}
+                      src={imagePreviews[idx]}
+                      alt={`new-${idx}`}
                       style={{
                         width: '100%',
                         height: '150px',
                         objectFit: 'cover',
-                        borderRadius: '6px'
+                        borderRadius: '8px'
                       }}
-                      className="mb-2"
                     />
-                    
-                    {image.is_cover === 1 && (
-                      <div className="position-absolute top-0 start-0 bg-warning text-dark px-2 py-1 rounded-end">
-                        <strong>★ Cover</strong>
-                      </div>
-                    )}
-                    
-                    {editingImageId === image.image_id ? (
-                      <div className="mt-3 border p-3 rounded">
-                        <Form.Group>
-                          <Form.Label>Replace with new image:</Form.Label>
-                          <Form.Control
-                            id="replacementFileInput"
-                            type="file"
-                            onChange={handleReplacementFileChange}
-                            accept="image/jpeg,image/jpg,image/png,image/webp"
-                          />
-                        </Form.Group>
-                        
-                        {replacementPreview && (
-                          <div className="mt-2">
-                            <p><strong>New preview:</strong></p>
-                            <img
-                              src={replacementPreview}
-                              alt="replacement"
-                              style={{
-                                width: '100%',
-                                height: '100px',
-                                objectFit: 'cover',
-                                borderRadius: '4px'
-                              }}
-                            />
-                          </div>
-                        )}
-                        
-                        <div className="d-flex gap-2 mt-3">
-                          <Button
-                            variant="success"
-                            size="sm"
-                            onClick={() => updateImage(image.image_id)}
-                            disabled={!replacementFile || loading}
-                          >
-                            {loading ? 'Updating...' : 'Update'}
-                          </Button>
-                          <Button
-                            variant="outline-secondary"
-                            size="sm"
-                            onClick={cancelEditImage}
-                            disabled={loading}
-                          >
-                            Cancel
-                          </Button>
+                    <div className="position-absolute top-0 end-0 bg-dark bg-opacity-50 text-white p-1 rounded">
+                      {file.name}
+                    </div>
+                  </div>
+                </Col>
+              ))}
+            </Row>
+          </div>
+        )}
+      </Card.Body>
+    </Card>
+
+    {/* Section for EXISTING images with edit/delete */}
+    <Card>
+      <Card.Header>Existing Images</Card.Header>
+      <Card.Body>
+        {existingImages.length === 0 ? (
+          <div className="text-center py-4">
+            <p className="text-muted">No images uploaded yet.</p>
+          </div>
+        ) : (
+          <Row>
+            {existingImages.map((image) => (
+              <Col md={4} lg={3} key={image.image_id} className="mb-4">
+                <Card className="h-100">
+                  <Card.Body className="p-2">
+                    <div className="position-relative">
+                      <img
+                        src={image.url}
+                        alt={`tour-image-${image.image_id}`}
+                        style={{
+                          width: '100%',
+                          height: '150px',
+                          objectFit: 'cover',
+                          borderRadius: '6px'
+                        }}
+                        className="mb-2"
+                      />
+                      
+                      {image.is_cover === 1 && (
+                        <div className="position-absolute top-0 start-0 bg-warning text-dark px-2 py-1 rounded-end">
+                          <strong>★ Cover</strong>
                         </div>
-                      </div>
-                    ) : (
-                      <div className="mt-2">
-                        <div className="d-flex flex-wrap gap-1 justify-content-center">
-                          {/* Set as Cover Button */}
-                          {image.is_cover === 0 && (
-                            <Button
-                              variant="outline-warning"
-                              size="sm"
-                              onClick={() => setCoverImage(image.image_id)}
-                              title="Set as Cover"
-                              disabled={loading}
-                            >
-                              ★ Set Cover
-                            </Button>
+                      )}
+                      
+                      {editingImageId === image.image_id ? (
+                        <div className="mt-3 border p-3 rounded">
+                          <Form.Group>
+                            <Form.Label>Replace with new image:</Form.Label>
+                            <Form.Control
+                              id="replacementFileInput"
+                              type="file"
+                              onChange={handleReplacementFileChange}
+                              accept="image/jpeg,image/jpg,image/png,image/webp"
+                            />
+                          </Form.Group>
+                          
+                          {replacementPreview && (
+                            <div className="mt-2">
+                              <p><strong>New preview:</strong></p>
+                              <img
+                                src={replacementPreview}
+                                alt="replacement"
+                                style={{
+                                  width: '100%',
+                                  height: '100px',
+                                  objectFit: 'cover',
+                                  borderRadius: '4px'
+                                }}
+                              />
+                            </div>
                           )}
                           
-                          {/* Edit Button */}
-                          <Button
-                            variant="outline-primary"
-                            size="sm"
-                            onClick={() => startEditImage(image)}
-                            title="Replace Image"
-                            disabled={loading}
-                          >
-                            <Pencil size={14} /> Replace
-                          </Button>
-                          
-                          {/* Delete Button */}
-                          <Button
-                            variant="outline-danger"
-                            size="sm"
-                            onClick={() => deleteImage(image.image_id)}
-                            title="Delete Image"
-                            disabled={loading}
-                          >
-                            <Trash size={14} />
-                          </Button>
+                          <div className="d-flex gap-2 mt-3">
+                            <Button
+                              variant="success"
+                              size="sm"
+                              onClick={() => updateImage(image.image_id)}
+                              disabled={!replacementFile || loading}
+                            >
+                              {loading ? 'Updating...' : 'Update'}
+                            </Button>
+                            <Button
+                              variant="outline-secondary"
+                              size="sm"
+                              onClick={cancelEditImage}
+                              disabled={loading}
+                            >
+                              Cancel
+                            </Button>
+                          </div>
                         </div>
-                      </div>
-                    )}
-                  </div>
-                </Card.Body>
-                <Card.Footer className="bg-transparent border-0 pt-0">
-                  <small className="text-muted">
-                    {image.caption ? `Caption: ${image.caption}` : 'No caption'}
-                  </small>
-                </Card.Footer>
-              </Card>
-            </Col>
-          ))}
-        </Row>
-      )}
-      
-      {/* Show existing image count */}
-      {existingImages.length > 0 && (
-        <div className="mt-3 text-center">
-          <p className="text-muted">
-            Total images: {existingImages.length} | 
-            Cover image: {existingImages.find(img => img.is_cover === 1) ? 'Set' : 'Not set'}
-          </p>
-        </div>
-      )}
-    </Card.Body>
-  </Card>
-</Tab>
+                      ) : (
+                        <div className="mt-2">
+                          <div className="d-flex flex-wrap gap-1 justify-content-center">
+                            {/* Set as Cover Button */}
+                            {image.is_cover === 0 && (
+                              <Button
+                                variant="outline-warning"
+                                size="sm"
+                                onClick={() => setCoverImage(image.image_id)}
+                                title="Set as Cover"
+                                disabled={loading}
+                              >
+                                ★ Set Cover
+                              </Button>
+                            )}
+                            
+                            {/* Edit Button */}
+                            <Button
+                              variant="outline-primary"
+                              size="sm"
+                              onClick={() => startEditImage(image)}
+                              title="Replace Image"
+                              disabled={loading}
+                            >
+                              <Pencil size={14} /> Replace
+                            </Button>
+                            
+                            {/* Delete Button */}
+                            <Button
+                              variant="outline-danger"
+                              size="sm"
+                              onClick={() => deleteImage(image.image_id)}
+                              title="Delete Image"
+                              disabled={loading}
+                            >
+                              <Trash size={14} />
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </Card.Body>
+                  <Card.Footer className="bg-transparent border-0 pt-0">
+                    <small className="text-muted">
+                      {image.caption ? `Caption: ${image.caption}` : 'No caption'}
+                    </small>
+                  </Card.Footer>
+                </Card>
+              </Col>
+            ))}
+          </Row>
+        )}
+        
+        {/* Show existing image count */}
+        {existingImages.length > 0 && (
+          <div className="mt-3 text-center">
+            <p className="text-muted">
+              Total images: {existingImages.length} | 
+              Cover image: {existingImages.find(img => img.is_cover === 1) ? 'Set' : 'Not set'}
+            </p>
+          </div>
+        )}
+      </Card.Body>
+    </Card>
+              </Tab>
             </Tabs>
 
             {/* ======== BUTTONS ======== */}
