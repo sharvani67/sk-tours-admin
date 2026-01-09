@@ -647,9 +647,10 @@ const handlePhotoChange = (e) => {
   setPhotoForm(prev => ({ ...prev, [name]: value }));
 };
 
-const handleVisaFeesChange = (index, field, value) => {
-  const updated = [...visaFeesRows];
-  updated[index][field] = value;
+const handleVisaFeesChange = (id, field, value) => {
+  const updated = visaFeesRows.map(row => 
+    row.id === id ? { ...row, [field]: value } : row
+  );
   setVisaFeesRows(updated);
 };
 
