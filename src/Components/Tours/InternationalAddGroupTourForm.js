@@ -1250,12 +1250,14 @@ const handleTouristVisaChange = (e) => {
           setInstructions(instructionItems);
         }
 
-        // Set images (previews only, not files)
-        if (data.images && Array.isArray(data.images)) {
-          const imageUrls = data.images.map(img => img.url);
-          setImagePreviews(imageUrls);
-        }
-
+if (data.images && Array.isArray(data.images)) {
+            const imageUrls = data.images.map(img => img.url);
+            // Keep existing images separately
+            setExistingImages(data.images);
+            // Set previews for new uploads (empty if no new files)
+            setImagePreviews([]);
+          }
+          
         setSuccess('Tour data loaded successfully');
       }
     } catch (err) {
@@ -1683,332 +1685,550 @@ const updateImage = async (imageId) => {
     }
   };
 
-  // UPDATE EXISTING TOUR - UPDATED FOR GROUP TOUR STRUCTURE
-const updateTour = async () => {
-  if (!formData.tour_code.trim()) {
-    setError('Tour code is required');
-    setActiveTab('basic');
-    return;
-  }
-  if (!formData.title.trim()) {
-    setError('Tour title is required');
-    setActiveTab('basic');
-    return;
-  }
-
-  try {
-    setLoading(true);
-    setError('');
-    setSuccess('');
-
-    // 1) Update basic tour details
-    const tourUpdateData = {
-      title: formData.title.trim(),
-      tour_type: formData.tour_type || 'Group',
-      primary_destination_id: formData.primary_destination_id,
-      duration_days: Number(formData.duration_days) || 0,
-      overview: formData.overview || '',
-      base_price_adult: Number(formData.base_price_adult) || 0,
-      emi_price: formData.emi_price ? Number(formData.emi_price) : null,
-      is_international: Number(formData.is_international) || 0,
-      cost_remarks: formData.cost_remarks || '',
-      hotel_remarks: formData.hotel_remarks || '',
-      transport_remarks: formData.transport_remarks || '',
-      emi_remarks: formData.emi_remarks || '',
-      booking_poi_remarks: formData.booking_poi_remarks || '',
-      cancellation_remarks: formData.cancellation_remarks || ''
-    };
-
-    const tourRes = await fetch(`${baseurl}/api/tours/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(tourUpdateData)
-    });
-
-    if (!tourRes.ok) {
-      const err = await tourRes.json();
-      throw new Error(err.error || err.message || 'Failed to update tour');
+// UPDATE EXISTING TOUR - UPDATED FOR GROUP TOUR STRUCTURE
+  const updateTour = async () => {
+    if (!formData.tour_code.trim()) {
+      setError('Tour code is required');
+      setActiveTab('basic');
+      return;
+    }
+    if (!formData.title.trim()) {
+      setError('Tour title is required');
+      setActiveTab('basic');
+      return;
     }
 
-    // 2) Delete existing related data
-    const deleteEndpoints = [
-      `${baseurl}/api/departures/bulk/${id}`,
-      `${baseurl}/api/optional-tours/tour/${id}`,
-      `${baseurl}/api/emi-options/tour/${id}`,
-      `${baseurl}/api/tour-hotels/tour/${id}`,
-      `${baseurl}/api/tour-transports/tour/${id}`,
-      `${baseurl}/api/tour-booking-poi/tour/${id}`,
-      `${baseurl}/api/tour-cancellation/tour/${id}`,
-      `${baseurl}/api/tour-instructions/tour/${id}`,
-      `${baseurl}/api/exclusions/tour/${id}`,
-      `${baseurl}/api/inclusions/tour/${id}`,
-      `${baseurl}/api/itineraries/tour/${id}`
-    ];
-
-    for (const endpoint of deleteEndpoints) {
-      try {
-        await fetch(endpoint, { method: 'DELETE' });
-      } catch (err) {
-        console.warn(`Failed to delete from ${endpoint}:`, err.message);
-      }
-    }
-
-    // Delete existing visa data
     try {
-      await fetch(`${baseurl}/api/visa/tour/${id}`, { method: 'DELETE' });
-    } catch (err) {
-      console.warn('Failed to delete existing visa data:', err.message);
-    }
+      setLoading(true);
+      setError('');
+      setSuccess('');
 
-    // 3) Re-add all data
-    // Departures
-    if (departures.length > 0) {
-      const formattedDepartures = departures.map(dept => ({
-        tour_type: 'Group',
-        start_date: dept.start_date,
-        end_date: dept.end_date,
-        status: dept.status,
-        total_seats: dept.total_seats || 40,
-        booked_seats: dept.booked_seats || 0,
-        description: dept.description || null,
-        adult_price: dept.three_star_twin || 0,
-        three_star_twin: dept.three_star_twin || null,
-        three_star_triple: dept.three_star_triple || null,
-        three_star_child_with_bed: dept.three_star_child_with_bed || null,
-        three_star_child_without_bed: dept.three_star_child_without_bed || null,
-        three_star_infant: dept.three_star_infant || null,
-        three_star_single: dept.three_star_single || null,
-        four_star_twin: dept.four_star_twin || null,
-        four_star_triple: dept.four_star_triple || null,
-        four_star_child_with_bed: dept.four_star_child_with_bed || null,
-        four_star_child_without_bed: dept.four_star_child_without_bed || null,
-        four_star_infant: dept.four_star_infant || null,
-        four_star_single: dept.four_star_single || null,
-        five_star_twin: dept.five_star_twin || null,
-        five_star_triple: dept.five_star_triple || null,
-        five_star_child_with_bed: dept.five_star_child_with_bed || null,
-        five_star_child_without_bed: dept.five_star_child_without_bed || null,
-        five_star_infant: dept.five_star_infant || null,
-        five_star_single: dept.five_star_single || null
-      }));
+      // 1) PREPARE BASIC TOUR DATA FOR UPDATE
+      const tourUpdateData = {
+        title: formData.title.trim(),
+        tour_type: formData.tour_type || 'Group',
+        primary_destination_id: formData.primary_destination_id,
+        duration_days: Number(formData.duration_days) || 0,
+        overview: formData.overview || '',
+        base_price_adult: Number(formData.base_price_adult) || 0,
+        emi_price: Number(formData.emi_price) || 0, // ← Add this line
+        is_international: Number(formData.is_international) || 0,
+        cost_remarks: formData.cost_remarks || '',
+        hotel_remarks: formData.hotel_remarks || '',
+        transport_remarks: formData.transport_remarks || '',
+        emi_remarks: formData.emi_remarks || '',
+        booking_poi_remarks: formData.booking_poi_remarks || '',
+        cancellation_remarks: formData.cancellation_remarks || ''
+      };
 
-      await fetch(`${baseurl}/api/departures/bulk`, {
-        method: 'POST',
+      console.log('Updating tour with data:', tourUpdateData);
+
+      // 1) UPDATE TOUR BASIC DETAILS
+      const tourRes = await fetch(`${baseurl}/api/tours/${id}`, {
+        method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tour_id: id, departures: formattedDepartures })
+        body: JSON.stringify(tourUpdateData)
       });
-    }
 
-    // Optional Tours, EMI, Hotels, etc. (unchanged)
-    if (optionalTours.length > 0) {
-      await fetch(`${baseurl}/api/optional-tours/bulk`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ tour_id: id, optional_tours: optionalTours }) });
-    }
+      const tourResponse = await tourRes.json();
+      
+      if (!tourRes.ok) {
+        throw new Error(tourResponse.error || tourResponse.message || 'Failed to update tour');
+      }
 
-    const validEmiOptions = emiOptions.filter(opt => opt.loan_amount && opt.emi);
-    if (validEmiOptions.length > 0) {
-      await fetch(`${baseurl}/api/emi-options/emi/bulk`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ tour_id: id, emi_options: validEmiOptions }) });
-    }
+      // 2) DELETE EXISTING DATA
+      const deleteEndpoints = [
+        `${baseurl}/api/departures/bulk/${id}`,
+        `${baseurl}/api/optional-tours/tour/${id}`,
+        `${baseurl}/api/emi-options/tour/${id}`,
+        `${baseurl}/api/tour-hotels/tour/${id}`,
+        `${baseurl}/api/tour-transports/tour/${id}`,
+        `${baseurl}/api/tour-booking-poi/tour/${id}`,
+        `${baseurl}/api/tour-cancellation/tour/${id}`,
+        `${baseurl}/api/tour-instructions/tour/${id}`,
+        `${baseurl}/api/exclusions/tour/${id}`,
+        `${baseurl}/api/inclusions/tour/${id}`,
+        `${baseurl}/api/itineraries/tour/${id}`
+      ];
 
-    if (hotelRows.length > 0) {
-      await fetch(`${baseurl}/api/tour-hotels/bulk`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ tour_id: id, hotels: hotelRows }) });
-    }
+      for (const endpoint of deleteEndpoints) {
+        try {
+          await fetch(endpoint, { method: 'DELETE' });
+        } catch (err) {
+          console.warn(`Failed to delete from ${endpoint}:`, err.message);
+        }
+      }
 
-    // === VISA DATA - UNIFIED & CORRECTED ===
-    const uploadedVisaForms = await uploadVisaFormFiles(id, visaFormItems);
+      // 3) RE-ADD ALL DATA
+      // Departures - Group tours with hotel star ratings
+      if (departures.length > 0) {
+        const formattedDepartures = departures.map(dept => ({
+          tour_type: 'Group',
+          start_date: dept.start_date,
+          end_date: dept.end_date,
+          status: dept.status,
+          total_seats: dept.total_seats || 40,
+          booked_seats: dept.booked_seats || 0,
+          description: dept.description || null,
+          adult_price: dept.three_star_twin || 0, // Using 3-star twin as base price
+          // 3-Star Hotel Prices
+          three_star_twin: dept.three_star_twin || null,
+          three_star_triple: dept.three_star_triple || null,
+          three_star_child_with_bed: dept.three_star_child_with_bed || null,
+          three_star_child_without_bed: dept.three_star_child_without_bed || null,
+          three_star_infant: dept.three_star_infant || null,
+          three_star_single: dept.three_star_single || null,
+          // 4-Star Hotel Prices
+          four_star_twin: dept.four_star_twin || null,
+          four_star_triple: dept.four_star_triple || null,
+          four_star_child_with_bed: dept.four_star_child_with_bed || null,
+          four_star_child_without_bed: dept.four_star_child_without_bed || null,
+          four_star_infant: dept.four_star_infant || null,
+          four_star_single: dept.four_star_single || null,
+          // 5-Star Hotel Prices
+          five_star_twin: dept.five_star_twin || null,
+          five_star_triple: dept.five_star_triple || null,
+          five_star_child_with_bed: dept.five_star_child_with_bed || null,
+          five_star_child_without_bed: dept.five_star_child_without_bed || null,
+          five_star_infant: dept.five_star_infant || null,
+          five_star_single: dept.five_star_single || null
+        }));
 
-    const visaData = {
-      tourist_visa: touristVisaItems,
-      transit_visa: transitVisaItems,
-      business_visa: businessVisaItems,
-      visa_forms: uploadedVisaForms, // ← Direct use, no mapping needed
-      photo: [...photoItems, ...freeFlowPhotoEntries],
-      visa_fees: visaFeesRows.map((row, index) => ({
-        row_type: row.type || (row.id <= 3 
-          ? ['Visa Fee', 'VFS Fee', 'Other Charges'][row.id - 1] 
-          : 'Free Flow Entry'),
-        tourist: row.tourist || '',
-        transit: row.transit || '',
-        business: row.business || '',
-        tourist_charges: row.tourist_charges || '',
-        transit_charges: row.transit_charges || '',
-        business_charges: row.business_charges || '',
-        row_order: index
-      })),
-      submission: submissionRows.map((row, index) => ({
-        label: row.label || '',
-        tourist: row.tourist || '',
-        transit: row.transit || '',
-        business: row.business || '',
-        row_order: index
-      })),
-      tourist_visa_remarks: touristVisaRemarks
-    };
+        await fetch(`${baseurl}/api/departures/bulk`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tour_id: id, departures: formattedDepartures })
+        });
+      }
 
-    // Only send visa data if there's meaningful content
-    if (
-      touristVisaItems.length > 0 ||
-      transitVisaItems.length > 0 ||
-      businessVisaItems.length > 0 ||
-      photoItems.length > 0 ||
-      freeFlowPhotoEntries.length > 0 ||
-      visaFeesRows.length > 3 ||
-      submissionRows.length > 5 ||
-      touristVisaRemarks.trim() ||
-      uploadedVisaForms.some(f => f.action1_file || f.action2_file)
-    ) {
-      await fetch(`${baseurl}/api/visa/bulk`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tour_id: id, ...visaData })
-      });
-    }
+      // Optional Tours
+      if (optionalTours.length > 0) {
+        await fetch(`${baseurl}/api/optional-tours/bulk`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tour_id: id, optional_tours: optionalTours })
+        });
+      }
 
-    // Remaining sections (transport, POI, cancellation, etc.)
-    if (transports.length > 0) {
-      await fetch(`${baseurl}/api/tour-transports/bulk`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ tour_id: id, items: transports }) });
-    }
-    if (bookingPois.length > 0) {
-      await fetch(`${baseurl}/api/tour-booking-poi/bulk`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ tour_id: id, items: bookingPois }) });
-    }
-    if (cancelPolicies.length > 0) {
-      await fetch(`${baseurl}/api/tour-cancellation/bulk`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ tour_id: id, policies: cancelPolicies }) });
-    }
-    if (instructions.length > 0) {
-      await fetch(`${baseurl}/api/tour-instructions/bulk`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ tour_id: id, items: instructions }) });
-    }
-    if (exclusions.length > 0) {
-      await fetch(`${baseurl}/api/exclusions/bulk`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ tour_id: id, items: exclusions }) });
-    }
-    if (inclusions.length > 0) {
-      await fetch(`${baseurl}/api/inclusions/bulk`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ tour_id: id, items: inclusions }) });
-    }
-    if (itineraries.length > 0) {
-      await fetch(`${baseurl}/api/itineraries/bulk`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(itineraries.map(item => ({ ...item, tour_id: id }))) });
-    }
-    if (imageFiles.length > 0) {
-      const formDataImages = new FormData();
-      imageFiles.forEach(file => formDataImages.append('images', file));
-      if (imageCaption.trim()) formDataImages.append('caption', imageCaption.trim());
-      await fetch(`${baseurl}/api/images/upload/${id}`, { method: 'POST', body: formDataImages });
-    }
+      // EMI Options
+      const validEmiOptions = emiOptions.filter(opt =>
+        opt.loan_amount && opt.loan_amount > 0 && opt.emi && opt.emi > 0
+      );
+      
+      if (validEmiOptions.length > 0) {
+        await fetch(`${baseurl}/api/emi-options/emi/bulk`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tour_id: id, emi_options: validEmiOptions })
+        });
+      }
 
-    setSuccess('Tour updated successfully!');
-    setTimeout(() => navigate('/intl-group-tours'), 1500);
-  } catch (err) {
-    console.error('Error updating tour:', err);
-    setError(err.message || 'Failed to update tour');
-  } finally {
-    setLoading(false);
-  }
-};
+      // Hotels
+      if (hotelRows.length > 0) {
+        await fetch(`${baseurl}/api/tour-hotels/bulk`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tour_id: id, hotels: hotelRows })
+        });
+      }
 
-  // CREATE NEW TOUR - UPDATED FOR GROUP TOUR STRUCTURE
-  const createTour = async () => {
-  if (!formData.tour_code.trim()) {
-    setError('Tour code is required');
-    setActiveTab('basic');
-    return;
-  }
-  if (!formData.title.trim()) {
-    setError('Tour title is required');
-    setActiveTab('basic');
-    return;
-  }
+      // Delete existing visa data (only for international tours)
+// In updateTour function, fix the visa section:
 
+// Delete existing visa data (only for international tours)
+if (formData.is_international === 1) {
   try {
-    setLoading(true);
-    setError('');
-    setSuccess('');
+    await fetch(`${baseurl}/api/visa/tour/${id}`, { method: 'DELETE' });
+  } catch (err) {
+    console.warn('Failed to delete visa data:', err.message);
+  }
+  
+  // Upload visa form files FIRST
+  const uploadedVisaForms = await uploadVisaFormFiles(id, visaFormItems);
+  
+  // Add visa data
+  const visaData = {
+    tourist_visa: touristVisaItems,
+    transit_visa: transitVisaItems,
+    business_visa: businessVisaItems,
+    visa_forms: uploadedVisaForms.map(form => ({
+      type: form.type,
+      download_text: form.download_text,
+      download_action: form.download_action,
+      fill_action: form.fill_action,
+      action1_file: form.action1_file, // Filename string
+      action2_file: form.action2_file  // Filename string
+    })),
+    photo: [...photoItems, ...freeFlowPhotoEntries],
+    visa_fees: [...visaFeesRows, extendableRow].map((row, index) => ({
+      row_type: row.type,
+      tourist: row.tourist || '',
+      transit: row.transit || '',
+      business: row.business || '',
+      tourist_charges: row.tourist_charges || '',
+      transit_charges: row.transit_charges || '',
+      business_charges: row.business_charges || '',
+      row_order: index
+    })),
+    submission: submissionRows.map((row, index) => ({
+      label: row.label,
+      tourist: row.tourist,
+      transit: row.transit,
+      business: row.business,
+      row_order: index
+    })),
+    tourist_visa_remarks: touristVisaRemarks
+  };
 
-    // 1) Create tour
-    const tourRes = await fetch(`${baseurl}/api/tours`, {
+  // Only save if we have visa data
+  if (touristVisaItems.length > 0 || transitVisaItems.length > 0 || 
+      businessVisaItems.length > 0 || photoItems.length > 0 || 
+      freeFlowPhotoEntries.length > 0 || visaFeesRows.length > 0 || 
+      submissionRows.length > 0 || touristVisaRemarks) {
+    
+    console.log('📝 Saving visa data for update:', visaData);
+    
+    await fetch(`${baseurl}/api/visa/bulk`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(formData)
+      body: JSON.stringify({ tour_id: id, ...visaData })
     });
+  }
+}
+      // Transport
+      if (transports.length > 0) {
+        await fetch(`${baseurl}/api/tour-transports/bulk`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tour_id: id, items: transports })
+        });
+      }
 
-    if (!tourRes.ok) {
-      const err = await tourRes.json().catch(() => ({}));
-      throw new Error(err.error || 'Failed to create tour');
+      // Booking POI
+      if (bookingPois.length > 0) {
+        await fetch(`${baseurl}/api/tour-booking-poi/bulk`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tour_id: id, items: bookingPois })
+        });
+      }
+
+      // Cancellation
+      if (cancelPolicies.length > 0) {
+        await fetch(`${baseurl}/api/tour-cancellation/bulk`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tour_id: id, policies: cancelPolicies })
+        });
+      }
+
+      // Instructions
+      if (instructions.length > 0) {
+        await fetch(`${baseurl}/api/tour-instructions/bulk`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tour_id: id, items: instructions })
+        });
+      }
+
+      // Exclusions
+      if (exclusions.length > 0) {
+        await fetch(`${baseurl}/api/exclusions/bulk`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tour_id: id, items: exclusions })
+        });
+      }
+
+      // Inclusions
+      if (inclusions.length > 0) {
+        await fetch(`${baseurl}/api/inclusions/bulk`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tour_id: id, items: inclusions })
+        });
+      }
+
+      // Itineraries
+      if (itineraries.length > 0) {
+        const itineraryPayload = itineraries.map((item) => ({
+          ...item,
+          tour_id: id
+        }));
+
+        await fetch(`${baseurl}/api/itineraries/bulk`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(itineraryPayload)
+        });
+      }
+
+      // Images (only if new files added)
+      if (imageFiles.length > 0) {
+        const formDataImages = new FormData();
+        imageFiles.forEach((file) => {
+          formDataImages.append('images', file);
+        });
+
+        if (imageCaption.trim()) {
+          formDataImages.append('caption', imageCaption.trim());
+        }
+
+        await fetch(`${baseurl}/api/images/upload/${id}`, {
+          method: 'POST',
+          body: formDataImages
+        });
+      }
+
+      setSuccess('Tour updated successfully!');
+      setTimeout(() => navigate('/intl-group-tours'), 1500);
+    } catch (err) {
+      console.error('Error updating tour:', err);
+      setError(err.message || 'Failed to update tour');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // CREATE NEW TOUR - UPDATED FOR GROUP TOUR STRUCTURE
+const createTour = async () => {
+    if (!formData.tour_code.trim()) {
+      setError('Tour code is required');
+      setActiveTab('basic');
+      return;
+    }
+    if (!formData.title.trim()) {
+      setError('Tour title is required');
+      setActiveTab('basic');
+      return;
     }
 
-    const tourData = await tourRes.json();
-    const tourId = tourData.tour_id || tourData.id || tourData.insertId;
+    try {
+      setLoading(true);
+      setError('');
+      setSuccess('');
 
-    // === VISA FILES UPLOAD FIRST ===
-    const uploadedVisaForms = await uploadVisaFormFiles(tourId, visaFormItems);
-
-    // === VISA DATA - UNIFIED ===
-    const visaData = {
-      tourist_visa: touristVisaItems,
-      transit_visa: transitVisaItems,
-      business_visa: businessVisaItems,
-      visa_forms: uploadedVisaForms,
-      photo: [...photoItems, ...freeFlowPhotoEntries],
-      visa_fees: visaFeesRows.map((row, index) => ({
-        row_type: row.type || (row.id <= 3 
-          ? ['Visa Fee', 'VFS Fee', 'Other Charges'][row.id - 1] 
-          : 'Free Flow Entry'),
-        tourist: row.tourist || '',
-        transit: row.transit || '',
-        business: row.business || '',
-        tourist_charges: row.tourist_charges || '',
-        transit_charges: row.transit_charges || '',
-        business_charges: row.business_charges || '',
-        row_order: index
-      })),
-      submission: submissionRows.map((row, index) => ({
-        label: row.label || '',
-        tourist: row.tourist || '',
-        transit: row.transit || '',
-        business: row.business || '',
-        row_order: index
-      })),
-      tourist_visa_remarks: touristVisaRemarks
-    };
-
-    // Send visa data if any relevant content exists
-    if (
-      touristVisaItems.length > 0 ||
-      transitVisaItems.length > 0 ||
-      businessVisaItems.length > 0 ||
-      photoItems.length > 0 ||
-      freeFlowPhotoEntries.length > 0 ||
-      visaFeesRows.length > 3 ||
-      submissionRows.length > 5 ||
-      touristVisaRemarks.trim() ||
-      uploadedVisaForms.some(f => f.action1_file || f.action2_file)
-    ) {
-      await fetch(`${baseurl}/api/visa/bulk`, {
+      // 1) CREATE TOUR
+      const tourRes = await fetch(`${baseurl}/api/tours`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tour_id: tourId, ...visaData })
+        body: JSON.stringify(formData)
       });
-    }
 
-    // Rest of the bulk inserts (same as before)
-    if (departures.length > 0) {
-      const formattedDepartures = departures.map(dept => ({ /* same as in updateTour */ }));
-      await fetch(`${baseurl}/api/departures/bulk`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ tour_id: tourId, departures: formattedDepartures }) });
-    }
+      if (!tourRes.ok) {
+        const err = await tourRes.json().catch(() => ({}));
+        throw new Error(err.error || 'Failed to create tour');
+      }
 
-    // ... repeat other bulk inserts: exclusions, inclusions, itinerary, optional tours, emi, hotels, transport, poi, cancellation, instructions
+      const tourData = await tourRes.json();
+      const tourId = tourData.tour_id || tourData.id || tourData.insertId;
 
-    if (imageFiles.length > 0) {
-      const formDataImages = new FormData();
-      imageFiles.forEach(file => formDataImages.append('images', file));
-      if (imageCaption.trim()) formDataImages.append('caption', imageCaption.trim());
-      await fetch(`${baseurl}/api/images/upload/${tourId}`, { method: 'POST', body: formDataImages });
-    }
+      // 2) DEPARTURES BULK - GROUP TOURS WITH HOTEL STAR RATINGS
+      if (departures.length > 0) {
+        const formattedDepartures = departures.map(dept => ({
+          tour_type: 'Group',
+          start_date: dept.start_date,
+          end_date: dept.end_date,
+          status: dept.status,
+          total_seats: dept.total_seats || 40,
+          booked_seats: dept.booked_seats || 0,
+          description: dept.description || null,
+          adult_price: dept.three_star_twin || 0, // Using 3-star twin as base price
+          // 3-Star Hotel Prices
+          three_star_twin: dept.three_star_twin || null,
+          three_star_triple: dept.three_star_triple || null,
+          three_star_child_with_bed: dept.three_star_child_with_bed || null,
+          three_star_child_without_bed: dept.three_star_child_without_bed || null,
+          three_star_infant: dept.three_star_infant || null,
+          three_star_single: dept.three_star_single || null,
+          // 4-Star Hotel Prices
+          four_star_twin: dept.four_star_twin || null,
+          four_star_triple: dept.four_star_triple || null,
+          four_star_child_with_bed: dept.four_star_child_with_bed || null,
+          four_star_child_without_bed: dept.four_star_child_without_bed || null,
+          four_star_infant: dept.four_star_infant || null,
+          four_star_single: dept.four_star_single || null,
+          // 5-Star Hotel Prices
+          five_star_twin: dept.five_star_twin || null,
+          five_star_triple: dept.five_star_triple || null,
+          five_star_child_with_bed: dept.five_star_child_with_bed || null,
+          five_star_child_without_bed: dept.five_star_child_without_bed || null,
+          five_star_infant: dept.five_star_infant || null,
+          five_star_single: dept.five_star_single || null
+        }));
 
-    setSuccess('Tour created successfully!');
-    setTimeout(() => navigate('/intl-group-tours'), 1500);
-  } catch (err) {
-    setError(err.message || 'Failed to create tour');
-  } finally {
-    setLoading(false);
+        await fetch(`${baseurl}/api/departures/bulk`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tour_id: tourId, departures: formattedDepartures })
+        });
+      }
+
+      // 3) EXCLUSIONS
+      if (exclusions.length > 0) {
+        await fetch(`${baseurl}/api/exclusions/bulk`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tour_id: tourId, items: exclusions })
+        });
+      }
+
+      // 4) IMAGES
+      if (imageFiles.length > 0) {
+        const formDataImages = new FormData();
+        imageFiles.forEach((file) => {
+          formDataImages.append('images', file);
+        });
+        if (imageCaption.trim()) {
+          formDataImages.append('caption', imageCaption.trim());
+        }
+        await fetch(`${baseurl}/api/images/upload/${tourId}`, {
+          method: 'POST',
+          body: formDataImages
+        });
+      }
+
+      // 5) INCLUSIONS
+      if (inclusions.length > 0) {
+        await fetch(`${baseurl}/api/inclusions/bulk`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tour_id: tourId, items: inclusions })
+        });
+      }
+
+      // 6) ITINERARY DAYS
+      if (itineraries.length > 0) {
+        const payload = itineraries.map((item) => ({
+          ...item,
+          tour_id: tourId
+        }));
+        await fetch(`${baseurl}/api/itineraries/bulk`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+      }
+
+      // 7) OPTIONAL TOURS BULK
+      if (optionalTours.length > 0) {
+        await fetch(`${baseurl}/api/optional-tours/bulk`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tour_id: tourId, optional_tours: optionalTours })
+        });
+      }
+
+      // 8) EMI OPTIONS BULK
+      const validEmiOptions = emiOptions.filter(opt =>
+        opt.loan_amount && opt.loan_amount > 0 && opt.emi && opt.emi > 0
+      );
+
+      if (validEmiOptions.length > 0) {
+        await fetch(`${baseurl}/api/emi-options/emi/bulk`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tour_id: tourId, emi_options: validEmiOptions })
+        });
+      }
+
+      // 9) HOTELS BULK
+      if (hotelRows.length > 0) {
+        await fetch(`${baseurl}/api/tour-hotels/bulk`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tour_id: tourId, hotels: hotelRows })
+        });
+      }
+
+if (formData.is_international === 1) {
+  const uploadedVisaForms = await uploadVisaFormFiles(tourId, visaFormItems);
+  
+  const visaData = {
+    tourist_visa: touristVisaItems,
+    transit_visa: transitVisaItems,
+    business_visa: businessVisaItems,
+    visa_forms: uploadedVisaForms,
+    photo: [...photoItems, ...freeFlowPhotoEntries],
+    visa_fees: [...visaFeesRows, extendableRow].map((row, index) => ({
+      row_type: row.type,
+      tourist: row.tourist || '',
+      transit: row.transit || '',
+      business: row.business || '',
+      tourist_charges: row.tourist_charges || '',
+      transit_charges: row.transit_charges || '',
+      business_charges: row.business_charges || '',
+      row_order: index
+    })),
+    submission: submissionRows.map((row, index) => ({
+      label: row.label,
+      tourist: row.tourist,
+      transit: row.transit,
+      business: row.business,
+      row_order: index
+    })),
+    tourist_visa_remarks: touristVisaRemarks
+  };
+
+  // Only save visa data if we have any
+  if (touristVisaItems.length > 0 || transitVisaItems.length > 0 || 
+      businessVisaItems.length > 0 || photoItems.length > 0 || 
+      freeFlowPhotoEntries.length > 0 || visaFeesRows.length > 0 || 
+      submissionRows.length > 0 || touristVisaRemarks) {
+    
+    console.log('📝 Saving visa data:', visaData);
+    
+    await fetch(`${baseurl}/api/visa/bulk`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tour_id: tourId, ...visaData })
+    });
   }
-};
+}
+      // 10) TRANSPORT BULK
+      if (transports.length > 0) {
+        await fetch(`${baseurl}/api/tour-transports/bulk`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tour_id: tourId, items: transports })
+        });
+      }
+
+      // 11) BOOKING POI BULK
+      if (bookingPois.length > 0) {
+        await fetch(`${baseurl}/api/tour-booking-poi/bulk`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tour_id: tourId, items: bookingPois })
+        });
+      }
+
+      // 12) CANCELLATION BULK
+      if (cancelPolicies.length > 0) {
+        await fetch(`${baseurl}/api/tour-cancellation/bulk`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tour_id: tourId, policies: cancelPolicies })
+        });
+      }
+
+      // 13) INSTRUCTIONS BULK
+      if (instructions.length > 0) {
+        await fetch(`${baseurl}/api/tour-instructions/bulk`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tour_id: tourId, items: instructions })
+        });
+      }
+
+      setSuccess('Tour saved successfully!');
+      setTimeout(() => navigate('/intl-group-tours'), 1500);
+    } catch (err) {
+      setError(err.message || 'Failed to save tour');
+    } finally {
+      setLoading(false);
+    }
+  };
 
 const uploadVisaFormFiles = async (tourId, visaForms) => {
   const uploadedForms = [];
