@@ -39,6 +39,13 @@ const AddSeniorTour = () => {
     'images'
   ];
 
+     // Reset editing context - ADD THIS FUNCTION
+const resetEditing = () => {
+  setEditingItem(null);
+  setEditingType('');
+  setEditIndex(-1);
+};
+
   const [activeTab, setActiveTab] = useState('basic');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -47,6 +54,10 @@ const AddSeniorTour = () => {
   // Dropdowns
   const [categories, setCategories] = useState([]);
   const [destinations, setDestinations] = useState([]);
+
+     const [editingItem, setEditingItem] = useState(null);
+        const [editingType, setEditingType] = useState('');
+        const [editIndex, setEditIndex] = useState(-1);
 
   // BASIC DETAILS
   const [formData, setFormData] = useState({
@@ -202,49 +213,66 @@ const removeOptionalTourRow = (idx) => {
   // HOTELS
   // =======================
   const [hotelItem, setHotelItem] = useState({
-    city: '',
-    hotel_name: '',
-    room_type: '',
-    nights: '',
-    remarks: '',
-    hotel_standard: '',
-    hotel_deluxe: '',
-    hotel_executive: ''
-  });
-  const [hotelRows, setHotelRows] = useState([]);
+       city: '',
+       nights: '',
+       standard_hotel_name: '', 
+       deluxe_hotel_name: '',   
+       executive_hotel_name: '',
+       remarks: ''
+     });
+     const [hotelRows, setHotelRows] = useState([]);
+ 
+    const handleHotelChange = (e) => {
+     const { name, value } = e.target;
+     setHotelItem(prev => ({ ...prev, [name]: value }));
+   };
+ 
+   const addHotelRow = () => {
+   if (!hotelItem.city.trim() || 
+       (!hotelItem.standard_hotel_name.trim() && 
+        !hotelItem.deluxe_hotel_name.trim() && 
+        !hotelItem.executive_hotel_name.trim())) {
+     setError('Please enter city and at least one hotel name');
+     return;
+   }
+   
+   if (editingType === 'hotel' && editIndex !== -1) {
+     // Update existing item
+     const updated = [...hotelRows];
+     updated[editIndex] = { ...hotelItem };
+     setHotelRows(updated);
+   } else {
+     // Add new item
+     setHotelRows(prev => [...prev, { ...hotelItem }]);
+   }
+   
+   // Reset form
+   setHotelItem({
+     city: '',
+     nights: '',
+     standard_hotel_name: '', 
+     deluxe_hotel_name: '',   
+     executive_hotel_name: '',
+     remarks: ''
+   });
+   
+   // Reset editing context
+   resetEditing();
+ };
+ 
+   // Edit hotel row - FIXED
+   const editHotelRow = (idx) => {
+     const item = hotelRows[idx];
+     setHotelItem(item);
+     setEditingItem(item);
+     setEditingType('hotel');
+     setEditIndex(idx);
+   };
+ 
+   const removeHotelRow = (idx) => {
+     setHotelRows(prev => prev.filter((_, i) => i !== idx));
+   };
 
-  const handleHotelChange = (e) => {
-    const { name, value } = e.target;
-    setHotelItem(prev => ({ ...prev, [name]: value }));
-  };
-
-  const addHotelRow = () => {
-    if (!hotelItem.city.trim() || !hotelItem.hotel_name.trim()) return;
-    setHotelRows(prev => [...prev, { ...hotelItem }]);
-    setHotelItem({
-      city: '',
-      hotel_name: '',
-      room_type: '',
-      nights: '',
-      remarks: '',
-      hotel_standard: '',
-      hotel_deluxe: '',
-      hotel_executive: ''
-    });
-  };
-
-  const editHotelRow = (idx) => {
-    const item = hotelRows[idx];
-    setHotelItem(item);
-    setHotelRows(prev => prev.filter((_, i) => i !== idx));
-  };
-
-const removeHotelRow = (idx) => {
-  const confirmDelete = window.confirm('Are you sure you want to remove this hotel?');
-  if (confirmDelete) {
-    setHotelRows(prev => prev.filter((_, i) => i !== idx));
-  }
-};
 
   // =======================
   // TRANSPORT FOR SENIOR CITIZEN TOURS
@@ -592,14 +620,29 @@ const removeTransportRow = (idx) => {
         }
 
         // Set hotels
-        if (data.hotels && Array.isArray(data.hotels)) {
-          setHotelRows(data.hotels);
+         // Set hotels
+       if (data.hotels && Array.isArray(data.hotels)) {
+          const formattedHotels = data.hotels.map(hotel => ({
+            ...hotel,
+            standard_hotel_name: hotel.standard_hotel_name || '',
+            deluxe_hotel_name: hotel.deluxe_hotel_name || '',
+            executive_hotel_name: hotel.executive_hotel_name || ''
+          }));
+          setHotelRows(formattedHotels);
         }
-
         // Set transport
-        if (data.transport && Array.isArray(data.transport)) {
-          setTransports(data.transport);
-        }
+       if (data.transport && Array.isArray(data.transport)) {
+  const formattedTransports = data.transport.map(transport => ({
+    ...transport,
+    from_date: transport.from_date ? transport.from_date.split('T')[0] : '',
+    to_date: transport.to_date ? transport.to_date.split('T')[0] : '',
+    // Keep time fields as they are
+    from_time: transport.from_time || '',
+    to_time: transport.to_time || ''
+  }));
+  setTransports(formattedTransports);
+}
+
 
         // Set booking POI
         if (data.booking_poi && Array.isArray(data.booking_poi)) {
@@ -1585,7 +1628,10 @@ useEffect(() => {
       case 'transport':
         return { label: '+ Add Transport', onClick: addTransportRow };
       case 'hotels':
-        return { label: '+ Add Hotel', onClick: addHotelRow };
+        return { 
+          label: editingType === 'hotel' ? 'Update Hotel' : '+ Add Hotel', 
+          onClick: addHotelRow 
+        };
       case 'bookingPoi':
         return { label: '+ Add POI', onClick: addPoi };
       case 'cancellation':

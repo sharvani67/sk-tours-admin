@@ -34,6 +34,137 @@ const INTLAddTour = () => {
   const [editingType, setEditingType] = useState('');
   const [editIndex, setEditIndex] = useState(-1);
 
+// Add these state variables near your other state declarations
+const [editingVisaItemId, setEditingVisaItemId] = useState(null);
+const [editingVisaFormIndex, setEditingVisaFormIndex] = useState(null);
+const [visaFormEditData, setVisaFormEditData] = useState({
+  type: '',
+  download_text: '',
+  download_action: '',
+  fill_action: '',
+  action1_file: null,
+  action2_file: null
+});
+
+// Edit Visa Form Item
+const editVisaFormItem = (index) => {
+  const formItem = visaFormItems[index];
+  setVisaFormEditData({
+    type: formItem.type,
+    download_text: formItem.download_text,
+    download_action: formItem.download_action,
+    fill_action: formItem.fill_action,
+    action1_file: formItem.action1_file,
+    action2_file: formItem.action2_file
+  });
+  setEditingVisaFormIndex(index);
+  setActiveVisaSubTab('form');
+};
+
+// Update Visa Form Item
+const updateVisaFormItem = () => {
+  if (editingVisaFormIndex === null) return;
+  
+  const updated = [...visaFormItems];
+  updated[editingVisaFormIndex] = {
+    ...updated[editingVisaFormIndex],
+    ...visaFormEditData
+  };
+  
+  setVisaFormItems(updated);
+  resetVisaFormEdit();
+};
+
+// Reset Visa Form Edit
+const resetVisaFormEdit = () => {
+  setEditingVisaFormIndex(null);
+  setVisaFormEditData({
+    type: '',
+    download_text: '',
+    download_action: '',
+    fill_action: '',
+    action1_file: null,
+    action2_file: null
+  });
+};
+
+
+// Reset editing context for visa items
+const resetVisaEditing = () => {
+  setEditingItem(null);
+  setEditingType('');
+  setEditIndex(-1);
+  setEditingVisaItemId(null);
+  setEditingVisaFormIndex(null);
+  
+  // Also reset form fields
+  setTouristVisaForm({ description: '' });
+  setTransitVisaForm({ description: '' });
+  setBusinessVisaForm({ description: '' });
+  setPhotoForm({ description: '' });
+  setFreeFlowPhotoText('');
+  
+  // Reset visa form edit data
+  setVisaFormEditData({
+    type: '',
+    download_text: '',
+    download_action: '',
+    fill_action: '',
+    action1_file: null,
+    action2_file: null
+  });
+};
+
+
+// Handle Visa Form Edit Change
+const handleVisaFormEditChange = (e) => {
+  const { name, value } = e.target;
+  setVisaFormEditData(prev => ({
+    ...prev,
+    [name]: value
+  }));
+};
+
+// Handle Visa Form File Change with Edit Support
+const handleVisaFormFileChangeWithEdit = async (index, action, file) => {
+  if (!file) return;
+  
+  if (editingVisaFormIndex !== null && editingVisaFormIndex === index) {
+    // If editing, update the edit data
+    setVisaFormEditData(prev => ({
+      ...prev,
+      [action === 'action1' ? 'action1_file' : 'action2_file']: file
+    }));
+  } else {
+    // If not editing, update the main list
+    const updated = [...visaFormItems];
+    updated[index][action === 'action1' ? 'action1_file' : 'action2_file'] = file;
+    setVisaFormItems(updated);
+  }
+  
+  // Upload file if in edit mode
+  if (isEditMode && id) {
+    const visaType = editingVisaFormIndex !== null 
+      ? visaFormEditData.type 
+      : visaFormItems[index].type;
+    
+    const uploadedFileName = await handleVisaFormFileUpload(id, visaType, action, file);
+    if (uploadedFileName) {
+      if (editingVisaFormIndex !== null && editingVisaFormIndex === index) {
+        setVisaFormEditData(prev => ({
+          ...prev,
+          [action === 'action1' ? 'action1_file' : 'action2_file']: uploadedFileName
+        }));
+      } else {
+        const updatedWithFilename = [...visaFormItems];
+        updatedWithFilename[index][action === 'action1' ? 'action1_file' : 'action2_file'] = uploadedFileName;
+        setVisaFormItems(updatedWithFilename);
+      }
+    }
+  }
+};
+  
+
   // Dropdowns
   const [categories, setCategories] = useState([]);
   const [destinations, setDestinations] = useState([]);
@@ -55,7 +186,8 @@ const INTLAddTour = () => {
     transport_remarks: "",
     booking_poi_remarks: "",
     cancellation_remarks: "",
-    emi_remarks: ""
+    emi_remarks: "",
+      optional_tour_remarks: "" // ← ADD THIS LINE
   });
 
   
@@ -255,30 +387,37 @@ const [photoForm, setPhotoForm] = useState({ description: '' });
 
 
 
+
 // Add this near your other state declarations
 const [freeFlowPhotoEntries, setFreeFlowPhotoEntries] = useState([]);
 const [freeFlowPhotoText, setFreeFlowPhotoText] = useState('');
 
 
+// Add this function to handle file viewing
+const getFileUrl = (fileName) => {
+  if (!fileName) return null;
+  // If it's already a URL, return it
+  if (fileName.startsWith('http')) return fileName;
+  // Otherwise, construct the URL from your baseurl
+  return `${baseurl}/uploads/visa-forms/${fileName}`;
+};
+
+// Function to check if file is a PDF
+const isPDF = (fileName) => {
+  return fileName && (fileName.toLowerCase().endsWith('.pdf') || fileName.toLowerCase().includes('pdf'));
+};
+
+// Function to check if file is a Word document
+const isWordDoc = (fileName) => {
+  return fileName && (fileName.toLowerCase().endsWith('.doc') || 
+                      fileName.toLowerCase().endsWith('.docx') ||
+                      fileName.toLowerCase().includes('word') ||
+                      fileName.toLowerCase().includes('doc'));
+};
+
+
 // Add these functions near your other handler functions
 
-// Add Free Flow Photo Entry
-const addFreeFlowPhotoEntry = () => {
-  const trimmed = freeFlowPhotoText.trim();
-  if (!trimmed) return;
-  
-  setFreeFlowPhotoEntries(prev => [...prev, { description: trimmed }]);
-  setFreeFlowPhotoText('');
-};
-
-// Edit Free Flow Photo Entry
-const editFreeFlowPhotoEntry = (idx) => {
-  const item = freeFlowPhotoEntries[idx];
-  setFreeFlowPhotoText(item.description);
-  setEditingItem(item);
-  setEditingType('freeFlowPhoto');
-  setEditIndex(idx);
-};
 
 // Remove Free Flow Photo Entry
 const removeFreeFlowPhotoEntry = (idx) => {
@@ -560,6 +699,7 @@ const handleSubmissionValueChange = (id, field, value) => {
     setEditIndex(idx);
   };
 
+  
   // Edit Tourist Visa
 const editTouristVisa = (idx) => {
   const item = touristVisaItems[idx];
@@ -567,6 +707,7 @@ const editTouristVisa = (idx) => {
   setEditingItem(item);
   setEditingType('touristVisa');
   setEditIndex(idx);
+  setEditingVisaItemId(idx); // This should be definedTab
 };
 
 // Edit Transit Visa
@@ -576,6 +717,7 @@ const editTransitVisa = (idx) => {
   setEditingItem(item);
   setEditingType('transitVisa');
   setEditIndex(idx);
+  setEditingVisaItemId(idx); // This should be defined
 };
 
 // Edit Business Visa
@@ -585,6 +727,7 @@ const editBusinessVisa = (idx) => {
   setEditingItem(item);
   setEditingType('businessVisa');
   setEditIndex(idx);
+  setEditingVisaItemId(idx); // This should be defined
 };
 
 // Edit Photo
@@ -594,7 +737,20 @@ const editPhoto = (idx) => {
   setEditingItem(item);
   setEditingType('photo');
   setEditIndex(idx);
+  setEditingVisaItemId(idx); // This should be defined
 };
+
+// Edit Free Flow Photo Entry
+const editFreeFlowPhotoEntry = (idx) => {
+  const item = freeFlowPhotoEntries[idx];
+  setFreeFlowPhotoText(item.description);
+  setEditingItem(item);
+  setEditingType('freeFlowPhoto');
+  setEditIndex(idx);
+  setEditingVisaItemId(idx); // This should be defined
+};
+
+
 
   // ========================
   // ADD FUNCTIONS - FIXED
@@ -849,82 +1005,148 @@ const editPhoto = (idx) => {
   };
 
 
-  // Add Tourist Visa
+// Add/Update Tourist Visa
 const addTouristVisa = () => {
   const trimmed = touristVisaForm.description.trim();
   if (!trimmed) return;
   
+  const newItem = { description: trimmed };
+  
   if (editingType === 'touristVisa' && editIndex !== -1) {
+    // Update existing item
     const updated = [...touristVisaItems];
-    updated[editIndex] = { description: trimmed };
+    updated[editIndex] = newItem;
     setTouristVisaItems(updated);
   } else {
-    setTouristVisaItems(prev => [...prev, { description: trimmed }]);
+    // Add new item
+    setTouristVisaItems(prev => [...prev, newItem]);
   }
   
+  // Reset form
   setTouristVisaForm({ description: '' });
-  resetEditing();
+  resetVisaEditing(); // This should be defined
 };
 
-// Add Transit Visa
+// Add/Update Transit Visa
 const addTransitVisa = () => {
   const trimmed = transitVisaForm.description.trim();
   if (!trimmed) return;
   
+  const newItem = { description: trimmed };
+  
   if (editingType === 'transitVisa' && editIndex !== -1) {
+    // Update existing item
     const updated = [...transitVisaItems];
-    updated[editIndex] = { description: trimmed };
+    updated[editIndex] = newItem;
     setTransitVisaItems(updated);
   } else {
-    setTransitVisaItems(prev => [...prev, { description: trimmed }]);
+    // Add new item
+    setTransitVisaItems(prev => [...prev, newItem]);
   }
   
   setTransitVisaForm({ description: '' });
-  resetEditing();
+  resetVisaEditing(); // This should be defined
 };
 
-// Add Business Visa
+// Add/Update Business Visa
 const addBusinessVisa = () => {
   const trimmed = businessVisaForm.description.trim();
   if (!trimmed) return;
   
+  const newItem = { description: trimmed };
+  
   if (editingType === 'businessVisa' && editIndex !== -1) {
+    // Update existing item
     const updated = [...businessVisaItems];
-    updated[editIndex] = { description: trimmed };
+    updated[editIndex] = newItem;
     setBusinessVisaItems(updated);
   } else {
-    setBusinessVisaItems(prev => [...prev, { description: trimmed }]);
+    // Add new item
+    setBusinessVisaItems(prev => [...prev, newItem]);
   }
   
   setBusinessVisaForm({ description: '' });
-  resetEditing();
+  resetVisaEditing(); // This should be defined
 };
 
-// Add Photo
+// Add/Update Photo
 const addPhoto = () => {
   const trimmed = photoForm.description.trim();
   if (!trimmed) return;
   
+  const newItem = { description: trimmed };
+  
   if (editingType === 'photo' && editIndex !== -1) {
+    // Update existing item
     const updated = [...photoItems];
-    updated[editIndex] = { description: trimmed };
+    updated[editIndex] = newItem;
     setPhotoItems(updated);
   } else {
-    setPhotoItems(prev => [...prev, { description: trimmed }]);
+    // Add new item
+    setPhotoItems(prev => [...prev, newItem]);
   }
   
   setPhotoForm({ description: '' });
-  resetEditing();
+  resetVisaEditing(); // This should be defined
+};
+
+// Add Free Flow Photo Entry
+const addFreeFlowPhotoEntry = () => {
+  const trimmed = freeFlowPhotoText.trim();
+  if (!trimmed) return;
+  
+  const newItem = { description: trimmed };
+  
+  if (editingType === 'freeFlowPhoto' && editIndex !== -1) {
+    // Update existing free flow entry
+    const updated = [...freeFlowPhotoEntries];
+    updated[editIndex] = newItem;
+    setFreeFlowPhotoEntries(updated);
+  } else {
+    // Add new free flow entry
+    setFreeFlowPhotoEntries(prev => [...prev, newItem]);
+  }
+  
+  setFreeFlowPhotoText('');
+  resetVisaEditing(); // This should be defined
 };
 
 
-
   // Reset editing context
-  const resetEditing = () => {
-    setEditingItem(null);
-    setEditingType('');
-    setEditIndex(-1);
-  };
+ // Reset editing context
+const resetEditing = () => {
+  setEditingItem(null);
+  setEditingType('');
+  setEditIndex(-1);
+  setEditingVisaItemId(null);
+  setEditingVisaFormIndex(null);
+  
+  // Also reset any form fields that might be in edit mode
+  if (editingType === 'touristVisa') {
+    setTouristVisaForm({ description: '' });
+  } else if (editingType === 'transitVisa') {
+    setTransitVisaForm({ description: '' });
+  } else if (editingType === 'businessVisa') {
+    setBusinessVisaForm({ description: '' });
+  } else if (editingType === 'photo') {
+    setPhotoForm({ description: '' });
+  } else if (editingType === 'freeFlowPhoto') {
+    setFreeFlowPhotoText('');
+  }
+  
+  // Reset visa form edit data
+  if (editingVisaFormIndex !== null) {
+    setVisaFormEditData({
+      type: '',
+      download_text: '',
+      download_action: '',
+      fill_action: '',
+      action1_file: null,
+      action2_file: null
+    });
+    setEditingVisaFormIndex(null);
+  }
+};
 
   // ========================
   // REMOVE FUNCTIONS
@@ -1434,7 +1656,8 @@ useEffect(() => {
           transport_remarks: basic.transport_remarks || '',
           booking_poi_remarks: basic.booking_poi_remarks || '',
           cancellation_remarks: basic.cancellation_remarks || '',
-          emi_remarks: basic.emi_remarks || ''
+          emi_remarks: basic.emi_remarks || '',
+            optional_tour_remarks: basic.optional_tour_remarks || '' // ← ADD THIS LINE
         });
 
         // Set itineraries
@@ -1918,7 +2141,8 @@ const visaData = {
         transport_remarks: formData.transport_remarks || '',
         emi_remarks: formData.emi_remarks || '',
         booking_poi_remarks: formData.booking_poi_remarks || '',
-        cancellation_remarks: formData.cancellation_remarks || ''
+        cancellation_remarks: formData.cancellation_remarks || '',
+        optional_tour_remarks: formData.optional_tour_remarks || '' // ← ADD THIS LINE
       };
 
       const tourRes = await fetch(`${baseurl}/api/tours/${id}`, {
@@ -2239,30 +2463,37 @@ const visaData = {
           onClick: addHotelRow 
         };
 
-    case 'visa':
-      // Check which subtab is active
-      if (activeVisaSubTab === 'tourist') {
-        return { 
-          label: editingType === 'touristVisa' ? 'Update Tourist Visa' : '+ Add Tourist Visa', 
-          onClick: addTouristVisa 
-        };
-      } else if (activeVisaSubTab === 'transit') {
-        return { 
-          label: editingType === 'transitVisa' ? 'Update Transit Visa' : '+ Add Transit Visa', 
-          onClick: addTransitVisa 
-        };
-      } else if (activeVisaSubTab === 'business') {
-        return { 
-          label: editingType === 'businessVisa' ? 'Update Business Visa' : '+ Add Business Visa', 
-          onClick: addBusinessVisa 
-        };
-      } else if (activeVisaSubTab === 'photo') {
-        return { 
-          label: editingType === 'photo' ? 'Update Photo' : '+ Add Photo', 
-          onClick: addPhoto 
-        };
-      }
-      return null;
+      case 'visa':
+  // Check which subtab is active
+  if (activeVisaSubTab === 'tourist') {
+    return { 
+      label: editingType === 'touristVisa' ? 'Update Tourist Visa' : '+ Add Tourist Visa', 
+      onClick: addTouristVisa 
+    };
+  } else if (activeVisaSubTab === 'transit') {
+    return { 
+      label: editingType === 'transitVisa' ? 'Update Transit Visa' : '+ Add Transit Visa', 
+      onClick: addTransitVisa 
+    };
+  } else if (activeVisaSubTab === 'business') {
+    return { 
+      label: editingType === 'businessVisa' ? 'Update Business Visa' : '+ Add Business Visa', 
+      onClick: addBusinessVisa 
+    };
+  } else if (activeVisaSubTab === 'photo') {
+    return { 
+      label: editingType === 'photo' ? 'Update Photo' : '+ Add Photo', 
+      onClick: addPhoto 
+    };
+  } else if (activeVisaSubTab === 'form') {
+    if (editingVisaFormIndex !== null) {
+      return {
+        label: 'Update Visa Form',
+        onClick: updateVisaFormItem
+      };
+    }
+  }
+  return null;
 
       case 'bookingPoi':
         return { 
@@ -2762,17 +2993,6 @@ const visaData = {
                   </Col>
                 </Row>
 
-                <Form.Group className="mt-3">
-                      <Form.Label>Optional Tour Remarks</Form.Label>
-                          <Form.Control
-                              as="textarea"
-                              rows={3}
-                              name="optional_tour_remarks"
-                              value={formData.optional_tour_remarks || ''}
-                              onChange={handleBasicChange}
-                              placeholder="Enter any remarks for optional tours..."
-                          />
-                </Form.Group>
 
                 {optionalTours.length > 0 && (
                   <Table striped bordered hover size="sm" className="mt-3">
@@ -2817,7 +3037,24 @@ const visaData = {
                     </tbody>
                   </Table>
                 )}
+
+
+                
+                <Form.Group className="mt-3">
+                      <Form.Label>Optional Tour Remarks</Form.Label>
+                          <Form.Control
+                              as="textarea"
+                              rows={3}
+                              name="optional_tour_remarks"
+                              value={formData.optional_tour_remarks || ''}
+                              onChange={handleBasicChange}
+                              placeholder="Enter any remarks for optional tours..."
+                          />
+                </Form.Group>
+
               </Tab>
+
+
 
               <Tab eventKey="emiOptions" title="EMI Options">
                 <Table striped bordered hover responsive className="align-middle">
@@ -3200,7 +3437,7 @@ const visaData = {
                                  </tbody>
                                </Table>
                              )}
-                           </Tab>
+              </Tab>
 
               <Tab eventKey="visa" title="Visa">
                 <Tabs
@@ -3376,76 +3613,271 @@ const visaData = {
                   {/* Subtab 4: Visa Form */}
                   {/* Subtab 4: Visa Form */}
 
-                  <Tab eventKey="form" title="Visa Form">
-  <Table striped bordered hover size="sm">
-    <thead>
-      <tr>
-        <th>Visa Type</th>
-        <th>Form Download</th>
-        <th>Action 1 (Upload PDF)</th>
-        <th>Action 2 (Upload Word)</th>
-      </tr>
-    </thead>
-    <tbody>
-      {visaFormItems.map((item, idx) => (
-        <tr key={idx}>
-          <td>{item.type}</td>
-          <td>{item.download_text}</td>
-          <td>
-            <div className="mb-2">
-              <Button 
-                variant="outline-primary" 
-                size="sm"
-                onClick={() => document.getElementById(`pdf-upload-${idx}`).click()}
-              >
-                {item.action1_file ? 'Change PDF' : 'Upload PDF'}
-              </Button>
+               <Tab eventKey="form" title="Visa Form">
+  {/* Edit Form Modal (when editing a visa form) */}
+  {editingVisaFormIndex !== null && (
+    <Card className="mb-4 border-warning">
+      <Card.Header className="bg-warning text-dark">
+        <strong>✏️ Editing {visaFormEditData.type}</strong>
+        <Button 
+          variant="outline-dark" 
+          size="sm" 
+          className="float-end"
+          onClick={resetVisaFormEdit}
+        >
+          Cancel Edit
+        </Button>
+      </Card.Header>
+      <Card.Body>
+        <Row>
+          <Col md={6}>
+            <Form.Group className="mb-3">
+              <Form.Label>Visa Type</Form.Label>
               <Form.Control
-                type="file"
-                id={`pdf-upload-${idx}`}
-                accept=".pdf"
-                className="d-none"
-                onChange={(e) => handleVisaFormFileChange(idx, 'action1', e.target.files[0])}
+                type="text"
+                name="type"
+                value={visaFormEditData.type}
+                onChange={handleVisaFormEditChange}
+                disabled
               />
-              {item.action1_file && (
-                <div className="mt-1 small">
-                  <span className="text-success">
-                    ✓ {typeof item.action1_file === 'string' ? item.action1_file : item.action1_file.name}
+            </Form.Group>
+          </Col>
+          <Col md={6}>
+            <Form.Group className="mb-3">
+              <Form.Label>Download Text</Form.Label>
+              <Form.Control
+                type="text"
+                name="download_text"
+                value={visaFormEditData.download_text}
+                onChange={handleVisaFormEditChange}
+              />
+            </Form.Group>
+          </Col>
+        </Row>
+        <Row>
+          <Col md={6}>
+            <Form.Group className="mb-3">
+              <Form.Label>Download Action</Form.Label>
+              <Form.Control
+                type="text"
+                name="download_action"
+                value={visaFormEditData.download_action}
+                onChange={handleVisaFormEditChange}
+              />
+            </Form.Group>
+          </Col>
+          <Col md={6}>
+            <Form.Group className="mb-3">
+              <Form.Label>Fill Action</Form.Label>
+              <Form.Control
+                type="text"
+                name="fill_action"
+                value={visaFormEditData.fill_action}
+                onChange={handleVisaFormEditChange}
+              />
+            </Form.Group>
+          </Col>
+        </Row>
+        <Row>
+          <Col md={6}>
+            <Form.Group className="mb-3">
+              <Form.Label>PDF File</Form.Label>
+              <div className="d-flex align-items-center gap-2">
+                <Button 
+                  variant="outline-primary" 
+                  size="sm"
+                  onClick={() => document.getElementById(`edit-pdf-upload`).click()}
+                >
+                  {visaFormEditData.action1_file ? 'Change PDF' : 'Upload PDF'}
+                </Button>
+                <Form.Control
+                  type="file"
+                  id="edit-pdf-upload"
+                  accept=".pdf"
+                  className="d-none"
+                  onChange={(e) => handleVisaFormFileChangeWithEdit(editingVisaFormIndex, 'action1', e.target.files[0])}
+                />
+                {visaFormEditData.action1_file && (
+                  <span className="text-success small">
+                    ✓ {typeof visaFormEditData.action1_file === 'string' 
+                      ? visaFormEditData.action1_file 
+                      : visaFormEditData.action1_file.name}
                   </span>
+                )}
+              </div>
+            </Form.Group>
+          </Col>
+          <Col md={6}>
+            <Form.Group className="mb-3">
+              <Form.Label>Word File</Form.Label>
+              <div className="d-flex align-items-center gap-2">
+                <Button 
+                  variant="outline-secondary" 
+                  size="sm"
+                  onClick={() => document.getElementById(`edit-word-upload`).click()}
+                >
+                  {visaFormEditData.action2_file ? 'Change Word' : 'Upload Word'}
+                </Button>
+                <Form.Control
+                  type="file"
+                  id="edit-word-upload"
+                  accept=".doc,.docx"
+                  className="d-none"
+                  onChange={(e) => handleVisaFormFileChangeWithEdit(editingVisaFormIndex, 'action2', e.target.files[0])}
+                />
+                {visaFormEditData.action2_file && (
+                  <span className="text-success small">
+                    ✓ {typeof visaFormEditData.action2_file === 'string' 
+                      ? visaFormEditData.action2_file 
+                      : visaFormEditData.action2_file.name}
+                  </span>
+                )}
+              </div>
+            </Form.Group>
+          </Col>
+        </Row>
+        <div className="d-flex gap-2 justify-content-end">
+          <Button 
+            variant="success" 
+            onClick={updateVisaFormItem}
+          >
+            Update Visa Form
+          </Button>
+          <Button 
+            variant="outline-secondary" 
+            onClick={resetVisaFormEdit}
+          >
+            Cancel
+          </Button>
+        </div>
+      </Card.Body>
+    </Card>
+  )}
+
+  {/* Visa Forms Table */}
+ {/* Visa Forms Table */}
+<Table striped bordered hover size="sm">
+  <thead>
+    <tr>
+      <th>Action 1 (Upload PDF)</th>
+      <th>Action 2 (Upload Word)</th>
+    </tr>
+  </thead>
+  <tbody>
+    {visaFormItems.map((item, idx) => {
+      const pdfFile = item.action1_file;
+      const wordFile = item.action2_file;
+      const pdfUrl = getFileUrl(pdfFile);
+      const wordUrl = getFileUrl(wordFile);
+      
+      return (
+        <tr key={idx} className={editingVisaFormIndex === idx ? 'table-warning' : ''}>
+          <td>
+            <div className="d-flex flex-column gap-2">
+              {/* Upload Button */}
+              <div>
+                <Button 
+                  variant="outline-primary" 
+                  size="sm"
+                  onClick={() => document.getElementById(`pdf-upload-${idx}`).click()}
+                >
+                  {pdfFile ? 'Change PDF' : 'Upload PDF'}
+                </Button>
+                <Form.Control
+                  type="file"
+                  id={`pdf-upload-${idx}`}
+                  accept=".pdf"
+                  className="d-none"
+                  onChange={(e) => handleVisaFormFileChangeWithEdit(idx, 'action1', e.target.files[0])}
+                />
+              </div>
+              
+              {/* File Info and View Button */}
+              {pdfFile && (
+                <div className="d-flex align-items-center justify-content-between bg-light p-2 rounded">
+                  <div className="flex-grow-1">
+                    <small className="text-success d-block">
+                      <strong>✓ Uploaded:</strong>
+                    </small>
+                    <small className="text-muted d-block">
+                      {typeof pdfFile === 'string' ? pdfFile : pdfFile.name}
+                    </small>
+                  </div>
+                  
+                  {pdfUrl && (
+                    <div className="ms-2">
+                      <Button
+                        variant="outline-info"
+                        size="sm"
+                        onClick={() => window.open(pdfUrl, '_blank')}
+                        title="View PDF"
+                        className="d-flex align-items-center"
+                      >
+                        👁️ View
+                      </Button>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
           </td>
+          
           <td>
-            <div className="mb-2">
-              <Button 
-                variant="outline-secondary" 
-                size="sm"
-                onClick={() => document.getElementById(`word-upload-${idx}`).click()}
-              >
-                {item.action2_file ? 'Change Word' : 'Upload Word'}
-              </Button>
-              <Form.Control
-                type="file"
-                id={`word-upload-${idx}`}
-                accept=".doc,.docx"
-                className="d-none"
-                onChange={(e) => handleVisaFormFileChange(idx, 'action2', e.target.files[0])}
-              />
-              {item.action2_file && (
-                <div className="mt-1 small">
-                  <span className="text-success">
-                    ✓ {typeof item.action2_file === 'string' ? item.action2_file : item.action2_file.name}
-                  </span>
+            <div className="d-flex flex-column gap-2">
+              {/* Upload Button */}
+              <div>
+                <Button 
+                  variant="outline-secondary" 
+                  size="sm"
+                  onClick={() => document.getElementById(`word-upload-${idx}`).click()}
+                >
+                  {wordFile ? 'Change Word' : 'Upload Word'}
+                </Button>
+                <Form.Control
+                  type="file"
+                  id={`word-upload-${idx}`}
+                  accept=".doc,.docx"
+                  className="d-none"
+                  onChange={(e) => handleVisaFormFileChangeWithEdit(idx, 'action2', e.target.files[0])}
+                />
+              </div>
+              
+              {/* File Info and View Button */}
+              {wordFile && (
+                <div className="d-flex align-items-center justify-content-between bg-light p-2 rounded">
+                  <div className="flex-grow-1">
+                    <small className="text-success d-block">
+                      <strong>✓ Uploaded:</strong>
+                    </small>
+                    <small className="text-muted d-block">
+                      {typeof wordFile === 'string' ? wordFile : wordFile.name}
+                    </small>
+                  </div>
+                  
+                  {wordUrl && (
+                    <div className="ms-2">
+                      <Button
+                        variant="outline-info"
+                        size="sm"
+                        onClick={() => window.open(wordUrl, '_blank')}
+                        title="View Document"
+                        className="d-flex align-items-center"
+                      >
+                        👁️ View
+                      </Button>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
           </td>
         </tr>
-      ))}
-    </tbody>
-  </Table>
+      );
+    })}
+  </tbody>
+</Table>
 
+  {/* Remarks Section */}
   <Card className="mt-3">
     <Card.Body>
       <Form.Group>
@@ -3460,125 +3892,93 @@ const visaData = {
       </Form.Group>
     </Card.Body>
   </Card>
-`                 </Tab>
+</Tab>
 
 
                   {/* Subtab 5: Photo */}
                  {/* Subtab 5: Photo */}
-                <Tab eventKey="photo" title="Photo">
+              <Tab eventKey="photo" title="Photo">
+  {/* Add/Edit Photo Form */}
+  <Card className="mb-4">
+    <Card.Body>
+      <Form.Group className="mb-3">
+        <Form.Label>
+          {editingType === 'photo' ? 'Edit Photo Description' : 'Add Photo Description'}
+          {editingType === 'photo' && (
+            <span className="badge bg-warning text-dark ms-2">
+              Editing item #{editIndex + 1}
+            </span>
+          )}
+        </Form.Label>
+        <div className="d-flex gap-2">
+          <Form.Control
+            as="textarea"
+            rows={2}
+            name="description"
+            value={photoForm.description}
+            onChange={handlePhotoChange}
+            placeholder="Type photo requirement description"
+          />
+          <Button 
+            variant={editingType === 'photo' ? "warning" : "success"} 
+            onClick={addPhoto}
+            className="align-self-start"
+            disabled={!photoForm.description.trim()}
+          >
+            {editingType === 'photo' ? 'Update Photo' : '+ Add Photo'}
+          </Button>
+        </div>
+      </Form.Group>
+    </Card.Body>
+  </Card>
 
-                  {/* Free Flow Entry Section */}
-                  <Card className="mb-3">
-                    <Card.Body>
-                      <Form.Group className="mb-3">
-                        <Form.Label>Add Free Flow Entry</Form.Label>
-                        <div className="d-flex gap-2">
-                          <Form.Control
-                            as="textarea"
-                            rows={2}
-                            value={freeFlowPhotoText}
-                            onChange={handleFreeFlowPhotoChange}
-                            placeholder="Type free flow entry"
-                          />
-                          <Button 
-                            variant="success" 
-                            onClick={addFreeFlowPhotoEntry}
-                            className="align-self-start"
-                          >
-                            + Add Free Flow
-                          </Button>
-                        </div>
-                      </Form.Group>
 
-                      {freeFlowPhotoEntries.length > 0 && (
-                        <Table striped bordered hover size="sm">
-                          <thead>
-                            <tr>
-                              <th>#</th>
-                              <th>Free Flow Entry</th>
-                              <th>Action</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {freeFlowPhotoEntries.map((item, idx) => (
-                              <tr key={idx}>
-                                <td>{idx + 1}</td>
-                                <td>{item.description || '-'}</td>
-                                <td>
-                                  <div className="d-flex gap-1">
-                                    <Button
-                                      variant="outline-warning"
-                                      size="sm"
-                                      onClick={() => editFreeFlowPhotoEntry(idx)}
-                                      title="Edit"
-                                    >
-                                      <Pencil size={14} />
-                                    </Button>
-                                    <Button
-                                      variant="outline-danger"
-                                      size="sm"
-                                      onClick={() => removeFreeFlowPhotoEntry(idx)}
-                                      title="Remove"
-                                    >
-                                      <Trash size={14} />
-                                    </Button>
-                                  </div>
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </Table>
-                      )}
-                    </Card.Body>
-                  </Card>
-
-                  {/* Existing Photo Items Table */}
-                  {photoItems.length > 0 && (
-                    <Card>
-                      <Card.Body>
-                        <h6>Photo Requirements List</h6>
-                        <Table striped bordered hover size="sm">
-                          <thead>
-                            <tr>
-                              <th>#</th>
-                              <th>Description</th>
-                              <th>Action</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {photoItems.map((item, idx) => (
-                              <tr key={idx}>
-                                <td>{idx + 1}</td>
-                                <td>{item.description || '-'}</td>
-                                <td>
-                                  <div className="d-flex gap-1">
-                                    <Button
-                                      variant="outline-warning"
-                                      size="sm"
-                                      onClick={() => editPhoto(idx)}
-                                      title="Edit"
-                                    >
-                                      <Pencil size={14} />
-                                    </Button>
-                                    <Button
-                                      variant="outline-danger"
-                                      size="sm"
-                                      onClick={() => removePhoto(idx)}
-                                      title="Remove"
-                                    >
-                                      <Trash size={14} />
-                                    </Button>
-                                  </div>
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </Table>
-                      </Card.Body>
-                    </Card>
-                  )}
-                </Tab>
-
+  {/* Existing Photo Items Table */}
+  {photoItems.length > 0 && (
+    <Card>
+      {/* <Card.Header>Photo Requirements List</Card.Header> */}
+      <Card.Body>
+        <Table striped bordered hover size="sm">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Description</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {photoItems.map((item, idx) => (
+              <tr key={idx} className={editingType === 'photo' && editIndex === idx ? 'table-warning' : ''}>
+                <td>{idx + 1}</td>
+                <td>{item.description || '-'}</td>
+                <td>
+                  <div className="d-flex gap-1">
+                    <Button
+                      variant={editingType === 'photo' && editIndex === idx ? "warning" : "outline-warning"}
+                      size="sm"
+                      onClick={() => editPhoto(idx)}
+                      title="Edit"
+                    >
+                      <Pencil size={14} />
+                    </Button>
+                    <Button
+                      variant="outline-danger"
+                      size="sm"
+                      onClick={() => removePhoto(idx)}
+                      title="Remove"
+                    >
+                      <Trash size={14} />
+                    </Button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </Table>
+      </Card.Body>
+    </Card>
+  )}
+</Tab>
                   {/* Subtab 6: Visa Fees */}
                   {/* Subtab 6: Visa Fees */}
               <Tab eventKey="fees" title="Visa Fees">
