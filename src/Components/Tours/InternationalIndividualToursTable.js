@@ -52,7 +52,7 @@ const INTLTours = () => {
 
   // Handle view tour details
   const handleViewTour = (tourId) => {
-    navigate(`/tour-details/${tourId}`);
+    navigate(`/intl-tour-details/${tourId}`);
   };
 
   // Handle edit tour

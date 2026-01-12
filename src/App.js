@@ -97,6 +97,16 @@ import AddExhibition from './Components/Exhibitions/AddExhibition';
 import Exhibition from "./Components/Exhibitions/Exhibition";
 
 
+import INTLTourDetails from "./INTLTourDetails"
+import INTLGroupTourDetails from "./INTLGroupDetails"
+import INTLLadiesTourDetails from "./INTLLadiesDetails"
+import INTLSeniorCitizenTourDetails from "./INTLSeniorCitizenDetails"
+import INTLStudentTourDetails from  "./INTLStudentDetails"
+import INTLHoneymoonTourDetails from "./INTLHoneymoonDetails"
+
+
+
+
 function App() {
   return (
     <BrowserRouter>
@@ -159,6 +169,15 @@ function App() {
                <Route path="/senior-citizen-tour-details/:tourId" element={<SeniorCitizenTourDetails />} />
                  <Route path="/student-tour-details/:tourId" element={<StudentTourDetails />} />
                   <Route path="/honeymoon-tour-details/:tourId" element={<HoneymoonTourDetails />} />
+
+
+
+                    <Route path="/intl-tour-details/:tourId" element={<INTLTourDetails />} />
+           <Route path="/intl-group-tour-details/:tourId" element={<INTLGroupTourDetails />} />
+             <Route path="/intl-ladies-special-tour-details/:tourId" element={<INTLLadiesTourDetails />} />
+               <Route path="/intl-senior-citizen-tour-details/:tourId" element={<INTLSeniorCitizenTourDetails />} />
+                 <Route path="/intl-student-tour-details/:tourId" element={<INTLStudentTourDetails />} />
+                  <Route path="/intl-honeymoon-tour-details/:tourId" element={<INTLHoneymoonTourDetails />} />
        
                 <Route path="/ladies-special-tours" element={<LadiesSpecialTours />} />
                 <Route path="/add-ladies-special-tour" element={<AddLadiesSpecialTour />} />

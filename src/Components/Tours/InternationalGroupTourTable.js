@@ -51,7 +51,7 @@ const GroupTours = () => {
 
   // Handle view tour details
   const handleViewTour = (tourId) => {
-    navigate(`/group-tour-details/${tourId}`);
+    navigate(`/intl-group-tour-details/${tourId}`);
   };
 
   // Handle edit tour

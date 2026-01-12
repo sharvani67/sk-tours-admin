@@ -49,7 +49,7 @@ const HoneymoonTours = () => {
   }, []);
 
   const handleViewTour = (tourId) => {
-    navigate(`/honeymoon-tour-details/${tourId}`);
+    navigate(`/intl-honeymoon-tour-details/${tourId}`);
   };
 
   // Handle edit tour

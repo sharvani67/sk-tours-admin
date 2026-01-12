@@ -49,7 +49,7 @@ const StudentTours = () => {
   }, []);
 
   const handleViewTour = (tourId) => {
-    navigate(`/student-tour-details/${tourId}`);
+    navigate(`/intl-student-tour-details/${tourId}`);
   };
 
   // Handle edit tour

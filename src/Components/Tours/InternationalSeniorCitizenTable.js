@@ -51,7 +51,7 @@ const SeniorCitizenTours = () => {
 
   // Handle view tour details
   const handleViewTour = (tourId) => {
-    navigate(`/senior-citizen-tour-details/${tourId}`);
+    navigate(`/intl-senior-citizen-tour-details/${tourId}`);
   };
 
   // Handle edit tour

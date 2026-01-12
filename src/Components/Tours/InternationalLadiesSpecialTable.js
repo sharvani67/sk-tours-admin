@@ -50,7 +50,7 @@ const LadiesSpecialTours = () => {
 
   // Handle view tour details
   const handleViewTour = (tourId) => {
-    navigate(`/ladies-special-tour-details/${tourId}`);
+    navigate(`/intl-ladies-special-tour-details/${tourId}`);
   };
 
   // Handle edit tour

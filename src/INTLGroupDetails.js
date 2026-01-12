@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { Container, Row, Col, Table, Badge, Card } from "react-bootstrap";
-import Navbar from "../../Shared/Navbar/Navbar";
-import { baseurl } from "../../Api/Baseurl";
+import { Container, Row, Col, Table, Badge, Card, Button } from "react-bootstrap";
+import Navbar from "./Shared/Navbar/Navbar";
+import { baseurl } from "./Api/Baseurl";
 
-const GroupTourDetails = () => {
+const INTLGroupDetails = () => {
   const { tourId } = useParams();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -59,9 +59,7 @@ const GroupTourDetails = () => {
         <h2>{t.basic_details?.title}</h2>
         <p className="text-muted">
           <Badge bg="success">Group Tour</Badge>{" "}
-          <Badge bg={isInternational ? "warning" : "primary"}>
-            {isInternational ? "International" : "Domestic"}
-          </Badge>{" "}
+          <Badge bg="warning">International</Badge>{" "}
           <Badge bg="info">Code: {t.basic_details?.tour_code}</Badge>{" "}
           • {t.basic_details?.duration_days} Days
         </p>
@@ -288,31 +286,151 @@ const GroupTourDetails = () => {
           </>
         )}
 
-        {/* ================= VISA SECTIONS (ONLY FOR INTERNATIONAL) ================= */}
-        {isInternational && t.visa_details?.length > 0 && (
+        {/* ================= VISA SECTIONS (FOR INTERNATIONAL) ================= */}
+        {isInternational && (
           <>
-            <h4>Visa Details</h4>
-            <Table bordered>
-              <thead>
-                <tr>
-                  <th>Type</th>
-                  <th>Description</th>
-                </tr>
-              </thead>
-              <tbody>
-                {t.visa_details.map(v => (
-                  <tr key={v.visa_id}>
-                    <td>
-                      <Badge bg="secondary">
-                        {v.type?.charAt(0).toUpperCase() + v.type?.slice(1)}
-                      </Badge>
-                    </td>
-                    <td>{v.description}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </Table>
-            <hr />
+            {/* VISA DETAILS */}
+            {t.visa_details?.length > 0 && (
+              <>
+                <h4>Visa Details</h4>
+                <Table bordered>
+                  <thead>
+                    <tr>
+                      <th>Type</th>
+                      <th>Description</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {t.visa_details.map(v => (
+                      <tr key={v.visa_id}>
+                        <td>
+                          <Badge bg="secondary">
+                            {v.type?.charAt(0).toUpperCase() + v.type?.slice(1)}
+                          </Badge>
+                        </td>
+                        <td>{v.description}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </Table>
+                <hr />
+              </>
+            )}
+
+            {/* VISA FORMS */}
+            {t.visa_forms?.length > 0 && (
+              <>
+                <h4>Visa Forms</h4>
+                <Table bordered>
+                  <thead>
+                    <tr>
+                      <th>Visa Type</th>
+                      <th>Download Text</th>
+                      <th>Actions</th>
+                      <th>Remarks</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {t.visa_forms.map(form => (
+                      <tr key={form.form_id}>
+                        <td>{form.visa_type}</td>
+                        <td>{form.download_text}</td>
+                        <td>
+                          <div className="d-flex flex-column gap-2">
+                            {form.action1_file_url && (
+                              <Button
+                                variant="outline-primary"
+                                size="sm"
+                                href={`${baseurl}${form.action1_file_url}`}
+                                target="_blank"
+                                download
+                              >
+                                {form.download_action || 'Download'}
+                              </Button>
+                            )}
+                            {form.action2_file_url && (
+                              <Button
+                                variant="outline-secondary"
+                                size="sm"
+                                href={`${baseurl}${form.action2_file_url}`}
+                                target="_blank"
+                                download
+                              >
+                                {form.fill_action || 'Fill Manually'}
+                              </Button>
+                            )}
+                          </div>
+                        </td>
+                        <td>{form.remarks}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </Table>
+                <hr />
+              </>
+            )}
+
+            {/* VISA FEES */}
+            {t.visa_fees?.length > 0 && (
+              <>
+                <h4>Visa Fees</h4>
+                <Table bordered>
+                  <thead>
+                    <tr>
+                      <th>Description</th>
+                      <th>Tourist</th>
+                      <th>Transit</th>
+                      <th>Business</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {t.visa_fees.map(fee => (
+                      <tr key={fee.fee_id}>
+                        <td>{fee.tourist || fee.transit || fee.business}</td>
+                        <td>
+                          {fee.tourist_charges ? `₹${fee.tourist_charges}` : "-"}
+                        </td>
+                        <td>
+                          {fee.transit_charges ? `₹${fee.transit_charges}` : "-"}
+                        </td>
+                        <td>
+                          {fee.business_charges ? `₹${fee.business_charges}` : "-"}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </Table>
+                <hr />
+              </>
+            )}
+
+            {/* VISA SUBMISSION */}
+            {t.visa_submission?.length > 0 && (
+              <>
+                <h4>Visa Submission Details</h4>
+                <Table bordered>
+                  <thead>
+                    <tr>
+                      <th>Label</th>
+                      <th>Tourist</th>
+                      <th>Transit</th>
+                      <th>Business</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {t.visa_submission.map(sub => (
+                      <tr key={sub.submission_id}>
+                        <td>{sub.label}</td>
+                        <td>{sub.tourist}</td>
+                        <td>{sub.transit}</td>
+                        <td>{sub.business}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </Table>
+                <hr />
+              </>
+            )}
           </>
         )}
 
@@ -479,4 +597,4 @@ const GroupTourDetails = () => {
   );
 };
 
-export default GroupTourDetails;
+export default INTLGroupDetails;
