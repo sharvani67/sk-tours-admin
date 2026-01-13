@@ -84,7 +84,7 @@ import INTLAddHoneymoonTour from './Components/Tours/InternationalAddHoneyMoonFo
 import LadiesTourDetails from "./Components/Tours/LadiesTourDetails";
 import SeniorCitizenTourDetails from "./Components/Tours/SetizenTourDetails";
 import StudentTourDetails from "./Components/Tours/StudentTourDetails";
-import HoneymoonTourDetails from "./Components/Tours/HoneyMoonTour";
+import HoneymoonTourDetails from "./Components/Tours/HoneyMoonTourDetails";
 import AdminVideoManager from "./Components/Home/AdminVideoManager";
 import AdminDomesticTours from "./Components/Home/AdminDomesticTours";
 import AdminLeads from "./Components/Home/AdminLeads";

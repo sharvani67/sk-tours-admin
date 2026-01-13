@@ -2889,7 +2889,7 @@ useEffect(() => {
                                                            </tbody>
                                                          </Table>
                                  )}
-                           </Tab>
+                 </Tab>
 
               <Tab eventKey="bookingPoi" title="Booking POI">
                 <Form.Group className="mb-3">
