@@ -193,24 +193,25 @@ const handleVisaFormFileChangeWithEdit = async (index, action, file) => {
   });
 
   
-  const TAB_LIST = [
-    'basic',
-    'itineraries',
-    'departures',
-    'costs',
-    'optionalTours',
-    'emiOptions',
-    'inclusions',
-    'exclusions',
-    'transport',
-    'hotels',
-    ...(formData.is_international === 1 ? ['visa'] : []), // Conditionally add visa tab
-    'bookingPoi',
-    'cancellation',
-    'instructions',
-    'images'
-  ];
+const visaSubTabs = ['tourist', 'transit', 'business', 'form', 'photo', 'fees', 'submission'];
 
+const TAB_LIST = [
+  'basic',
+  'itineraries',
+  'departures',
+  'costs',
+  'optionalTours',
+  'emiOptions',
+  'inclusions',
+  'exclusions',
+  'transport',
+  'hotels',
+  ...(formData.is_international === 1 ? ['visa'] : []), // Main visa tab
+  'bookingPoi',
+  'cancellation',
+  'instructions',
+  'images'
+];
   // DEPARTURES
   const [departureForm, setDepartureForm] = useState({
     departure_date: '',
@@ -1900,19 +1901,60 @@ useEffect(() => {
   // NAVIGATION
   // ========================
 
-  const goNext = () => {
-    const currentIndex = TAB_LIST.indexOf(activeTab);
-    if (currentIndex < TAB_LIST.length - 1) {
-      setActiveTab(TAB_LIST[currentIndex + 1]);
+const goNext = () => {
+  const currentIndex = TAB_LIST.indexOf(activeTab);
+  
+  // If we're on the main visa tab
+  if (activeTab === 'visa') {
+    // Check if there are more visa subtabs to complete
+    const currentSubTabIndex = visaSubTabs.indexOf(activeVisaSubTab);
+    
+    // If current subtab is not the last one
+    if (currentSubTabIndex < visaSubTabs.length - 1) {
+      // Move to next visa subtab
+      setActiveVisaSubTab(visaSubTabs[currentSubTabIndex + 1]);
+      return;
+    } else {
+      // All visa subtabs are done, move to booking
+      if (currentIndex < TAB_LIST.length - 1) {
+        setActiveTab(TAB_LIST[currentIndex + 1]); // Move to bookingPoi
+      }
+      return;
     }
-  };
-
-  const goBack = () => {
-    const currentIndex = TAB_LIST.indexOf(activeTab);
-    if (currentIndex > 0) {
-      setActiveTab(TAB_LIST[currentIndex - 1]);
+  }
+  
+  // Normal navigation for other tabs
+  if (currentIndex < TAB_LIST.length - 1) {
+    setActiveTab(TAB_LIST[currentIndex + 1]);
+  }
+};
+const goBack = () => {
+  const currentIndex = TAB_LIST.indexOf(activeTab);
+  
+  // If we're on the main visa tab
+  if (activeTab === 'visa') {
+    // Check if we can go back to previous visa subtab
+    const currentSubTabIndex = visaSubTabs.indexOf(activeVisaSubTab);
+    
+    // If current subtab is not the first one
+    if (currentSubTabIndex > 0) {
+      // Move to previous visa subtab
+      setActiveVisaSubTab(visaSubTabs[currentSubTabIndex - 1]);
+      return;
+    } else {
+      // Go back to hotels tab from first visa subtab
+      if (currentIndex > 0) {
+        setActiveTab(TAB_LIST[currentIndex - 1]); // Move to hotels
+      }
+      return;
     }
-  };
+  }
+  
+  // Normal navigation for other tabs
+  if (currentIndex > 0) {
+    setActiveTab(TAB_LIST[currentIndex - 1]);
+  }
+};
 
   const handleCancel = () => {
     navigate('/intl-tours');
@@ -2460,17 +2502,61 @@ const getFileDisplayName = (fileData) => {
 };
 
 
-  const handleSaveClick = () => {
-    if (isLastTab) {
-      if (isEditMode) {
-        updateTour();
-      } else {
-        createTour();
-      }
+const handleSaveClick = () => {
+  if (isLastTab) {
+    if (isEditMode) {
+      updateTour();
     } else {
-      goNext();
+      createTour();
     }
-  };
+  } else {
+    // Check if current visa subtab is complete before moving on
+    if (activeTab === 'visa') {
+      const currentSubTab = activeVisaSubTab;
+      
+      // Check if current subtab has data
+      let isCurrentSubTabComplete = false;
+      
+      switch (currentSubTab) {
+        case 'tourist':
+          isCurrentSubTabComplete = touristVisaItems.length > 0 || touristVisaForm.description.trim() !== '';
+          break;
+        case 'transit':
+          isCurrentSubTabComplete = transitVisaItems.length > 0 || transitVisaForm.description.trim() !== '';
+          break;
+        case 'business':
+          isCurrentSubTabComplete = businessVisaItems.length > 0 || businessVisaForm.description.trim() !== '';
+          break;
+        case 'form':
+          isCurrentSubTabComplete = visaFormItems.some(form => form.action1_file || form.action2_file);
+          break;
+        case 'photo':
+          isCurrentSubTabComplete = photoItems.length > 0 || photoForm.description.trim() !== '';
+          break;
+        case 'fees':
+          isCurrentSubTabComplete = visaFeesRows.some(row => 
+            row.tourist || row.transit || row.business ||
+            row.tourist_charges || row.transit_charges || row.business_charges
+          );
+          break;
+        case 'submission':
+          isCurrentSubTabComplete = submissionRows.some(row => 
+            row.tourist || row.transit || row.business
+          );
+          break;
+        default:
+          isCurrentSubTabComplete = true;
+      }
+      
+      if (!isCurrentSubTabComplete) {
+        setError(`Please complete the "${currentSubTab}" section before proceeding`);
+        return;
+      }
+    }
+    
+    goNext();
+  }
+};
 
   // ========================
   // RENDER
@@ -4705,13 +4791,17 @@ const getFileDisplayName = (fileData) => {
                 </Button>
               )}
 
-              <Button
-                variant="primary"
-                onClick={handleSaveClick}
-                disabled={loading}
-              >
-                {loading ? 'Saving...' : isLastTab ? (isEditMode ? 'Update All' : 'Save All') : 'Save & Continue'}
-              </Button>
+     {/* Update the Save & Continue button text in visa tab */}
+<Button
+  variant="primary"
+  onClick={handleSaveClick}
+  disabled={loading}
+>
+  {loading ? 'Saving...' : 
+   isLastTab ? (isEditMode ? 'Update All' : 'Save All') : 
+   activeTab === 'visa' ? `Save & Next (${visaSubTabs.indexOf(activeVisaSubTab) + 1}/${visaSubTabs.length})` : 
+   'Save & Continue'}
+</Button>
             </div>
           </Card.Body>
         </Card>
