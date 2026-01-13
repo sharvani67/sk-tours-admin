@@ -2749,153 +2749,134 @@ useEffect(() => {
               </Tab>
 
               <Tab eventKey="hotels" title="Hotels">
-                <Row className="align-items-end">
-                  <Col md={3}>
-                    <Form.Group>
-                      <Form.Label>City *</Form.Label>
-                      <Form.Control
-                        type="text"
-                        name="city"
-                        value={hotelItem.city}
-                        onChange={handleHotelChange}
-                      />
-                    </Form.Group>
-                  </Col>
-
-                  <Col md={3}>
-                    <Form.Group>
-                      <Form.Label>Hotel Name *</Form.Label>
-                      <Form.Control
-                        type="text"
-                        name="hotel_name"
-                        value={hotelItem.hotel_name}
-                        onChange={handleHotelChange}
-                      />
-                    </Form.Group>
-                  </Col>
-
-                  <Col md={2}>
-                    <Form.Group>
-                      <Form.Label>Standard</Form.Label>
-                      <Form.Control
-                        type="number"
-                        name="hotel_standard"
-                        value={hotelItem.hotel_standard}
-                        onChange={handleHotelChange}
-                      />
-                    </Form.Group>
-                  </Col>
-                  <Col md={2}>
-                    <Form.Group>
-                      <Form.Label>Deluxe</Form.Label>
-                      <Form.Control
-                        type="number"
-                        name="hotel_deluxe"
-                        value={hotelItem.hotel_deluxe}
-                        onChange={handleHotelChange}
-                      />
-                    </Form.Group>
-                  </Col>
-                  <Col md={2}>
-                    <Form.Group>
-                      <Form.Label>Executive</Form.Label>
-                      <Form.Control
-                        type="number"
-                        name="hotel_executive"
-                        value={hotelItem.hotel_executive}
-                        onChange={handleHotelChange}
-                      />
-                    </Form.Group>
-                  </Col>
-
-                  <Col md={3}>
-                    <Form.Group>
-                      <Form.Label>Room Type</Form.Label>
-                      <Form.Control
-                        type="text"
-                        name="room_type"
-                        value={hotelItem.room_type}
-                        onChange={handleHotelChange}
-                      />
-                    </Form.Group>
-                  </Col>
-
-                  <Col md={2}>
-                    <Form.Group>
-                      <Form.Label>Nights</Form.Label>
-                      <Form.Control
-                        type="number"
-                        name="nights"
-                        value={hotelItem.nights}
-                        onChange={handleHotelChange}
-                      />
-                    </Form.Group>
-                  </Col>
-                </Row>
-
-                <Form.Group className="mt-3">
-                  <Form.Label>Hotel Remarks</Form.Label>
-                  <Form.Control
-                    as="textarea"
-                    rows={3}
-                    name="hotel_remarks"
-                    value={formData.hotel_remarks}
-                    onChange={handleBasicChange}
-                  />
-                </Form.Group>
-
-                {hotelRows.length > 0 && (
-                  <Table striped bordered hover size="sm" className="mt-3">
-                    <thead>
-                      <tr>
-                        <th>#</th>
-                        <th>City</th>
-                        <th>Hotel</th>
-                        <th>Room</th>
-                        <th>Nights</th>
-                        <th>Standard</th>
-                        <th>Deluxe</th>
-                        <th>Executive</th>
-                        <th>Action</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {hotelRows.map((h, idx) => (
-                        <tr key={idx}>
-                          <td>{idx + 1}</td>
-                          <td>{h.city}</td>
-                          <td>{h.hotel_name}</td>
-                          <td>{h.room_type}</td>
-                          <td>{h.nights}</td>
-                          <td>{h.hotel_standard}</td>
-                          <td>{h.hotel_deluxe}</td>
-                          <td>{h.hotel_executive}</td>
-                          <td>
-                            <div className="d-flex gap-1">
-                              <Button
-                                variant="outline-warning"
-                                size="sm"
-                                onClick={() => editHotelRow(idx)}
-                                title="Edit"
-                              >
-                                <Pencil size={14} />
-                              </Button>
-                              <Button
-                                variant="outline-danger"
-                                size="sm"
-                                onClick={() => removeHotelRow(idx)}
-                                title="Remove"
-                              >
-                                <Trash size={14} />
-                              </Button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </Table>
-                )}
-              </Tab>
+                                                                   <Row className="align-items-end">
+                                                                     <Col md={6}>
+                                                                       <Form.Group>
+                                                                         <Form.Label>City *</Form.Label>
+                                                                         <Form.Control
+                                                                           type="text"
+                                                                           name="city"
+                                                                           value={hotelItem.city}
+                                                                           onChange={handleHotelChange}
+                                                                           placeholder="Enter city name"
+                                                                         />
+                                                                       </Form.Group>
+                                                                     </Col>
+                                                   
+                                                                      <Col md={6}>
+                                                                       <Form.Group>
+                                                                         <Form.Label>Nights</Form.Label>
+                                                                         <Form.Control
+                                                                           type="number"
+                                                                           name="nights"
+                                                                           value={hotelItem.nights}
+                                                                           onChange={handleHotelChange}
+                                                                         />
+                                                                       </Form.Group>
+                                                                     </Col>
+                                                    
+                                                                      <Col md={4}>
+                                                                       <Form.Group className="mt-3">
+                                                                         <Form.Label>Standard Hotel Name</Form.Label>
+                                                                         <Form.Control
+                                                                           type="text"
+                                                                           name="standard_hotel_name"
+                                                                           value={hotelItem.standard_hotel_name}
+                                                                           onChange={handleHotelChange}
+                                                                           placeholder="Enter standard hotel name"
+                                                                         />
+                                                                       </Form.Group>
+                                                                     </Col>
+                                                   
+                                                                      <Col md={4}>
+                                                                       <Form.Group className="mt-3">
+                                                                         <Form.Label>Deluxe Hotel Name</Form.Label>
+                                                                         <Form.Control
+                                                                           type="text"
+                                                                           name="deluxe_hotel_name"
+                                                                           value={hotelItem.deluxe_hotel_name}
+                                                                           onChange={handleHotelChange}
+                                                                            placeholder="Enter deluxe hotel name"
+                                                                         />
+                                                                       </Form.Group>
+                                                                     </Col>
+                                                   
+                                                                      <Col md={4}>
+                                                                       <Form.Group className="mt-3">
+                                                                         <Form.Label>Executive Hotel Name</Form.Label>
+                                                                         <Form.Control
+                                                                           type="text"
+                                                                           name="executive_hotel_name"
+                                                                           value={hotelItem.executive_hotel_name}
+                                                                           onChange={handleHotelChange}
+                                                                            placeholder="Enter executive hotel name"
+                                                                         />
+                                                                       </Form.Group>
+                                                                     </Col>
+                                                   
+                                                                   </Row>
+                                                   
+                                                                   <Form.Group className="mt-3">
+                                                                     <Form.Label>Hotel Remarks</Form.Label>
+                                                                     <Form.Control
+                                                                       as="textarea"
+                                                                       rows={3}
+                                                                       name="hotel_remarks"
+                                                                       value={formData.hotel_remarks}
+                                                                       onChange={handleBasicChange}
+                                                                     />
+                                                                   </Form.Group>
+                                                   
+                                                                   {hotelRows.length > 0 && (
+                                                                     <Table striped bordered hover size="sm" className="mt-3">
+                                                                       <thead>
+                                                                         <tr>
+                                                                           <th>#</th>
+                                                                           <th>City</th>
+                                                                            <th>Nights</th>
+                                                                             <th>Standard Hotel</th>
+                                                                              <th>Deluxe Hotel</th>
+                                                                               <th>Executive Hotel</th>
+                                                                              {/* <th>Remarks</th> */}
+                                                                           <th>Action</th>
+                                                                         </tr>
+                                                                       </thead>
+                                                                       <tbody>
+                                                                         {hotelRows.map((h, idx) => (
+                                                                           <tr key={idx}>
+                                                                             <td>{idx + 1}</td>
+                                                                             <td>{h.city}</td>
+                                                                             <td>{h.nights}</td>
+                                                                             <td>{h.standard_hotel_name || '-'}</td>
+                                                                             <td>{h.deluxe_hotel_name || '-'}</td>
+                                                                             <td>{h.executive_hotel_name || '-'}</td>
+                                                                             {/* <td>{h.remarks || '-'}</td> */}
+                                                                             <td>
+                                                                               <div className="d-flex gap-1">
+                                                                                 <Button
+                                                                                   variant="outline-warning"
+                                                                                   size="sm"
+                                                                                   onClick={() => editHotelRow(idx)}
+                                                                                   title="Edit"
+                                                                                 >
+                                                                                   <Pencil size={14} />
+                                                                                 </Button>
+                                                                                 <Button
+                                                                                   variant="outline-danger"
+                                                                                   size="sm"
+                                                                                   onClick={() => removeHotelRow(idx)}
+                                                                                   title="Remove"
+                                                                                 >
+                                                                                   <Trash size={14} />
+                                                                                 </Button>
+                                                                               </div>
+                                                                             </td>
+                                                                           </tr>
+                                                                         ))}
+                                                                       </tbody>
+                                                                     </Table>
+                                             )}
+                             </Tab>
 
               <Tab eventKey="bookingPoi" title="Booking POI">
                 <Form.Group className="mb-3">
