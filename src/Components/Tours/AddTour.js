@@ -51,6 +51,8 @@ const AddTour = () => {
   const [editingType, setEditingType] = useState('');
   const [editIndex, setEditIndex] = useState(-1);
 
+
+
   // Dropdowns
   const [categories, setCategories] = useState([]);
   const [destinations, setDestinations] = useState([]);
@@ -200,235 +202,238 @@ const [replacementPreview, setReplacementPreview] = useState(null);
   // EDIT FUNCTIONS - FIXED
   // ========================
 
-  // Edit itinerary - FIXED: Only sets form for editing, doesn't remove from list
-  const editItinerary = (idx) => {
-    const item = itineraries[idx];
-    const mealsArray = item.meals ? item.meals.split(', ') : [];
-    setItineraryItem({
-      day: item.day,
-      title: item.title,
-      description: item.description || '',
-      meals: {
-        breakfast: mealsArray.includes('Breakfast'),
-        lunch: mealsArray.includes('Lunch'),
-        dinner: mealsArray.includes('Dinner')
-      }
-    });
-    // Set editing context
-    setEditingItem(item);
-    setEditingType('itinerary');
-    setEditIndex(idx);
-  };
+  // Edit itinerary
+const editItinerary = (idx) => {
+  const item = itineraries[idx];
+  const mealsArray = item.meals ? item.meals.split(', ') : [];
+  setItineraryItem({
+    day: item.day,
+    title: item.title,
+    description: item.description || '',
+    meals: {
+      breakfast: mealsArray.includes('Breakfast'),
+      lunch: mealsArray.includes('Lunch'),
+      dinner: mealsArray.includes('Dinner')
+    }
+  });
+  setEditingItem(item);
+  setEditingType('itinerary');
+  setEditIndex(idx);
+};
 
-  // Edit departure - FIXED
-  const editDeparture = (idx) => {
-    const departure = departures[idx];
-    setDepartureForm(departure);
-    setEditingItem(departure);
-    setEditingType('departure');
-    setEditIndex(idx);
-  };
+// Edit departure
+const editDeparture = (idx) => {
+  const departure = departures[idx];
+  setDepartureForm(departure);
+  setEditingItem(departure);
+  setEditingType('departure');
+  setEditIndex(idx);
+};
 
-  // Edit cost row - FIXED
-  const editCostRow = (idx) => {
-    const item = tourCosts[idx];
-    setTourCostItem(item);
-    setEditingItem(item);
-    setEditingType('cost');
-    setEditIndex(idx);
-  };
+// Edit cost row
+const editCostRow = (idx) => {
+  const item = tourCosts[idx];
+  setTourCostItem(item);
+  setEditingItem(item);
+  setEditingType('cost');
+  setEditIndex(idx);
+};
 
-  // Edit optional tour - FIXED
-  const editOptionalTourRow = (idx) => {
-    const item = optionalTours[idx];
-    setOptionalTourItem(item);
-    setEditingItem(item);
-    setEditingType('optionalTour');
-    setEditIndex(idx);
-  };
+// Edit optional tour
+const editOptionalTourRow = (idx) => {
+  const item = optionalTours[idx];
+  setOptionalTourItem(item);
+  setEditingItem(item);
+  setEditingType('optionalTour');
+  setEditIndex(idx);
+};
 
-  // Edit hotel row - FIXED
-  const editHotelRow = (idx) => {
-    const item = hotelRows[idx];
-    setHotelItem(item);
-    setEditingItem(item);
-    setEditingType('hotel');
-    setEditIndex(idx);
-  };
+// Edit hotel row (already exists but needs context)
+const editHotelRow = (idx) => {
+  const item = hotelRows[idx];
+  setHotelItem(item);
+  setEditingItem(item);
+  setEditingType('hotel');
+  setEditIndex(idx);
+};
 
-  // Edit transport row - FIXED
-  const editTransportRow = (idx) => {
-    const item = transports[idx];
-    setTransportItem(item);
-    setEditingItem(item);
-    setEditingType('transport');
-    setEditIndex(idx);
-  };
+// Edit transport row
+const editTransportRow = (idx) => {
+  const item = transports[idx];
+  setTransportItem(item);
+  setEditingItem(item);
+  setEditingType('transport');
+  setEditIndex(idx);
+};
 
-  // Edit inclusion - FIXED
-  const editInclusion = (idx) => {
-    const inclusion = inclusions[idx];
-    setInclusionText(inclusion);
-    setEditingItem(inclusion);
-    setEditingType('inclusion');
-    setEditIndex(idx);
-  };
+// Edit inclusion
+const editInclusion = (idx) => {
+  const inclusion = inclusions[idx];
+  setInclusionText(inclusion);
+  setEditingItem(inclusion);
+  setEditingType('inclusion');
+  setEditIndex(idx);
+};
 
-  // Edit exclusion - FIXED
-  const editExclusion = (idx) => {
-    const exclusion = exclusions[idx];
-    setExclusionText(exclusion);
-    setEditingItem(exclusion);
-    setEditingType('exclusion');
-    setEditIndex(idx);
-  };
+// Edit exclusion
+const editExclusion = (idx) => {
+  const exclusion = exclusions[idx];
+  setExclusionText(exclusion);
+  setEditingItem(exclusion);
+  setEditingType('exclusion');
+  setEditIndex(idx);
+};
 
-  // Edit POI - FIXED
-  const editPoi = (idx) => {
-    const poi = bookingPois[idx];
-    setPoiText(poi.item);
-    setPoiAmount(poi.amount_details);
-    setEditingItem(poi);
-    setEditingType('poi');
-    setEditIndex(idx);
-  };
+// Edit POI
+const editPoi = (idx) => {
+  const poi = bookingPois[idx];
+  setPoiText(poi.item);
+  setPoiAmount(poi.amount_details);
+  setEditingItem(poi);
+  setEditingType('poi');
+  setEditIndex(idx);
+};
 
-  // Edit cancel policy - FIXED
-  const editCancelRow = (idx) => {
-    const policy = cancelPolicies[idx];
-    setCancelItem(policy);
-    setEditingItem(policy);
-    setEditingType('cancellation');
-    setEditIndex(idx);
-  };
+// Edit cancellation policy
+const editCancelRow = (idx) => {
+  const policy = cancelPolicies[idx];
+  setCancelItem(policy);
+  setEditingItem(policy);
+  setEditingType('cancellation');
+  setEditIndex(idx);
+};
 
-  // Edit instruction - FIXED
-  const editInstruction = (idx) => {
-    const instruction = instructions[idx];
-    setInstructionText(instruction);
-    setEditingItem(instruction);
-    setEditingType('instruction');
-    setEditIndex(idx);
-  };
+// Edit instruction
+const editInstruction = (idx) => {
+  const instruction = instructions[idx];
+  setInstructionText(instruction);
+  setEditingItem(instruction);
+  setEditingType('instruction');
+  setEditIndex(idx);
+};
 
   // ========================
   // ADD FUNCTIONS - FIXED
   // ========================
 
-  const handleAddItinerary = () => {
-    const { day, title, description, meals } = itineraryItem;
-    if (!day || !title.trim()) return;
+// Update handleAddItinerary function
+const handleAddItinerary = () => {
+  const { day, title, description, meals } = itineraryItem;
+  if (!day || !title.trim()) return;
 
-    const selectedMeals = [];
-    if (meals.breakfast) selectedMeals.push('Breakfast');
-    if (meals.lunch) selectedMeals.push('Lunch');
-    if (meals.dinner) selectedMeals.push('Dinner');
-    const mealsString = selectedMeals.join(', ');
+  const selectedMeals = [];
+  if (meals.breakfast) selectedMeals.push('Breakfast');
+  if (meals.lunch) selectedMeals.push('Lunch');
+  if (meals.dinner) selectedMeals.push('Dinner');
+  const mealsString = selectedMeals.join(', ');
 
-    const newItem = {
-      day: Number(day),
-      title: title.trim(),
-      description: description.trim(),
-      meals: mealsString
-    };
-
-    if (editingType === 'itinerary' && editIndex !== -1) {
-      // Update existing item
-      const updated = [...itineraries];
-      updated[editIndex] = newItem;
-      setItineraries(updated);
-    } else {
-      // Add new item
-      setItineraries(prev => [...prev, newItem]);
-    }
-
-    // Reset form
-    setItineraryItem({
-      day: '',
-      title: '',
-      description: '',
-      meals: { breakfast: false, lunch: false, dinner: false }
-    });
-    resetEditing();
+  const newItem = {
+    day: Number(day),
+    title: title.trim(),
+    description: description.trim(),
+    meals: mealsString
   };
 
-  const handleAddDeparture = () => {
-    if (!departureForm.description.trim()) return;
-    
-    const newItem = { ...departureForm };
-    
-    if (editingType === 'departure' && editIndex !== -1) {
-      const updated = [...departures];
-      updated[editIndex] = newItem;
-      setDepartures(updated);
-    } else {
-      setDepartures(prev => [...prev, newItem]);
-    }
+  if (editingType === 'itinerary' && editIndex !== -1) {
+    // Update existing item
+    const updated = [...itineraries];
+    updated[editIndex] = newItem;
+    setItineraries(updated);
+  } else {
+    // Add new item
+    setItineraries(prev => [...prev, newItem]);
+  }
 
-    setDepartureForm({
-      departure_date: '',
-      return_date: '',
-      adult_price: '',
-      child_price: '',
-      infant_price: '',
-      description: '',
-      total_seats: ''
-    });
-    resetEditing();
-  };
+  // Reset form
+  setItineraryItem({
+    day: '',
+    title: '',
+    description: '',
+    meals: { breakfast: false, lunch: false, dinner: false }
+  });
+  resetEditing();
+};
 
-  const addCostRow = () => {
-    if (!tourCostItem.pax) return;
-    
-    const newItem = { ...tourCostItem };
-    
-    if (editingType === 'cost' && editIndex !== -1) {
-      const updated = [...tourCosts];
-      updated[editIndex] = newItem;
-      setTourCosts(updated);
-    } else {
-      setTourCosts(prev => [...prev, newItem]);
-    }
-
-    setTourCostItem({
-      pax: '',
-      standard_hotel: '',
-      deluxe_hotel: '',
-      executive_hotel: '',
-      child_with_bed: '',
-      child_no_bed: '',
-      remarks: ''
-    });
-    resetEditing();
-  };
-
-  const addOptionalTourRow = () => {
-    if (!optionalTourItem.tour_name.trim()) return;
-
-    const processedItem = {
-      ...optionalTourItem,
-      adult_price: optionalTourItem.adult_price ? Number(optionalTourItem.adult_price) : '',
-      child_price: optionalTourItem.child_price ? Number(optionalTourItem.child_price) : ''
-    };
-
-    if (editingType === 'optionalTour' && editIndex !== -1) {
-      const updated = [...optionalTours];
-      updated[editIndex] = processedItem;
-      setOptionalTours(updated);
-    } else {
-      setOptionalTours(prev => [...prev, processedItem]);
-    }
-
-    setOptionalTourItem({
-      tour_name: '',
-      adult_price: '',
-      child_price: ''
-    });
-    resetEditing();
-  };
-
+// Update handleAddDeparture function
+const handleAddDeparture = () => {
+  if (!departureForm.description.trim()) return;
   
-  const addHotelRow = () => {
+  const newItem = { ...departureForm };
+  
+  if (editingType === 'departure' && editIndex !== -1) {
+    const updated = [...departures];
+    updated[editIndex] = newItem;
+    setDepartures(updated);
+  } else {
+    setDepartures(prev => [...prev, newItem]);
+  }
+
+  setDepartureForm({
+    departure_date: '',
+    return_date: '',
+    adult_price: '',
+    child_price: '',
+    infant_price: '',
+    description: '',
+    total_seats: ''
+  });
+  resetEditing();
+};
+
+// Update addCostRow function
+const addCostRow = () => {
+  if (!tourCostItem.pax) return;
+  
+  const newItem = { ...tourCostItem };
+  
+  if (editingType === 'cost' && editIndex !== -1) {
+    const updated = [...tourCosts];
+    updated[editIndex] = newItem;
+    setTourCosts(updated);
+  } else {
+    setTourCosts(prev => [...prev, newItem]);
+  }
+
+  setTourCostItem({
+    pax: '',
+    standard_hotel: '',
+    deluxe_hotel: '',
+    executive_hotel: '',
+    child_with_bed: '',
+    child_no_bed: '',
+    remarks: ''
+  });
+  resetEditing();
+};
+
+// Update addOptionalTourRow function
+const addOptionalTourRow = () => {
+  if (!optionalTourItem.tour_name.trim()) return;
+
+  const processedItem = {
+    ...optionalTourItem,
+    adult_price: optionalTourItem.adult_price ? Number(optionalTourItem.adult_price) : '',
+    child_price: optionalTourItem.child_price ? Number(optionalTourItem.child_price) : ''
+  };
+
+  if (editingType === 'optionalTour' && editIndex !== -1) {
+    const updated = [...optionalTours];
+    updated[editIndex] = processedItem;
+    setOptionalTours(updated);
+  } else {
+    setOptionalTours(prev => [...prev, processedItem]);
+  }
+
+  setOptionalTourItem({
+    tour_name: '',
+    adult_price: '',
+    child_price: ''
+  });
+  resetEditing();
+};
+
+// Update addHotelRow function
+const addHotelRow = () => {
   if (!hotelItem.city.trim()) return;
   
   if (editingType === 'hotel' && editIndex !== -1) {
@@ -442,128 +447,136 @@ const [replacementPreview, setReplacementPreview] = useState(null);
   setHotelItem({
     city: '',
     nights: '',
-      standard_hotel_name: '', 
+    standard_hotel_name: '', 
     deluxe_hotel_name: '',   
-    executive_hotel_name: '', 
+    executive_hotel_name: '',
     remarks: ''
   });
   resetEditing();
 };
 
+// Update addTransportRow function
+const addTransportRow = () => {
+  if (!transportItem.description.trim()) return;
+  
+  if (editingType === 'transport' && editIndex !== -1) {
+    const updated = [...transports];
+    updated[editIndex] = { ...transportItem };
+    setTransports(updated);
+  } else {
+    setTransports(prev => [...prev, { ...transportItem }]);
+  }
 
-  const addTransportRow = () => {
-    if (!transportItem.description.trim()) return;
-    
-    if (editingType === 'transport' && editIndex !== -1) {
-      const updated = [...transports];
-      updated[editIndex] = { ...transportItem };
-      setTransports(updated);
-    } else {
-      setTransports(prev => [...prev, { ...transportItem }]);
-    }
+  setTransportItem({
+    mode: '',
+    from_city: '',
+    to_city: '',
+    carrier: '',
+    number_code: '',
+    departure_datetime: '',
+    arrival_datetime: '',
+    description: '',
+    remarks: ''
+  });
+  resetEditing();
+};
 
-    setTransportItem({
-      mode: '',
-      from_city: '',
-      to_city: '',
-      carrier: '',
-      number_code: '',
-      departure_datetime: '',
-      arrival_datetime: '',
-      description: '',
-      remarks: ''
-    });
-    resetEditing();
-  };
+// Update handleAddInclusion function
+const handleAddInclusion = () => {
+  const trimmed = inclusionText.trim();
+  if (!trimmed) return;
+  
+  if (editingType === 'inclusion' && editIndex !== -1) {
+    const updated = [...inclusions];
+    updated[editIndex] = trimmed;
+    setInclusions(updated);
+  } else {
+    setInclusions(prev => [...prev, trimmed]);
+  }
+  
+  setInclusionText('');
+  resetEditing();
+};
 
-  const handleAddInclusion = () => {
-    const trimmed = inclusionText.trim();
-    if (!trimmed) return;
-    
-    if (editingType === 'inclusion' && editIndex !== -1) {
-      const updated = [...inclusions];
-      updated[editIndex] = trimmed;
-      setInclusions(updated);
-    } else {
-      setInclusions(prev => [...prev, trimmed]);
-    }
-    
-    setInclusionText('');
-    resetEditing();
-  };
+// Update handleAddExclusion function
+const handleAddExclusion = () => {
+  const trimmed = exclusionText.trim();
+  if (!trimmed) return;
+  
+  if (editingType === 'exclusion' && editIndex !== -1) {
+    const updated = [...exclusions];
+    updated[editIndex] = trimmed;
+    setExclusions(updated);
+  } else {
+    setExclusions(prev => [...prev, trimmed]);
+  }
+  
+  setExclusionText('');
+  resetEditing();
+};
 
-  const handleAddExclusion = () => {
-    const trimmed = exclusionText.trim();
-    if (!trimmed) return;
-    
-    if (editingType === 'exclusion' && editIndex !== -1) {
-      const updated = [...exclusions];
-      updated[editIndex] = trimmed;
-      setExclusions(updated);
-    } else {
-      setExclusions(prev => [...prev, trimmed]);
-    }
-    
-    setExclusionText('');
-    resetEditing();
-  };
+// Update addPoi function
+const addPoi = () => {
+  const txt = poiText.trim();
+  if (!txt) return;
+  
+  const newPoi = { item: poiText, amount_details: poiAmount };
+  
+  if (editingType === 'poi' && editIndex !== -1) {
+    const updated = [...bookingPois];
+    updated[editIndex] = newPoi;
+    setBookingPois(updated);
+  } else {
+    setBookingPois([...bookingPois, newPoi]);
+  }
+  
+  setPoiText('');
+  setPoiAmount("");
+  resetEditing();
+};
 
-  const addPoi = () => {
-    const txt = poiText.trim();
-    if (!txt) return;
-    
-    const newPoi = { item: poiText, amount_details: poiAmount };
-    
-    if (editingType === 'poi' && editIndex !== -1) {
-      const updated = [...bookingPois];
-      updated[editIndex] = newPoi;
-      setBookingPois(updated);
-    } else {
-      setBookingPois([...bookingPois, newPoi]);
-    }
-    
-    setPoiText('');
-    setPoiAmount("");
-    resetEditing();
-  };
+// Update addCancelRow function
+const addCancelRow = () => {
+  if (!cancelItem.cancellation_policy.trim()) return;
+  
+  if (editingType === 'cancellation' && editIndex !== -1) {
+    const updated = [...cancelPolicies];
+    updated[editIndex] = { ...cancelItem };
+    setCancelPolicies(updated);
+  } else {
+    setCancelPolicies(prev => [...prev, { ...cancelItem }]);
+  }
+  
+  setCancelItem({ cancellation_policy: "", charges: "" });
+  resetEditing();
+};
 
-  const addCancelRow = () => {
-    if (!cancelItem.cancellation_policy.trim()) return;
-    
-    if (editingType === 'cancellation' && editIndex !== -1) {
-      const updated = [...cancelPolicies];
-      updated[editIndex] = { ...cancelItem };
-      setCancelPolicies(updated);
-    } else {
-      setCancelPolicies(prev => [...prev, { ...cancelItem }]);
-    }
-    
-    setCancelItem({ cancellation_policy: "", charges: "" });
-    resetEditing();
-  };
+// Update addInstruction function
+const addInstruction = () => {
+  const txt = instructionText.trim();
+  if (!txt) return;
+  
+  if (editingType === 'instruction' && editIndex !== -1) {
+    const updated = [...instructions];
+    updated[editIndex] = txt;
+    setInstructions(updated);
+  } else {
+    setInstructions(prev => [...prev, txt]);
+  }
+  
+  setInstructionText('');
+  resetEditing();
+};
 
-  const addInstruction = () => {
-    const txt = instructionText.trim();
-    if (!txt) return;
-    
-    if (editingType === 'instruction' && editIndex !== -1) {
-      const updated = [...instructions];
-      updated[editIndex] = txt;
-      setInstructions(updated);
-    } else {
-      setInstructions(prev => [...prev, txt]);
-    }
-    
-    setInstructionText('');
-    resetEditing();
-  };
+
 
   // Reset editing context
-  const resetEditing = () => {
-    setEditingItem(null);
-    setEditingType('');
-    setEditIndex(-1);
-  };
+   // Reset editing context function
+const resetEditing = () => {
+  setEditingItem(null);
+  setEditingType('');
+  setEditIndex(-1);
+};
 
   // ========================
   // REMOVE FUNCTIONS
@@ -1523,83 +1536,83 @@ useEffect(() => {
 }, [replacementPreview]);
 
 
-  const handleSaveClick = () => {
-    if (isLastTab) {
-      if (isEditMode) {
-        updateTour();
-      } else {
-        createTour();
-      }
+ const handleSaveClick = () => {
+  if (isLastTab) {
+    if (isEditMode) {
+      updateTour();
     } else {
-      goNext();
+      createTour();
     }
-  };
+  } else {
+    goNext();
+  }
+};
 
   // ========================
   // RENDER
   // ========================
 
-  const getAddConfigForTab = (tabKey) => {
-    switch (tabKey) {
-      case 'itineraries':
-        return { 
-          label: editingType === 'itinerary' ? 'Update Day' : '+ Add Day', 
-          onClick: handleAddItinerary 
-        };
-      case 'departures':
-        return { 
-          label: editingType === 'departure' ? 'Update Departure' : '+ Add Departure', 
-          onClick: handleAddDeparture 
-        };
-      case 'costs':
-        return { 
-          label: editingType === 'cost' ? 'Update Cost Row' : '+ Add Cost Row', 
-          onClick: addCostRow 
-        };
-      case 'optionalTours':
-        return { 
-          label: editingType === 'optionalTour' ? 'Update Optional Tour' : '+ Add Optional Tour', 
-          onClick: addOptionalTourRow 
-        };
-      case 'inclusions':
-        return { 
-          label: editingType === 'inclusion' ? 'Update Inclusion' : '+ Add Inclusion', 
-          onClick: handleAddInclusion 
-        };
-      case 'exclusions':
-        return { 
-          label: editingType === 'exclusion' ? 'Update Exclusion' : '+ Add Exclusion', 
-          onClick: handleAddExclusion 
-        };
-      case 'transport':
-        return { 
-          label: editingType === 'transport' ? 'Update Flight' : '+ Add Flight', 
-          onClick: addTransportRow 
-        };
-      case 'hotels':
-        return { 
-          label: editingType === 'hotel' ? 'Update Hotel' : '+ Add Hotel', 
-          onClick: addHotelRow 
-        };
-      case 'bookingPoi':
-        return { 
-          label: editingType === 'poi' ? 'Update Booking Policy' : '+ Add Booking Policy', 
-          onClick: addPoi 
-        };
-      case 'cancellation':
-        return { 
-          label: editingType === 'cancellation' ? 'Update Cancellation Policy' : '+ Add Cancellation Policy', 
-          onClick: addCancelRow 
-        };
-      case 'instructions':
-        return { 
-          label: editingType === 'instruction' ? 'Update Instruction' : '+ Add Instruction', 
-          onClick: addInstruction 
-        };
-      default:
-        return null;
-    }
-  };
+ const getAddConfigForTab = (tabKey) => {
+  switch (tabKey) {
+    case 'itineraries':
+      return { 
+        label: editingType === 'itinerary' ? 'Update Day' : '+ Add Day', 
+        onClick: handleAddItinerary 
+      };
+    case 'departures':
+      return { 
+        label: editingType === 'departure' ? 'Update Departure' : '+ Add Departure', 
+        onClick: handleAddDeparture 
+      };
+    case 'costs':
+      return { 
+        label: editingType === 'cost' ? 'Update Cost Row' : '+ Add Cost Row', 
+        onClick: addCostRow 
+      };
+    case 'optionalTours':
+      return { 
+        label: editingType === 'optionalTour' ? 'Update Optional Tour' : '+ Add Optional Tour', 
+        onClick: addOptionalTourRow 
+      };
+    case 'inclusions':
+      return { 
+        label: editingType === 'inclusion' ? 'Update Inclusion' : '+ Add Inclusion', 
+        onClick: handleAddInclusion 
+      };
+    case 'exclusions':
+      return { 
+        label: editingType === 'exclusion' ? 'Update Exclusion' : '+ Add Exclusion', 
+        onClick: handleAddExclusion 
+      };
+    case 'transport':
+      return { 
+        label: editingType === 'transport' ? 'Update Flight' : '+ Add Flight', 
+        onClick: addTransportRow 
+      };
+    case 'hotels':
+      return { 
+        label: editingType === 'hotel' ? 'Update Hotel' : '+ Add Hotel', 
+        onClick: addHotelRow 
+      };
+    case 'bookingPoi':
+      return { 
+        label: editingType === 'poi' ? 'Update Booking Policy' : '+ Add Booking Policy', 
+        onClick: addPoi 
+      };
+    case 'cancellation':
+      return { 
+        label: editingType === 'cancellation' ? 'Update Cancellation Policy' : '+ Add Cancellation Policy', 
+        onClick: addCancelRow 
+      };
+    case 'instructions':
+      return { 
+        label: editingType === 'instruction' ? 'Update Instruction' : '+ Add Instruction', 
+        onClick: addInstruction 
+      };
+    default:
+      return null;
+  }
+};
 
   const addConfig = getAddConfigForTab(activeTab);
   
@@ -2325,7 +2338,7 @@ useEffect(() => {
                 )}
               </Tab>
 
-              <Tab eventKey="transport" title="Flights">
+              <Tab eventKey="flights" title="Flights">
                 <Row className="mt-3">
                   <Col md={12}>
                     <Form.Group>
