@@ -48,7 +48,8 @@ const AddLadiesTour = () => {
     transport_remarks: "",
     booking_poi_remarks: "",
     cancellation_remarks: "",
-    emi_remarks: ""
+    emi_remarks: "",
+    optional_tour_remarks: "" // ← ADD THIS LINE
   });
 
 
@@ -1334,7 +1335,8 @@ const cancelEditImage = () => {
           transport_remarks: basic.transport_remarks || '',
           booking_poi_remarks: basic.booking_poi_remarks || '',
           cancellation_remarks: basic.cancellation_remarks || '',
-          emi_remarks: basic.emi_remarks || ''
+          emi_remarks: basic.emi_remarks || '',
+            optional_tour_remarks: basic.optional_tour_remarks || '' // ← ADD THIS LINE
         });
 
         // Set itineraries
@@ -1997,7 +1999,9 @@ const goBack = () => {
         transport_remarks: formData.transport_remarks || '',
         emi_remarks: formData.emi_remarks || '',
         booking_poi_remarks: formData.booking_poi_remarks || '',
-        cancellation_remarks: formData.cancellation_remarks || ''
+        cancellation_remarks: formData.cancellation_remarks || '',
+        
+  optional_tour_remarks: formData.optional_tour_remarks || '' // ← ADD THIS LINE
       };
 
       console.log('Updating tour with data:', tourUpdateData);
@@ -2269,7 +2273,10 @@ const createTour = async () => {
       const tourRes = await fetch(`${baseurl}/api/tours`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
+        body: JSON.stringify({
+    ...formData,
+    optional_tour_remarks: formData.optional_tour_remarks || '' // ← ADD THIS LINE
+  })
       });
 
       if (!tourRes.ok) {
@@ -2646,12 +2653,12 @@ const handleSaveClick = () => {
       
         case 'bookingPoi':
         return { 
-          label: editingType === 'poi' ? 'Update POI' : '+ Add POI', 
+          label: editingType === 'poi' ? 'Update Booking Policy' : '+ Add Booking Policy', 
           onClick: addPoi 
         };
       case 'cancellation':
         return { 
-          label: editingType === 'cancellation' ? 'Update Policy' : '+ Add Policy', 
+          label: editingType === 'cancellation' ? 'Update Cancellation Policy' : '+ Add Cancellaton Policy', 
           onClick: addCancelRow 
         };
       case 'instructions':
@@ -2977,7 +2984,7 @@ const handleSaveClick = () => {
                       </Form.Group>
                     </Col>
 
-                    <Col md={12}>
+                    {/* <Col md={12}>
                       <Form.Group className="mb-3">
                         <Form.Label>Description</Form.Label>
                         <Form.Control
@@ -2988,8 +2995,13 @@ const handleSaveClick = () => {
                           placeholder="Optional description"
                         />
                       </Form.Group>
-                    </Col>
+                    </Col> */}
                   </Row>
+                </div>
+              </Tab>
+
+              <Tab eventKey="costs" title="Tour Cost">
+
 
                   {/* 3-Star Hotel Prices */}
                   <Row className="mb-4">
@@ -3222,6 +3234,20 @@ const handleSaveClick = () => {
                     </Col>
                   </Row>
 
+
+                    <Form.Group className="mt-3">
+                  <Form.Label>Cost Remarks</Form.Label>
+                  <Form.Control
+                    as="textarea"
+                    rows={3}
+                    name="cost_remarks"
+                    value={formData.cost_remarks}
+                    onChange={handleBasicChange}
+                  />
+                </Form.Group>
+
+
+
                   {/* Display Added Departures */}
                   {departures.length > 0 && (
                     <div className="mt-4">
@@ -3277,31 +3303,6 @@ const handleSaveClick = () => {
                       </Table>
                     </div>
                   )}
-                </div>
-              </Tab>
-
-              <Tab eventKey="costs" title="Tour Cost">
-                <Form.Group className="mt-3">
-                  <Form.Label>Cost Remarks</Form.Label>
-                  <Form.Control
-                    as="textarea"
-                    rows={3}
-                    name="cost_remarks"
-                    value={formData.cost_remarks}
-                    onChange={handleBasicChange}
-                  />
-                </Form.Group>
-
-                <Form.Group className="mt-3">
-                  <Form.Label>EMI Remarks</Form.Label>
-                  <Form.Control
-                    as="textarea"
-                    rows={3}
-                    name="emi_remarks"
-                    value={formData.emi_remarks}
-                    onChange={handleBasicChange}
-                  />
-                </Form.Group>
               </Tab>
 
               {/* ======== OPTIONAL TOURS ======== */}
@@ -3346,6 +3347,19 @@ const handleSaveClick = () => {
                     </Form.Group>
                   </Col>
                 </Row>
+
+                 {/* ADD THIS FORM GROUP FOR OPTIONAL TOUR REMARKS */}
+  <Form.Group className="mt-3">
+    <Form.Label>Optional Tour Remarks</Form.Label>
+    <Form.Control
+      as="textarea"
+      rows={3}
+      name="optional_tour_remarks"
+      value={formData.optional_tour_remarks || ''}
+      onChange={handleBasicChange}
+      placeholder="Enter any remarks for optional tours..."
+    />
+  </Form.Group>
 
                 {optionalTours.length > 0 && (
                   <Table striped bordered hover size="sm" className="mt-3">
@@ -3461,20 +3475,21 @@ const handleSaveClick = () => {
                   </tbody>
                 </Table>
 
-                <Row className="mt-3">
-                  <Col md={12} className="d-flex justify-content-between align-items-center">
-                    <div>
-                      <small className="text-muted">
-                        <i className="fas fa-info-circle"></i> Fill only the options you want to offer. Leave others empty.
-                      </small>
-                    </div>
-                  </Col>
-                </Row>
+                   <Form.Group className="mt-3">
+                  <Form.Label>EMI Remarks</Form.Label>
+                  <Form.Control
+                    as="textarea"
+                    rows={3}
+                    name="emi_remarks"
+                    value={formData.emi_remarks}
+                    onChange={handleBasicChange}
+                  />
+                </Form.Group>
               </Tab>
 
               <Tab eventKey="inclusions" title="Inclusions">
                 <Form.Group className="mb-3">
-                  <Form.Label>Add Inclusion</Form.Label>
+                  <Form.Label>Inclusion</Form.Label>
                   <Form.Control
                     as="textarea"
                     rows={3}
@@ -3527,7 +3542,7 @@ const handleSaveClick = () => {
 
               <Tab eventKey="exclusions" title="Exclusions">
                 <Form.Group className="mb-3">
-                  <Form.Label>Add Exclusion</Form.Label>
+                  <Form.Label>Exclusion</Form.Label>
                   <Form.Control
                     as="textarea"
                     rows={3}
@@ -3579,7 +3594,7 @@ const handleSaveClick = () => {
               </Tab>
 
               {/* ======== TRANSPORT TAB - LADIES SPECIAL TOUR ======== */}
-              <Tab eventKey="transport" title="Transport">
+              <Tab eventKey="transport" title="Flights">
                 <Row className="mt-3">
                   {/* Airline */}
                   <Col md={4}>
@@ -3700,7 +3715,7 @@ const handleSaveClick = () => {
 
                 {/* ================= TRANSPORT REMARKS ================= */}
                 <Form.Group className="mt-4">
-                  <Form.Label>Transport Remarks</Form.Label>
+                  <Form.Label>Flights Remarks</Form.Label>
                   <Form.Control
                     as="textarea"
                     rows={3}
@@ -3905,7 +3920,7 @@ const handleSaveClick = () => {
                                 {/* Subtab 1: Tourist Visa */}
                                 <Tab eventKey="tourist" title="Tourist Visa">
                                   <Form.Group className="mb-3">
-                                    <Form.Label>Free Flow Entry (Same like departure field)</Form.Label>
+                                    <Form.Label>Toursit Visa Remarks</Form.Label>
                                     <Form.Control
                                       as="textarea"
                                       rows={4}
@@ -3960,7 +3975,7 @@ const handleSaveClick = () => {
                                 {/* Subtab 2: Transit Visa */}
                                 <Tab eventKey="transit" title="Transit Visa">
                                   <Form.Group className="mb-3">
-                                    <Form.Label>Free Flow Entry (Same like departure field)</Form.Label>
+                                    <Form.Label>Transit Visa Remarks</Form.Label>
                                     <Form.Control
                                       as="textarea"
                                       rows={4}
@@ -4015,7 +4030,7 @@ const handleSaveClick = () => {
                                 {/* Subtab 3: Business Visa */}
                                 <Tab eventKey="business" title="Business Visa">
                                   <Form.Group className="mb-3">
-                                    <Form.Label>Free Flow Entry (Same like departure field)</Form.Label>
+                                    <Form.Label>Business Visa Remarks</Form.Label>
                                     <Form.Control
                                       as="textarea"
                                       rows={4}
@@ -4217,8 +4232,8 @@ const handleSaveClick = () => {
     <thead>
       <tr>
         <th>Visa Type</th>
-        <th>Action 1 (Upload PDF)</th>
-        <th>Action 2 (Upload Word)</th>
+        <th>Upload PDF</th>
+        <th>Upload Word</th>
         {/* <th>Action</th> */}
       </tr>
     </thead>
@@ -4405,90 +4420,18 @@ const handleSaveClick = () => {
             onChange={handlePhotoChange}
             placeholder="Type photo requirement description"
           />
-          <Button 
+          {/* <Button 
             variant={editingType === 'photo' ? "warning" : "success"} 
             onClick={addPhoto}
             className="align-self-start"
             disabled={!photoForm.description.trim()}
           >
             {editingType === 'photo' ? 'Update Photo' : '+ Add Photo'}
-          </Button>
+          </Button> */}
         </div>
       </Form.Group>
     </Card.Body>
   </Card>
-
-  {/* Free Flow Entry Section */}
-  {/* <Card className="mb-3">
-    <Card.Body>
-      <Form.Group className="mb-3">
-        <Form.Label>
-          {editingType === 'freeFlowPhoto' ? 'Edit Free Flow Entry' : 'Add Free Flow Entry'}
-          {editingType === 'freeFlowPhoto' && (
-            <span className="badge bg-warning text-dark ms-2">
-              Editing item #{editIndex + 1}
-            </span>
-          )}
-        </Form.Label>
-        <div className="d-flex gap-2">
-          <Form.Control
-            as="textarea"
-            rows={2}
-            value={freeFlowPhotoText}
-            onChange={handleFreeFlowPhotoChange}
-            placeholder="Type free flow entry"
-          />
-          <Button 
-            variant={editingType === 'freeFlowPhoto' ? "warning" : "success"} 
-            onClick={addFreeFlowPhotoEntry}
-            className="align-self-start"
-          >
-            {editingType === 'freeFlowPhoto' ? 'Update Free Flow' : '+ Add Free Flow'}
-          </Button>
-        </div>
-      </Form.Group>
-
-      {freeFlowPhotoEntries.length > 0 && (
-        <Table striped bordered hover size="sm">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Free Flow Entry</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {freeFlowPhotoEntries.map((item, idx) => (
-              <tr key={idx} className={editingType === 'freeFlowPhoto' && editIndex === idx ? 'table-warning' : ''}>
-                <td>{idx + 1}</td>
-                <td>{item.description || '-'}</td>
-                <td>
-                  <div className="d-flex gap-1">
-                    <Button
-                      variant={editingType === 'freeFlowPhoto' && editIndex === idx ? "warning" : "outline-warning"}
-                      size="sm"
-                      onClick={() => editFreeFlowPhotoEntry(idx)}
-                      title="Edit"
-                    >
-                      <Pencil size={14} />
-                    </Button>
-                    <Button
-                      variant="outline-danger"
-                      size="sm"
-                      onClick={() => removeFreeFlowPhotoEntry(idx)}
-                      title="Remove"
-                    >
-                      <Trash size={14} />
-                    </Button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </Table>
-      )}
-    </Card.Body>
-  </Card> */}
 
   {/* Existing Photo Items Table */}
   {photoItems.length > 0 && (
@@ -4546,7 +4489,7 @@ const handleSaveClick = () => {
                                   size="sm" 
                                   onClick={addVisaFeesRow}
                                 >
-                                  + Add Free Flow Entry
+                                  + Add New Visa Fees
                                 </Button>
                               </div>
                               
@@ -4649,7 +4592,7 @@ const handleSaveClick = () => {
                                         size="sm" 
                                         onClick={addSubmissionRow}
                                       >
-                                        + Add Free Flow Entry
+                                        + Add New Submission & Pick Up 
                                       </Button>
                                     </div>
                                     
@@ -4722,11 +4665,11 @@ const handleSaveClick = () => {
                           </Tabs>
                      </Tab>
 
-              <Tab eventKey="bookingPoi" title="Booking POI">
+              <Tab eventKey="bookingPoi" title="Booking Policy">
                 <Form.Group className="mb-3">
                   <Row>
                     <Col md={8}>
-                      <Form.Label>Add POI Item</Form.Label>
+                      <Form.Label>Booking Policy</Form.Label>
                       <Form.Control
                         as="textarea"
                         rows={3}
@@ -4748,7 +4691,7 @@ const handleSaveClick = () => {
                   </Row>
 
                   <Form.Group className="mt-3">
-                    <Form.Label>Booking POI Remarks</Form.Label>
+                    <Form.Label>Booking Policy Remarks</Form.Label>
                     <Form.Control
                       as="textarea"
                       rows={3}

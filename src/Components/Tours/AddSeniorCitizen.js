@@ -76,7 +76,8 @@ const resetEditing = () => {
     transport_remarks: "",
     booking_poi_remarks: "",
     cancellation_remarks: "",
-    emi_remarks: ""
+    emi_remarks: "",
+    optional_tour_remarks: "" // ← ADD THIS LINE
   });
 
   // =======================
@@ -530,7 +531,8 @@ const removeTransportRow = (idx) => {
           transport_remarks: basic.transport_remarks || '',
           booking_poi_remarks: basic.booking_poi_remarks || '',
           cancellation_remarks: basic.cancellation_remarks || '',
-          emi_remarks: basic.emi_remarks || ''
+          emi_remarks: basic.emi_remarks || '',
+           optional_tour_remarks: basic.optional_tour_remarks || '' // ← ADD THIS LINE
         });
 
         // Set itineraries
@@ -1198,7 +1200,8 @@ useEffect(() => {
         transport_remarks: formData.transport_remarks || '',
         emi_remarks: formData.emi_remarks || '',
         booking_poi_remarks: formData.booking_poi_remarks || '',
-        cancellation_remarks: formData.cancellation_remarks || ''
+        cancellation_remarks: formData.cancellation_remarks || '',
+         optional_tour_remarks: formData.optional_tour_remarks || '' // ← ADD THIS LINE
       };
 
       console.log('Updating tour with data:', tourUpdateData);
@@ -1426,7 +1429,10 @@ useEffect(() => {
       const tourRes = await fetch(`${baseurl}/api/tours`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
+        body: JSON.stringify({
+    ...formData,
+    optional_tour_remarks: formData.optional_tour_remarks || '' // ← ADD THIS LINE
+  })
       });
 
       if (!tourRes.ok) {
@@ -1626,16 +1632,16 @@ useEffect(() => {
       case 'exclusions':
         return { label: '+ Add Exclusion', onClick: handleAddExclusion };
       case 'transport':
-        return { label: '+ Add Transport', onClick: addTransportRow };
+        return { label: '+ Add Flights', onClick: addTransportRow };
       case 'hotels':
         return { 
           label: editingType === 'hotel' ? 'Update Hotel' : '+ Add Hotel', 
           onClick: addHotelRow 
         };
       case 'bookingPoi':
-        return { label: '+ Add POI', onClick: addPoi };
+        return { label: '+ Add Booking Policy', onClick: addPoi };
       case 'cancellation':
-        return { label: '+ Add Policy', onClick: addCancelRow };
+        return { label: '+ Add Cancellation Policy', onClick: addCancelRow };
       case 'instructions':
         return { label: '+ Add Instruction', onClick: addInstruction };
       default:
@@ -1961,7 +1967,7 @@ useEffect(() => {
                       </Form.Group>
                     </Col>
 
-                    <Col md={12}>
+                    {/* <Col md={12}>
                       <Form.Group className="mb-3">
                         <Form.Label>Description</Form.Label>
                         <Form.Control
@@ -1972,10 +1978,14 @@ useEffect(() => {
                           placeholder="Optional description"
                         />
                       </Form.Group>
-                    </Col>
+                    </Col> */}
                   </Row>
+                </div>
+              </Tab>
 
-                  {/* 3-Star Hotel Prices */}
+              <Tab eventKey="costs" title="Tour Cost">
+
+                    {/* 3-Star Hotel Prices */}
                   <Row className="mb-4">
                     <h5>3-Star Hotel Prices</h5>
                     <Col md={2}>
@@ -2206,6 +2216,17 @@ useEffect(() => {
                     </Col>
                   </Row>
 
+                   <Form.Group className="mt-3">
+                  <Form.Label>Cost Remarks</Form.Label>
+                  <Form.Control
+                    as="textarea"
+                    rows={3}
+                    name="cost_remarks"
+                    value={formData.cost_remarks}
+                    onChange={handleBasicChange}
+                  />
+                </Form.Group>
+
                   {/* Display Added Departures */}
                   {departures.length > 0 && (
                     <div className="mt-4">
@@ -2261,31 +2282,6 @@ useEffect(() => {
                       </Table>
                     </div>
                   )}
-                </div>
-              </Tab>
-
-              <Tab eventKey="costs" title="Tour Cost">
-                <Form.Group className="mt-3">
-                  <Form.Label>Cost Remarks</Form.Label>
-                  <Form.Control
-                    as="textarea"
-                    rows={3}
-                    name="cost_remarks"
-                    value={formData.cost_remarks}
-                    onChange={handleBasicChange}
-                  />
-                </Form.Group>
-
-                <Form.Group className="mt-3">
-                  <Form.Label>EMI Remarks</Form.Label>
-                  <Form.Control
-                    as="textarea"
-                    rows={3}
-                    name="emi_remarks"
-                    value={formData.emi_remarks}
-                    onChange={handleBasicChange}
-                  />
-                </Form.Group>
               </Tab>
 
               {/* ======== OPTIONAL TOURS ======== */}
@@ -2330,6 +2326,20 @@ useEffect(() => {
                     </Form.Group>
                   </Col>
                 </Row>
+
+
+                  {/* Add this new form group for Optional Tour Remarks */}
+                                <Form.Group className="mt-3">
+                                  <Form.Label>Optional Tour Remarks</Form.Label>
+                                  <Form.Control
+                                    as="textarea"
+                                    rows={3}
+                                    name="optional_tour_remarks"
+                                    value={formData.optional_tour_remarks || ''}
+                                    onChange={handleBasicChange}
+                                    placeholder="Enter any remarks for optional tours..."
+                                  />
+                                </Form.Group>
 
                 {optionalTours.length > 0 && (
                   <Table striped bordered hover size="sm" className="mt-3">
@@ -2445,7 +2455,18 @@ useEffect(() => {
                   </tbody>
                 </Table>
 
-                <Row className="mt-3">
+                   <Form.Group className="mt-3">
+                  <Form.Label>EMI Remarks</Form.Label>
+                  <Form.Control
+                    as="textarea"
+                    rows={3}
+                    name="emi_remarks"
+                    value={formData.emi_remarks}
+                    onChange={handleBasicChange}
+                  />
+                </Form.Group>
+
+                {/* <Row className="mt-3">
                   <Col md={12} className="d-flex justify-content-between align-items-center">
                     <div>
                       <small className="text-muted">
@@ -2453,7 +2474,7 @@ useEffect(() => {
                       </small>
                     </div>
                   </Col>
-                </Row>
+                </Row> */}
               </Tab>
 
               <Tab eventKey="inclusions" title="Inclusions">
@@ -2563,7 +2584,7 @@ useEffect(() => {
               </Tab>
 
               {/* ======== TRANSPORT TAB - SENIOR CITIZEN TOUR ======== */}
-              <Tab eventKey="transport" title="Transport">
+              <Tab eventKey="transport" title="Flights">
                 <Row className="mt-3">
                   {/* Airline */}
                   <Col md={4}>
@@ -2684,7 +2705,7 @@ useEffect(() => {
 
                 {/* ================= TRANSPORT REMARKS ================= */}
                 <Form.Group className="mt-4">
-                  <Form.Label>Transport Remarks</Form.Label>
+                  <Form.Label>Flights Remarks</Form.Label>
                   <Form.Control
                     as="textarea"
                     rows={3}
@@ -2878,11 +2899,11 @@ useEffect(() => {
                                              )}
                              </Tab>
 
-              <Tab eventKey="bookingPoi" title="Booking POI">
+              <Tab eventKey="bookingPoi" title="Booking Policy">
                 <Form.Group className="mb-3">
                   <Row>
                     <Col md={8}>
-                      <Form.Label>Add POI Item</Form.Label>
+                      <Form.Label>Booking Policy</Form.Label>
                       <Form.Control
                         as="textarea"
                         rows={3}
@@ -2904,7 +2925,7 @@ useEffect(() => {
                   </Row>
 
                   <Form.Group className="mt-3">
-                    <Form.Label>Booking POI Remarks</Form.Label>
+                    <Form.Label>Booking Policy Remarks</Form.Label>
                     <Form.Control
                       as="textarea"
                       rows={3}
@@ -3044,7 +3065,7 @@ useEffect(() => {
 
               <Tab eventKey="instructions" title="Instructions">
                 <Form.Group className="mb-3">
-                  <Form.Label>Add Instruction</Form.Label>
+                  <Form.Label>Instructions</Form.Label>
                   <Form.Control
                     as="textarea"
                     rows={3}

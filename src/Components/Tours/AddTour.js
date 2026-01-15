@@ -32,7 +32,7 @@ const AddTour = () => {
     'emiOptions',
     'inclusions',
     'exclusions',
-    'transport',
+    'flights',
     'hotels',
     'bookingPoi',
     'cancellation',
@@ -1573,7 +1573,7 @@ useEffect(() => {
         };
       case 'transport':
         return { 
-          label: editingType === 'transport' ? 'Update Transport' : '+ Add Transport', 
+          label: editingType === 'transport' ? 'Update Flight' : '+ Add Flight', 
           onClick: addTransportRow 
         };
       case 'hotels':
@@ -1583,12 +1583,12 @@ useEffect(() => {
         };
       case 'bookingPoi':
         return { 
-          label: editingType === 'poi' ? 'Update POI' : '+ Add POI', 
+          label: editingType === 'poi' ? 'Update Booking Policy' : '+ Add Booking Policy', 
           onClick: addPoi 
         };
       case 'cancellation':
         return { 
-          label: editingType === 'cancellation' ? 'Update Policy' : '+ Add Policy', 
+          label: editingType === 'cancellation' ? 'Update Cancellation Policy' : '+ Add Cancellation Policy', 
           onClick: addCancelRow 
         };
       case 'instructions':
@@ -1848,7 +1848,7 @@ useEffect(() => {
                 <Row>
                   <Col md={12}>
                     <Form.Group className="mb-3">
-                      <Form.Label>Free Flow Description</Form.Label>
+                      <Form.Label>Departures Description</Form.Label>
                       <Form.Control
                         as="textarea"
                         rows={4}
@@ -2325,11 +2325,11 @@ useEffect(() => {
                 )}
               </Tab>
 
-              <Tab eventKey="transport" title="Transport">
+              <Tab eventKey="transport" title="Flights">
                 <Row className="mt-3">
                   <Col md={12}>
                     <Form.Group>
-                      <Form.Label>Flights/Train or Transport Details</Form.Label>
+                      <Form.Label>Flights Details</Form.Label>
                       <Form.Control
                         as="textarea"
                         rows={4}
@@ -2342,7 +2342,7 @@ useEffect(() => {
                 </Row>
 
                 <Form.Group className="mt-3">
-                  <Form.Label>Transport Remarks</Form.Label>
+                  <Form.Label>Flight Remarks</Form.Label>
                   <Form.Control
                     as="textarea"
                     rows={3}
@@ -2527,7 +2527,7 @@ useEffect(() => {
                 <Form.Group className="mb-3">
                   <Row>
                     <Col md={8}>
-                      <Form.Label>Add POI Item</Form.Label>
+                      <Form.Label>Booking Policy</Form.Label>
                       <Form.Control
                         as="textarea"
                         rows={3}
@@ -2549,7 +2549,7 @@ useEffect(() => {
                   </Row>
 
                   <Form.Group className="mt-3">
-                    <Form.Label>Booking POI Remarks</Form.Label>
+                    <Form.Label>Booking Policy Remarks</Form.Label>
                     <Form.Control
                       as="textarea"
                       rows={3}

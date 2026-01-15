@@ -72,7 +72,8 @@ const AddHoneyMoonTour = () => {
     transport_remarks: "",
     booking_poi_remarks: "",
     cancellation_remarks: "",
-    emi_remarks: ""
+    emi_remarks: "",
+      optional_tour_remarks: "" // ← ADD THIS LINE
   });
 
   // DEPARTURES (multiple)
@@ -560,7 +561,8 @@ const removeInstruction = (idx) => {
           transport_remarks: basic.transport_remarks || '',
           booking_poi_remarks: basic.booking_poi_remarks || '',
           cancellation_remarks: basic.cancellation_remarks || '',
-          emi_remarks: basic.emi_remarks || ''
+          emi_remarks: basic.emi_remarks || '',
+          optional_tour_remarks: basic.optional_tour_remarks || '' // ← ADD THIS LINE
         });
 
         // Set itineraries
@@ -1178,7 +1180,8 @@ useEffect(() => {
         transport_remarks: formData.transport_remarks || '',
         emi_remarks: formData.emi_remarks || '',
         booking_poi_remarks: formData.booking_poi_remarks || '',
-        cancellation_remarks: formData.cancellation_remarks || ''
+        cancellation_remarks: formData.cancellation_remarks || '',
+          optional_tour_remarks: formData.optional_tour_remarks || '' // ← ADD THIS LINE
       };
 
       // 1) UPDATE TOUR BASIC DETAILS
@@ -1382,11 +1385,14 @@ useEffect(() => {
       setSuccess('');
 
       // 1) CREATE TOUR
-      const tourRes = await fetch(`${baseurl}/api/tours`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
-      });
+     const tourRes = await fetch(`${baseurl}/api/tours`, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    ...formData,
+    optional_tour_remarks: formData.optional_tour_remarks || '' // ← ADD THIS LINE
+  })
+});
 
       if (!tourRes.ok) {
         const err = await tourRes.json().catch(() => ({}));
@@ -1593,16 +1599,16 @@ if (imageFiles.length > 0) {
       case 'exclusions':
         return { label: '+ Add Exclusion', onClick: handleAddExclusion };
       case 'transport':
-        return { label: '+ Add Transport', onClick: addTransportRow };
+        return { label: '+ Add Flight', onClick: addTransportRow };
      case 'hotels':
         return { 
           label: editingType === 'hotel' ? 'Update Hotel' : '+ Add Hotel', 
           onClick: addHotelRow 
         };
       case 'bookingPoi':
-        return { label: '+ Add POI', onClick: addPoi };
+        return { label: '+ Add Booking Policy', onClick: addPoi };
       case 'cancellation':
-        return { label: '+ Add Policy', onClick: addCancelRow };
+        return { label: '+ Add Cancellation Policy', onClick: addCancelRow };
       case 'instructions':
         return { label: '+ Add Instruction', onClick: addInstruction };
       default:
@@ -1998,17 +2004,6 @@ if (imageFiles.length > 0) {
                   />
                 </Form.Group>
 
-                <Form.Group className="mt-3">
-                  <Form.Label>EMI Remarks</Form.Label>
-                  <Form.Control
-                    as="textarea"
-                    rows={3}
-                    name="emi_remarks"
-                    value={formData.emi_remarks}
-                    onChange={handleBasicChange}
-                  />
-                </Form.Group>
-
                 {tourCosts.length > 0 && (
                   <Table striped bordered hover size="sm" className="mt-3">
                     <thead>
@@ -2101,6 +2096,19 @@ if (imageFiles.length > 0) {
                     </Form.Group>
                   </Col>
                 </Row>
+
+                  {/* Add this new form group for Optional Tour Remarks */}
+                                <Form.Group className="mt-3">
+                                  <Form.Label>Optional Tour Remarks</Form.Label>
+                                  <Form.Control
+                                    as="textarea"
+                                    rows={3}
+                                    name="optional_tour_remarks"
+                                    value={formData.optional_tour_remarks || ''}
+                                    onChange={handleBasicChange}
+                                    placeholder="Enter any remarks for optional tours..."
+                                  />
+                                </Form.Group>
 
                 {optionalTours.length > 0 && (
                   <Table striped bordered hover size="sm" className="mt-3">
@@ -2214,7 +2222,22 @@ if (imageFiles.length > 0) {
                     ))}
                   </tbody>
                 </Table>
+
+                 <Form.Group className="mt-3">
+                  <Form.Label>EMI Remarks</Form.Label>
+                  <Form.Control
+                    as="textarea"
+                    rows={3}
+                    name="emi_remarks"
+                    value={formData.emi_remarks}
+                    onChange={handleBasicChange}
+                  />
+                </Form.Group>
+
+
               </Tab>
+
+
 
               <Tab eventKey="inclusions" title="Inclusions">
                 <Form.Group className="mb-3">
@@ -2322,11 +2345,11 @@ if (imageFiles.length > 0) {
                 )}
               </Tab>
 
-              <Tab eventKey="transport" title="Transport">
+              <Tab eventKey="transport" title="Flights">
                 <Row className="mt-3">
                   <Col md={12}>
                     <Form.Group>
-                      <Form.Label>Flights/Train or Transport Details</Form.Label>
+                      <Form.Label>Flights Details</Form.Label>
                       <Form.Control
                         as="textarea"
                         rows={4}
@@ -2339,7 +2362,7 @@ if (imageFiles.length > 0) {
                 </Row>
 
                 <Form.Group className="mt-3">
-                  <Form.Label>Transport Remarks</Form.Label>
+                  <Form.Label>Flight Remarks</Form.Label>
                   <Form.Control
                     as="textarea"
                     rows={3}
@@ -2521,11 +2544,11 @@ if (imageFiles.length > 0) {
                                                      </Tab>
               
 
-              <Tab eventKey="bookingPoi" title="Booking POI">
+              <Tab eventKey="bookingPoi" title="Booking Policy">
                 <Form.Group className="mb-3">
                   <Row>
                     <Col md={8}>
-                      <Form.Label>Add POI Item</Form.Label>
+                      <Form.Label>Booking Policy</Form.Label>
                       <Form.Control
                         as="textarea"
                         rows={3}
@@ -2547,7 +2570,7 @@ if (imageFiles.length > 0) {
                   </Row>
 
                   <Form.Group className="mt-3">
-                    <Form.Label>Booking POI Remarks</Form.Label>
+                    <Form.Label>Booking Policy Remarks</Form.Label>
                     <Form.Control
                       as="textarea"
                       rows={3}
@@ -2739,277 +2762,201 @@ if (imageFiles.length > 0) {
                 )}
               </Tab>
 
+
               <Tab eventKey="images" title="Images">
-  {/* Section for adding NEW images */}
-  <Card className="mb-4">
-    <Card.Header className="bg-primary text-white">
-      <h5 className="mb-0">Upload New Images</h5>
-    </Card.Header>
-    <Card.Body>
-      <Form.Group className="mb-3">
-        <Form.Label>
-          <strong>Select New Images</strong>
-        </Form.Label>
-        <Form.Control
-          type="file"
-          multiple
-          onChange={handleImageChange}
-          accept="image/jpeg,image/jpg,image/png,image/webp"
-          disabled={loading}
-        />
-        <Form.Text className="text-muted">
-          Select multiple images (JPEG, PNG, WebP). Maximum 5MB per image.
-        </Form.Text>
-      </Form.Group>
-      
-      <Form.Group className="mb-3">
-        <Form.Label>
-          <strong>Caption for New Images (optional)</strong>
-        </Form.Label>
-        <Form.Control
-          type="text"
-          value={imageCaption}
-          onChange={(e) => setImageCaption(e.target.value)}
-          placeholder="Enter a caption for all new images"
-          disabled={loading}
-        />
-      </Form.Group>
-      
-      {imagePreviews.length > 0 && (
-        <div className="mt-4">
-          <h6 className="mb-3">
-            <strong>{imagePreviews.length} New Image(s) Ready for Upload:</strong>
-          </h6>
-          <Row>
-            {imagePreviews.map((src, idx) => (
-              <Col xs={6} md={4} lg={3} key={idx} className="mb-3">
-                <div className="position-relative border rounded p-2">
-                  <img
-                    src={src}
-                    alt={`new-preview-${idx}`}
-                    style={{
-                      width: '100%',
-                      height: '150px',
-                      objectFit: 'cover',
-                      borderRadius: '6px'
-                    }}
-                    className="mb-2"
-                  />
-                  <div className="position-absolute top-0 end-0 bg-dark bg-opacity-75 text-white px-2 py-1 rounded-start">
-                    <small>New</small>
-                  </div>
-                  <p className="mb-0 text-truncate" title={imageFiles[idx]?.name}>
-                    <small>{imageFiles[idx]?.name}</small>
-                  </p>
-                </div>
-              </Col>
-            ))}
-          </Row>
-        </div>
-      )}
-    </Card.Body>
-  </Card>
-
-  {/* Section for EXISTING images with edit/delete */}
-  <Card>
-    <Card.Header className="bg-success text-white">
-      <h5 className="mb-0">Existing Images</h5>
-    </Card.Header>
-    <Card.Body>
-      {existingImages.length === 0 ? (
-        <div className="text-center py-5">
-          <p className="text-muted fs-5">No images uploaded yet.</p>
-          <p className="text-muted">
-            Use the "Upload New Images" section above to add images.
-          </p>
-        </div>
-      ) : (
-        <Row>
-          {existingImages.map((image) => (
-            <Col xs={12} md={6} lg={4} key={image.image_id} className="mb-4">
-              <Card className="h-100 shadow-sm">
-                <Card.Body className="p-3">
-                  <div className="position-relative">
-                    {/* Cover Image Badge */}
-                    {image.is_cover === 1 && (
-                      <div className="position-absolute top-0 start-0 bg-warning text-dark px-3 py-1 rounded-end shadow">
-                        <strong>★ Cover Image</strong>
-                      </div>
-                    )}
-                    
-                    {/* Image Preview */}
-                    <div className="text-center mb-3">
-                      <img
-                        src={image.url}
-                        alt={`tour-image-${image.image_id}`}
-                        style={{
-                          width: '100%',
-                          maxHeight: '200px',
-                          objectFit: 'contain',
-                          borderRadius: '8px',
-                          border: image.is_cover === 1 ? '3px solid #ffc107' : '1px solid #dee2e6'
-                        }}
-                      />
-                    </div>
-                    
-                    {/* Edit Mode or Action Buttons */}
-                    {editingImageId === image.image_id ? (
-                      <div className="border p-3 rounded bg-light">
-                        <h6 className="mb-3">Replace Image</h6>
-                        <Form.Group>
-                          <Form.Label>Select New Image:</Form.Label>
-                          <Form.Control
-                            id={`replacementFileInput-${image.image_id}`}
-                            type="file"
-                            onChange={handleReplacementFileChange}
-                            accept="image/jpeg,image/jpg,image/png,image/webp"
-                            disabled={loading}
-                          />
-                        </Form.Group>
-                        
-                        {replacementPreview && (
-                          <div className="mt-3">
-                            <p className="mb-2">
-                              <strong>Preview of New Image:</strong>
-                            </p>
-                            <img
-                              src={replacementPreview}
-                              alt="replacement-preview"
-                              style={{
-                                width: '100%',
-                                height: '150px',
-                                objectFit: 'cover',
-                                borderRadius: '6px'
-                              }}
-                              className="border"
-                            />
-                          </div>
-                        )}
-                        
-                        <div className="d-flex gap-2 mt-3">
-                          <Button
-                            variant="success"
-                            onClick={() => updateImage(image.image_id)}
-                            disabled={!replacementFile || loading}
-                            size="sm"
-                          >
-                            {loading ? 'Updating...' : 'Update Image'}
-                          </Button>
-                          <Button
-                            variant="outline-secondary"
-                            onClick={cancelEditImage}
-                            disabled={loading}
-                            size="sm"
-                          >
-                            Cancel
-                          </Button>
-                        </div>
-                      </div>
-                    ) : (
-                      <div>
-                        {/* Image Info */}
-                        <div className="mb-3">
-                          <p className="mb-1">
-                            <strong>Caption:</strong> {image.caption || 'No caption'}
-                          </p>
-                          <p className="mb-0 text-muted">
-                            <small>ID: {image.image_id}</small>
-                          </p>
-                        </div>
-                        
-                        {/* Action Buttons */}
-                        <div className="d-flex flex-wrap gap-2 justify-content-center">
-                          {/* Set as Cover Button - only show if not already cover */}
-                          {image.is_cover === 0 && (
-                            <Button
-                              variant="warning"
-                              onClick={() => setCoverImage(image.image_id)}
-                              title="Set as Cover Image"
-                              disabled={loading}
-                              size="sm"
-                            >
-                              <i className="bi bi-star me-1"></i> Set Cover
-                            </Button>
-                          )}
-                          
-                          {/* Edit/Replace Button */}
-                          <Button
-                            variant="outline-primary"
-                            onClick={() => startEditImage(image)}
-                            title="Replace this image"
-                            disabled={loading}
-                            size="sm"
-                          >
-                            <Pencil size={14} className="me-1" /> Replace
-                          </Button>
-                          
-                          {/* Delete Button - disable for cover image */}
-                          <Button
-                            variant="outline-danger"
-                            onClick={() => deleteImage(image.image_id)}
-                            title={image.is_cover === 1 ? "Cannot delete cover image" : "Delete this image"}
-                            disabled={loading || image.is_cover === 1}
-                            size="sm"
-                          >
-                            <Trash size={14} className="me-1" /> Delete
-                          </Button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </Card.Body>
-              </Card>
-            </Col>
-          ))}
-        </Row>
-      )}
-      
-      {/* Image Statistics */}
-      {existingImages.length > 0 && (
-        <div className="mt-4 pt-3 border-top">
-          <div className="row">
-            <div className="col-md-6">
-              <div className="d-flex align-items-center mb-2">
-                <div className="bg-primary rounded-circle p-2 me-2">
-                  <i className="bi bi-images text-white"></i>
-                </div>
-                <div>
-                  <h6 className="mb-0">Total Images</h6>
-                  <p className="mb-0 fs-4">{existingImages.length}</p>
-                </div>
-              </div>
-            </div>
-            <div className="col-md-6">
-              <div className="d-flex align-items-center mb-2">
-                <div className="bg-warning rounded-circle p-2 me-2">
-                  <i className="bi bi-star-fill text-dark"></i>
-                </div>
-                <div>
-                  <h6 className="mb-0">Cover Image</h6>
-                  <p className="mb-0">
-                    {existingImages.find(img => img.is_cover === 1) 
-                      ? '✓ Set' 
-                      : '✗ Not set'}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          {/* Cover Image Instructions */}
-          {!existingImages.find(img => img.is_cover === 1) && (
-            <Alert variant="warning" className="mt-3">
-              <i className="bi bi-exclamation-triangle me-2"></i>
-              <strong>No cover image set!</strong> Please set a cover image that will be displayed as the main image for your honeymoon tour.
-            </Alert>
-          )}
-        </div>
-      )}
-    </Card.Body>
-  </Card>
-</Tab>
-
+                              {/* Section for adding NEW images */}
+                              <Card className="mb-4">
+                                <Card.Header>Add New Images</Card.Header>
+                                <Card.Body>
+                                  <Form.Group className="mb-3">
+                                    <Form.Label>Upload New Images</Form.Label>
+                                    <Form.Control
+                                      type="file"
+                                      multiple
+                                      onChange={handleImageChange}
+                                      accept="image/jpeg,image/jpg,image/png,image/webp"
+                                    />
+                                    <Form.Text className="text-muted">
+                                      You can select multiple images (JPEG, PNG, WebP). Max 5MB per image.
+                                    </Form.Text>
+                                  </Form.Group>
+                                  
+                                  {imageFiles.length > 0 && (
+                                    <div className="mt-3">
+                                      <p className="mb-2">
+                                        <strong>{imageFiles.length} new image(s) ready to upload:</strong>
+                                      </p>
+                                      <Row>
+                                        {imageFiles.map((file, idx) => (
+                                          <Col md={3} key={idx} className="mb-3">
+                                            <div className="position-relative">
+                                              <img
+                                                src={URL.createObjectURL(file)}
+                                                alt={`new-${idx}`}
+                                                style={{
+                                                  width: '100%',
+                                                  height: '150px',
+                                                  objectFit: 'cover',
+                                                  borderRadius: '8px'
+                                                }}
+                                              />
+                                              <div className="position-absolute top-0 end-0 bg-dark bg-opacity-50 text-white p-1 rounded">
+                                                {file.name}
+                                              </div>
+                                            </div>
+                                          </Col>
+                                        ))}
+                                      </Row>
+                                    </div>
+                                  )}
+                                </Card.Body>
+                              </Card>
               
+                              {/* Section for EXISTING images with edit/delete */}
+                              <Card>
+                                <Card.Header>Existing Images</Card.Header>
+                                <Card.Body>
+                                  {existingImages.length === 0 ? (
+                                    <div className="text-center py-4">
+                                      <p className="text-muted">No images uploaded yet.</p>
+                                    </div>
+                                  ) : (
+                                    <Row>
+                                      {existingImages.map((image) => (
+                                        <Col md={4} lg={3} key={image.image_id} className="mb-4">
+                                          <Card className="h-100">
+                                            <Card.Body className="p-2">
+                                              <div className="position-relative">
+                                                <img
+                                                  src={image.url}
+                                                  alt={`tour-image-${image.image_id}`}
+                                                  style={{
+                                                    width: '100%',
+                                                    height: '150px',
+                                                    objectFit: 'cover',
+                                                    borderRadius: '6px'
+                                                  }}
+                                                  className="mb-2"
+                                                />
+                                                
+                                                {image.is_cover === 1 && (
+                                                  <div className="position-absolute top-0 start-0 bg-warning text-dark px-2 py-1 rounded-end">
+                                                    <strong>★ Cover</strong>
+                                                  </div>
+                                                )}
+                                                
+                                                {editingImageId === image.image_id ? (
+                                                  <div className="mt-3 border p-3 rounded">
+                                                    <Form.Group>
+                                                      <Form.Label>Replace with new image:</Form.Label>
+                                                      <Form.Control
+                                                        id="replacementFileInput"
+                                                        type="file"
+                                                        onChange={handleReplacementFileChange}
+                                                        accept="image/jpeg,image/jpg,image/png,image/webp"
+                                                      />
+                                                    </Form.Group>
+                                                    
+                                                    {replacementPreview && (
+                                                      <div className="mt-2">
+                                                        <p><strong>New preview:</strong></p>
+                                                        <img
+                                                          src={replacementPreview}
+                                                          alt="replacement"
+                                                          style={{
+                                                            width: '100%',
+                                                            height: '100px',
+                                                            objectFit: 'cover',
+                                                            borderRadius: '4px'
+                                                          }}
+                                                        />
+                                                      </div>
+                                                    )}
+                                                    
+                                                    <div className="d-flex gap-2 mt-3">
+                                                      <Button
+                                                        variant="success"
+                                                        size="sm"
+                                                        onClick={() => updateImage(image.image_id)}
+                                                        disabled={!replacementFile || loading}
+                                                      >
+                                                        {loading ? 'Updating...' : 'Update'}
+                                                      </Button>
+                                                      <Button
+                                                        variant="outline-secondary"
+                                                        size="sm"
+                                                        onClick={cancelEditImage}
+                                                        disabled={loading}
+                                                      >
+                                                        Cancel
+                                                      </Button>
+                                                    </div>
+                                                  </div>
+                                                ) : (
+                                                  <div className="mt-2">
+                                                    <div className="d-flex flex-wrap gap-1 justify-content-center">
+                                                      {/* Set as Cover Button */}
+                                                      {image.is_cover === 0 && (
+                                                        <Button
+                                                          variant="outline-warning"
+                                                          size="sm"
+                                                          onClick={() => setCoverImage(image.image_id)}
+                                                          title="Set as Cover"
+                                                          disabled={loading}
+                                                        >
+                                                          ★ Set Cover
+                                                        </Button>
+                                                      )}
+                                                      
+                                                      {/* Edit Button */}
+                                                      <Button
+                                                        variant="outline-primary"
+                                                        size="sm"
+                                                        onClick={() => startEditImage(image)}
+                                                        title="Replace Image"
+                                                        disabled={loading}
+                                                      >
+                                                        <Pencil size={14} /> Replace
+                                                      </Button>
+                                                      
+                                                      {/* Delete Button */}
+                                                      <Button
+                                                        variant="outline-danger"
+                                                        size="sm"
+                                                        onClick={() => deleteImage(image.image_id)}
+                                                        title="Delete Image"
+                                                        disabled={loading}
+                                                      >
+                                                        <Trash size={14} />
+                                                      </Button>
+                                                    </div>
+                                                  </div>
+                                                )}
+                                              </div>
+                                            </Card.Body>
+                                            <Card.Footer className="bg-transparent border-0 pt-0">
+                                              <small className="text-muted">
+                                                {image.caption ? `Caption: ${image.caption}` : 'No caption'}
+                                              </small>
+                                            </Card.Footer>
+                                          </Card>
+                                        </Col>
+                                      ))}
+                                    </Row>
+                                  )}
+                                  
+                                  {/* Show existing image count */}
+                                  {existingImages.length > 0 && (
+                                    <div className="mt-3 text-center">
+                                      <p className="text-muted">
+                                        Total images: {existingImages.length} | 
+                                        Cover image: {existingImages.find(img => img.is_cover === 1) ? 'Set' : 'Not set'}
+                                      </p>
+                                    </div>
+                                  )}
+                                </Card.Body>
+                              </Card>
+                            </Tab>
             </Tabs>
 
             {/* ======== BUTTONS ======== */}
