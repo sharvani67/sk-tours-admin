@@ -553,7 +553,7 @@ const removeInstruction = (idx) => {
           duration_days: basic.duration_days || '',
           overview: basic.overview || '',
           base_price_adult: basic.base_price_adult || '',
-          emi_price: '', // ← Add this line
+            emi_price: basic.emi_price || '', // ← Add this line
           is_international: basic.is_international || 0,
           cost_remarks: basic.cost_remarks || '',
           hotel_remarks: basic.hotel_remarks || '',

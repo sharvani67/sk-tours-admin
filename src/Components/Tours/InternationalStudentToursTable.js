@@ -144,20 +144,20 @@ const StudentTours = () => {
       render: (item) => item.base_price_adult ? `₹${item.base_price_adult}` : 'N/A',
       style: { textAlign: 'right' }
     },
-    {
-      key: 'is_international',
-      title: 'International?',
-      render: (item) => item.is_international ? "Yes" : "No",
-      style: { textAlign: "center" }
-    },
-    {
-      key: 'created_at',
-      title: 'Created At',
-      render: (item) =>
-        item.created_at
-          ? new Date(item.created_at).toLocaleDateString('en-US')
-          : 'N/A'
-    },
+    // {
+    //   key: 'is_international',
+    //   title: 'International?',
+    //   render: (item) => item.is_international ? "Yes" : "No",
+    //   style: { textAlign: "center" }
+    // },
+    // {
+    //   key: 'created_at',
+    //   title: 'Created At',
+    //   render: (item) =>
+    //     item.created_at
+    //       ? new Date(item.created_at).toLocaleDateString('en-US')
+    //       : 'N/A'
+    // },
     {
       key: 'actions',
       title: 'Actions',
