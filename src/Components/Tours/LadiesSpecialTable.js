@@ -238,7 +238,7 @@ const LadiesSpecialTours = () => {
                 title="Ladies Special Tours"
                 data={tableData}
                 columns={columns}
-                initialEntriesPerPage={5}
+                initialEntriesPerPage={15}
                 searchPlaceholder="Search Ladies Special tours..."
                 showSearch={true}
                 showEntriesSelector={true}

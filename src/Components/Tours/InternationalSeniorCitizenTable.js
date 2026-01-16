@@ -234,7 +234,7 @@ const SeniorCitizenTours = () => {
                 title="Senior Citizen Tours"
                 data={tableData}
                 columns={columns}
-                initialEntriesPerPage={5}
+                initialEntriesPerPage={15}
                 searchPlaceholder="Search senior citizen tours..."
                 showSearch={true}
                 showEntriesSelector={true}

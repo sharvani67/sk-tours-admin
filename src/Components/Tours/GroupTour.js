@@ -285,7 +285,7 @@ const GroupTours = () => {
                 title="Group Tours"
                 data={tableData}
                 columns={columns}
-                initialEntriesPerPage={5}
+                initialEntriesPerPage={15}
                 searchPlaceholder="Search group tours..."
                 showSearch={true}
                 showEntriesSelector={true}

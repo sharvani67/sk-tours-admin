@@ -233,7 +233,7 @@ const StudentTours = () => {
                 title="Student Tours"
                 data={tableData}
                 columns={columns}
-                initialEntriesPerPage={5}
+                initialEntriesPerPage={15}
                 searchPlaceholder="Search student tours..."
                 showSearch={true}
                 showEntriesSelector={true}
