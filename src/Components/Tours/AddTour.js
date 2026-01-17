@@ -32,7 +32,7 @@ const AddTour = () => {
     'emiOptions',
     'inclusions',
     'exclusions',
-    'flights',
+    'transport',
     'hotels',
     'bookingPoi',
     'cancellation',
@@ -146,17 +146,11 @@ const AddTour = () => {
   const [hotelRows, setHotelRows] = useState([]);
 
   // TRANSPORT
-  const [transportItem, setTransportItem] = useState({
-    mode: '',
-    from_city: '',
-    to_city: '',
-    carrier: '',
-    number_code: '',
-    departure_datetime: '',
-    arrival_datetime: '',
-    description: '',
-    remarks: ''
-  });
+// Change to this:
+const [transportItem, setTransportItem] = useState({
+  description: ''  // Only this field is needed for individual tours
+});
+
   const [transports, setTransports] = useState([]);
 
   // BOOKING POI
@@ -456,30 +450,24 @@ const addHotelRow = () => {
 };
 
 // Update addTransportRow function
+// In your individual tour transport handler
 const addTransportRow = () => {
   if (!transportItem.description.trim()) return;
   
   if (editingType === 'transport' && editIndex !== -1) {
     const updated = [...transports];
-    updated[editIndex] = { ...transportItem };
+    updated[editIndex] = { description: transportItem.description.trim() }; // Only store description
     setTransports(updated);
   } else {
-    setTransports(prev => [...prev, { ...transportItem }]);
+    setTransports(prev => [...prev, { description: transportItem.description.trim() }]); // Only store description
   }
 
   setTransportItem({
-    mode: '',
-    from_city: '',
-    to_city: '',
-    carrier: '',
-    number_code: '',
-    departure_datetime: '',
-    arrival_datetime: '',
-    description: '',
-    remarks: ''
+    description: ''  // Reset only description
   });
   resetEditing();
 };
+
 
 // Update handleAddInclusion function
 const handleAddInclusion = () => {
@@ -681,10 +669,50 @@ const removeInstruction = (idx) => {
     setHotelItem(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleTransportChange = (e) => {
-    const { name, value } = e.target;
-    setTransportItem(prev => ({ ...prev, [name]: value }));
-  };
+const handleTransportChange = (e) => {
+  const { name, value } = e.target;
+  setTransportItem(prev => ({ 
+    ...prev, 
+    [name]: value 
+  }));
+};
+
+
+  // Save transport function
+// const saveTransport = async () => {
+//   try {
+//     const response = await fetch('/api/tour/transports', {
+//       method: 'POST',
+//       headers: {
+//         'Content-Type': 'application/json',
+//       },
+//       body: JSON.stringify({
+//         ...transportItem,
+//       })
+//     });
+
+//     if (response.ok) {
+//       const data = await response.json();
+//       setTransports(prev => [...prev, { ...transportItem, transport_id: data.transport_id }]);
+//       setTransportItem({
+//         description: '',
+//         airline: '',
+//         flight_no: '',
+//         from_city: '',
+//         from_date: '',
+//         from_time: '',
+//         to_city: '',
+//         to_date: '',
+//         to_time: '',
+//         via: '',
+//         sort_order: transports.length + 1
+//       });
+//     }
+//   } catch (error) {
+//     console.error('Error saving transport:', error);
+//   }
+// };
+
 
   const handleLoanAmountChange = (index, value) => {
     const updatedOptions = [...emiOptions];
@@ -1068,9 +1096,14 @@ const setCoverImage = async (imageId) => {
         }
 
         // Set transport
-        if (data.transport && Array.isArray(data.transport)) {
-          setTransports(data.transport);
-        }
+       // Set transport for Individual tours
+if (data.transport && Array.isArray(data.transport)) {
+  // For individual tours, only use the description field
+  const formattedTransports = data.transport.map(t => ({
+    description: t.description || ''
+  }));
+  setTransports(formattedTransports);
+}
 
         // Set booking POI
         if (data.booking_poi && Array.isArray(data.booking_poi)) {
@@ -2338,73 +2371,63 @@ useEffect(() => {
                 )}
               </Tab>
 
-              <Tab eventKey="flights" title="Flights">
-                <Row className="mt-3">
-                  <Col md={12}>
-                    <Form.Group>
-                      <Form.Label>Flights Details</Form.Label>
-                      <Form.Control
-                        as="textarea"
-                        rows={4}
-                        name="description"
-                        value={transportItem.description}
-                        onChange={handleTransportChange}
-                      />
-                    </Form.Group>
-                  </Col>
-                </Row>
+                <Tab eventKey="transport" title="Flights">
+  <Row className="mt-3">
+    <Col md={12}>
+      <Form.Group>
+        <Form.Label>Flight Details</Form.Label>
+        <Form.Control
+          as="textarea"
+          rows={4}
+          name="description"
+          value={transportItem.description}
+          onChange={handleTransportChange}
+          placeholder="Enter flight details here..."
+        />
+      </Form.Group>
+    </Col>
+  </Row>
 
-                <Form.Group className="mt-3">
-                  <Form.Label>Flight Remarks</Form.Label>
-                  <Form.Control
-                    as="textarea"
-                    rows={3}
-                    name="transport_remarks"
-                    value={formData.transport_remarks}
-                    onChange={handleBasicChange}
-                  />
-                </Form.Group>
-
-                {transports.length > 0 && (
-                  <Table striped bordered hover size="sm" className="mt-3">
-                    <thead>
-                      <tr>
-                        <th>#</th>
-                        <th>Description</th>
-                        <th>Action</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {transports.map((t, idx) => (
-                        <tr key={idx}>
-                          <td>{idx + 1}</td>
-                          <td>{t.description || 'NA'}</td>
-                          <td>
-                            <div className="d-flex gap-1">
-                              <Button
-                                variant="outline-warning"
-                                size="sm"
-                                onClick={() => editTransportRow(idx)}
-                                title="Edit"
-                              >
-                                <Pencil size={14} />
-                              </Button>
-                              <Button
-                                variant="outline-danger"
-                                size="sm"
-                                onClick={() => removeTransportRow(idx)}
-                                title="Remove"
-                              >
-                                <Trash size={14} />
-                              </Button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </Table>
-                )}
-              </Tab>
+  {transports.length > 0 && (
+    <Table striped bordered hover size="sm" className="mt-3">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Description</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {transports.map((t, idx) => (
+          <tr key={idx}>
+            <td>{idx + 1}</td>
+            <td>{t.description || 'NA'}</td>
+            <td>
+              <div className="d-flex gap-1">
+                <Button
+                  variant="outline-warning"
+                  size="sm"
+                  onClick={() => editTransportRow(idx)}
+                  title="Edit"
+                >
+                  <Pencil size={14} />
+                </Button>
+                <Button
+                  variant="outline-danger"
+                  size="sm"
+                  onClick={() => removeTransportRow(idx)}
+                  title="Remove"
+                >
+                  <Trash size={14} />
+                </Button>
+              </div>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </Table>
+  )}
+</Tab>
 
               <Tab eventKey="hotels" title="Hotels">
                 <Row className="align-items-end">

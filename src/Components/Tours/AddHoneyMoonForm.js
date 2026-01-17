@@ -2349,7 +2349,7 @@ if (imageFiles.length > 0) {
                 <Row className="mt-3">
                   <Col md={12}>
                     <Form.Group>
-                      <Form.Label>Flights Details</Form.Label>
+                      <Form.Label>Flight Details</Form.Label>
                       <Form.Control
                         as="textarea"
                         rows={4}
@@ -2360,17 +2360,6 @@ if (imageFiles.length > 0) {
                     </Form.Group>
                   </Col>
                 </Row>
-
-                <Form.Group className="mt-3">
-                  <Form.Label>Flight Remarks</Form.Label>
-                  <Form.Control
-                    as="textarea"
-                    rows={3}
-                    name="transport_remarks"
-                    value={formData.transport_remarks}
-                    onChange={handleBasicChange}
-                  />
-                </Form.Group>
 
                 {transports.length > 0 && (
                   <Table striped bordered hover size="sm" className="mt-3">

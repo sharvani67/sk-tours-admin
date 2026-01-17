@@ -103,7 +103,6 @@ const TAB_LIST = [
   'basic',
   'itineraries',
   'departures',
-  'costs',
   'optionalTours',
   'emiOptions',
   'inclusions',
@@ -3246,17 +3245,6 @@ const handleSaveClick = () => {
                     </Form.Group>
                   </Col>
                 </Row>
-
-                <Form.Group className="mt-3">
-                  <Form.Label>Flights Remarks</Form.Label>
-                  <Form.Control
-                    as="textarea"
-                    rows={3}
-                    name="transport_remarks"
-                    value={formData.transport_remarks}
-                    onChange={handleBasicChange}
-                  />
-                </Form.Group>
 
                 {transports.length > 0 && (
                   <Table striped bordered hover size="sm" className="mt-3">

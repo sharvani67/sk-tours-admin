@@ -162,7 +162,6 @@ const TAB_LIST = [
   'basic',
   'itineraries',
   'departures',
-  'costs',
   'optionalTours',
   'emiOptions',
   'inclusions',
@@ -3174,7 +3173,7 @@ const handleSaveClick = () => {
               
                   {/* 3-Star Hotel Prices - Add directly in departures */}
                   <Row className="mb-4">
-                    <h6>3-Star Hotel Prices</h6>
+                    <h6>Standard Hotel Prices</h6>
                     <Col md={2}>
                       <Form.Group>
                         <Form.Label>Twin Sharing</Form.Label>
@@ -3251,7 +3250,7 @@ const handleSaveClick = () => {
               
                   {/* 4-Star Hotel Prices */}
                   <Row className="mb-4">
-                    <h6>4-Star Hotel Prices</h6>
+                    <h6>Deluxe Hotel Prices</h6>
                     <Col md={2}>
                       <Form.Group>
                         <Form.Label>Twin Sharing</Form.Label>
@@ -3328,7 +3327,7 @@ const handleSaveClick = () => {
               
                   {/* 5-Star Hotel Prices */}
                   <Row className="mb-4">
-                    <h6>5-Star Hotel Prices</h6>
+                    <h6>Luxury Hotel Prices</h6>
                     <Col md={2}>
                       <Form.Group>
                         <Form.Label>Twin Sharing</Form.Label>
@@ -3402,19 +3401,6 @@ const handleSaveClick = () => {
                       </Form.Group>
                     </Col>
                   </Row>
-              
-                  <div className="mt-4 mb-3">
-                    <Button
-                      variant="primary"
-                      onClick={handleAddDeparture}
-                      disabled={!groupDepartureForm.start_date || !groupDepartureForm.end_date}
-                    >
-                      + Add Departure with Costs
-                    </Button>
-                    <Form.Text className="text-muted ms-2">
-                      Add departure dates and costs together
-                    </Form.Text>
-                  </div>
                 </div>
               
               

@@ -124,7 +124,6 @@ const TAB_LIST = [
   'basic',
   'itineraries',
   'departures',
-  'costs',
   'optionalTours',
   'emiOptions',
   'inclusions',
@@ -258,6 +257,28 @@ const [extendableRow, setExtendableRow] = useState({
   transit_charges: '',
   business_charges: ''
 });
+
+
+
+ const handleGroupDepartureChange = (e) => {
+    const { name, value } = e.target;
+    const numericFields = [
+      'total_seats', 'booked_seats',
+      'three_star_twin', 'three_star_triple', 'three_star_child_with_bed',
+      'three_star_child_without_bed', 'three_star_infant', 'three_star_single',
+      'four_star_twin', 'four_star_triple', 'four_star_child_with_bed',
+      'four_star_child_without_bed', 'four_star_infant', 'four_star_single',
+      'five_star_twin', 'five_star_triple', 'five_star_child_with_bed',
+      'five_star_child_without_bed', 'five_star_infant', 'five_star_single'
+    ];
+
+    setSeniorDepartureForm((prev) => ({
+      ...prev,
+      [name]: numericFields.includes(name)
+        ? value === '' ? '' : Number(value)
+        : value
+    }));
+  };
 
 
   // =======================
@@ -1457,41 +1478,41 @@ if (data.transport && Array.isArray(data.transport)) {
   };
 
  const handleAddDeparture = () => {
-  if (!groupDepartureForm.start_date || !groupDepartureForm.end_date) {
+  if (!seniorDepartureForm.start_date || !seniorDepartureForm.end_date) {
     setError('Please enter both start and end dates');
     return;
   }
 
   // Ensure all price fields are numbers or null
   const departureData = {
-    ...groupDepartureForm,
-    start_date: groupDepartureForm.start_date,
-    end_date: groupDepartureForm.end_date,
-    status: groupDepartureForm.status || 'Available',
-    total_seats: groupDepartureForm.total_seats || 40,
-    booked_seats: groupDepartureForm.booked_seats || 0,
-    description: groupDepartureForm.description || '',
+    ...seniorDepartureForm,
+    start_date: seniorDepartureForm.start_date,
+    end_date: seniorDepartureForm.end_date,
+    status: seniorDepartureForm.status || 'Available',
+    total_seats: seniorDepartureForm.total_seats || 40,
+    booked_seats: seniorDepartureForm.booked_seats || 0,
+    description: seniorDepartureForm.description || '',
     // 3-Star Hotel Prices
-    three_star_twin: groupDepartureForm.three_star_twin ? Number(groupDepartureForm.three_star_twin) : null,
-    three_star_triple: groupDepartureForm.three_star_triple ? Number(groupDepartureForm.three_star_triple) : null,
-    three_star_child_with_bed: groupDepartureForm.three_star_child_with_bed ? Number(groupDepartureForm.three_star_child_with_bed) : null,
-    three_star_child_without_bed: groupDepartureForm.three_star_child_without_bed ? Number(groupDepartureForm.three_star_child_without_bed) : null,
-    three_star_infant: groupDepartureForm.three_star_infant ? Number(groupDepartureForm.three_star_infant) : null,
-    three_star_single: groupDepartureForm.three_star_single ? Number(groupDepartureForm.three_star_single) : null,
+    three_star_twin: seniorDepartureForm.three_star_twin ? Number(seniorDepartureForm.three_star_twin) : null,
+    three_star_triple: seniorDepartureForm.three_star_triple ? Number(seniorDepartureForm.three_star_triple) : null,
+    three_star_child_with_bed: seniorDepartureForm.three_star_child_with_bed ? Number(seniorDepartureForm.three_star_child_with_bed) : null,
+    three_star_child_without_bed: seniorDepartureForm.three_star_child_without_bed ? Number(seniorDepartureForm.three_star_child_without_bed) : null,
+    three_star_infant: seniorDepartureForm.three_star_infant ? Number(seniorDepartureForm.three_star_infant) : null,
+    three_star_single: seniorDepartureForm.three_star_single ? Number(seniorDepartureForm.three_star_single) : null,
     // 4-Star Hotel Prices
-    four_star_twin: groupDepartureForm.four_star_twin ? Number(groupDepartureForm.four_star_twin) : null,
-    four_star_triple: groupDepartureForm.four_star_triple ? Number(groupDepartureForm.four_star_triple) : null,
-    four_star_child_with_bed: groupDepartureForm.four_star_child_with_bed ? Number(groupDepartureForm.four_star_child_with_bed) : null,
-    four_star_child_without_bed: groupDepartureForm.four_star_child_without_bed ? Number(groupDepartureForm.four_star_child_without_bed) : null,
-    four_star_infant: groupDepartureForm.four_star_infant ? Number(groupDepartureForm.four_star_infant) : null,
-    four_star_single: groupDepartureForm.four_star_single ? Number(groupDepartureForm.four_star_single) : null,
+    four_star_twin: seniorDepartureForm.four_star_twin ? Number(seniorDepartureForm.four_star_twin) : null,
+    four_star_triple: seniorDepartureForm.four_star_triple ? Number(seniorDepartureForm.four_star_triple) : null,
+    four_star_child_with_bed: seniorDepartureForm.four_star_child_with_bed ? Number(seniorDepartureForm.four_star_child_with_bed) : null,
+    four_star_child_without_bed: seniorDepartureForm.four_star_child_without_bed ? Number(seniorDepartureForm.four_star_child_without_bed) : null,
+    four_star_infant: seniorDepartureForm.four_star_infant ? Number(seniorDepartureForm.four_star_infant) : null,
+    four_star_single: seniorDepartureForm.four_star_single ? Number(seniorDepartureForm.four_star_single) : null,
     // 5-Star Hotel Prices
-    five_star_twin: groupDepartureForm.five_star_twin ? Number(groupDepartureForm.five_star_twin) : null,
-    five_star_triple: groupDepartureForm.five_star_triple ? Number(groupDepartureForm.five_star_triple) : null,
-    five_star_child_with_bed: groupDepartureForm.five_star_child_with_bed ? Number(groupDepartureForm.five_star_child_with_bed) : null,
-    five_star_child_without_bed: groupDepartureForm.five_star_child_without_bed ? Number(groupDepartureForm.five_star_child_without_bed) : null,
-    five_star_infant: groupDepartureForm.five_star_infant ? Number(groupDepartureForm.five_star_infant) : null,
-    five_star_single: groupDepartureForm.five_star_single ? Number(groupDepartureForm.five_star_single) : null
+    five_star_twin: seniorDepartureForm.five_star_twin ? Number(seniorDepartureForm.five_star_twin) : null,
+    five_star_triple: seniorDepartureForm.five_star_triple ? Number(seniorDepartureForm.five_star_triple) : null,
+    five_star_child_with_bed: seniorDepartureForm.five_star_child_with_bed ? Number(seniorDepartureForm.five_star_child_with_bed) : null,
+    five_star_child_without_bed: seniorDepartureForm.five_star_child_without_bed ? Number(seniorDepartureForm.five_star_child_without_bed) : null,
+    five_star_infant: seniorDepartureForm.five_star_infant ? Number(seniorDepartureForm.five_star_infant) : null,
+    five_star_single: seniorDepartureForm.five_star_single ? Number(seniorDepartureForm.five_star_single) : null
   };
 
   if (editingDepartureIndex !== -1) {
@@ -1508,7 +1529,7 @@ if (data.transport && Array.isArray(data.transport)) {
   }
 
   // Reset form
-  setGroupDepartureForm({
+  setSeniorDepartureForm({
     start_date: '',
     end_date: '',
     status: 'Available',
@@ -1540,7 +1561,7 @@ if (data.transport && Array.isArray(data.transport)) {
  const editDeparture = (idx) => {
   const departure = departures[idx];
   // Set ALL departure fields including costs
-  setGroupDepartureForm({
+  setSeniorDepartureForm({
     start_date: departure.start_date || '',
     end_date: departure.end_date || '',
     status: departure.status || 'Available',
@@ -1581,7 +1602,7 @@ if (data.transport && Array.isArray(data.transport)) {
     // If we're removing the one being edited, cancel edit
     if (editingDepartureIndex === idx) {
       setEditingDepartureIndex(-1);
-      setGroupDepartureForm({
+      setSeniorDepartureForm({
         start_date: '',
         end_date: '',
         status: 'Available',
@@ -3316,19 +3337,6 @@ const handleSaveClick = () => {
                                                 </Form.Group>
                                               </Col>
                                             </Row>
-                                        
-                                            <div className="mt-4 mb-3">
-                                              <Button
-                                                variant="primary"
-                                                onClick={handleAddDeparture}
-                                                disabled={!seniorDepartureForm.start_date || !seniorDepartureForm.end_date}
-                                              >
-                                                + Add Departure with Costs
-                                              </Button>
-                                              <Form.Text className="text-muted ms-2">
-                                                Add departure dates and costs together
-                                              </Form.Text>
-                                            </div>
                                           </div>
                                         
                                         

@@ -168,7 +168,6 @@ const TAB_LIST = [
   'basic',
   'itineraries',
   'departures',
-  'costs',
   'optionalTours',
   'emiOptions',
   'inclusions',
@@ -3376,19 +3375,6 @@ const handleSaveClick = () => {
                                                 </Form.Group>
                                               </Col>
                                             </Row>
-                                        
-                                            <div className="mt-4 mb-3">
-                                              <Button
-                                                variant="primary"
-                                                onClick={handleAddDeparture}
-                                                disabled={!studentDepartureForm.start_date || !studentDepartureForm.end_date}
-                                              >
-                                                + Add Departure with Costs
-                                              </Button>
-                                              <Form.Text className="text-muted ms-2">
-                                                Add departure dates and costs together
-                                              </Form.Text>
-                                            </div>
                                           </div>
                                         
                                         

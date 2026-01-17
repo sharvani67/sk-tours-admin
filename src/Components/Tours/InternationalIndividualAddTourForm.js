@@ -3402,17 +3402,6 @@ const handleSaveClick = () => {
                   </Col>
                 </Row>
 
-                <Form.Group className="mt-3">
-                  <Form.Label>Flight Remarks</Form.Label>
-                  <Form.Control
-                    as="textarea"
-                    rows={3}
-                    name="transport_remarks"
-                    value={formData.transport_remarks}
-                    onChange={handleBasicChange}
-                  />
-                </Form.Group>
-
                 {transports.length > 0 && (
                   <Table striped bordered hover size="sm" className="mt-3">
                     <thead>
