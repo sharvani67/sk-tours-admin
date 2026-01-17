@@ -3138,6 +3138,18 @@ const handleSaveClick = () => {
                   </Col>
                 </Row>
 
+                <Form.Group className="mt-3">
+                      <Form.Label>Optional Tour Remarks</Form.Label>
+                          <Form.Control
+                              as="textarea"
+                              rows={3}
+                              name="optional_tour_remarks"
+                              value={formData.optional_tour_remarks || ''}
+                              onChange={handleBasicChange}
+                              placeholder="Enter any remarks for optional tours..."
+                          />
+                </Form.Group>
+
 
                 {optionalTours.length > 0 && (
                   <Table striped bordered hover size="sm" className="mt-3">
@@ -3185,17 +3197,7 @@ const handleSaveClick = () => {
 
 
                 
-                <Form.Group className="mt-3">
-                      <Form.Label>Optional Tour Remarks</Form.Label>
-                          <Form.Control
-                              as="textarea"
-                              rows={3}
-                              name="optional_tour_remarks"
-                              value={formData.optional_tour_remarks || ''}
-                              onChange={handleBasicChange}
-                              placeholder="Enter any remarks for optional tours..."
-                          />
-                </Form.Group>
+                
 
               </Tab>
 

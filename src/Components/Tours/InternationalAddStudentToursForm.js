@@ -1500,41 +1500,41 @@ if (data.transport && Array.isArray(data.transport)) {
   };
 
  const handleAddDeparture = () => {
-  if (!groupDepartureForm.start_date || !groupDepartureForm.end_date) {
-    setError('Please enter both start and end dates');
-    return;
-  }
+  // if (!groupDepartureForm.start_date || !groupDepartureForm.end_date) {
+  //   setError('Please enter both start and end dates');
+  //   return;
+  // }
 
   // Ensure all price fields are numbers or null
   const departureData = {
-    ...groupDepartureForm,
-    start_date: groupDepartureForm.start_date,
-    end_date: groupDepartureForm.end_date,
-    status: groupDepartureForm.status || 'Available',
-    total_seats: groupDepartureForm.total_seats || 40,
-    booked_seats: groupDepartureForm.booked_seats || 0,
-    description: groupDepartureForm.description || '',
+    ...studentDepartureForm,
+    start_date: studentDepartureForm.start_date,
+    end_date: studentDepartureForm.end_date,
+    status: studentDepartureForm.status || 'Available',
+    total_seats: studentDepartureForm.total_seats || 40,
+    booked_seats: studentDepartureForm.booked_seats || 0,
+    description: studentDepartureForm.description || '',
     // 3-Star Hotel Prices
-    three_star_twin: groupDepartureForm.three_star_twin ? Number(groupDepartureForm.three_star_twin) : null,
-    three_star_triple: groupDepartureForm.three_star_triple ? Number(groupDepartureForm.three_star_triple) : null,
-    three_star_child_with_bed: groupDepartureForm.three_star_child_with_bed ? Number(groupDepartureForm.three_star_child_with_bed) : null,
-    three_star_child_without_bed: groupDepartureForm.three_star_child_without_bed ? Number(groupDepartureForm.three_star_child_without_bed) : null,
-    three_star_infant: groupDepartureForm.three_star_infant ? Number(groupDepartureForm.three_star_infant) : null,
-    three_star_single: groupDepartureForm.three_star_single ? Number(groupDepartureForm.three_star_single) : null,
+    three_star_twin: studentDepartureForm.three_star_twin ? Number(studentDepartureForm.three_star_twin) : null,
+    three_star_triple: studentDepartureForm.three_star_triple ? Number(studentDepartureForm.three_star_triple) : null,
+    three_star_child_with_bed: studentDepartureForm.three_star_child_with_bed ? Number(studentDepartureForm.three_star_child_with_bed) : null,
+    three_star_child_without_bed: studentDepartureForm.three_star_child_without_bed ? Number(studentDepartureForm.three_star_child_without_bed) : null,
+    three_star_infant: studentDepartureForm.three_star_infant ? Number(studentDepartureForm.three_star_infant) : null,
+    three_star_single: studentDepartureForm.three_star_single ? Number(studentDepartureForm.three_star_single) : null,
     // 4-Star Hotel Prices
-    four_star_twin: groupDepartureForm.four_star_twin ? Number(groupDepartureForm.four_star_twin) : null,
-    four_star_triple: groupDepartureForm.four_star_triple ? Number(groupDepartureForm.four_star_triple) : null,
-    four_star_child_with_bed: groupDepartureForm.four_star_child_with_bed ? Number(groupDepartureForm.four_star_child_with_bed) : null,
-    four_star_child_without_bed: groupDepartureForm.four_star_child_without_bed ? Number(groupDepartureForm.four_star_child_without_bed) : null,
-    four_star_infant: groupDepartureForm.four_star_infant ? Number(groupDepartureForm.four_star_infant) : null,
-    four_star_single: groupDepartureForm.four_star_single ? Number(groupDepartureForm.four_star_single) : null,
+    four_star_twin: studentDepartureForm.four_star_twin ? Number(studentDepartureForm.four_star_twin) : null,
+    four_star_triple: studentDepartureForm.four_star_triple ? Number(studentDepartureForm.four_star_triple) : null,
+    four_star_child_with_bed: studentDepartureForm.four_star_child_with_bed ? Number(studentDepartureForm.four_star_child_with_bed) : null,
+    four_star_child_without_bed: studentDepartureForm.four_star_child_without_bed ? Number(studentDepartureForm.four_star_child_without_bed) : null,
+    four_star_infant: studentDepartureForm.four_star_infant ? Number(studentDepartureForm.four_star_infant) : null,
+    four_star_single: studentDepartureForm.four_star_single ? Number(studentDepartureForm.four_star_single) : null,
     // 5-Star Hotel Prices
-    five_star_twin: groupDepartureForm.five_star_twin ? Number(groupDepartureForm.five_star_twin) : null,
-    five_star_triple: groupDepartureForm.five_star_triple ? Number(groupDepartureForm.five_star_triple) : null,
-    five_star_child_with_bed: groupDepartureForm.five_star_child_with_bed ? Number(groupDepartureForm.five_star_child_with_bed) : null,
-    five_star_child_without_bed: groupDepartureForm.five_star_child_without_bed ? Number(groupDepartureForm.five_star_child_without_bed) : null,
-    five_star_infant: groupDepartureForm.five_star_infant ? Number(groupDepartureForm.five_star_infant) : null,
-    five_star_single: groupDepartureForm.five_star_single ? Number(groupDepartureForm.five_star_single) : null
+    five_star_twin: studentDepartureForm.five_star_twin ? Number(studentDepartureForm.five_star_twin) : null,
+    five_star_triple: studentDepartureForm.five_star_triple ? Number(studentDepartureForm.five_star_triple) : null,
+    five_star_child_with_bed: studentDepartureForm.five_star_child_with_bed ? Number(studentDepartureForm.five_star_child_with_bed) : null,
+    five_star_child_without_bed: studentDepartureForm.five_star_child_without_bed ? Number(studentDepartureForm.five_star_child_without_bed) : null,
+    five_star_infant: studentDepartureForm.five_star_infant ? Number(studentDepartureForm.five_star_infant) : null,
+    five_star_single: studentDepartureForm.five_star_single ? Number(studentDepartureForm.five_star_single) : null
   };
 
   if (editingDepartureIndex !== -1) {
@@ -1551,7 +1551,7 @@ if (data.transport && Array.isArray(data.transport)) {
   }
 
   // Reset form
-  setGroupDepartureForm({
+  setStudentDepartureForm({
     start_date: '',
     end_date: '',
     status: 'Available',

@@ -330,43 +330,57 @@ const editOptionalTourRow = (idx) => {
   // =======================
   // TRANSPORT FOR LADIES SPECIAL TOURS
   // =======================
-  const [transportItem, setTransportItem] = useState({
-    description: '',
-    airline: '',
-    flight_no: '',
-    from_city: '',
-    from_date: '',
-    from_time: '',
-    to_city: '',
-    to_date: '',
-    to_time: '',
-    via: '',
-    sort_order: 1
-  });
 
   const [transports, setTransports] = useState([]);
+
+  const [transportItem, setTransportItem] = useState({
+  description: '',
+  airline: '',
+  flight_no: '',
+  from_city: '',
+  from_date: '',
+  from_time: '',
+  to_city: '',
+  to_date: '',
+  to_time: '',
+  via: '',
+  sort_order: transports.length + 1  // <-- ERROR: transports is not defined yet
+});
+
+
 
   const handleTransportChange = (e) => {
     const { name, value } = e.target;
     setTransportItem(prev => ({ ...prev, [name]: value }));
   };
 
- const addTransportRow = () => {
-  if (!transportItem.airline || !transportItem.flight_no || !transportItem.from_city || !transportItem.to_city) {
+const addTransportRow = () => {
+  // Check for required fields
+  if (!transportItem.from_city || !transportItem.to_city) {
+    setError('Please fill From City and To City');
     return;
   }
 
+  // Create transport item with calculated sort_order
+  const newTransport = {
+    ...transportItem,
+    sort_order: transports.length + 1
+  };
+
   if (editingTransportIndex !== -1) {
-    // Update existing
+    // Update existing transport
     const updated = [...transports];
-    updated[editingTransportIndex] = { ...transportItem, sort_order: transports[editingTransportIndex].sort_order };
+    updated[editingTransportIndex] = newTransport;
     setTransports(updated);
     setEditingTransportIndex(-1);
+    setSuccess('Transport updated successfully');
   } else {
-    // Add new
-    setTransports(prev => [...prev, { ...transportItem, sort_order: prev.length + 1 }]);
+    // Add new transport
+    setTransports(prev => [...prev, newTransport]);
+    setSuccess('Transport added successfully');
   }
 
+  // Reset form with next sort_order
   setTransportItem({
     description: '',
     airline: '',
@@ -1501,13 +1515,31 @@ useEffect(() => {
       }
 
       // Transport
-      if (transports.length > 0) {
-        await fetch(`${baseurl}/api/tour-transports/bulk`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ tour_id: id, items: transports })
-        });
-      }
+     // In updateTour() function, replace the transport section:
+if (transports.length > 0) {
+  const transportPayload = transports.map((t, index) => ({
+    description: t.description || null,
+    airline: t.airline || null,
+    flight_no: t.flight_no || null,
+    from_city: t.from_city || null,
+    from_date: t.from_date || null,
+    from_time: t.from_time || null,
+    to_city: t.to_city || null,
+    to_date: t.to_date || null,
+    to_time: t.to_time || null,
+    via: t.via || null,
+    sort_order: t.sort_order || index + 1
+  }));
+
+  await fetch(`${baseurl}/api/tour-transports/bulk`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ 
+      tour_id: id, 
+      items: transportPayload 
+    })
+  });
+}
 
       // Booking POI
       if (bookingPois.length > 0) {
@@ -1741,14 +1773,32 @@ useEffect(() => {
         });
       }
 
-      // 10) TRANSPORT BULK
-      if (transports.length > 0) {
-        await fetch(`${baseurl}/api/tour-transports/bulk`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ tour_id: tourId, items: transports })
-        });
-      }
+     // In createTour() function, replace the transport section (section 10):
+if (transports.length > 0) {
+  const transportPayload = transports.map((t, index) => ({
+    description: t.description || null,
+    airline: t.airline || null,
+    flight_no: t.flight_no || null,
+    from_city: t.from_city || null,
+    from_date: t.from_date || null,
+    from_time: t.from_time || null,
+    to_city: t.to_city || null,
+    to_date: t.to_date || null,
+    to_time: t.to_time || null,
+    via: t.via || null,
+    sort_order: t.sort_order || index + 1
+  }));
+
+  await fetch(`${baseurl}/api/tour-transports/bulk`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ 
+      tour_id: tourId, 
+      items: transportPayload 
+    })
+  });
+}
+
 
       // 11) BOOKING POI BULK
       if (bookingPois.length > 0) {
@@ -1828,9 +1878,9 @@ useEffect(() => {
         label: editingExclusionIndex !== -1 ? '✓ Update Exclusion' : '+ Add Exclusion', 
         onClick: handleAddExclusion 
       };
-    case 'transport':
+    case 'flights':  // Change from 'transport' to 'flights'
       return { 
-        label: editingTransportIndex !== -1 ? '✓ Update Transport' : '+ Add Flights', 
+        label: editingTransportIndex !== -1 ? '✓ Update Transport' : '+ Add Transport', 
         onClick: addTransportRow 
       };
     case 'hotels':

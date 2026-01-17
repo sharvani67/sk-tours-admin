@@ -302,43 +302,67 @@ const removeOptionalTourRow = (idx) => {
   // =======================
   // TRANSPORT FOR SENIOR CITIZEN TOURS
   // =======================
-  const [transportItem, setTransportItem] = useState({
-    description: '',
-    airline: '',
-    flight_no: '',
-    from_city: '',
-    from_date: '',
-    from_time: '',
-    to_city: '',
-    to_date: '',
-    to_time: '',
-    via: '',
-    sort_order: 1
-  });
 
-  const [transports, setTransports] = useState([]);
+   const [transports, setTransports] = useState([]);
 
+
+ // In your state declarations
+const [transportItem, setTransportItem] = useState({
+  description: '',
+  airline: '',
+  flight_no: '',
+  from_city: '',
+  from_date: '',
+  from_time: '',
+  to_city: '',
+  to_date: '',
+  to_time: '',
+  via: '',
+  sort_order: transports.length + 1  // Make sure sort_order is properly set
+});
+
+ 
   const handleTransportChange = (e) => {
     const { name, value } = e.target;
     setTransportItem(prev => ({ ...prev, [name]: value }));
   };
 
- const addTransportRow = () => {
-  if (!transportItem.airline || !transportItem.flight_no || !transportItem.from_city || !transportItem.to_city) {
+const addTransportRow = () => {
+  // Check for required fields
+  if (!transportItem.from_city || !transportItem.to_city) {
+    setError('Please fill at least From City and To City');
     return;
   }
 
+  // Create a clean transport item with null for empty strings
+  const cleanTransport = {
+    description: transportItem.description || null,
+    airline: transportItem.airline || null,
+    flight_no: transportItem.flight_no || null,
+    from_city: transportItem.from_city || null,
+    from_date: transportItem.from_date || null,
+    from_time: transportItem.from_time || null,
+    to_city: transportItem.to_city || null,
+    to_date: transportItem.to_date || null,
+    to_time: transportItem.to_time || null,
+    via: transportItem.via || null,
+    sort_order: transportItem.sort_order || transports.length + 1
+  };
+
   if (editingTransportIndex !== -1) {
-    // Update existing
+    // Update existing transport
     const updated = [...transports];
-    updated[editingTransportIndex] = { ...transportItem, sort_order: transports[editingTransportIndex].sort_order };
+    updated[editingTransportIndex] = cleanTransport;
     setTransports(updated);
     setEditingTransportIndex(-1);
+    setSuccess('Transport updated successfully');
   } else {
-    // Add new
-    setTransports(prev => [...prev, { ...transportItem, sort_order: prev.length + 1 }]);
+    // Add new transport
+    setTransports(prev => [...prev, cleanTransport]);
+    setSuccess('Transport added successfully');
   }
 
+  // Reset form
   setTransportItem({
     description: '',
     airline: '',
@@ -350,7 +374,7 @@ const removeOptionalTourRow = (idx) => {
     to_date: '',
     to_time: '',
     via: '',
-    sort_order: transports.length + 2
+    sort_order: transports.length + 2  // Update for next item
   });
 };
 
@@ -1309,11 +1333,11 @@ useEffect(() => {
       }
       break;
 
-    case 'transport':
-      if (transportItem.airline && transportItem.flight_no) {
-        addTransportRow();
-      }
-      break;
+    case 'flights':  // Change from 'transport' to 'flights'
+  return { 
+    label: editingTransportIndex !== -1 ? '✓ Update Transport' : '+ Add Transport', 
+    onClick: addTransportRow 
+  };
 
     case 'bookingPoi':
       if (poiText && poiText.trim()) {
@@ -1496,14 +1520,31 @@ useEffect(() => {
         });
       }
 
-      // Transport
-      if (transports.length > 0) {
-        await fetch(`${baseurl}/api/tour-transports/bulk`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ tour_id: id, items: transports })
-        });
-      }
+      // In updateTour() function, replace the transport section:
+if (transports.length > 0) {
+  const transportPayload = transports.map((t, index) => ({
+    description: t.description || null,
+    airline: t.airline || null,
+    flight_no: t.flight_no || null,
+    from_city: t.from_city || null,
+    from_date: t.from_date || null,
+    from_time: t.from_time || null,
+    to_city: t.to_city || null,
+    to_date: t.to_date || null,
+    to_time: t.to_time || null,
+    via: t.via || null,
+    sort_order: t.sort_order || index + 1
+  }));
+
+  await fetch(`${baseurl}/api/tour-transports/bulk`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ 
+      tour_id: id, 
+      items: transportPayload 
+    })
+  });
+}
 
       // Booking POI
       if (bookingPois.length > 0) {
@@ -1741,14 +1782,31 @@ useEffect(() => {
         });
       }
 
-      // 10) TRANSPORT BULK
-      if (transports.length > 0) {
-        await fetch(`${baseurl}/api/tour-transports/bulk`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ tour_id: tourId, items: transports })
-        });
-      }
+// In createTour() function, replace the transport section (section 10):
+if (transports.length > 0) {
+  const transportPayload = transports.map((t, index) => ({
+    description: t.description || null,
+    airline: t.airline || null,
+    flight_no: t.flight_no || null,
+    from_city: t.from_city || null,
+    from_date: t.from_date || null,
+    from_time: t.from_time || null,
+    to_city: t.to_city || null,
+    to_date: t.to_date || null,
+    to_time: t.to_time || null,
+    via: t.via || null,
+    sort_order: t.sort_order || index + 1
+  }));
+
+  await fetch(`${baseurl}/api/tour-transports/bulk`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ 
+      tour_id: tourId, 
+      items: transportPayload 
+    })
+  });
+}
 
       // 11) BOOKING POI BULK
       if (bookingPois.length > 0) {

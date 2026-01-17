@@ -312,21 +312,24 @@ const resetEditing = () => {
   // =======================
   // TRANSPORT FOR GROUP TOURS
   // =======================
-  const [transportItem, setTransportItem] = useState({
-    description: '',
-    airline: '',
-    flight_no: '',
-    from_city: '',
-    from_date: '',
-    from_time: '',
-    to_city: '',
-    to_date: '',
-    to_time: '',
-    via: '',
-    sort_order: 1
-  });
+ // In your state declarations
 
   const [transports, setTransports] = useState([]);
+
+const [transportItem, setTransportItem] = useState({
+  description: '',
+  airline: '',
+  flight_no: '',
+  from_city: '',
+  from_date: '',
+  from_time: '',
+  to_city: '',
+  to_date: '',
+  to_time: '',
+  via: '',
+  sort_order: transports.length + 1  // Make sure sort_order is properly set
+});
+
 
   const handleTransportChange = (e) => {
     const { name, value } = e.target;
@@ -749,7 +752,8 @@ const editInstruction = (idx) => {
         }
 
         // Set transport
-       if (data.transport && Array.isArray(data.transport)) {
+   // In loadTourData() function, transport section should already be correct:
+if (data.transport && Array.isArray(data.transport)) {
   const formattedTransports = data.transport.map(transport => ({
     ...transport,
     from_date: transport.from_date ? transport.from_date.split('T')[0] : '',
@@ -1575,15 +1579,31 @@ useEffect(() => {
         });
       }
 
-      // Transport
-      if (transports.length > 0) {
-        await fetch(`${baseurl}/api/tour-transports/bulk`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ tour_id: id, items: transports })
-        });
-      }
+     // In updateTour() function, replace the transport section:
+if (transports.length > 0) {
+  const transportPayload = transports.map((t, index) => ({
+    description: t.description || null,
+    airline: t.airline || null,
+    flight_no: t.flight_no || null,
+    from_city: t.from_city || null,
+    from_date: t.from_date || null,
+    from_time: t.from_time || null,
+    to_city: t.to_city || null,
+    to_date: t.to_date || null,
+    to_time: t.to_time || null,
+    via: t.via || null,
+    sort_order: t.sort_order || index + 1
+  }));
 
+  await fetch(`${baseurl}/api/tour-transports/bulk`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ 
+      tour_id: id, 
+      items: transportPayload 
+    })
+  });
+}
       // Booking POI
       if (bookingPois.length > 0) {
         await fetch(`${baseurl}/api/tour-booking-poi/bulk`, {
@@ -1825,13 +1845,31 @@ useEffect(() => {
       }
 
       // 10) TRANSPORT BULK
-      if (transports.length > 0) {
-        await fetch(`${baseurl}/api/tour-transports/bulk`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ tour_id: tourId, items: transports })
-        });
-      }
+      // In createTour() function, replace the transport section (section 10):
+if (transports.length > 0) {
+  const transportPayload = transports.map((t, index) => ({
+    description: t.description || null,
+    airline: t.airline || null,
+    flight_no: t.flight_no || null,
+    from_city: t.from_city || null,
+    from_date: t.from_date || null,
+    from_time: t.from_time || null,
+    to_city: t.to_city || null,
+    to_date: t.to_date || null,
+    to_time: t.to_time || null,
+    via: t.via || null,
+    sort_order: t.sort_order || index + 1
+  }));
+
+  await fetch(`${baseurl}/api/tour-transports/bulk`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ 
+      tour_id: tourId, 
+      items: transportPayload 
+    })
+  });
+}
 
       // 11) BOOKING POI BULK
       if (bookingPois.length > 0) {
@@ -1911,11 +1949,13 @@ useEffect(() => {
         label: editingExclusionIndex !== -1 ? '✓ Update Exclusion' : '+ Add Exclusion', 
         onClick: handleAddExclusion 
       };
-    case 'transport':
-      return { 
-        label: editingTransportIndex !== -1 ? '✓ Update Transport' : '+ Add Transport', 
-        onClick: addTransportRow 
-      };
+
+      case 'flights':  // Change from 'transport' to 'flights'
+  return { 
+    label: editingTransportIndex !== -1 ? '✓ Update Transport' : '+ Add Transport', 
+    onClick: addTransportRow 
+  };
+
     case 'hotels':
       return { 
         label: editingType === 'hotel' ? '✓ Update Hotel' : '+ Add Hotel', 
