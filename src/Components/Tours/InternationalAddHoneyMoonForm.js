@@ -103,6 +103,7 @@ const TAB_LIST = [
   'basic',
   'itineraries',
   'departures',
+   'costs',
   'optionalTours',
   'emiOptions',
   'inclusions',
@@ -1725,11 +1726,11 @@ const goBack = () => {
         }
         break;
 
-      case 'costs':
-        if (tourCostItem.pax) {
-          addCostRow();
-        }
-        break;
+      case 'costs': 
+      return { 
+        label: editingType === 'cost' ? 'Update Cost Row' : '+ Add Cost Row', 
+        onClick: addCostRow 
+      };
 
       case 'emiOptions':
         const hasAtLeastOneValidOption = emiOptions.some(option =>

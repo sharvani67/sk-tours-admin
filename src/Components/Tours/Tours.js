@@ -16,6 +16,7 @@ const Tours = () => {
   const [tourToDelete, setTourToDelete] = useState(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const navigate = useNavigate();
+  
 
   // Fetch Tours
   const fetchTours = async () => {

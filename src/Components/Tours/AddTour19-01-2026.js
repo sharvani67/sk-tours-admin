@@ -1263,42 +1263,14 @@ if (data.transport && Array.isArray(data.transport)) {
         });
       }
 
-
-      console.log('=== SENDING HOTELS DATA ===');
-console.log('Tour ID:', tourId || id);
-console.log('Hotel rows count:', hotelRows.length);
-console.log('Sample hotel row:', hotelRows[0]);
-console.log('All hotel rows:', JSON.stringify(hotelRows, null, 2));
-
-
       // 7) HOTELS
-  // Add try-catch with logging for the hotels API call
-try {
-  console.log(`Calling ${baseurl}/api/tour-hotels/bulk`);
-  const hotelResponse = await fetch(`${baseurl}/api/tour-hotels/bulk`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ 
-      tour_id: tourId || id, 
-      hotels: hotelRows 
-    })
-  });
-
-  console.log('Hotels API Response status:', hotelResponse.status);
-  console.log('Hotels API Response headers:', Object.fromEntries(hotelResponse.headers.entries()));
-  
-  const hotelResult = await hotelResponse.json();
-  console.log('Hotels API Response body:', hotelResult);
-
-  if (!hotelResponse.ok) {
-    throw new Error(`Hotels API failed: ${JSON.stringify(hotelResult)}`);
-  }
-
-  console.log('Hotels successfully saved:', hotelResult.message);
-} catch (hotelErr) {
-  console.error('Failed to save hotels:', hotelErr);
-  throw hotelErr; // Re-throw to be caught by outer try-catch
-}
+      if (hotelRows.length > 0) {
+        await fetch(`${baseurl}/api/tour-hotels/bulk`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tour_id: tourId, hotels: hotelRows })
+        });
+      }
 
       // 8) TRANSPORT
       if (transports.length > 0) {
