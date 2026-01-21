@@ -104,6 +104,8 @@ import INTLSeniorCitizenTourDetails from "./INTLSeniorCitizenDetails"
 import INTLStudentTourDetails from  "./INTLStudentDetails"
 import INTLHoneymoonTourDetails from "./INTLHoneymoonDetails"
 
+import Enquiries from './Components/Enquires';
+
 
 
 
@@ -243,6 +245,7 @@ function App() {
 
 
                 <Route path="/contact-us" element={<ContactUs />} />
+                <Route path="/enquiries" element={<Enquiries />} />
                 
               
 

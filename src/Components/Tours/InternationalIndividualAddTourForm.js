@@ -39,7 +39,6 @@ const [editingVisaItemId, setEditingVisaItemId] = useState(null);
 const [editingVisaFormIndex, setEditingVisaFormIndex] = useState(null);
 const [visaFormEditData, setVisaFormEditData] = useState({
   type: '',
-  download_text: '',
   download_action: '',
   fill_action: '',
   action1_file: null,
@@ -51,7 +50,7 @@ const editVisaFormItem = (index) => {
   const formItem = visaFormItems[index];
   setVisaFormEditData({
     type: formItem.type,
-    download_text: formItem.download_text,
+    // download_text: formItem.download_text,
     download_action: formItem.download_action,
     fill_action: formItem.fill_action,
     action1_file: formItem.action1_file,
@@ -80,7 +79,6 @@ const resetVisaFormEdit = () => {
   setEditingVisaFormIndex(null);
   setVisaFormEditData({
     type: '',
-    download_text: '',
     download_action: '',
     fill_action: '',
     action1_file: null,
@@ -107,7 +105,6 @@ const resetVisaEditing = () => {
   // Reset visa form edit data
   setVisaFormEditData({
     type: '',
-    download_text: '',
     download_action: '',
     fill_action: '',
     action1_file: null,
@@ -355,7 +352,7 @@ const [businessVisaForm, setBusinessVisaForm] = useState({ description: '' });
 const [visaFormItems, setVisaFormItems] = useState([
   {
     type: 'Tourist Visa',
-    download_text: 'Tourist Visa Form Download',
+    // download_text: 'Tourist Visa Form Download',
     download_action: 'Download',
     fill_action: 'Fill Manually',
     action1_file: null, // PDF upload
@@ -363,7 +360,7 @@ const [visaFormItems, setVisaFormItems] = useState([
   },
   {
     type: 'Transit Visa',
-    download_text: 'Transit Visa Form Download',
+    // download_text: 'Transit Visa Form Download',
     download_action: 'Download',
     fill_action: 'Fill Manually',
     action1_file: null,
@@ -371,7 +368,7 @@ const [visaFormItems, setVisaFormItems] = useState([
   },
   {
     type: 'Business Visa',
-    download_text: 'Business Visa Form Download',
+    // download_text: 'Business Visa Form Download',
     download_action: 'Download',
     fill_action: 'Fill Manually',
     action1_file: null,
@@ -1173,7 +1170,7 @@ const resetEditing = () => {
   if (editingVisaFormIndex !== null) {
     setVisaFormEditData({
       type: '',
-      download_text: '',
+      // download_text: '',
       download_action: '',
       fill_action: '',
       action1_file: null,
@@ -1807,7 +1804,7 @@ useEffect(() => {
       if (data.visa_forms && Array.isArray(data.visa_forms)) {
         const formattedForms = data.visa_forms.map(form => ({
           type: form.visa_type,
-          download_text: form.download_text,
+          // download_text: form.download_text,
           download_action: form.download_action,
           fill_action: form.fill_action,
           action1_file: form.action1_file, // Keep the filename string
@@ -2067,47 +2064,62 @@ const goBack = () => {
         });
       }
 
-  // In createTour and updateTour functions, update the visaData preparation:
-const visaData = {
+ const visaData = {
   tourist_visa: touristVisaItems,
   transit_visa: transitVisaItems,
   business_visa: businessVisaItems,
-   visa_forms: uploadedVisaForms.map(form => ({
-    type: form.type,
-    download_text: form.download_text,
+  visa_forms: uploadedVisaForms.map(form => ({
+    visa_type: form.type, // Use 'visa_type' to match backend
     download_action: form.download_action,
     fill_action: form.fill_action,
-    action1_file: form.action1_file, // Filename string
-    action2_file: form.action2_file  // Filename string
+    action1_file: form.action1_file, // Already a filename string
+    action2_file: form.action2_file
   })),
   photo: [...photoItems, ...freeFlowPhotoEntries],
-   visa_fees: [...visaFeesRows, extendableRow].map((row, index) => ({
-    row_type: row.type,
+  // Visa Fees: Combine fixed rows and free-flow entries
+  visa_fees: [...visaFeesRows].map((row, index) => ({
+    type: row.type, // Backend expects 'type' or 'row_type'
     tourist: row.tourist || '',
     transit: row.transit || '',
     business: row.business || '',
     tourist_charges: row.tourist_charges || '',
     transit_charges: row.transit_charges || '',
     business_charges: row.business_charges || '',
-    row_order: index
+    row_order: index // Important for proper ordering
   })),
+  // Submission data
   submission: submissionRows.map((row, index) => ({
     label: row.label,
     tourist: row.tourist,
     transit: row.transit,
     business: row.business,
-    row_order: index
+    row_order: index // Important for ordering
   })),
   tourist_visa_remarks: touristVisaRemarks
 };
 
-          if (touristVisaItems.length > 0 || transitVisaItems.length > 0 || businessVisaItems.length > 0 || photoItems.length > 0) {
-            await fetch(`${baseurl}/api/visa/bulk`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ tour_id: tourId, ...visaData })
-            });
-          }
+      // Inside your try block, where you make the visa bulk API call:
+if (touristVisaItems.length > 0 || transitVisaItems.length > 0 || businessVisaItems.length > 0 || photoItems.length > 0) {
+  console.log('📤 Sending visa data to backend:', {
+    tour_id: tourId, // or id for updateTour
+    visaData: visaData // This will show the exact structure
+  });
+  
+  const visaResponse = await fetch(`${baseurl}/api/visa/bulk`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ tour_id: tourId, ...visaData })
+  });
+  
+  const visaResult = await visaResponse.json();
+  
+  if (!visaResponse.ok) {
+    console.error('❌ Visa API Error:', visaResult);
+    throw new Error(`Visa save failed: ${visaResult.error || visaResponse.statusText}`);
+  }
+  
+  console.log('✅ Visa data saved:', visaResult);
+}
 
       // 8) TRANSPORT
       if (transports.length > 0) {
@@ -2360,34 +2372,62 @@ const visaData = {
     const uploadedVisaForms = await uploadVisaFormFiles(id, visaFormItems);
 
 
-      // Add visa data
-      // In createTour and updateTour functions, update the visaData preparation:
-const visaData = {
+    const visaData = {
   tourist_visa: touristVisaItems,
   transit_visa: transitVisaItems,
   business_visa: businessVisaItems,
-  visa_forms: uploadedVisaForms, // Use the uploaded forms with filenames
+  visa_forms: uploadedVisaForms.map(form => ({
+    visa_type: form.type, // Use 'visa_type' to match backend
+    download_action: form.download_action,
+    fill_action: form.fill_action,
+    action1_file: form.action1_file, // Already a filename string
+    action2_file: form.action2_file
+  })),
   photo: [...photoItems, ...freeFlowPhotoEntries],
-  visa_fees: visaFeesRows.map(row => ({
-    type: row.type,
+  // Visa Fees: Combine fixed rows and free-flow entries
+  visa_fees: [...visaFeesRows].map((row, index) => ({
+    type: row.type, // Backend expects 'type' or 'row_type'
+    tourist: row.tourist || '',
+    transit: row.transit || '',
+    business: row.business || '',
+    tourist_charges: row.tourist_charges || '',
+    transit_charges: row.transit_charges || '',
+    business_charges: row.business_charges || '',
+    row_order: index // Important for proper ordering
+  })),
+  // Submission data
+  submission: submissionRows.map((row, index) => ({
+    label: row.label,
     tourist: row.tourist,
     transit: row.transit,
     business: row.business,
-    tourist_charges: row.tourist_charges,
-    transit_charges: row.transit_charges,
-    business_charges: row.business_charges
+    row_order: index // Important for ordering
   })),
-  submission: submissionRows,
   tourist_visa_remarks: touristVisaRemarks
 };
 
-      if (touristVisaItems.length > 0 || transitVisaItems.length > 0 || businessVisaItems.length > 0 || photoItems.length > 0) {
-        await fetch(`${baseurl}/api/visa/bulk`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ tour_id: id, ...visaData })
-        });
-      }
+// Inside your try block, where you make the visa bulk API call:
+if (touristVisaItems.length > 0 || transitVisaItems.length > 0 || businessVisaItems.length > 0 || photoItems.length > 0) {
+  console.log('📤 Sending visa data to backend:', {
+    tour_id: id, // or id for updateTour
+    visaData: visaData // This will show the exact structure
+  });
+  
+  const visaResponse = await fetch(`${baseurl}/api/visa/bulk`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ tour_id: id, ...visaData })
+  });
+  
+  const visaResult = await visaResponse.json();
+  
+  if (!visaResponse.ok) {
+    console.error('❌ Visa API Error:', visaResult);
+    throw new Error(`Visa save failed: ${visaResult.error || visaResponse.statusText}`);
+  }
+  
+  console.log('✅ Visa data saved:', visaResult);
+}
 
       // Booking POI
       if (bookingPois.length > 0) {
@@ -2448,7 +2488,7 @@ const uploadVisaFormFiles = async (tourId, visaForms) => {
   for (const form of visaForms) {
     const formData = {
       type: form.type,
-      download_text: form.download_text,
+      // download_text: form.download_text,
       download_action: form.download_action,
       fill_action: form.fill_action,
       action1_file: null,
@@ -3778,7 +3818,7 @@ const handleSaveClick = () => {
                                 />
                               </Form.Group>
                             </Col>
-                            <Col md={6}>
+                            {/* <Col md={6}>
                               <Form.Group className="mb-3">
                                 <Form.Label>Download Text</Form.Label>
                                 <Form.Control
@@ -3788,7 +3828,7 @@ const handleSaveClick = () => {
                                   onChange={handleVisaFormEditChange}
                                 />
                               </Form.Group>
-                            </Col>
+                            </Col> */}
                           </Row>
                           <Row>
                             <Col md={6}>

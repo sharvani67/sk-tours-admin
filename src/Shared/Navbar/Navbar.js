@@ -10,7 +10,7 @@ import {
 } from "react-bootstrap";
 import {
   FiMenu,FiHome,FiUsers,FiUser, FiLogOut,FiX, FiBell,FiClock,FiFlag,FiMap,FiMapPin,FiGift,FiArchive,FiAnchor,FiSettings,
-  FiVideo,FiInfo,FiGlobe
+  FiVideo,FiInfo,FiGlobe,FiMessageSquare
 } from "react-icons/fi";
 
 import { useNavigate, useLocation } from "react-router-dom";
@@ -314,6 +314,13 @@ const Navbar = ({ children }) => {
     icon: <FiUsers className="sidebar-icon" />, // You might want to use a more appropriate icon like FiMail
     matchPaths: ["/contact-us"],
   },
+
+  {
+  label: "Enquiries",
+  path: "/enquiries",
+  icon: <FiMessageSquare className="sidebar-icon" />, // You might need to import FiMessageSquare from react-icons/fi
+  matchPaths: ["/enquiries"],
+},
   
 ];
   const handleNavClick = (label, path) => {
