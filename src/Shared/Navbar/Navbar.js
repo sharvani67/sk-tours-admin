@@ -10,7 +10,7 @@ import {
 } from "react-bootstrap";
 import {
   FiMenu,FiHome,FiUsers,FiUser, FiLogOut,FiX, FiBell,FiClock,FiFlag,FiMap,FiMapPin,FiGift,FiArchive,FiAnchor,FiSettings,
-  FiVideo,FiInfo,FiGlobe,FiMessageSquare
+  FiVideo,FiInfo,FiGlobe,FiMessageSquare,FiDollarSign 
 } from "react-icons/fi";
 
 import { useNavigate, useLocation } from "react-router-dom";
@@ -320,6 +320,14 @@ const Navbar = ({ children }) => {
   path: "/enquiries",
   icon: <FiMessageSquare className="sidebar-icon" />, // You might need to import FiMessageSquare from react-icons/fi
   matchPaths: ["/enquiries"],
+},
+
+// Add this to your navStructure array, for example after "Enquiries"
+{
+  label: "Payments",
+  path: "/payments",
+  icon: <FiDollarSign className="sidebar-icon" />, // You need to import FiDollarSign
+  matchPaths: ["/payments"],
 },
   
 ];
