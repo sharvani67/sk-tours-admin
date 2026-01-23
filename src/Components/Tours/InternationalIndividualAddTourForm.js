@@ -1987,7 +1987,8 @@ const goBack = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
   ...formData,
-  optional_tour_remarks: formData.optional_tour_remarks || '' // Ensure it's included
+  optional_tour_remarks: formData.optional_tour_remarks || '', // Ensure it's included
+  transport_remarks: formData.transport_remarks || '' // Ensure it's included
 })
       });
 
@@ -3428,62 +3429,74 @@ const handleSaveClick = () => {
                 )}
               </Tab>
 
-              <Tab eventKey="transport" title="Flights">
-                <Row className="mt-3">
-                  <Col md={12}>
-                    <Form.Group>
-                      <Form.Label>Flights Details</Form.Label>
-                      <Form.Control
-                        as="textarea"
-                        rows={4}
-                        name="description"
-                        value={transportItem.description}
-                        onChange={handleTransportChange}
-                      />
-                    </Form.Group>
-                  </Col>
-                </Row>
+            <Tab eventKey="transport" title="Flights">
+  <Row className="mt-3">
+    <Col md={12}>
+      <Form.Group>
+        <Form.Label>Flights Details</Form.Label>
+        <Form.Control
+          as="textarea"
+          rows={4}
+          name="description"
+          value={transportItem.description}
+          onChange={handleTransportChange}
+        />
+      </Form.Group>
+    </Col>
+  </Row>
 
-                {transports.length > 0 && (
-                  <Table striped bordered hover size="sm" className="mt-3">
-                    <thead>
-                      <tr>
-                        <th>#</th>
-                        <th>Description</th>
-                        <th>Action</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {transports.map((t, idx) => (
-                        <tr key={idx}>
-                          <td>{idx + 1}</td>
-                          <td>{t.description || 'NA'}</td>
-                          <td>
-                            <div className="d-flex gap-1">
-                              <Button
-                                variant="outline-warning"
-                                size="sm"
-                                onClick={() => editTransportRow(idx)}
-                                title="Edit"
-                              >
-                                <Pencil size={14} />
-                              </Button>
-                              <Button
-                                variant="outline-danger"
-                                size="sm"
-                                onClick={() => removeTransportRow(idx)}
-                                title="Remove"
-                              >
-                                <Trash size={14} />
-                              </Button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </Table>
-                )}
-              </Tab>
+  {/* Add Transport Remarks field */}
+  <Form.Group className="mt-3">
+    <Form.Label>Flights Remarks</Form.Label>
+    <Form.Control
+      as="textarea"
+      rows={3}
+      name="transport_remarks"
+      value={formData.transport_remarks}
+      onChange={handleBasicChange}
+    />
+  </Form.Group>
+
+  {transports.length > 0 && (
+    <Table striped bordered hover size="sm" className="mt-3">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Description</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {transports.map((t, idx) => (
+          <tr key={idx}>
+            <td>{idx + 1}</td>
+            <td>{t.description || 'NA'}</td>
+            <td>
+              <div className="d-flex gap-1">
+                <Button
+                  variant="outline-warning"
+                  size="sm"
+                  onClick={() => editTransportRow(idx)}
+                  title="Edit"
+                >
+                  <Pencil size={14} />
+                </Button>
+                <Button
+                  variant="outline-danger"
+                  size="sm"
+                  onClick={() => removeTransportRow(idx)}
+                  title="Remove"
+                >
+                  <Trash size={14} />
+                </Button>
+              </div>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </Table>
+  )}
+</Tab>
 
              <Tab eventKey="hotels" title="Hotels">
                              <Row className="align-items-end">

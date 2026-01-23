@@ -2094,7 +2094,8 @@ const createTour = async () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
     ...formData,
-    optional_tour_remarks: formData.optional_tour_remarks || '' // ← ADD THIS LINE
+    optional_tour_remarks: formData.optional_tour_remarks || '',
+     transport_remarks: formData.transport_remarks || '' // ← ADD THIS LINE
   })
       });
 
@@ -3231,7 +3232,7 @@ const handleSaveClick = () => {
                 )}
               </Tab>
 
-              <Tab eventKey="transport" title="Flights">
+                   <Tab eventKey="transport" title="Flights">
                 <Row className="mt-3">
                   <Col md={12}>
                     <Form.Group>
@@ -3246,7 +3247,19 @@ const handleSaveClick = () => {
                     </Form.Group>
                   </Col>
                 </Row>
-
+              
+                {/* Add Transport Remarks field */}
+                <Form.Group className="mt-3">
+                  <Form.Label>Flights Remarks</Form.Label>
+                  <Form.Control
+                    as="textarea"
+                    rows={3}
+                    name="transport_remarks"
+                    value={formData.transport_remarks}
+                    onChange={handleBasicChange}
+                  />
+                </Form.Group>
+              
                 {transports.length > 0 && (
                   <Table striped bordered hover size="sm" className="mt-3">
                     <thead>
@@ -3287,6 +3300,7 @@ const handleSaveClick = () => {
                   </Table>
                 )}
               </Tab>
+              
 
              <Tab eventKey="hotels" title="Hotels">
                                           <Row className="align-items-end">

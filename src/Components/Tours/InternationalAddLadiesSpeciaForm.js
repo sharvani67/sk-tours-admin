@@ -3094,7 +3094,7 @@ const handleSaveClick = () => {
                         
                             {/* 3-Star Hotel Prices - Add directly in departures */}
                             <Row className="mb-4">
-                              <h6>3-Star Hotel Prices</h6>
+                              <h6>Standard Hotel Prices</h6>
                               <Col md={2}>
                                 <Form.Group>
                                   <Form.Label>Twin Sharing</Form.Label>
@@ -3171,7 +3171,7 @@ const handleSaveClick = () => {
                         
                             {/* 4-Star Hotel Prices */}
                             <Row className="mb-4">
-                              <h6>4-Star Hotel Prices</h6>
+                              <h6>Deluxe Hotel Prices</h6>
                               <Col md={2}>
                                 <Form.Group>
                                   <Form.Label>Twin Sharing</Form.Label>
@@ -3248,7 +3248,7 @@ const handleSaveClick = () => {
                         
                             {/* 5-Star Hotel Prices */}
                             <Row className="mb-4">
-                              <h6>5-Star Hotel Prices</h6>
+                              <h6>Luxary Hotel Prices</h6>
                               <Col md={2}>
                                 <Form.Group>
                                   <Form.Label>Twin Sharing</Form.Label>
