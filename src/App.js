@@ -107,6 +107,8 @@ import INTLHoneymoonTourDetails from "./INTLHoneymoonDetails"
 import Enquiries from './Components/Enquires/Enquires';
 import Payments from "./Components/Payments/Payments"
 
+import AdminCarousel from "./Components/Home/AdminCarousel";
+
 
 
 
@@ -243,6 +245,7 @@ function App() {
                 <Route path="/add-video" element={<AdminVideoManager />} /> 
                 <Route path="/add-card" element={<AdminDomesticTours />} />
                 <Route path="/leadspopup" element={<AdminLeads />} />
+                 <Route path="/carousel-images" element={<AdminCarousel />} />
 
 
                 <Route path="/contact-us" element={<ContactUs />} />
