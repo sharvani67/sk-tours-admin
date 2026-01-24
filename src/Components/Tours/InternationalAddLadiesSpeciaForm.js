@@ -222,13 +222,7 @@ const TAB_LIST = [
     if (!optionalTourItem.tour_name.trim()) return;
 
     const processedItem = {
-      ...optionalTourItem,
-      adult_price: optionalTourItem.adult_price
-        ? Number(optionalTourItem.adult_price)
-        : '',
-      child_price: optionalTourItem.child_price
-        ? Number(optionalTourItem.child_price)
-        : ''
+      ...optionalTourItem
     };
 
     setOptionalTours(prev => [...prev, processedItem]);
@@ -2527,7 +2521,7 @@ const visaData = {
     action2_file: form.action2_file  // Filename string
   })),
   photo: [...photoItems, ...freeFlowPhotoEntries],
-   visa_fees: [...visaFeesRows, extendableRow].map((row, index) => ({
+   visa_fees: [...visaFeesRows].map((row, index) => ({
     row_type: row.type,
     tourist: row.tourist || '',
     transit: row.transit || '',
@@ -3416,7 +3410,7 @@ const handleSaveClick = () => {
                     <Form.Group>
                       <Form.Label>Adult Price</Form.Label>
                       <Form.Control
-                        type="number"
+                        type="text"
                         name="adult_price"
                         value={optionalTourItem.adult_price}
                         onChange={handleOptionalTourChange}
@@ -3429,7 +3423,7 @@ const handleSaveClick = () => {
                     <Form.Group>
                       <Form.Label>Child Price</Form.Label>
                       <Form.Control
-                        type="number"
+                        type="text"
                         name="child_price"
                         value={optionalTourItem.child_price}
                         onChange={handleOptionalTourChange}

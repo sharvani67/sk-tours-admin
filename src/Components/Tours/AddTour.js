@@ -405,9 +405,7 @@ const addOptionalTourRow = () => {
   if (!optionalTourItem.tour_name.trim()) return;
 
   const processedItem = {
-    ...optionalTourItem,
-    adult_price: optionalTourItem.adult_price ? Number(optionalTourItem.adult_price) : '',
-    child_price: optionalTourItem.child_price ? Number(optionalTourItem.child_price) : ''
+    ...optionalTourItem
   };
 
   if (editingType === 'optionalTour' && editIndex !== -1) {
@@ -2131,7 +2129,7 @@ useEffect(() => {
                     <Form.Group>
                       <Form.Label>Adult Price</Form.Label>
                       <Form.Control
-                        type="number"
+                        type="text"
                         name="adult_price"
                         value={optionalTourItem.adult_price}
                         onChange={handleOptionalTourChange}
@@ -2144,7 +2142,7 @@ useEffect(() => {
                     <Form.Group>
                       <Form.Label>Child Price</Form.Label>
                       <Form.Control
-                        type="number"
+                        type="text"
                         name="child_price"
                         value={optionalTourItem.child_price}
                         onChange={handleOptionalTourChange}
