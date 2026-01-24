@@ -1111,27 +1111,43 @@ const cancelEditImage = () => {
     setTransportItem(prev => ({ ...prev, [name]: value }));
   };
 
-  const addTransportRow = () => {
-    if (!transportItem.airline || !transportItem.flight_no || !transportItem.from_city || !transportItem.to_city) {
-      return;
-    }
+  // Update the addTransportRow function
+const addTransportRow = () => {
+  if (!transportItem.airline || !transportItem.flight_no || !transportItem.from_city || !transportItem.to_city) {
+    return;
+  }
 
-    setTransports(prev => [...prev, { ...transportItem, sort_order: prev.length + 1 }]);
+  if (editingTransportIndex !== -1) {
+    // Update existing transport
+    const updatedTransports = [...transports];
+    updatedTransports[editingTransportIndex] = { ...transportItem };
+    setTransports(updatedTransports);
+    setEditingTransportIndex(-1); // Reset editing index
+    setSuccess('Transport updated successfully');
+  } else {
+    // Add new transport
+    setTransports(prev => [...prev, { 
+      ...transportItem, 
+      sort_order: prev.length + 1 
+    }]);
+    setSuccess('Transport added successfully');
+  }
 
-    setTransportItem({
-      description: '',
-      airline: '',
-      flight_no: '',
-      from_city: '',
-      from_date: '',
-      from_time: '',
-      to_city: '',
-      to_date: '',
-      to_time: '',
-      via: '',
-      sort_order: transports.length + 2
-    });
-  };
+  // Reset form
+  setTransportItem({
+    description: '',
+    airline: '',
+    flight_no: '',
+    from_city: '',
+    from_date: '',
+    from_time: '',
+    to_city: '',
+    to_date: '',
+    to_time: '',
+    via: '',
+    sort_order: transports.length + 1
+  });
+};
 
  const editTransportRow = (idx) => {
   const item = transports[idx];
