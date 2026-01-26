@@ -59,9 +59,9 @@ const AddInternationalCountry = () => {
     }));
   };
 
-  const handleBack = () => navigate('/international-countries');
+  const handleBack = () => navigate('/intl-countries');
 
-  const handleSubmit = async (e) => {
+  const   handleSubmit = async (e) => {
     e.preventDefault();
 
     // Basic validation
@@ -102,7 +102,7 @@ const AddInternationalCountry = () => {
         setSuccess(message);
 
         setTimeout(() => {
-          navigate('/international-countries');
+          navigate('/intl-countries');
         }, 1500);
       } else {
         setError(result.message || result.error || 

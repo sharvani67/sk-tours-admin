@@ -3006,7 +3006,7 @@ const handleSaveClick = () => {
 
                   <Col md={6}>
                    <Form.Group className="mb-3">
-                        <Form.Label>International States *</Form.Label>
+                        <Form.Label>International Destinations *</Form.Label>
                               <Form.Select
                                   name="primary_destination_id"
                                   value={formData.primary_destination_id}

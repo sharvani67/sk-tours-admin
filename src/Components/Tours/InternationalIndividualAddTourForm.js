@@ -545,7 +545,7 @@ const removeVisaFeesRow = (id) => {
 };
 
 // Submission & Pick Up
-// Add these states near your other state declarations
+// Add these Destinations near your other state declarations
 const [submissionRows, setSubmissionRows] = useState([
   { 
     id: 1,
@@ -2866,7 +2866,7 @@ const handleSaveClick = () => {
 
                   <Col md={6}>
                     <Form.Group className="mb-3">
-                      <Form.Label>International States *</Form.Label>
+                      <Form.Label>International Destinations *</Form.Label>
                       <Form.Select
                         name="primary_destination_id"
                         value={formData.primary_destination_id}
