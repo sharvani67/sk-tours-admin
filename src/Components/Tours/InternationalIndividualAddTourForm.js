@@ -88,6 +88,7 @@ const resetVisaFormEdit = () => {
 
 
 // Reset editing context for visa items
+// In resetVisaEditing function
 const resetVisaEditing = () => {
   setEditingItem(null);
   setEditingType('');
@@ -95,7 +96,7 @@ const resetVisaEditing = () => {
   setEditingVisaItemId(null);
   setEditingVisaFormIndex(null);
   
-  // Also reset form fields
+  // Reset form fields
   setTouristVisaForm({ description: '' });
   setTransitVisaForm({ description: '' });
   setBusinessVisaForm({ description: '' });
@@ -110,6 +111,15 @@ const resetVisaEditing = () => {
     action1_file: null,
     action2_file: null
   });
+  
+  // Reset remarks (optional - you might not want to reset these on edit)
+  // setTouristVisaRemarks('');
+  // setTransitVisaRemarks('');
+  // setBusinessVisaRemarks('');
+  // setVisaFormRemarks('');
+  // setPhotoRemarks('');
+  // setVisaFeesRemarks('');
+  // setSubmissionPickupRemarks('');
 };
 
 
@@ -174,6 +184,7 @@ const handleVisaFormFileChangeWithEdit = async (index, action, file) => {
     tour_type: "individual",
     title: '',
     category_id: 1,
+     country_id: '', // Add this line
     primary_destination_id: '',
     duration_days: '',
     overview: '',
@@ -376,14 +387,11 @@ const [visaFormItems, setVisaFormItems] = useState([
   }
 ]);
 
-// Add state for tourist visa remarks (free flow field)
-const [touristVisaRemarks, setTouristVisaRemarks] = useState('');
+
 
 // Photo
 const [photoItems, setPhotoItems] = useState([]);
 const [photoForm, setPhotoForm] = useState({ description: '' });
-
-
 
 
 
@@ -538,7 +546,7 @@ const removeVisaFeesRow = (id) => {
 };
 
 // Submission & Pick Up
-// Add these states near your other state declarations
+// Add these Destinations near your other state declarations
 const [submissionRows, setSubmissionRows] = useState([
   { 
     id: 1,
@@ -614,6 +622,47 @@ const handleSubmissionValueChange = (id, field, value) => {
     row.id === id ? { ...row, [field]: value } : row
   );
   setSubmissionRows(updated);
+};
+
+
+
+// Add these with other visa state variables
+const [touristVisaRemarks, setTouristVisaRemarks] = useState('');
+const [transitVisaRemarks, setTransitVisaRemarks] = useState('');
+const [businessVisaRemarks, setBusinessVisaRemarks] = useState('');
+const [visaFormRemarks, setVisaFormRemarks] = useState('');
+const [photoRemarks, setPhotoRemarks] = useState('');
+const [visaFeesRemarks, setVisaFeesRemarks] = useState('');
+const [submissionPickupRemarks, setSubmissionPickupRemarks] = useState('');
+
+
+// Add these with other handler functions
+const handleTouristVisaRemarksChange = (e) => {
+  setTouristVisaRemarks(e.target.value);
+};
+
+const handleTransitVisaRemarksChange = (e) => {
+  setTransitVisaRemarks(e.target.value);
+};
+
+const handleBusinessVisaRemarksChange = (e) => {
+  setBusinessVisaRemarks(e.target.value);
+};
+
+const handleVisaFormRemarksChange = (e) => {
+  setVisaFormRemarks(e.target.value);
+};
+
+const handlePhotoRemarksChange = (e) => {
+  setPhotoRemarks(e.target.value);
+};
+
+const handleVisaFeesRemarksChange = (e) => {
+  setVisaFeesRemarks(e.target.value);
+};
+
+const handleSubmissionPickupRemarksChange = (e) => {
+  setSubmissionPickupRemarks(e.target.value);
 };
 
   // ========================
@@ -1300,6 +1349,7 @@ const removePhoto = (idx) => {
       'emi_price', // ← Add this
       'category_id',
       'primary_destination_id',
+       'country_id', // Add this
       'is_international'
     ];
     const finalValue = numericFields.includes(name)
@@ -1573,9 +1623,6 @@ const handleVisaFormFileUpload = async (tourId, visaType, actionType, file) => {
 
 
 // Handler for tourist visa remarks
-const handleTouristVisaRemarksChange = (e) => {
-  setTouristVisaRemarks(e.target.value);
-};
 
 const handleVisaFeesChange = (id, field, value) => {
   const updated = visaFeesRows.map(row => 
@@ -1618,7 +1665,7 @@ useEffect(() => {
 
       const destRes = await fetch(`${baseurl}/api/destinations`);
       const destData = await destRes.json();
-
+console.log('Fetched destinations:', destData);
        // Filter for international destinations only (is_domestic == 0)
       const internationalDestinations = Array.isArray(destData) 
         ? destData.filter(destination => destination.is_domestic == 0)
@@ -1678,6 +1725,7 @@ useEffect(() => {
           title: basic.title || '',
           category_id: basic.category_id || 1,
           primary_destination_id: basic.primary_destination_id || '',
+           country_id: basic.country_id || '', // Add this
           duration_days: basic.duration_days || '',
           overview: basic.overview || '',
           base_price_adult: basic.base_price_adult || '',
@@ -1810,15 +1858,40 @@ useEffect(() => {
           action1_file: form.action1_file, // Keep the filename string
           action2_file: form.action2_file, // Keep the filename string
           action1_file_url: form.action1_file_url || null,
-          action2_file_url: form.action2_file_url || null
+          action2_file_url: form.action2_file_url || null,
+          remarks: form.remarks || '' // This is just general visa form remarks
         }));
         setVisaFormItems(formattedForms);
-        
-        // Load remarks from the first visa form
-        if (data.visa_forms.length > 0 && data.visa_forms[0].remarks) {
-          setTouristVisaRemarks(data.visa_forms[0].remarks);
-        }
       }
+
+      // Load all remarks - Get from first visa form
+
+      // WITH this new section:
+// Load all remarks from the new visa_remarks object
+if (data.visa_remarks) {
+  setTouristVisaRemarks(data.visa_remarks.tourist_visa || '');
+  setTransitVisaRemarks(data.visa_remarks.transit_visa || '');
+  setBusinessVisaRemarks(data.visa_remarks.business_visa || '');
+  setVisaFormRemarks(data.visa_remarks.visa_form || '');
+  setPhotoRemarks(data.visa_remarks.photo || '');
+  setVisaFeesRemarks(data.visa_remarks.visa_fees || '');
+  setSubmissionPickupRemarks(data.visa_remarks.submission_pickup || '');
+} else {
+  // Fallback to old structure if visa_remarks doesn't exist yet
+  console.warn('visa_remarks not found in response, using fallback');
+  if (data.visa_forms && data.visa_forms.length > 0) {
+    const firstForm = data.visa_forms[0];
+    setTouristVisaRemarks(firstForm.tourist_remarks || '');
+    setTransitVisaRemarks(firstForm.transit_remarks || '');
+    setBusinessVisaRemarks(firstForm.business_remarks || '');
+    setVisaFormRemarks(firstForm.visa_form_remarks || '');
+    setPhotoRemarks(firstForm.photo_remarks || '');
+    setVisaFeesRemarks(firstForm.visa_fees_remarks || '');
+    setSubmissionPickupRemarks(firstForm.submission_pickup_remarks || '');
+  }
+}
+
+
       
       // Load Visa Fees - Update this part
       if (data.visa_fees && Array.isArray(data.visa_fees)) {
@@ -1987,6 +2060,7 @@ const goBack = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
   ...formData,
+     country_id: formData.country_id, // Add this
   optional_tour_remarks: formData.optional_tour_remarks || '', // Ensure it's included
   transport_remarks: formData.transport_remarks || '' // Ensure it's included
 })
@@ -2096,7 +2170,16 @@ const goBack = () => {
     business: row.business,
     row_order: index // Important for ordering
   })),
-  tourist_visa_remarks: touristVisaRemarks
+
+    // Add all remarks fields
+  tourist_visa_remarks: touristVisaRemarks,
+  transit_visa_remarks: transitVisaRemarks,
+  business_visa_remarks: businessVisaRemarks,
+  visa_form_remarks: visaFormRemarks,
+  photo_remarks: photoRemarks,
+  visa_fees_remarks: visaFeesRemarks,
+  submission_pickup_remarks: submissionPickupRemarks
+
 };
 
       // Inside your try block, where you make the visa bulk API call:
@@ -2223,6 +2306,7 @@ if (touristVisaItems.length > 0 || transitVisaItems.length > 0 || businessVisaIt
         title: formData.title.trim(),
         tour_type: formData.tour_type || 'individual',
         primary_destination_id: formData.primary_destination_id,
+          country_id: formData.country_id, // Add this
         duration_days: Number(formData.duration_days) || 0,
         overview: formData.overview || '',
         base_price_adult: Number(formData.base_price_adult) || 0,
@@ -2404,7 +2488,16 @@ if (touristVisaItems.length > 0 || transitVisaItems.length > 0 || businessVisaIt
     business: row.business,
     row_order: index // Important for ordering
   })),
-  tourist_visa_remarks: touristVisaRemarks
+
+    // Add all remarks fields
+  tourist_visa_remarks: touristVisaRemarks,
+  transit_visa_remarks: transitVisaRemarks,
+  business_visa_remarks: businessVisaRemarks,
+  visa_form_remarks: visaFormRemarks,
+  photo_remarks: photoRemarks,
+  visa_fees_remarks: visaFeesRemarks,
+  submission_pickup_remarks: submissionPickupRemarks
+
 };
 
 // Inside your try block, where you make the visa bulk API call:
@@ -2777,24 +2870,34 @@ const handleSaveClick = () => {
                   </Col>
 
                   <Col md={6}>
-                    <Form.Group className="mb-3">
-                      <Form.Label>International States *</Form.Label>
-                      <Form.Select
-                        name="primary_destination_id"
-                        value={formData.primary_destination_id}
-                        onChange={handleBasicChange}
-                      >
-                        <option value="">Select Destination</option>
-                        {destinations.map((d) => (
-                          <option
-                            key={d.destination_id}
-                            value={d.destination_id}
-                          >
-                            {d.name}
-                          </option>
-                        ))}
-                      </Form.Select>
-                    </Form.Group>
+               <Form.Group className="mb-3">
+  <Form.Label>International Destinations *</Form.Label>
+  <Form.Select
+    name="primary_destination_id"
+    value={formData.primary_destination_id}
+    onChange={(e) => {
+      const selectedId = e.target.value;
+      const selectedDestination = destinations.find(d => d.destination_id == selectedId);
+      
+      // Update both destination_id and country_id
+      setFormData(prev => ({
+        ...prev,
+        primary_destination_id: selectedId,
+        country_id: selectedDestination ? selectedDestination.country_id : ''
+      }));
+    }}
+  >
+    <option value="">Select Destination</option>
+    {destinations.map((d) => (
+      <option
+        key={d.destination_id}
+        value={d.destination_id}
+      >
+        {d.name} ({d.country_name})
+      </option>
+    ))}
+  </Form.Select>
+</Form.Group>
 
                     <Form.Group className="mb-3">
                       <Form.Label>Duration Days *</Form.Label>
@@ -3648,6 +3751,18 @@ const handleSaveClick = () => {
                       />
                     </Form.Group>
 
+         
+                        <Form.Group  className="mb-3">
+                           <Form.Label>Tourist Visa Remarks</Form.Label>
+                          <Form.Control
+                            as="textarea"
+                            rows={3}
+                            value={touristVisaRemarks}
+                            onChange={handleTouristVisaRemarksChange}
+                            placeholder="Enter remarks about tourist visa requirements..."
+                          />
+                        </Form.Group>
+
                     {touristVisaItems.length > 0 && (
                       <Table striped bordered hover size="sm" className="mt-3">
                         <thead>
@@ -3703,6 +3818,20 @@ const handleSaveClick = () => {
                       />
                     </Form.Group>
 
+
+                      {/* Add Transit Visa Remarks Box */}
+
+      <Form.Group  className="mb-3">
+        <Form.Label>Transit Visa Remarks</Form.Label>
+        <Form.Control
+          as="textarea"
+          rows={3}
+          value={transitVisaRemarks}
+          onChange={handleTransitVisaRemarksChange}
+          placeholder="Enter remarks about transit visa requirements..."
+        />
+      </Form.Group>
+
                     {transitVisaItems.length > 0 && (
                       <Table striped bordered hover size="sm" className="mt-3">
                         <thead>
@@ -3757,6 +3886,19 @@ const handleSaveClick = () => {
                         placeholder="Enter business visa details"
                       />
                     </Form.Group>
+
+
+      <Form.Group  className="mb-3">
+           <Form.Label>Business Visa Remarks</Form.Label>
+        <Form.Control
+          as="textarea"
+          rows={3}
+          value={businessVisaRemarks}
+          onChange={handleBusinessVisaRemarksChange}
+          placeholder="Enter remarks about business visa requirements..."
+        />
+      </Form.Group>
+
 
                     {businessVisaItems.length > 0 && (
                       <Table striped bordered hover size="sm" className="mt-3">
@@ -3831,17 +3973,6 @@ const handleSaveClick = () => {
                                 />
                               </Form.Group>
                             </Col>
-                            {/* <Col md={6}>
-                              <Form.Group className="mb-3">
-                                <Form.Label>Download Text</Form.Label>
-                                <Form.Control
-                                  type="text"
-                                  name="download_text"
-                                  value={visaFormEditData.download_text}
-                                  onChange={handleVisaFormEditChange}
-                                />
-                              </Form.Group>
-                            </Col> */}
                           </Row>
                           <Row>
                             <Col md={6}>
@@ -4095,21 +4226,18 @@ const handleSaveClick = () => {
                     </Table>
 
                     {/* Remarks Section */}
-                    <Card className="mt-3">
-                      <Card.Body>
-                        <Form.Group>
-                          <Form.Label>Visa Form Remarks</Form.Label>
-                          <Form.Control
-                            as="textarea"
-                            rows={4}
-                            value={touristVisaRemarks}
-                            onChange={handleTouristVisaRemarksChange}
-                            placeholder="Enter remarks about visa forms..."
-                          />
-                        </Form.Group>
-                      </Card.Body>
-                    </Card>
-                  </Tab>
+
+    <Form.Group >
+      <Form.Label>Visa Forms Remarks</Form.Label>
+      <Form.Control
+        as="textarea"
+        rows={4}
+        value={visaFormRemarks}
+        onChange={handleVisaFormRemarksChange}
+        placeholder="Enter remarks about visa forms (format, instructions, etc.)..."
+      />
+    </Form.Group>
+</Tab>
 
  
 
@@ -4124,7 +4252,7 @@ const handleSaveClick = () => {
         <Form.Label>
           {editingType === 'photo' ? 'Edit Photo Description' : 'Add Photo Description'}
           {editingType === 'photo' && (
-            <span className="badge bg-warning text-dark ms-2">
+            <span className="badge text-dark ms-2">
               Editing item #{editIndex + 1}
             </span>
           )}
@@ -4138,16 +4266,24 @@ const handleSaveClick = () => {
             onChange={handlePhotoChange}
             placeholder="Type photo requirement description"
           />
-          {/* <Button 
-            variant={editingType === 'photo' ? "warning" : "success"} 
-            onClick={addPhoto}
-            className="align-self-start"
-            disabled={!photoForm.description.trim()}
-          >
-            {editingType === 'photo' ? 'Update Photo' : '+ Add Photo'}
-          </Button> */}
         </div>
       </Form.Group>
+
+      {/* Photo Tab - Add after existing photo form */}
+       
+  
+            <Form.Group >
+                 <Form.Label> Photo Remarks</Form.Label>
+              <Form.Control
+                as="textarea"
+                rows={3}
+                value={photoRemarks}
+                onChange={handlePhotoRemarksChange}
+                placeholder="Enter remarks about photo requirements..."
+              />
+            </Form.Group>
+          
+
     </Card.Body>
   </Card>
 
@@ -4297,6 +4433,24 @@ const handleSaveClick = () => {
                     ))}
                   </tbody>
                 </Table>
+
+                {/* Visa Fees Tab - Add after the table */}
+
+
+    <Form.Group>
+         <Form.Label>Visa Fees Remarks</Form.Label>
+      <Form.Control
+        as="textarea"
+        rows={3}
+        value={visaFeesRemarks}
+        onChange={handleVisaFeesRemarksChange}
+        placeholder="Enter remarks about visa fees..."
+      />
+    </Form.Group>
+
+
+
+
               </Tab>
 
                 {/* Subtab 7: Submission & Pick Up */}
@@ -4376,6 +4530,21 @@ const handleSaveClick = () => {
                           ))}
                         </tbody>
                       </Table>
+
+                      {/* Submission & Pick Up Tab - Add after the table */}
+
+    <Form.Group>
+         <Form.Label> Visa Submission Remarks</Form.Label>
+      <Form.Control
+        as="textarea"
+        rows={3}
+        value={submissionPickupRemarks}
+        onChange={handleSubmissionPickupRemarksChange}
+        placeholder="Enter remarks about submission and pick up process..."
+      />
+    </Form.Group>
+
+
                 </Tab>
 
 

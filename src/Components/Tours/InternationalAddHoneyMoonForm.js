@@ -82,6 +82,7 @@ const openFileInNewTab = (url) => {
     title: '',
     category_id: 1,
     primary_destination_id: '',
+      country_id: '', // Add this line
     duration_days: '',
     overview: '',
     base_price_adult: '',
@@ -1122,6 +1123,7 @@ const handleTouristVisaRemarksChange = (e) => {
           title: basic.title || '',
           category_id: basic.category_id || 1,
           primary_destination_id: basic.primary_destination_id || '',
+             country_id: basic.country_id || '', // Add this
           duration_days: basic.duration_days || '',
           overview: basic.overview || '',
           base_price_adult: basic.base_price_adult || '',
@@ -1345,6 +1347,7 @@ const handleTouristVisaRemarksChange = (e) => {
       'emi_price', // ← Add this line
       'category_id',
       'primary_destination_id',
+          'country_id', // Add this
       'is_international'
     ];
 
@@ -1833,6 +1836,7 @@ const goBack = () => {
         title: formData.title.trim(),
         tour_type: formData.tour_type || 'honeymoon',
         primary_destination_id: formData.primary_destination_id,
+         country_id: formData.country_id, // Add this
         duration_days: Number(formData.duration_days) || 0,
         overview: formData.overview || '',
         base_price_adult: Number(formData.base_price_adult) || 0,
@@ -2094,6 +2098,7 @@ const createTour = async () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
     ...formData,
+     country_id: formData.country_id, // Add this
     optional_tour_remarks: formData.optional_tour_remarks || '',
      transport_remarks: formData.transport_remarks || '' // ← ADD THIS LINE
   })
@@ -2586,24 +2591,34 @@ const handleSaveClick = () => {
                 </Col>
 
                   <Col md={6}>
-                    <Form.Group className="mb-3">
-                      <Form.Label>Indian States *</Form.Label>
-                      <Form.Select
-                        name="primary_destination_id"
-                        value={formData.primary_destination_id}
-                        onChange={handleBasicChange}
-                      >
-                        <option value="">Select Destination</option>
-                        {destinations.map((d) => (
-                          <option
-                            key={d.destination_id}
-                            value={d.destination_id}
-                          >
-                            {d.name}
-                          </option>
-                        ))}
-                      </Form.Select>
-                    </Form.Group>
+            <Form.Group className="mb-3">
+  <Form.Label>International Destinations *</Form.Label>
+  <Form.Select
+    name="primary_destination_id"
+    value={formData.primary_destination_id}
+    onChange={(e) => {
+      const selectedId = e.target.value;
+      const selectedDestination = destinations.find(d => d.destination_id == selectedId);
+      
+      // Update both destination_id and country_id
+      setFormData(prev => ({
+        ...prev,
+        primary_destination_id: selectedId,
+        country_id: selectedDestination ? selectedDestination.country_id : ''
+      }));
+    }}
+  >
+    <option value="">Select Destination</option>
+    {destinations.map((d) => (
+      <option
+        key={d.destination_id}
+        value={d.destination_id}
+      >
+        {d.name} ({d.country_name})
+      </option>
+    ))}
+  </Form.Select>
+</Form.Group>
 
                     <Form.Group className="mb-3">
                       <Form.Label>Duration Days *</Form.Label>
