@@ -79,6 +79,40 @@ const AddSeniorTour = () => {
       window.open(url, '_blank');
     }
   };
+
+  // In resetVisaEditing function
+const resetVisaEditing = () => {
+  setEditingItem(null);
+  setEditingType('');
+  setEditIndex(-1);
+  setEditingVisaItemId(null);
+  setEditingVisaFormIndex(null);
+  
+  // Reset form fields
+  setTouristVisaForm({ description: '' });
+  setTransitVisaForm({ description: '' });
+  setBusinessVisaForm({ description: '' });
+  setPhotoForm({ description: '' });
+  setFreeFlowPhotoText('');
+  
+  // Reset visa form edit data
+  setVisaFormEditData({
+    type: '',
+    download_action: '',
+    fill_action: '',
+    action1_file: null,
+    action2_file: null
+  });
+  
+  // Reset remarks (optional - you might not want to reset these on edit)
+  // setTouristVisaRemarks('');
+  // setTransitVisaRemarks('');
+  // setBusinessVisaRemarks('');
+  // setVisaFormRemarks('');
+  // setPhotoRemarks('');
+  // setVisaFeesRemarks('');
+  // setSubmissionPickupRemarks('');
+};
   
 
        // Reset editing context - ADD THIS FUNCTION
@@ -447,6 +481,45 @@ const removeHotelRow = (idx) => {
   }
 };
 
+
+
+// Add these with other visa state variables
+const [transitVisaRemarks, setTransitVisaRemarks] = useState('');
+const [businessVisaRemarks, setBusinessVisaRemarks] = useState('');
+const [visaFormRemarks, setVisaFormRemarks] = useState('');
+const [photoRemarks, setPhotoRemarks] = useState('');
+const [visaFeesRemarks, setVisaFeesRemarks] = useState('');
+const [submissionPickupRemarks, setSubmissionPickupRemarks] = useState('');
+
+
+// Add these with other handler functions
+const handleTouristVisaRemarksChange = (e) => {
+  setTouristVisaRemarks(e.target.value);
+};
+
+const handleTransitVisaRemarksChange = (e) => {
+  setTransitVisaRemarks(e.target.value);
+};
+
+const handleBusinessVisaRemarksChange = (e) => {
+  setBusinessVisaRemarks(e.target.value);
+};
+
+const handleVisaFormRemarksChange = (e) => {
+  setVisaFormRemarks(e.target.value);
+};
+
+const handlePhotoRemarksChange = (e) => {
+  setPhotoRemarks(e.target.value);
+};
+
+const handleVisaFeesRemarksChange = (e) => {
+  setVisaFeesRemarks(e.target.value);
+};
+
+const handleSubmissionPickupRemarksChange = (e) => {
+  setSubmissionPickupRemarks(e.target.value);
+};
 
 
 
@@ -929,11 +1002,6 @@ const handleVisaFormFileUpload = async (tourId, visaType, actionType, file) => {
 };
 
 
-// Handler for tourist visa remarks
-const handleTouristVisaRemarksChange = (e) => {
-  setTouristVisaRemarks(e.target.value);
-};
-
 
   // =======================
   // TRANSPORT FOR SENIOR CITIZEN TOURS
@@ -1335,10 +1403,34 @@ const editItinerary = (idx) => {
         }));
         setVisaFormItems(formattedForms);
         
-        // Load remarks from the first visa form
-        if (data.visa_forms.length > 0 && data.visa_forms[0].remarks) {
-          setTouristVisaRemarks(data.visa_forms[0].remarks);
-        }
+        // Load all remarks - Get from first visa form
+
+      // WITH this new section:
+// Load all remarks from the new visa_remarks object
+if (data.visa_remarks) {
+  setTouristVisaRemarks(data.visa_remarks.tourist_visa || '');
+  setTransitVisaRemarks(data.visa_remarks.transit_visa || '');
+  setBusinessVisaRemarks(data.visa_remarks.business_visa || '');
+  setVisaFormRemarks(data.visa_remarks.visa_form || '');
+  setPhotoRemarks(data.visa_remarks.photo || '');
+  setVisaFeesRemarks(data.visa_remarks.visa_fees || '');
+  setSubmissionPickupRemarks(data.visa_remarks.submission_pickup || '');
+} else {
+  // Fallback to old structure if visa_remarks doesn't exist yet
+  console.warn('visa_remarks not found in response, using fallback');
+  if (data.visa_forms && data.visa_forms.length > 0) {
+    const firstForm = data.visa_forms[0];
+    setTouristVisaRemarks(firstForm.tourist_remarks || '');
+    setTransitVisaRemarks(firstForm.transit_remarks || '');
+    setBusinessVisaRemarks(firstForm.business_remarks || '');
+    setVisaFormRemarks(firstForm.visa_form_remarks || '');
+    setPhotoRemarks(firstForm.photo_remarks || '');
+    setVisaFeesRemarks(firstForm.visa_fees_remarks || '');
+    setSubmissionPickupRemarks(firstForm.submission_pickup_remarks || '');
+  }
+}
+
+
       }
       
       // Load Visa Fees - Update this part
@@ -2254,7 +2346,14 @@ const goBack = () => {
       business_charges: row.business_charges
     })),
     submission: submissionRows,
-    tourist_visa_remarks: touristVisaRemarks
+        // Add all remarks fields
+  tourist_visa_remarks: touristVisaRemarks,
+  transit_visa_remarks: transitVisaRemarks,
+  business_visa_remarks: businessVisaRemarks,
+  visa_form_remarks: visaFormRemarks,
+  photo_remarks: photoRemarks,
+  visa_fees_remarks: visaFeesRemarks,
+  submission_pickup_remarks: submissionPickupRemarks
   };
   
         if (touristVisaItems.length > 0 || transitVisaItems.length > 0 || businessVisaItems.length > 0 || photoItems.length > 0) {
@@ -2544,7 +2643,14 @@ const visaData = {
     business: row.business,
     row_order: index
   })),
-  tourist_visa_remarks: touristVisaRemarks
+      // Add all remarks fields
+  tourist_visa_remarks: touristVisaRemarks,
+  transit_visa_remarks: transitVisaRemarks,
+  business_visa_remarks: businessVisaRemarks,
+  visa_form_remarks: visaFormRemarks,
+  photo_remarks: photoRemarks,
+  visa_fees_remarks: visaFeesRemarks,
+  submission_pickup_remarks: submissionPickupRemarks
 };
 
           if (touristVisaItems.length > 0 || transitVisaItems.length > 0 || businessVisaItems.length > 0 || photoItems.length > 0) {
@@ -4020,7 +4126,7 @@ const handleSaveClick = () => {
                                 {/* Subtab 1: Tourist Visa */}
                                 <Tab eventKey="tourist" title="Tourist Visa">
                                   <Form.Group className="mb-3">
-                                    <Form.Label>Tourist Visa</Form.Label>
+                                    <Form.Label>Tourist Visa Entry</Form.Label>
                                     <Form.Control
                                       as="textarea"
                                       rows={4}
@@ -4030,6 +4136,20 @@ const handleSaveClick = () => {
                                       placeholder="Enter tourist visa details"
                                     />
                                   </Form.Group>
+
+  
+                                                                                        
+                                                                                            <Form.Group>
+                                                                                                 <Form.Label>Tourist Visa Remarks</Form.Label>
+                                                                                              <Form.Control
+                                                                                                as="textarea"
+                                                                                                rows={3}
+                                                                                                value={touristVisaRemarks}
+                                                                                                onChange={handleTouristVisaRemarksChange}
+                                                                                                placeholder="Enter remarks about tourist visa requirements..."
+                                                                                              />
+                                                                                            </Form.Group>
+                                                                                      
               
                                   {touristVisaItems.length > 0 && (
                                     <Table striped bordered hover size="sm" className="mt-3">
@@ -4075,7 +4195,7 @@ const handleSaveClick = () => {
                                 {/* Subtab 2: Transit Visa */}
                                 <Tab eventKey="transit" title="Transit Visa">
                                   <Form.Group className="mb-3">
-                                    <Form.Label>Transit Visa </Form.Label>
+                                    <Form.Label>Transit Visa Entry</Form.Label>
                                     <Form.Control
                                       as="textarea"
                                       rows={4}
@@ -4085,6 +4205,21 @@ const handleSaveClick = () => {
                                       placeholder="Enter transit visa details"
                                     />
                                   </Form.Group>
+
+
+                                         {/* Add Transit Visa Remarks Box */}
+                                                                            
+                                                                                <Form.Group>
+                                                                                     <Form.Label>Transit Visa Remarks</Form.Label>
+                                                                                  <Form.Control
+                                                                                    as="textarea"
+                                                                                    rows={3}
+                                                                                    value={transitVisaRemarks}
+                                                                                    onChange={handleTransitVisaRemarksChange}
+                                                                                    placeholder="Enter remarks about transit visa requirements..."
+                                                                                  />
+                                                                                </Form.Group>
+                                                                             
               
                                   {transitVisaItems.length > 0 && (
                                     <Table striped bordered hover size="sm" className="mt-3">
@@ -4130,7 +4265,7 @@ const handleSaveClick = () => {
                                 {/* Subtab 3: Business Visa */}
                                 <Tab eventKey="business" title="Business Visa">
                                   <Form.Group className="mb-3">
-                                    <Form.Label>Business Visa</Form.Label>
+                                    <Form.Label>Business Visa Entry</Form.Label>
                                     <Form.Control
                                       as="textarea"
                                       rows={4}
@@ -4140,7 +4275,19 @@ const handleSaveClick = () => {
                                       placeholder="Enter business visa details"
                                     />
                                   </Form.Group>
-              
+
+                                                                              
+                                                                                <Form.Group>
+                                                                                     <Form.Label>Business Visa Remarks</Form.Label>
+                                                                                  <Form.Control
+                                                                                    as="textarea"
+                                                                                    rows={3}
+                                                                                    value={businessVisaRemarks}
+                                                                                    onChange={handleBusinessVisaRemarksChange}
+                                                                                    placeholder="Enter remarks about business visa requirements..."
+                                                                                  />
+                                                                                </Form.Group>
+                                                                                          
                                   {businessVisaItems.length > 0 && (
                                     <Table striped bordered hover size="sm" className="mt-3">
                                       <thead>
@@ -4480,8 +4627,6 @@ const handleSaveClick = () => {
   </Table>
 
   {/* Remarks Section */}
-  <Card className="mt-3">
-    <Card.Body>
       <Form.Group>
         <Form.Label>Visa Form Remarks</Form.Label>
         <Form.Control
@@ -4492,8 +4637,6 @@ const handleSaveClick = () => {
           placeholder="Enter remarks about visa forms..."
         />
       </Form.Group>
-    </Card.Body>
-  </Card>
 </Tab>
               
               
@@ -4501,84 +4644,94 @@ const handleSaveClick = () => {
                                {/* Subtab 5: Photo */}
                             {/* Subtab 5: Photo */}
 <Tab eventKey="photo" title="Photo">
-  {/* Add/Edit Photo Form */}
-  <Card className="mb-4">
-    <Card.Body>
-      <Form.Group className="mb-3">
-        <Form.Label>
-          {editingType === 'photo' ? 'Edit Photo Description' : 'Add Photo Description'}
-          {editingType === 'photo' && (
-            <span className="badge bg-warning text-dark ms-2">
-              Editing item #{editIndex + 1}
-            </span>
-          )}
-        </Form.Label>
-        <div className="d-flex gap-2">
-          <Form.Control
-            as="textarea"
-            rows={2}
-            name="description"
-            value={photoForm.description}
-            onChange={handlePhotoChange}
-            placeholder="Type photo requirement description"
-          />
-          {/* <Button 
-            variant={editingType === 'photo' ? "warning" : "success"} 
-            onClick={addPhoto}
-            className="align-self-start"
-            disabled={!photoForm.description.trim()}
-          >
-            {editingType === 'photo' ? 'Update Photo' : '+ Add Photo'}
-          </Button> */}
-        </div>
-      </Form.Group>
-    </Card.Body>
-  </Card>
-
-  {/* Existing Photo Items Table */}
-  {photoItems.length > 0 && (
-    <Card>
-      <Card.Body>
-        <Table striped bordered hover size="sm">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Description</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {photoItems.map((item, idx) => (
-              <tr key={idx} className={editingType === 'photo' && editIndex === idx ? 'table-warning' : ''}>
-                <td>{idx + 1}</td>
-                <td>{item.description || '-'}</td>
-                <td>
-                  <div className="d-flex gap-1">
-                    <Button
-                      variant={editingType === 'photo' && editIndex === idx ? "warning" : "outline-warning"}
-                      size="sm"
-                      onClick={() => editPhoto(idx)}
-                      title="Edit"
-                    >
-                      <Pencil size={14} />
-                    </Button>
-                    <Button
-                      variant="outline-danger"
-                      size="sm"
-                      onClick={() => removePhoto(idx)}
-                      title="Remove"
-                    >
-                      <Trash size={14} />
-                    </Button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </Table>
-      </Card.Body>
-    </Card>
-  )}
+   {/* Add/Edit Photo Form */}
+   <Card className="mb-4">
+     <Card.Body>
+       <Form.Group className="mb-3">
+         <Form.Label>
+           {editingType === 'photo' ? 'Edit Photo Description' : 'Add Photo Description'}
+           {editingType === 'photo' && (
+             <span className="badge text-dark ms-2">
+               Editing item #{editIndex + 1}
+             </span>
+           )}
+         </Form.Label>
+         <div className="d-flex gap-2">
+           <Form.Control
+             as="textarea"
+             rows={2}
+             name="description"
+             value={photoForm.description}
+             onChange={handlePhotoChange}
+             placeholder="Type photo requirement description"
+           />
+         </div>
+       </Form.Group>
+ 
+       {/* Photo Tab - Add after existing photo form */}
+        
+   
+             <Form.Group >
+                  <Form.Label> Photo Remarks</Form.Label>
+               <Form.Control
+                 as="textarea"
+                 rows={3}
+                 value={photoRemarks}
+                 onChange={handlePhotoRemarksChange}
+                 placeholder="Enter remarks about photo requirements..."
+               />
+             </Form.Group>
+           
+ 
+     </Card.Body>
+   </Card>
+ 
+ 
+   {/* Existing Photo Items Table */}
+   {photoItems.length > 0 && (
+     <Card>
+       {/* <Card.Header>Photo Requirements List</Card.Header> */}
+       <Card.Body>
+         <Table striped bordered hover size="sm">
+           <thead>
+             <tr>
+               <th>#</th>
+               <th>Description</th>
+               <th>Action</th>
+             </tr>
+           </thead>
+           <tbody>
+             {photoItems.map((item, idx) => (
+               <tr key={idx} className={editingType === 'photo' && editIndex === idx ? 'table-warning' : ''}>
+                 <td>{idx + 1}</td>
+                 <td>{item.description || '-'}</td>
+                 <td>
+                   <div className="d-flex gap-1">
+                     <Button
+                       variant={editingType === 'photo' && editIndex === idx ? "warning" : "outline-warning"}
+                       size="sm"
+                       onClick={() => editPhoto(idx)}
+                       title="Edit"
+                     >
+                       <Pencil size={14} />
+                     </Button>
+                     <Button
+                       variant="outline-danger"
+                       size="sm"
+                       onClick={() => removePhoto(idx)}
+                       title="Remove"
+                     >
+                       <Trash size={14} />
+                     </Button>
+                   </div>
+                 </td>
+               </tr>
+             ))}
+           </tbody>
+         </Table>
+       </Card.Body>
+     </Card>
+   )}
 </Tab>
 
               
@@ -4681,6 +4834,23 @@ const handleSaveClick = () => {
                                   ))}
                                 </tbody>
                               </Table>
+
+                                           {/* Visa Fees Tab - Add after the table */}
+                                                                
+                                                                      <Form.Group>
+                                                                           <Form.Label>Visa Fees Remarks</Form.Label>
+                                                                        <Form.Control
+                                                                          as="textarea"
+                                                                          rows={3}
+                                                                          value={visaFeesRemarks}
+                                                                          onChange={handleVisaFeesRemarksChange}
+                                                                          placeholder="Enter remarks about visa fees..."
+                                                                        />
+                                                                      </Form.Group>
+                                                                   
+                                                            
+
+
                             </Tab>
               
               
@@ -4763,6 +4933,20 @@ const handleSaveClick = () => {
                                         ))}
                                       </tbody>
                                     </Table>
+
+                                           {/* Submission & Pick Up Tab - Add after the table */}
+                                                                              
+                                                                                  <Form.Group>
+                                                                                       <Form.Label>Submission Visa Remarks</Form.Label>
+                                                                                    <Form.Control
+                                                                                      as="textarea"
+                                                                                      rows={3}
+                                                                                      value={submissionPickupRemarks}
+                                                                                      onChange={handleSubmissionPickupRemarksChange}
+                                                                                      placeholder="Enter remarks about submission and pick up process..."
+                                                                                    />
+                                                                                  </Form.Group>
+                                                                              
                                   </Tab>
               
               
