@@ -508,26 +508,7 @@ const [businessVisaItems, setBusinessVisaItems] = useState([]);
 const [businessVisaForm, setBusinessVisaForm] = useState({ description: '' });
 
 // Visa Form
-const [visaFormItems, setVisaFormItems] = useState([
-  {
-    type: 'Tourist Visa',
-    download_text: 'Tourist Visa Form Download',
-    download_action: 'Download',
-    fill_action: 'Fill Manually'
-  },
-  {
-    type: 'Transit Visa',
-    download_text: 'Transit Visa Form Download',
-    download_action: 'Download',
-    fill_action: 'Fill Manually'
-  },
-  {
-    type: 'Business Visa',
-    download_text: 'Business Visa Form Download',
-    download_action: 'Download',
-    fill_action: 'Fill Manually'
-  }
-]);
+const [visaFormItems, setVisaFormItems] = useState([]);
 
 // Photo
 const [photoItems, setPhotoItems] = useState([]);
@@ -1350,7 +1331,7 @@ const handleSubmissionChange = (index, field, value) => {
       if (data.visa_forms && Array.isArray(data.visa_forms)) {
         const formattedForms = data.visa_forms.map(form => ({
           type: form.visa_type,
-          download_text: form.download_text,
+          // download_text: form.download_text,
           download_action: form.download_action,
           fill_action: form.fill_action,
           action1_file: form.action1_file, // Keep the filename string
@@ -4237,318 +4218,204 @@ const handleSaveClick = () => {
                                 </Tab>
               
                                 {/* Subtab 4: Visa Form */}
-                                {/* Subtab 4: Visa Form */}
-              
-                              {/* Subtab 4: Visa Form */}
-                  {/* Subtab 4: Visa Form */}
-<Tab eventKey="form" title="Visa Form">
-  {/* Edit Form Modal */}
-  {editingVisaFormIndex !== null && (
-    <Card className="mb-4 border-warning">
-      <Card.Header className="bg-warning text-dark">
-        <strong>✏️ Editing {visaFormEditData.type}</strong>
-        <Button 
-          variant="outline-dark" 
-          size="sm" 
-          className="float-end"
-          onClick={resetVisaFormEdit}
-        >
-          Cancel Edit
-        </Button>
-      </Card.Header>
-      <Card.Body>
-        <Row>
-          <Col md={6}>
-            <Form.Group className="mb-3">
-              <Form.Label>Visa Type</Form.Label>
-              <Form.Control
-                type="text"
-                name="type"
-                value={visaFormEditData.type}
-                onChange={handleVisaFormEditChange}
-                disabled
-              />
-            </Form.Group>
-          </Col>
-          <Col md={6}>
-            <Form.Group className="mb-3">
-              <Form.Label>Download Text</Form.Label>
-              <Form.Control
-                type="text"
-                name="download_text"
-                value={visaFormEditData.download_text}
-                onChange={handleVisaFormEditChange}
-              />
-            </Form.Group>
-          </Col>
-        </Row>
-        <Row>
-          <Col md={6}>
-            <Form.Group className="mb-3">
-              <Form.Label>Download Action</Form.Label>
-              <Form.Control
-                type="text"
-                name="download_action"
-                value={visaFormEditData.download_action}
-                onChange={handleVisaFormEditChange}
-              />
-            </Form.Group>
-          </Col>
-          <Col md={6}>
-            <Form.Group className="mb-3">
-              <Form.Label>Fill Action</Form.Label>
-              <Form.Control
-                type="text"
-                name="fill_action"
-                value={visaFormEditData.fill_action}
-                onChange={handleVisaFormEditChange}
-              />
-            </Form.Group>
-          </Col>
-        </Row>
-        <Row>
-          <Col md={6}>
-            <Form.Group className="mb-3">
-              <Form.Label>PDF File</Form.Label>
-              <div className="d-flex align-items-center gap-2">
-                <Button 
-                  variant="outline-primary" 
-                  size="sm"
-                  onClick={() => document.getElementById(`edit-pdf-upload`).click()}
-                >
-                  {visaFormEditData.action1_file ? 'Change PDF' : 'Upload PDF'}
-                </Button>
-                <Form.Control
-                  type="file"
-                  id="edit-pdf-upload"
-                  accept=".pdf"
-                  className="d-none"
-                  onChange={(e) => handleVisaFormFileChangeWithEdit(editingVisaFormIndex, 'action1', e.target.files[0])}
-                />
-                {visaFormEditData.action1_file && (
-                  <span className="text-success small">
-                    ✓ {typeof visaFormEditData.action1_file === 'string' 
-                      ? visaFormEditData.action1_file 
-                      : visaFormEditData.action1_file.name}
-                  </span>
-                )}
-              </div>
-            </Form.Group>
-          </Col>
-          <Col md={6}>
-            <Form.Group className="mb-3">
-              <Form.Label>Word File</Form.Label>
-              <div className="d-flex align-items-center gap-2">
-                <Button 
-                  variant="outline-secondary" 
-                  size="sm"
-                  onClick={() => document.getElementById(`edit-word-upload`).click()}
-                >
-                  {visaFormEditData.action2_file ? 'Change Word' : 'Upload Word'}
-                </Button>
-                <Form.Control
-                  type="file"
-                  id="edit-word-upload"
-                  accept=".doc,.docx"
-                  className="d-none"
-                  onChange={(e) => handleVisaFormFileChangeWithEdit(editingVisaFormIndex, 'action2', e.target.files[0])}
-                />
-                {visaFormEditData.action2_file && (
-                  <span className="text-success small">
-                    ✓ {typeof visaFormEditData.action2_file === 'string' 
-                      ? visaFormEditData.action2_file 
-                      : visaFormEditData.action2_file.name}
-                  </span>
-                )}
-              </div>
-            </Form.Group>
-          </Col>
-        </Row>
-        <div className="d-flex gap-2 justify-content-end">
-          <Button 
-            variant="success" 
-            onClick={updateVisaFormItem}
-          >
-            Update Visa Form
-          </Button>
-          <Button 
-            variant="outline-secondary" 
-            onClick={resetVisaFormEdit}
-          >
-            Cancel
-          </Button>
-        </div>
-      </Card.Body>
-    </Card>
-  )}
 
-  {/* Visa Forms Table */}
-  <Table striped bordered hover size="sm">
-    <thead>
-      <tr>
-        <th>Visa Type</th>
-        <th>Action 1 (Upload PDF)</th>
-        <th>Action 2 (Upload Word)</th>
-        {/* <th>Action</th> */}
-      </tr>
-    </thead>
-    <tbody>
-      {visaFormItems.map((item, idx) => {
-        const pdfFile = item.action1_file;
-        const wordFile = item.action2_file;
-        const pdfUrl = getFileUrl(pdfFile);
-        const wordUrl = getFileUrl(wordFile);
-        
-        return (
-          <tr key={idx} className={editingVisaFormIndex === idx ? 'table-warning' : ''}>
-            <td>
-              <strong>{item.type}</strong>
-            </td>
-            <td>
-              <div className="d-flex flex-column gap-2">
-                {/* Upload Button */}
-                <div>
-                  <Button 
-                    variant="outline-primary" 
-                    size="sm"
-                    onClick={() => document.getElementById(`pdf-upload-${idx}`).click()}
-                    disabled={editingVisaFormIndex !== null && editingVisaFormIndex !== idx}
-                  >
-                    {pdfFile ? 'Change PDF' : 'Upload PDF'}
-                  </Button>
-                  <Form.Control
-                    type="file"
-                    id={`pdf-upload-${idx}`}
-                    accept=".pdf"
-                    className="d-none"
-                    onChange={(e) => handleVisaFormFileChangeWithEdit(idx, 'action1', e.target.files[0])}
-                  />
-                </div>
-                
-              
-{/* File Info and View Button */}
-{pdfFile && (
-  <div className="d-flex align-items-center justify-content-between bg-light p-2 rounded">
-    <div className="flex-grow-1">
-      <small className="text-success d-block">
-        <strong>✓ Uploaded:</strong>
-      </small>
-      <small className="text-muted d-block">
-        {typeof pdfFile === 'string' ? pdfFile : pdfFile.name}
-      </small>
-    </div>
-    
-    {/* Only show view button if we have a string filename (not a File object) */}
-    {typeof pdfFile === 'string' && (
-      <div className="ms-2">
-        <Button
-          variant="outline-info"
-          size="sm"
-          onClick={() => openFileInNewTab(getFileUrl(pdfFile))}
-          title="View PDF"
-          className="d-flex align-items-center"
-        >
-          👁️ View
-        </Button>
-      </div>
-    )}
-  </div>
-)}
-              </div>
-            </td>
-            
-            <td>
-              <div className="d-flex flex-column gap-2">
-                {/* Upload Button */}
-                <div>
-                  <Button 
-                    variant="outline-secondary" 
-                    size="sm"
-                    onClick={() => document.getElementById(`word-upload-${idx}`).click()}
-                    disabled={editingVisaFormIndex !== null && editingVisaFormIndex !== idx}
-                  >
-                    {wordFile ? 'Change Word' : 'Upload Word'}
-                  </Button>
-                  <Form.Control
-                    type="file"
-                    id={`word-upload-${idx}`}
-                    accept=".doc,.docx"
-                    className="d-none"
-                    onChange={(e) => handleVisaFormFileChangeWithEdit(idx, 'action2', e.target.files[0])}
-                  />
-                </div>
-                
-                {/* File Info and View Button */}
-                {wordFile && (
-                  <div className="d-flex align-items-center justify-content-between bg-light p-2 rounded">
-                    <div className="flex-grow-1">
-                      <small className="text-success d-block">
-                        <strong>✓ Uploaded:</strong>
-                      </small>
-                      <small className="text-muted d-block">
-                        {typeof wordFile === 'string' ? wordFile : wordFile.name}
-                      </small>
-                    </div>
-                    
-                    {wordUrl && (
-                      <div className="ms-2">
-                        <Button
-                          variant="outline-info"
-                          size="sm"
-                          onClick={() => openFileInNewTab(wordUrl)}
-                          title="View Document"
-                          className="d-flex align-items-center"
-                        >
-                          👁️ View
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            </td>
-            {/* <td>
-              {editingVisaFormIndex === idx ? (
-                <Button
-                  variant="warning"
-                  size="sm"
-                  onClick={updateVisaFormItem}
-                >
-                  Update
-                </Button>
-              ) : (
-                <Button
-                  variant="outline-warning"
-                  size="sm"
-                  onClick={() => editVisaFormItem(idx)}
-                  title="Edit"
-                >
-                  <Pencil size={14} /> Edit
-                </Button>
-              )}
-            </td> */}
-          </tr>
-        );
-      })}
-    </tbody>
-  </Table>
 
-  {/* Remarks Section */}
-  <Card className="mt-3">
-    <Card.Body>
-      <Form.Group>
-        <Form.Label>Free Flow Remarks (Same like Tourist Visa)</Form.Label>
-        <Form.Control
-          as="textarea"
-          rows={4}
-          value={touristVisaRemarks}
-          onChange={handleTouristVisaRemarksChange}
-          placeholder="Enter remarks about visa forms..."
-        />
-      </Form.Group>
-    </Card.Body>
-  </Card>
-</Tab>
+                                <Tab eventKey="form" title="Visa Form">
+                                  {/* Add New Visa Form Button */}
+                                  <div className="mb-3">
+                                    <Button 
+                                      variant="outline-primary" 
+                                      size="sm" 
+                                      onClick={() => {
+                                        const newVisaForm = {
+                                          type: 'New Visa Type',
+                                          download_action: 'Download',
+                                          fill_action: 'Fill Manually',
+                                          action1_file: null,
+                                          action2_file: null
+                                        };
+                                        setVisaFormItems([...visaFormItems, newVisaForm]);
+                                      }}
+                                    >
+                                      + Add New Visa Form
+                                    </Button>
+                                  </div>
+                                
+                                  {/* Visa Forms Table */}
+                                  {visaFormItems.length === 0 ? (
+                                    <div className="text-center py-4">
+                                      <p className="text-muted">No visa forms added yet. Click "Add New Visa Form" to get started.</p>
+                                    </div>
+                                  ) : (
+                                    <Table striped bordered hover size="sm">
+                                      <thead>
+                                        <tr>
+                                          <th width="20%">Visa Type</th>
+                                          <th width="35%">Upload PDF</th>
+                                          <th width="35%">Upload Word</th>
+                                          <th width="10%">Actions</th>
+                                        </tr>
+                                      </thead>
+                                      <tbody>
+                                        {visaFormItems.map((item, idx) => {
+                                          const pdfFile = item.action1_file;
+                                          const wordFile = item.action2_file;
+                                          const pdfUrl = getFileUrl(pdfFile);
+                                          const wordUrl = getFileUrl(wordFile);
+                                          
+                                          return (
+                                            <tr key={idx}>
+                                              <td>
+                                                <Form.Control
+                                                  type="text"
+                                                  value={item.type}
+                                                  onChange={(e) => {
+                                                    const updated = [...visaFormItems];
+                                                    updated[idx].type = e.target.value;
+                                                    setVisaFormItems(updated);
+                                                  }}
+                                                  placeholder="Enter visa type"
+                                                  size="sm"
+                                                />
+                                              </td>
+                                              <td>
+                                                <div className="d-flex flex-column gap-2">
+                                                  {/* Upload Button */}
+                                                  <div>
+                                                    <Button 
+                                                      variant="outline-primary" 
+                                                      size="sm"
+                                                      onClick={() => document.getElementById(`pdf-upload-${idx}`).click()}
+                                                    >
+                                                      {pdfFile ? 'Change PDF' : 'Upload PDF'}
+                                                    </Button>
+                                                    <Form.Control
+                                                      type="file"
+                                                      id={`pdf-upload-${idx}`}
+                                                      accept=".pdf"
+                                                      className="d-none"
+                                                      onChange={(e) => handleVisaFormFileChange(idx, 'action1', e.target.files[0])}
+                                                    />
+                                                  </div>
+                                                  
+                                                  {/* File Info and View Button */}
+                                                  {pdfFile && (
+                                                    <div className="d-flex align-items-center justify-content-between bg-light p-2 rounded">
+                                                      <div className="flex-grow-1">
+                                                        <small className="text-success d-block">
+                                                          <strong>✓ Uploaded:</strong>
+                                                        </small>
+                                                        <small className="text-muted d-block">
+                                                          {typeof pdfFile === 'string' ? pdfFile : pdfFile.name}
+                                                        </small>
+                                                      </div>
+                                                      
+                                                      {pdfUrl && (
+                                                        <div className="ms-2">
+                                                          <Button
+                                                            variant="outline-info"
+                                                            size="sm"
+                                                            onClick={() => openFileInNewTab(pdfUrl)}
+                                                            title="View PDF"
+                                                            className="d-flex align-items-center"
+                                                          >
+                                                            👁️ View
+                                                          </Button>
+                                                        </div>
+                                                      )}
+                                                    </div>
+                                                  )}
+                                                </div>
+                                              </td>
+                                              
+                                              <td>
+                                                <div className="d-flex flex-column gap-2">
+                                                  {/* Upload Button */}
+                                                  <div>
+                                                    <Button 
+                                                      variant="outline-secondary" 
+                                                      size="sm"
+                                                      onClick={() => document.getElementById(`word-upload-${idx}`).click()}
+                                                    >
+                                                      {wordFile ? 'Change Word' : 'Upload Word'}
+                                                    </Button>
+                                                    <Form.Control
+                                                      type="file"
+                                                      id={`word-upload-${idx}`}
+                                                      accept=".doc,.docx"
+                                                      className="d-none"
+                                                      onChange={(e) => handleVisaFormFileChange(idx, 'action2', e.target.files[0])}
+                                                    />
+                                                  </div>
+                                                  
+                                                  {/* File Info and View Button */}
+                                                  {wordFile && (
+                                                    <div className="d-flex align-items-center justify-content-between bg-light p-2 rounded">
+                                                      <div className="flex-grow-1">
+                                                        <small className="text-success d-block">
+                                                          <strong>✓ Uploaded:</strong>
+                                                        </small>
+                                                        <small className="text-muted d-block">
+                                                          {typeof wordFile === 'string' ? wordFile : wordFile.name}
+                                                        </small>
+                                                      </div>
+                                                      
+                                                      {wordUrl && (
+                                                        <div className="ms-2">
+                                                          <Button
+                                                            variant="outline-info"
+                                                            size="sm"
+                                                            onClick={() => openFileInNewTab(wordUrl)}
+                                                            title="View Document"
+                                                            className="d-flex align-items-center"
+                                                          >
+                                                            👁️ View
+                                                          </Button>
+                                                        </div>
+                                                      )}
+                                                    </div>
+                                                  )}
+                                                </div>
+                                              </td>
+                                              <td>
+                                                <div className="d-flex flex-column gap-1">
+                                                  <Button
+                                                    variant="outline-danger"
+                                                    size="sm"
+                                                    onClick={() => {
+                                                      const newItems = [...visaFormItems];
+                                                      newItems.splice(idx, 1);
+                                                      setVisaFormItems(newItems);
+                                                    }}
+                                                    title="Remove"
+                                                  >
+                                                    <Trash size={14} />
+                                                  </Button>
+                                                </div>
+                                              </td>
+                                            </tr>
+                                          );
+                                        })}
+                                      </tbody>
+                                    </Table>
+                                  )}
+                                
+                                  {/* Remarks Section */}
+                                  <Card className="mt-3">
+                                    <Card.Body>
+                                      <Form.Group>
+                                        <Form.Label>Visa Form Remarks</Form.Label>
+                                        <Form.Control
+                                          as="textarea"
+                                          rows={4}
+                                          value={touristVisaRemarks}
+                                          onChange={handleTouristVisaRemarksChange}
+                                          placeholder="Enter remarks about visa forms..."
+                                        />
+                                      </Form.Group>
+                                    </Card.Body>
+                                  </Card>
+                                </Tab>
               
                                 {/* Subtab 5: Photo */}
                                {/* Subtab 5: Photo */}
