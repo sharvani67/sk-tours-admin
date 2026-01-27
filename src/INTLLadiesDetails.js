@@ -13,7 +13,7 @@ const INTLLadiesDetails = () => {
     const loadData = async () => {
       try {
         const res = await fetch(
-          `${baseurl}/api/tours/tour/full/group/${tourId}`
+          `${baseurl}/api/tours/tour/full/ladiesspecial/${tourId}`
         );
         const json = await res.json();
         setData(json);

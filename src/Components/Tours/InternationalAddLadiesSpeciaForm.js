@@ -240,9 +240,13 @@ const TAB_LIST = [
   setEditingOptionalTourIndex(idx);
 };
 
-  const removeOptionalTourRow = (idx) => {
+ const removeOptionalTourRow = (idx) => {
+  const confirmDelete = window.confirm('Are you sure you want to remove this optional tour?');
+  if (confirmDelete) {
     setOptionalTours(prev => prev.filter((_, i) => i !== idx));
-  };
+  }
+};
+
 
   // =======================
   // EMI OPTIONS
@@ -333,9 +337,12 @@ const TAB_LIST = [
      setEditIndex(idx);
    };
  
-   const removeHotelRow = (idx) => {
-     setHotelRows(prev => prev.filter((_, i) => i !== idx));
-   };
+const removeHotelRow = (idx) => {
+  const confirmDelete = window.confirm('Are you sure you want to remove this hotel?');
+  if (confirmDelete) {
+    setHotelRows(prev => prev.filter((_, i) => i !== idx));
+  }
+};
 
 
 
@@ -651,10 +658,6 @@ const addVisaFeesRow = () => {
 };
 
 
-// Function to remove a row
-const removeVisaFeesRow = (id) => {
-  setVisaFeesRows(visaFeesRows.filter(row => row.id !== id));
-};
 
 
 // Submission & Pick Up
@@ -714,11 +717,6 @@ const addSubmissionRow = () => {
       business: '' 
     }
   ]);
-};
-
-// Function to remove a row from Submission & Pick Up
-const removeSubmissionRow = (id) => {
-  setSubmissionRows(submissionRows.filter(row => row.id !== id));
 };
 
 // Function to handle label change in Submission & Pick Up
@@ -878,24 +876,54 @@ const addPhoto = () => {
 
 
 
+
 // Remove Tourist Visa
 const removeTouristVisa = (idx) => {
-  setTouristVisaItems(prev => prev.filter((_, i) => i !== idx));
+  const confirmDelete = window.confirm('Are you sure you want to remove this tourist visa item?');
+  if (confirmDelete) {
+    setTouristVisaItems(prev => prev.filter((_, i) => i !== idx));
+  }
 };
 
 // Remove Transit Visa
 const removeTransitVisa = (idx) => {
-  setTransitVisaItems(prev => prev.filter((_, i) => i !== idx));
+  const confirmDelete = window.confirm('Are you sure you want to remove this transit visa item?');
+  if (confirmDelete) {
+    setTransitVisaItems(prev => prev.filter((_, i) => i !== idx));
+  }
 };
 
 // Remove Business Visa
 const removeBusinessVisa = (idx) => {
-  setBusinessVisaItems(prev => prev.filter((_, i) => i !== idx));
+  const confirmDelete = window.confirm('Are you sure you want to remove this business visa item?');
+  if (confirmDelete) {
+    setBusinessVisaItems(prev => prev.filter((_, i) => i !== idx));
+  }
 };
 
 // Remove Photo
 const removePhoto = (idx) => {
-  setPhotoItems(prev => prev.filter((_, i) => i !== idx));
+  const confirmDelete = window.confirm('Are you sure you want to remove this photo item?');
+  if (confirmDelete) {
+    setPhotoItems(prev => prev.filter((_, i) => i !== idx));
+  }
+};
+
+
+// Function to remove a row from Submission & Pick Up
+const removeSubmissionRow = (id) => {
+  const confirmDelete = window.confirm('Are you sure you want to remove this submission row?');
+  if (confirmDelete) {
+    setSubmissionRows(submissionRows.filter(row => row.id !== id));
+  }
+};
+
+// Function to remove a row
+const removeVisaFeesRow = (id) => {
+  const confirmDelete = window.confirm('Are you sure you want to remove this visa fee row?');
+  if (confirmDelete) {
+    setVisaFeesRows(visaFeesRows.filter(row => row.id !== id));
+  }
 };
 
 
@@ -1138,9 +1166,12 @@ const addTransportRow = () => {
 };
 
 
-  const removeTransportRow = (idx) => {
+ const removeTransportRow = (idx) => {
+  const confirmDelete = window.confirm('Are you sure you want to remove this transport?');
+  if (confirmDelete) {
     setTransports(prev => prev.filter((_, i) => i !== idx));
-  };
+  }
+};
 
   // =======================
   // BOOKING POI
@@ -1167,9 +1198,12 @@ const editPoi = (idx) => {
   setEditingBookingPoiIndex(idx);
 };
 
-  const removePoi = (idx) => {
+ const removePoi = (idx) => {
+  const confirmDelete = window.confirm('Are you sure you want to remove this booking POI?');
+  if (confirmDelete) {
     setBookingPois(prev => prev.filter((_, i) => i !== idx));
-  };
+  }
+};
 
   // =======================
   // CANCELLATION
@@ -1199,9 +1233,12 @@ const editPoi = (idx) => {
   setEditingCancellationIndex(idx);
 };
 
-  const removeCancelRow = (idx) => {
+ const removeCancelRow = (idx) => {
+  const confirmDelete = window.confirm('Are you sure you want to remove this cancellation policy?');
+  if (confirmDelete) {
     setCancelPolicies(prev => prev.filter((_, i) => i !== idx));
-  };
+  }
+};
 
   // =======================
   // INSTRUCTIONS
@@ -1222,10 +1259,12 @@ const editPoi = (idx) => {
   setEditingInstructionIndex(idx);
 };
 
-  const removeInstruction = (idx) => {
+const removeInstruction = (idx) => {
+  const confirmDelete = window.confirm('Are you sure you want to remove this instruction?');
+  if (confirmDelete) {
     setInstructions(prev => prev.filter((_, i) => i !== idx));
-  };
-
+  }
+};
   // ITINERARIES
   const [itineraryItem, setItineraryItem] = useState({
     day: '',
@@ -1743,9 +1782,12 @@ const editDeparture = (idx) => {
   setEditingDepartureIndex(idx);
 };
 
-  const handleRemoveDeparture = (idx) => {
-    setDepartures((prev) => prev.filter((_, i) => i !== idx));
-  };
+ const handleRemoveDeparture = (idx) => {
+  const confirmDelete = window.confirm('Are you sure you want to remove this departure?');
+  if (confirmDelete) {
+    setDepartures(prev => prev.filter((_, i) => i !== idx));
+  }
+};
 
   // EXCLUSIONS
   const handleAddExclusion = () => {
@@ -1761,9 +1803,12 @@ const editExclusion = (idx) => {
   setEditingExclusionIndex(idx);
 };
 
-  const handleRemoveExclusion = (idx) => {
-    setExclusions((prev) => prev.filter((_, i) => i !== idx));
-  };
+const handleRemoveExclusion = (idx) => {
+  const confirmDelete = window.confirm('Are you sure you want to remove this exclusion?');
+  if (confirmDelete) {
+    setExclusions(prev => prev.filter((_, i) => i !== idx));
+  }
+};
 
   // INCLUSIONS
   const handleAddInclusion = () => {
@@ -1779,9 +1824,13 @@ const editExclusion = (idx) => {
   setEditingInclusionIndex(idx);
 };
 
-  const handleRemoveInclusion = (idx) => {
+ const handleRemoveInclusion = (idx) => {
+  const confirmDelete = window.confirm('Are you sure you want to remove this inclusion?');
+  if (confirmDelete) {
     setInclusions(prev => prev.filter((_, i) => i !== idx));
-  };
+  }
+};
+
 
   // IMAGES
   const handleImageChange = (e) => {
@@ -1865,9 +1914,12 @@ const handleAddItinerary = () => {
   });
 };
 
-  const handleRemoveItinerary = (idx) => {
+const handleRemoveItinerary = (idx) => {
+  const confirmDelete = window.confirm('Are you sure you want to remove this itinerary?');
+  if (confirmDelete) {
     setItineraries(prev => prev.filter((_, i) => i !== idx));
-  };
+  }
+};
 
 
 
@@ -2635,6 +2687,7 @@ const visaData = {
 
   return uploadedForms;
 };
+
 const handleSaveClick = () => {
   if (isLastTab) {
     if (isEditMode) {
@@ -2645,46 +2698,22 @@ const handleSaveClick = () => {
   } else {
     // Check if current visa subtab is complete before moving on
     if (activeTab === 'visa') {
-      const currentSubTab = activeVisaSubTab;
+      // Remove mandatory validation - visa sections can be empty
+      // Simply allow navigation to next tab/subtab
+      const currentSubTabIndex = visaSubTabs.indexOf(activeVisaSubTab);
       
-      // Check if current subtab has data
-      let isCurrentSubTabComplete = false;
-      
-      switch (currentSubTab) {
-        case 'tourist':
-          isCurrentSubTabComplete = touristVisaItems.length > 0 || touristVisaForm.description.trim() !== '';
-          break;
-        case 'transit':
-          isCurrentSubTabComplete = transitVisaItems.length > 0 || transitVisaForm.description.trim() !== '';
-          break;
-        case 'business':
-          isCurrentSubTabComplete = businessVisaItems.length > 0 || businessVisaForm.description.trim() !== '';
-          break;
-        case 'form':
-          isCurrentSubTabComplete = visaFormItems.some(form => form.action1_file || form.action2_file);
-          break;
-        case 'photo':
-          isCurrentSubTabComplete = photoItems.length > 0 || photoForm.description.trim() !== '';
-          break;
-        case 'fees':
-          isCurrentSubTabComplete = visaFeesRows.some(row => 
-            row.tourist || row.transit || row.business ||
-            row.tourist_charges || row.transit_charges || row.business_charges
-          );
-          break;
-        case 'submission':
-          isCurrentSubTabComplete = submissionRows.some(row => 
-            row.tourist || row.transit || row.business
-          );
-          break;
-        default:
-          isCurrentSubTabComplete = true;
+      // If current subtab is not the last one
+      if (currentSubTabIndex < visaSubTabs.length - 1) {
+        // Move to next visa subtab
+        setActiveVisaSubTab(visaSubTabs[currentSubTabIndex + 1]);
+      } else {
+        // All visa subtabs are done, move to booking
+        const currentIndex = TAB_LIST.indexOf(activeTab);
+        if (currentIndex < TAB_LIST.length - 1) {
+          setActiveTab(TAB_LIST[currentIndex + 1]); // Move to bookingPoi
+        }
       }
-      
-      if (!isCurrentSubTabComplete) {
-        setError(`Please complete the "${currentSubTab}" section before proceeding`);
-        return;
-      }
+      return;
     }
     
     goNext();
