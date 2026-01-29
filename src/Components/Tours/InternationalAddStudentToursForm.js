@@ -4379,7 +4379,7 @@ const handleSaveClick = () => {
                                   <Card className="mt-3">
                                     <Card.Body>
                                       <Form.Group>
-                                        <Form.Label>Visa Form Remarks</Form.Label>
+                                        <Form.Label>Tourist Visa Remarks</Form.Label>
                                         <Form.Control
                                           as="textarea"
                                           rows={4}
