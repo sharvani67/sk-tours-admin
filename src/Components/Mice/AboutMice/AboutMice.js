@@ -78,7 +78,7 @@ const AboutMice = () => {
     <div className="about-mice">
       <div className="row">
         {/* Left Panel - MICE Importance */}
-        <div className="col-md-4">
+        {/* <div className="col-md-4">
           <div className="card mb-4">
             <div className="card-header bg-primary text-white">
               <h4 className="mb-0">MICE Importance</h4>
@@ -100,10 +100,10 @@ const AboutMice = () => {
               </ul>
             </div>
           </div>
-        </div>
+        </div> */}
 
         {/* Right Panel - Main Content */}
-        <div className="col-md-8">
+        <div className="col-md-12">
           <h2>About MICE</h2>
           
           {/* Table Section */}

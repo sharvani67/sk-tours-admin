@@ -1,4 +1,5 @@
 import React from 'react';
+import { FaEdit, FaTrash } from 'react-icons/fa';
 
 const DomesticExhibitionTable = ({ exhibitions, onEdit, onDelete, onAddNew, showForm }) => {
   return (
@@ -39,13 +40,13 @@ const DomesticExhibitionTable = ({ exhibitions, onEdit, onDelete, onAddNew, show
                         className="btn btn-sm btn-info me-2" 
                         onClick={() => onEdit(exhibition)}
                       >
-                        Edit
+                        <FaEdit />
                       </button>
                       <button 
                         className="btn btn-sm btn-danger me-2"
                         onClick={() => onDelete(exhibition.id)}
                       >
-                        Delete
+                        <FaTrash />
                       </button>
                       <button className="btn btn-sm btn-success">
                         Book

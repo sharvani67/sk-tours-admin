@@ -1,4 +1,5 @@
 import React from 'react';
+import { FaEdit, FaTrash } from 'react-icons/fa';
 
 const AboutExhibitionTable = ({ questions, onEdit, onDelete, onAddNew }) => {
   return (
@@ -32,18 +33,18 @@ const AboutExhibitionTable = ({ questions, onEdit, onDelete, onAddNew }) => {
                         ? `${item.answer.substring(0, 50)}...` 
                         : item.answer || 'No answer yet'}
                     </td>
-                    <td>
+                    <td style={{display: "flex"}}>
                       <button 
                         className="btn btn-sm btn-info me-2" 
                         onClick={() => onEdit(item)}
                       >
-                        Edit
+                        <FaEdit />
                       </button>
                       <button 
                         className="btn btn-sm btn-danger" 
                         onClick={() => onDelete(item.id)}
                       >
-                        Delete
+                        <FaTrash />
                       </button>
                     </td>
                   </tr>

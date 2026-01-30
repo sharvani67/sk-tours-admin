@@ -116,3 +116,151 @@
   background-color: #f8f9fa;
   border-bottom: 1px solid rgba(0,0,0,.125);
 }
+
+
+/* Exhibition Module Styles */
+
+.content-wrapper {
+  padding: 20px;
+  background-color: #f8f9fa;
+  min-height: calc(100vh - 56px); /* Adjust based on your navbar height */
+}
+
+.exhibition-container {
+  padding: 20px;
+}
+
+.nav-tabs {
+  border-bottom: 1px solid #dee2e6;
+  background-color: #fff;
+  border-radius: 4px;
+  padding: 0 10px;
+}
+
+.nav-tabs .nav-link {
+  color: #495057;
+  font-weight: 500;
+  padding: 10px 20px;
+  border: 1px solid transparent;
+  border-top-left-radius: 4px;
+  border-top-right-radius: 4px;
+  margin-bottom: -1px;
+}
+
+.nav-tabs .nav-link:hover {
+  border-color: #e9ecef #e9ecef #dee2e6;
+  color: #007bff;
+}
+
+.nav-tabs .nav-link.active {
+  background-color: #007bff;
+  color: white;
+  border-color: #007bff #007bff #fff;
+}
+
+.category-list .list-group-item {
+  transition: all 0.3s ease;
+}
+
+.category-list .list-group-item:hover {
+  background-color: #e9ecef;
+  transform: translateX(5px);
+}
+
+.category-list .list-group-item.active {
+  background-color: #007bff;
+  border-color: #007bff;
+  color: white;
+}
+
+.exhibition-details .card {
+  border: none;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.action-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.accordion-button:not(.collapsed) {
+  background-color: #e7f1ff;
+  color: #0c63e4;
+}
+
+.accordion-button:focus {
+  box-shadow: none;
+  border-color: rgba(0,0,0,.125);
+}
+
+.photo-upload-section {
+  max-width: 500px;
+}
+
+.photo-preview {
+  max-width: 100%;
+  margin-top: 15px;
+}
+
+/* Table Styles */
+.table-responsive {
+  overflow-x: auto;
+}
+
+.table th {
+  background-color: #343a40;
+  color: white;
+  border-color: #454d55;
+}
+
+.table-hover tbody tr:hover {
+  background-color: rgba(0, 123, 255, 0.1);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .content-wrapper {
+    padding: 15px;
+  }
+  
+  .exhibition-container {
+    padding: 10px;
+  }
+  
+  .nav-tabs .nav-link {
+    padding: 8px 15px;
+    font-size: 14px;
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+  }
+  
+  .action-buttons .btn {
+    width: 100%;
+    margin-bottom: 5px;
+  }
+  
+  .table-responsive {
+    font-size: 14px;
+  }
+  
+  .btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+  }
+}
+
+/* Form Styles */
+.form-control:focus,
+.form-select:focus {
+  border-color: #86b7fe;
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+.card-header {
+  background-color: #f8f9fa;
+  border-bottom: 1px solid rgba(0,0,0,.125);
+}

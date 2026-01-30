@@ -9,9 +9,9 @@ const AboutExhibition = () => {
   
   // Questions for About Exhibition
   const [questions, setQuestions] = useState([
-    { id: 'AQ1', question: 'What is Travel Exhibitions??', answer: 'Travel exhibitions are events where travel companies showcase their services.' },
+    { id: 'AQ1', question: 'What is Travel Exhibitions??', answer: 'Travel exhibitions are events.' },
     { id: 'AQ2', question: 'Why Should Travel Agent Attend Travel Exhibitions??', answer: 'To network and find new business opportunities.' },
-    { id: 'AQ3', question: 'What will travel Agents Gain by Attending Travel Exhibitions?', answer: 'They gain industry insights and potential partnerships.' },
+    { id: 'AQ3', question: 'What will travel Agents Gain by Attending Travel Exhibitions?', answer: 'They gain industry insights and potential' },
     { id: 'AQ4', question: 'How can Travel Agents Inter Relate the Exhibition with their Travel Agencies?', answer: 'By implementing strategies learned at exhibitions.' },
     { id: 'AQ5', question: 'Is there any scope for Travel Agents to Attend Exhibitions?', answer: 'Yes, there is significant scope for growth.' },
     { id: 'AQ6', question: 'Should Travel Agent Exhibit in Exhibition?', answer: 'Yes, it helps in brand visibility.' },

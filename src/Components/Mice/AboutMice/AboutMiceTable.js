@@ -1,4 +1,5 @@
 import React from 'react';
+import { FaEdit, FaTrash } from 'react-icons/fa';
 
 const AboutMiceTable = ({ questions, onEdit, onDelete, onAddNew }) => {
   return (
@@ -39,14 +40,14 @@ const AboutMiceTable = ({ questions, onEdit, onDelete, onAddNew }) => {
                           onClick={() => onEdit(item)}
                           title="Edit"
                         >
-                          <i className="fas fa-edit"></i>
+                          <FaEdit />
                         </button>
                         <button 
                           className="btn btn-sm btn-danger" 
                           onClick={() => onDelete(item.id)}
                           title="Delete"
                         >
-                          <i className="fas fa-trash"></i>
+                          <FaTrash />
                         </button>
                       </div>
                     </td>
