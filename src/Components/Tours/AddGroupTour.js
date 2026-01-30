@@ -1991,6 +1991,43 @@ if (transports.length > 0) {
         {error && <Alert variant="danger">{error}</Alert>}
         {success && <Alert variant="success">{success}</Alert>}
 
+           {/* ======== BUTTONS ======== */}
+            <div className="d-flex justify-content-end gap-2 mt-4 mb-4">
+              <Button
+                variant="secondary"
+                onClick={handleCancel}
+                disabled={loading}
+              >
+                Cancel
+              </Button>
+
+              <Button
+                variant="secondary"
+                onClick={goBack}
+                disabled={activeTab === 'basic' || loading}
+              >
+                Back
+              </Button>
+
+              {addConfig && (
+                <Button
+                  variant="success"
+                  onClick={addConfig.onClick}
+                  disabled={loading}
+                >
+                  {addConfig.label}
+                </Button>
+              )}
+
+              <Button
+                variant="primary"
+                onClick={handleSaveClick}
+                disabled={loading}
+              >
+                {loading ? 'Saving...' : isLastTab ? (isEditMode ? 'Update All' : 'Save All') : 'Save & Continue'}
+              </Button>
+            </div>
+
         <Card>
           <Card.Body>
             <Tabs
@@ -3695,43 +3732,6 @@ if (transports.length > 0) {
 
               
             </Tabs>
-
-            {/* ======== BUTTONS ======== */}
-            <div className="d-flex justify-content-end gap-2 mt-4">
-              <Button
-                variant="outline-secondary"
-                onClick={handleCancel}
-                disabled={loading}
-              >
-                Cancel
-              </Button>
-
-              <Button
-                variant="secondary"
-                onClick={goBack}
-                disabled={activeTab === 'basic' || loading}
-              >
-                Back
-              </Button>
-
-              {addConfig && (
-                <Button
-                  variant="success"
-                  onClick={addConfig.onClick}
-                  disabled={loading}
-                >
-                  {addConfig.label}
-                </Button>
-              )}
-
-              <Button
-                variant="primary"
-                onClick={handleSaveClick}
-                disabled={loading}
-              >
-                {loading ? 'Saving...' : isLastTab ? (isEditMode ? 'Update All' : 'Save All') : 'Save & Continue'}
-              </Button>
-            </div>
           </Card.Body>
         </Card>
       </Container>

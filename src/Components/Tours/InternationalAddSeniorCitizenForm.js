@@ -2737,6 +2737,48 @@ const handleSaveClick = () => {
         {error && <Alert variant="danger">{error}</Alert>}
         {success && <Alert variant="success">{success}</Alert>}
 
+
+          {/* ======== BUTTONS ======== */}
+            <div className="d-flex justify-content-end gap-2 mt-4 mb-4">
+              <Button
+                variant="secondary"
+                onClick={handleCancel}
+                disabled={loading}
+              >
+                Cancel
+              </Button>
+
+              <Button
+                variant="secondary"
+                onClick={goBack}
+                disabled={activeTab === 'basic' || loading}
+              >
+                Back
+              </Button>
+
+              {addConfig && (
+                <Button
+                  variant="success"
+                  onClick={addConfig.onClick}
+                  disabled={loading}
+                >
+                  {addConfig.label}
+                </Button>
+              )}
+
+             {/* Update the Save & Continue button text in visa tab */}
+                  <Button
+                    variant="primary"
+                    onClick={handleSaveClick}
+                    disabled={loading}
+                  >
+                    {loading ? 'Saving...' : 
+                    isLastTab ? (isEditMode ? 'Update All' : 'Save All') : 
+                    activeTab === 'visa' ? `Save & Next (${visaSubTabs.indexOf(activeVisaSubTab) + 1}/${visaSubTabs.length})` : 
+                    'Save & Continue'}
+                  </Button>
+            </div>
+
         <Card>
           <Card.Body>
             <Tabs
@@ -5026,47 +5068,6 @@ const handleSaveClick = () => {
                    </Card>
                 </Tab>
             </Tabs>
-
-            {/* ======== BUTTONS ======== */}
-            <div className="d-flex justify-content-end gap-2 mt-4">
-              <Button
-                variant="outline-secondary"
-                onClick={handleCancel}
-                disabled={loading}
-              >
-                Cancel
-              </Button>
-
-              <Button
-                variant="secondary"
-                onClick={goBack}
-                disabled={activeTab === 'basic' || loading}
-              >
-                Back
-              </Button>
-
-              {addConfig && (
-                <Button
-                  variant="success"
-                  onClick={addConfig.onClick}
-                  disabled={loading}
-                >
-                  {addConfig.label}
-                </Button>
-              )}
-
-             {/* Update the Save & Continue button text in visa tab */}
-<Button
-  variant="primary"
-  onClick={handleSaveClick}
-  disabled={loading}
->
-  {loading ? 'Saving...' : 
-   isLastTab ? (isEditMode ? 'Update All' : 'Save All') : 
-   activeTab === 'visa' ? `Save & Next (${visaSubTabs.indexOf(activeVisaSubTab) + 1}/${visaSubTabs.length})` : 
-   'Save & Continue'}
-</Button>
-            </div>
           </Card.Body>
         </Card>
       </Container>

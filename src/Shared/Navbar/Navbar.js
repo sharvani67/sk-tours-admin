@@ -89,235 +89,190 @@ const Navbar = ({ children }) => {
 
  const navStructure = [
   { 
+    label: "Add Videos", 
+    path: "/add-video", 
+    icon: <FiVideo className="sidebar-icon" /> 
+  },
+  {
+    label: "Advance Cruise Booking",
+    path: "/advanced-cruise-bookings",
+    icon: <FiSettings className="sidebar-icon" />,
+    matchPaths: ["/advanced-cruise-bookings"],
+  },
+  {
+    label: "Carousel Images",
+    path: "/carousel-images",
+    icon: <FaCircleUser className="sidebar-icon" />,
+  },
+  {
+    label: "Contact Us",
+    path: "/contact-us",
+    icon: <FiUsers className="sidebar-icon" />,
+    matchPaths: ["/contact-us"],
+  },
+  {
+    label: "Countries",
+    path: "/countries",
+    icon: <FiFlag className="sidebar-icon" />,
+    matchPaths: ["/countries"],
+  },
+  {
+    label: "Cruise Bookings",
+    path: "/cruise-bookings",
+    icon: <FiAnchor className="sidebar-icon" />,
+    matchPaths: ["/cruise-bookings"],
+  },
+  { 
     label: "Dashboard", 
     path: "/dashboard", 
     icon: <FiHome className="sidebar-icon" /> 
   },
-   {
-    label: "Add Videos",
-    path: "/add-video",
-    icon: <FiVideo className="sidebar-icon" />,   // tours = map routes
-    // matchPaths: ["/categories-tour","/add-video"],
-  },
-
-
-
-
-
-  // {
-  //   label: "Add Cards",
-  //   path: "/add-card",
-  //   icon: <FaIdCard className="sidebar-icon" />,   // tours = map routes
-  //   // matchPaths: ["/categories-tour","/add-video"],
-  // },
-
-
-   {
-    label: "Carousel Images",
-    path: "/carousel-images",
-    icon: <FaCircleUser className="sidebar-icon" />,   // tours = map routes
-    // matchPaths: ["/categories-tour","/add-video"],
-  },
-
-
-
-
-
   {
-    label: "PopUp Leads",
-    path: "/leadspopup",
-    icon: <FaCircleUser className="sidebar-icon" />,   // tours = map routes
-    // matchPaths: ["/categories-tour","/add-video"],
+    label: "Destinations",
+    path: "/destinations",
+    icon: <FiMapPin className="sidebar-icon" />,
+    matchPaths: ["/destinations", "/add-destination"],
   },
-
   {
-    label: "Countries",
-    path: "/countries",
-    icon: <FiFlag className="sidebar-icon" />,   // more relevant
-    matchPaths: ["/countries"],
-  },
-
-    {
-    label: "International Countries",
-    path: "/intl-countries",
-    icon: <FiFlag className="sidebar-icon" />,   // more relevant
-    matchPaths: ["/intl-countries","/intl-add-countries"],
-  },
-
-  // { 
-  //   label: "Customers", 
-  //   path: "/customers", 
-  //   icon: <FiUsers className="sidebar-icon" />  // group of people
-  // },
-
-  {
-    label: "DOM-Individual-Tours",
-    path: "/tours",
-    icon: <FiMap className="sidebar-icon" />,   // tours = map routes
-    matchPaths: ["/tours", "/add-tour"],
-  },
-
-   {
     label: "DOM-Group-Tours", 
     path: "/group-tours",
     icon: <FiUsers className="sidebar-icon" />, 
     matchPaths: ["/group-tours", "/add-group-tour"],
   },
-
-  
-  // NEW TABS ADDED HERE
-  {
-    label: "DOM-Ladies Special Tours",
-    path: "/ladies-special-tours",
-    icon: <FiUsers className="sidebar-icon" />,
-    matchPaths: ["/ladies-special-tours", "/add-ladies-special-tour"],
-  },
-
-  {
-    label: "DOM-Senior Citizen Tours",
-    path: "/senior-citizen-tours",
-    icon: <FiUsers className="sidebar-icon" />,
-    matchPaths: ["/senior-citizen-tours", "/add-senior-citizen-tour"],
-  },
-
-  {
-    label: "DOM-Student Tours",
-    path: "/student-tours",
-    icon: <FiUsers className="sidebar-icon" />,
-    matchPaths: ["/student-tours", "/add-student-tour"],
-  },
-
   {
     label: "DOM-Honeymoon Tours",
     path: "/honeymoon-tours",
     icon: <FiMap className="sidebar-icon" />,
     matchPaths: ["/honeymoon-tours", "/add-honeymoon-tour"],
   },
-
-
   {
-    label: "INTL-Individual-Tours",
-    path: "/intl-tours",
-    icon: <FiMap className="sidebar-icon" />,   // tours = map routes
-    matchPaths: ["/intl-tours", "/intl-add-tour"],
+    label: "DOM-Individual-Tours",
+    path: "/tours",
+    icon: <FiMap className="sidebar-icon" />,
+    matchPaths: ["/tours", "/add-tour"],
   },
-
-   {
+  {
+    label: "DOM-Ladies Special Tours",
+    path: "/ladies-special-tours",
+    icon: <FiUsers className="sidebar-icon" />,
+    matchPaths: ["/ladies-special-tours", "/add-ladies-special-tour"],
+  },
+  {
+    label: "DOM-Senior Citizen Tours",
+    path: "/senior-citizen-tours",
+    icon: <FiUsers className="sidebar-icon" />,
+    matchPaths: ["/senior-citizen-tours", "/add-senior-citizen-tour"],
+  },
+  {
+    label: "DOM-Student Tours",
+    path: "/student-tours",
+    icon: <FiUsers className="sidebar-icon" />,
+    matchPaths: ["/student-tours", "/add-student-tour"],
+  },
+  {
+    label: "Enquiries",
+    path: "/enquiries",
+    icon: <FiMessageSquare className="sidebar-icon" />,
+    matchPaths: ["/enquiries"],
+  },
+  {
+    label: "Exhibition",
+    path: "/exhibition",
+    icon: <FiArchive className="sidebar-icon" />,
+    matchPaths: [
+      "/exhibition",
+      "/about-exhibition",
+      "/domestic-exhibitions",
+      "/international-exhibitions",
+      "/add-exhibition/domestic",
+      "/add-exhibition/international",
+      "/add-exhibition-faq",
+      "/edit-exhibition/domestic/:id",
+      "/edit-exhibition/international/:id",
+      "/edit-exhibition-faq/:id"
+    ],
+    submenu: [
+      {
+        label: "About Exhibition",
+        path: "/about-exhibition",
+        icon: <FiInfo className="sidebar-icon" />,
+      },
+      {
+        label: "Domestic Exhibition",
+        path: "/domestic-exhibitions",
+        icon: <FiHome className="sidebar-icon" />,
+      },
+      {
+        label: "International Exhibition",
+        path: "/international-exhibitions",
+        icon: <FiGlobe className="sidebar-icon" />,
+      },
+    ],
+  },
+  {
     label: "INTL-Group-Tours", 
     path: "/intl-group-tours",
     icon: <FiUsers className="sidebar-icon" />, 
     matchPaths: ["/intl-group-tours", "/intl-add-group-tour"],
   },
-
+  {
+    label: "INTL-Honeymoon Tours",
+    path: "/intl-honeymoon-tours",
+    icon: <FiMap className="sidebar-icon" />,
+    matchPaths: ["/intl-honeymoon-tours", "/intl-add-honeymoon-tour"],
+  },
+  {
+    label: "INTL-Individual-Tours",
+    path: "/intl-tours",
+    icon: <FiMap className="sidebar-icon" />,
+    matchPaths: ["/intl-tours", "/intl-add-tour"],
+  },
   {
     label: "INTL-Ladies-Special-Tours",
     path: "/intl-ladies-special-tours",
     icon: <FiUsers className="sidebar-icon" />,
     matchPaths: ["/intl-ladies-special-tours", "/intl-add-ladies-special-tour"],
   },
-
   {
     label: "INTL-Senior-Citizen-Tours",
     path: "/intl-senior-citizen-tours",
     icon: <FiUsers className="sidebar-icon" />,
     matchPaths: ["/intl-senior-citizen-tours", "/intl-add-senior-citizen-tour"],
   },
-
   {
     label: "INTL-Student-Tours",
     path: "/intl-student-tours",
     icon: <FiUsers className="sidebar-icon" />,
     matchPaths: ["/intl-student-tours", "/intl-add-student-tour"],
   },
-
   {
-    label: "INTL-Honeymoon-Tours",
-    path: "/intl-honeymoon-tours",
-    icon: <FiMap className="sidebar-icon" />,
-    matchPaths: ["/intl-honeymoon-tours", "/intl-add-honeymoon-tour"],
+    label: "International Countries",
+    path: "/intl-countries",
+    icon: <FiFlag className="sidebar-icon" />,
+    matchPaths: ["/intl-countries","/intl-add-countries"],
   },
-
-   {
-    label: "Tours-categories",
-    path: "/categories-tours",
-    icon: <FiMap className="sidebar-icon" />,   // tours = map routes
-    matchPaths: ["/categories-tour","/add-category"],
-  },
-
-
-  // {
-  //   label: "Promotions",
-  //   path: "/promotions",
-  //   icon: <FiGift className="sidebar-icon" />,   // offers/promos = gift
-  //   matchPaths: ["/promotions"],
-  // },
-
   {
-    label: "Destinations",
-    path: "/destinations",
-    icon: <FiMapPin className="sidebar-icon" />, // place pin
-    matchPaths: ["/destinations", "/add-destination"],
-  },
-
-   {
     label: "International Destinations",
     path: "/intl-destinations",
-    icon: <FiMapPin className="sidebar-icon" />, // place pin
+    icon: <FiMapPin className="sidebar-icon" />,
     matchPaths: ["/intl-destinations", "/intl-add-destination"],
   },
-
-  // Add this to your navStructure array in Navbar.js, after "International Destinations"
-{
-  label: "Exhibition",
-  path: "/exhibition",
-  icon: <FiArchive className="sidebar-icon" />,
-  matchPaths: [
-    "/exhibition",
-    "/about-exhibition",
-    "/domestic-exhibitions",
-    "/international-exhibitions",
-    "/add-exhibition/domestic",
-    "/add-exhibition/international",
-    "/add-exhibition-faq",
-    "/edit-exhibition/domestic/:id",
-    "/edit-exhibition/international/:id",
-    "/edit-exhibition-faq/:id"
-  ],
-  submenu: [
-    {
-      label: "About Exhibition",
-      path: "/about-exhibition",
-      icon: <FiInfo className="sidebar-icon" />,
-    },
-    {
-      label: "Domestic Exhibition",
-      path: "/domestic-exhibitions",
-      icon: <FiHome className="sidebar-icon" />,
-    },
-    {
-      label: "International Exhibition",
-      path: "/international-exhibitions",
-      icon: <FiGlobe className="sidebar-icon" />,
-    },
-  ],
-},
-  // {
-  //   label: "Bookings",
-  //   path: "/bookings",
-  //   icon: <FiArchive className="sidebar-icon" />, // records/bookings
-  //   matchPaths: ["/bookings"],
-  // },
-   {
-    label: "Cruise Bookings",
-    path: "/cruise-bookings",
-    icon: <FiAnchor className="sidebar-icon" />,
-    matchPaths: ["/cruise-bookings"],
+  {
+    label: "Payments",
+    path: "/payments",
+    icon: <FiDollarSign className="sidebar-icon" />,
+    matchPaths: ["/payments"],
   },
-   {
-    label: "Advance Cruise Booking",
-    path: "/advanced-cruise-bookings",
-    icon: <FiSettings className="sidebar-icon" />,
-    matchPaths: ["/advanced-cruise-bookings"],
+  {
+    label: "PopUp Leads",
+    path: "/leadspopup",
+    icon: <FaCircleUser className="sidebar-icon" />,
+  },
+  {
+    label: "Tours-categories",
+    path: "/categories-tours",
+    icon: <FiMap className="sidebar-icon" />,
+    matchPaths: ["/categories-tour","/add-category"],
   },
   {
     label: "Visa Appointments",
@@ -325,29 +280,6 @@ const Navbar = ({ children }) => {
     icon: <FiMapPin className="sidebar-icon" />,
     matchPaths: ["/visa-appointments"],
   },
-
-    {
-    label: "Contact Us",
-    path: "/contact-us",
-    icon: <FiUsers className="sidebar-icon" />, // You might want to use a more appropriate icon like FiMail
-    matchPaths: ["/contact-us"],
-  },
-
-  {
-  label: "Enquiries",
-  path: "/enquiries",
-  icon: <FiMessageSquare className="sidebar-icon" />, // You might need to import FiMessageSquare from react-icons/fi
-  matchPaths: ["/enquiries"],
-},
-
-// Add this to your navStructure array, for example after "Enquiries"
-{
-  label: "Payments",
-  path: "/payments",
-  icon: <FiDollarSign className="sidebar-icon" />, // You need to import FiDollarSign
-  matchPaths: ["/payments"],
-},
-  
 ];
   const handleNavClick = (label, path) => {
     if (path) {
