@@ -1,0 +1,150 @@
+/* MICE Module Styles */
+
+.mice-container {
+  padding: 20px;
+  background-color: #f8f9fa;
+  min-height: 100vh;
+}
+
+.nav-tabs .nav-link {
+  color: #495057;
+  font-weight: 500;
+  padding: 12px 20px;
+  text-decoration: none;
+}
+
+.nav-tabs .nav-link.active {
+  background-color: #007bff;
+  color: white;
+  border-color: #007bff;
+}
+
+.nav-tabs .nav-link:hover:not(.active) {
+  background-color: #e9ecef;
+}
+
+.about-mice .card-header {
+  font-weight: 600;
+}
+
+.mice-qa .accordion-button {
+  font-weight: 500;
+  background-color: #f8f9fa;
+}
+
+.mice-qa .accordion-button:not(.collapsed) {
+  background-color: #e7f1ff;
+  color: #0c63e4;
+}
+
+.action-buttons .btn-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.table th {
+  background-color: #343a40;
+  color: white;
+  font-weight: 500;
+}
+
+.table-hover tbody tr:hover {
+  background-color: rgba(0, 123, 255, 0.05);
+}
+
+.badge {
+  font-size: 0.75em;
+  padding: 0.35em 0.65em;
+}
+
+/* Form Styles */
+.form-control:focus,
+.form-select:focus {
+  border-color: #86b7fe;
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+.form-check-input:checked {
+  background-color: #0d6efd;
+  border-color: #0d6efd;
+}
+
+/* Card Styles */
+.card {
+  border: none;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+}
+
+.card-header {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+}
+
+/* List Group */
+.list-group-item {
+  border-left: none;
+  border-right: none;
+  padding: 0.75rem 1rem;
+}
+
+.list-group-item:first-child {
+  border-top: none;
+}
+
+.list-group-item:last-child {
+  border-bottom: none;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .nav-tabs .nav-link {
+    padding: 8px 12px;
+    font-size: 14px;
+  }
+  
+  .action-buttons .btn-group {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .action-buttons .btn-group .btn {
+    width: 100%;
+    margin-bottom: 5px;
+  }
+  
+  .table-responsive {
+    font-size: 14px;
+  }
+}
+
+/* Enquiry Form Styles */
+.mice-enquiry-form .btn-lg {
+  padding: 0.75rem 1.5rem;
+  font-size: 1.1rem;
+}
+
+.mice-enquiry-form .card-footer {
+  padding: 1rem 1.25rem;
+}
+
+/* Custom Colors for MICE */
+.bg-mice-primary {
+  background-color: #2c3e50 !important;
+}
+
+.bg-mice-secondary {
+  background-color: #34495e !important;
+}
+
+.bg-mice-success {
+  background-color: #27ae60 !important;
+}
+
+.text-mice-primary {
+  color: #2c3e50 !important;
+}

@@ -10,7 +10,7 @@ import {
 } from "react-bootstrap";
 import {
   FiMenu,FiHome,FiUsers,FiUser, FiLogOut,FiX, FiBell,FiClock,FiFlag,FiMap,FiMapPin,FiGift,FiArchive,FiAnchor,FiSettings,
-  FiVideo,FiInfo,FiGlobe,FiMessageSquare,FiDollarSign 
+  FiVideo,FiInfo,FiGlobe,FiMessageSquare,FiDollarSign, FiBriefcase 
 } from "react-icons/fi";
 
 import { useNavigate, useLocation } from "react-router-dom";
@@ -207,6 +207,20 @@ const Navbar = ({ children }) => {
         path: "/international-exhibitions",
         icon: <FiGlobe className="sidebar-icon" />,
       },
+    ],
+  },
+  {
+    label: "MICE",  // ADDED NEW MICE SECTION
+    path: "/mice",
+    icon: <FiBriefcase className="sidebar-icon" />,
+    matchPaths: [
+      "/mice",
+      "/mice-domestic",
+      "/mice-international",
+      "/add-mice-domestic",
+      "/add-mice-international",
+      "/edit-mice-domestic/:id",
+      "/edit-mice-international/:id"
     ],
   },
   {

@@ -91,10 +91,15 @@ import AdminLeads from "./Components/Home/AdminLeads";
 import ContactUs from "./Components/ContactUs/ContactUs";
 
 
-import ExhibitionTable from './Components/Exhibitions/ExhibitionTable';
-import AddExhibition from './Components/Exhibitions/AddExhibition';
 
 import Exhibition from "./Components/Exhibitions/Exhibition";
+import AboutExhibitionForm from "./Components/Exhibitions/AboutExhibition/AboutExhibitionForm";
+import DomesticExhibitionForm from "./Components/Exhibitions/DomesticExhibition/DomesticExhibitionForm";
+import InternationalExhibitionForm from "./Components/Exhibitions/InternationalExhibition/InternationalExhibitionForm";
+import Mice from "./Components/Mice/Mice"; // NEW: Import Mice component
+import AboutMiceForm from "./Components/Mice/AboutMice/AboutMiceForm";
+import MiceDomesticForm from "./Components/Mice/MiceDomestic/MiceDomesticForm";
+import MiceInternationalForm from "./Components/Mice/MiceInternational/MiceInternationalForm";
 
 
 import INTLTourDetails from "./INTLTourDetails"
@@ -227,15 +232,42 @@ function App() {
 
 
                  <Route path="/exhibition" element={<Exhibition />} />
-                  <Route path="/domestic-exhibitions" element={<ExhibitionTable exhibitionType="domestic" />} />
-                  <Route path="/international-exhibitions" element={<ExhibitionTable exhibitionType="international" />} />
-                  <Route path="/about-exhibition" element={<ExhibitionTable exhibitionType="about" />} />
-                  <Route path="/add-exhibition/domestic" element={<AddExhibition exhibitionType="domestic" />} />
-                  <Route path="/add-exhibition/international" element={<AddExhibition exhibitionType="international" />} />
-                  <Route path="/add-exhibition-faq" element={<AddExhibition exhibitionType="about" />} />
-                  <Route path="/edit-exhibition/domestic/:id" element={<AddExhibition exhibitionType="domestic" />} />
-                  <Route path="/edit-exhibition/international/:id" element={<AddExhibition exhibitionType="international" />} />
-                  <Route path="/edit-exhibition-faq/:id" element={<AddExhibition exhibitionType="about" />} />
+                 <Route path="/domestic-exhibition" element={<Exhibition />} />
+                 <Route path="/international-exhibition" element={<Exhibition />} />
+                 <Route path="/exhibition/about/new" element={<AboutExhibitionForm />} />
+                <Route path="/exhibition/about/edit/:id" element={<AboutExhibitionForm />} />
+                <Route path="/exhibition/domestic/new" element={<DomesticExhibitionForm />} />
+                <Route path="/exhibition/domestic/edit/:id" element={<DomesticExhibitionForm />} />
+                <Route path="/exhibition/international/new" element={<InternationalExhibitionForm />} />
+                <Route path="/exhibition/international/edit/:id" element={<InternationalExhibitionForm />} />
+
+                 <Route path="/mice" element={<Mice />} />
+
+                   {/* MICE Form Routes */}
+        <Route path="/mice/about/new" element={<AboutMiceForm />} />
+        <Route path="/mice/about/edit/:id" element={<AboutMiceForm />} />
+        <Route path="/mice/domestic/new" element={<MiceDomesticForm />} />
+        <Route path="/mice/domestic/edit/:id" element={<MiceDomesticForm />} />
+        <Route path="/mice/international/new" element={<MiceInternationalForm />} />
+        <Route path="/mice/international/edit/:id" element={<MiceInternationalForm />} />
+        
+        {/* Additional routes for direct access */}
+        <Route path="/mice-domestic" element={<Mice />} />
+        <Route path="/mice-international" element={<Mice />} />
+        <Route path="/add-mice-domestic" element={<MiceDomesticForm />} />
+        <Route path="/add-mice-international" element={<MiceInternationalForm />} />
+        <Route path="/edit-mice-domestic/:id" element={<MiceDomesticForm />} />
+        <Route path="/edit-mice-international/:id" element={<MiceInternationalForm />} />
+
+
+         {/* Additional routes for direct access */}
+        <Route path="/mice/domestic" element={<Mice />} />
+        <Route path="/mice/international" element={<Mice />} />
+        <Route path="/mice/enquiry" element={<Mice />} />
+        <Route path="/add-mice-domestic" element={<MiceDomesticForm />} />
+        <Route path="/add-mice-international" element={<MiceInternationalForm />} />
+        <Route path="/edit-mice-domestic/:id" element={<MiceDomesticForm />} />
+        <Route path="/edit-mice-international/:id" element={<MiceInternationalForm />} />
 
 
 
