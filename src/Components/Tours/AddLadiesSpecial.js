@@ -2855,7 +2855,7 @@ if (transports.length > 0) {
               </Tab>
 
               {/* ======== TRANSPORT TAB - LADIES SPECIAL TOUR ======== */}
-              <Tab eventKey="transport" title="Flights">
+              <Tab eventKey="flights" title="Flights">
                 <Row className="mt-3">
                   {/* Airline */}
                   <Col md={4}>
