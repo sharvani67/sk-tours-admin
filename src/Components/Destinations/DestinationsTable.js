@@ -37,8 +37,18 @@ const DestinationsTable = () => {
         destination.is_domestic == 1
       );
 
+      // Sort destinations by name in ascending order (A to Z)
+      const nameSortedDestinations = domesticDestinations.sort((a, b) => {
+        const nameA = a.name ? a.name.toLowerCase() : '';
+        const nameB = b.name ? b.name.toLowerCase() : '';
+        
+        if (nameA < nameB) return -1;
+        if (nameA > nameB) return 1;
+        return 0;
+      });
+
       // Add serial numbers to the data directly as a fallback
-      const destinationsWithSerialNo = domesticDestinations.map((item, index) => ({
+      const destinationsWithSerialNo = nameSortedDestinations.map((item, index) => ({
         ...item,
         serial_no: index + 1
       }));

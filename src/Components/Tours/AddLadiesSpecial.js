@@ -576,46 +576,56 @@ const editInstruction = (idx) => {
 };
 
   // Fetch dropdowns and tour data
-  useEffect(() => {
-    const loadDropdownsAndTourCode = async () => {
-      try {
-        // Load dropdowns
-        const catRes = await fetch(`${baseurl}/api/categories/all-tours`);
-        const categoryData = await catRes.json();
-        setCategories(Array.isArray(categoryData) ? categoryData : []);
+ // Fetch dropdowns and tour data
+useEffect(() => {
+  const loadDropdownsAndTourCode = async () => {
+    try {
+      // Load dropdowns
+      const catRes = await fetch(`${baseurl}/api/categories/all-tours`);
+      const categoryData = await catRes.json();
+      setCategories(Array.isArray(categoryData) ? categoryData : []);
 
-        const destRes = await fetch(`${baseurl}/api/destinations`);
-        const destData = await destRes.json();
+      const destRes = await fetch(`${baseurl}/api/destinations`);
+      const destData = await destRes.json();
 
-        // Filter for domestic destinations only (is_domestic == 1)
+      // Filter for domestic destinations only (is_domestic == 1)
       const domesticDestinations = Array.isArray(destData) 
         ? destData.filter(destination => destination.is_domestic == 1)
         : [];
       
-      setDestinations(domesticDestinations);
-       
+      // Sort destinations by name in ascending order (A to Z)
+      const sortedDestinations = domesticDestinations.sort((a, b) => {
+        const nameA = a.name ? a.name.toLowerCase() : '';
+        const nameB = b.name ? b.name.toLowerCase() : '';
+        
+        if (nameA < nameB) return -1;
+        if (nameA > nameB) return 1;
+        return 0;
+      });
+      
+      setDestinations(sortedDestinations);
 
-        if (isEditMode) {
-          // Load existing tour data for edit
-          await loadTourData();
-        } else {
-          // Load next tour code for add mode
-          const tourCodeRes = await fetch(`${baseurl}/api/tours/next-tour-code?tour_type=ladies`);
-          if (tourCodeRes.ok) {
-            const tourCodeData = await tourCodeRes.json();
-            setFormData(prev => ({
-              ...prev,
-              tour_code: tourCodeData.next_tour_code
-            }));
-          }
+      if (isEditMode) {
+        // Load existing tour data for edit
+        await loadTourData();
+      } else {
+        // Load next tour code for add mode
+        const tourCodeRes = await fetch(`${baseurl}/api/tours/next-tour-code?tour_type=ladies`);
+        if (tourCodeRes.ok) {
+          const tourCodeData = await tourCodeRes.json();
+          setFormData(prev => ({
+            ...prev,
+            tour_code: tourCodeData.next_tour_code
+          }));
         }
-      } catch (err) {
-        setError('Failed to load dropdown data');
       }
-    };
+    } catch (err) {
+      setError('Failed to load dropdown data');
+    }
+  };
 
-    loadDropdownsAndTourCode();
-  }, [id]);
+  loadDropdownsAndTourCode();
+}, [id]);
 
   // Load tour data for editing
   const loadTourData = async () => {

@@ -23,9 +23,10 @@ const InternationalCountries = () => {
       const response = await fetch(`${baseurl}/api/countries`);
       const result = await response.json();
 
-      // Sort countries by ID in descending order (newest first)
+      // Sort countries by name in alphabetical order (A-Z)
       const sortedCountries = result.sort((a, b) => {
-        return b.country_id - a.country_id;
+        // Use localeCompare for proper alphabetical sorting
+        return a.name.localeCompare(b.name);
       });
 
       // Filter for international countries only (is_domestic == 0)

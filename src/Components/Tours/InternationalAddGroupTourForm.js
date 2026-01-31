@@ -1200,7 +1200,7 @@ const removePoi = (idx) => {
 };
 
   // Fetch dropdowns and tour data
- useEffect(() => {
+useEffect(() => {
   const loadDropdownsAndTourCode = async () => {
     try {
       // Load dropdowns
@@ -1211,13 +1211,22 @@ const removePoi = (idx) => {
       const destRes = await fetch(`${baseurl}/api/destinations`);
       const destData = await destRes.json();
 
-        // Filter for international destinations only (is_domestic == 0)
+      // Filter for international destinations only (is_domestic == 0)
       const internationalDestinations = Array.isArray(destData) 
         ? destData.filter(destination => destination.is_domestic == 0)
         : [];
       
-      setDestinations(internationalDestinations);
+      // Sort destinations by name in ascending order (A to Z)
+      const sortedDestinations = internationalDestinations.sort((a, b) => {
+        const nameA = a.name ? a.name.toLowerCase() : '';
+        const nameB = b.name ? b.name.toLowerCase() : '';
+        
+        if (nameA < nameB) return -1;
+        if (nameA > nameB) return 1;
+        return 0;
+      });
       
+      setDestinations(sortedDestinations);
 
       if (isEditMode) {
         // Load existing tour data for edit

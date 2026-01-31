@@ -1,4 +1,3 @@
-// Countries.js
 import React, { useState, useEffect } from 'react';
 import { Container, Card, Alert, Spinner } from 'react-bootstrap';
 import { Eye, Pencil, Trash } from 'react-bootstrap-icons';
@@ -23,9 +22,10 @@ const Countries = () => {
       const response = await fetch(`${baseurl}/api/countries`);
       const result = await response.json();
 
-      // Sort countries by ID in descending order (newest first)
+      // Sort countries by name in alphabetical order
       const sortedCountries = result.sort((a, b) => {
-        return b.country_id - a.country_id;
+        // Use localeCompare for proper alphabetical sorting
+        return a.name.localeCompare(b.name);
       });
 
       // Filter for domestic countries only (is_domestic == 1)

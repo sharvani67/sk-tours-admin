@@ -1657,20 +1657,29 @@ useEffect(() => {
       const destRes = await fetch(`${baseurl}/api/destinations`);
       const destData = await destRes.json();
 
-       // Filter for international destinations only (is_domestic == 0)
+      // Filter for international destinations only (is_domestic == 0)
       const internationalDestinations = Array.isArray(destData) 
         ? destData.filter(destination => destination.is_domestic == 0)
         : [];
       
-      setDestinations(internationalDestinations);
+      // Sort destinations by name in ascending order (A to Z)
+      const sortedDestinations = internationalDestinations.sort((a, b) => {
+        const nameA = a.name ? a.name.toLowerCase() : '';
+        const nameB = b.name ? b.name.toLowerCase() : '';
+        
+        if (nameA < nameB) return -1;
+        if (nameA > nameB) return 1;
+        return 0;
+      });
       
+      setDestinations(sortedDestinations);
 
       if (isEditMode) {
         await loadTourData();
       } else {
         // Set is_international to 1 for international tours
-          // You might want to get this from a URL parameter or other context
-  const isInternational = window.location.pathname.includes('intl') ? 1 : 0;
+        // You might want to get this from a URL parameter or other context
+        const isInternational = window.location.pathname.includes('intl') ? 1 : 0;
 
         setFormData(prev => ({
           ...prev,
