@@ -310,17 +310,49 @@ const removeOptionalTourRow = (idx) => {
     { particulars: 'Per Month Payment', loan_amount: '', months: 48, emi: '' }
   ]);
 
-  const handleLoanAmountChange = (index, value) => {
-    const updatedOptions = [...emiOptions];
-    updatedOptions[index].loan_amount = value;
-    setEmiOptions(updatedOptions);
-  };
+  // Add this state for EMI
+const [emiLoanAmount, setEmiLoanAmount] = useState('');
+const [emiInterestRate, setEmiInterestRate] = useState(10);
 
-  const handleEMIChange = (index, value) => {
-    const updatedOptions = [...emiOptions];
-    updatedOptions[index].emi = value;
+// Add this function to calculate EMI
+const calculateEMI = (loanAmount, months, interestRate = 10) => {
+  const principal = parseFloat(loanAmount);
+  const monthlyRate = (interestRate / 100) / 12;
+  const n = parseInt(months, 10);
+  
+  if (isNaN(principal) || principal <= 0 || isNaN(n) || n <= 0) return 0;
+  
+  const emi = principal * monthlyRate * Math.pow(1 + monthlyRate, n) / 
+              (Math.pow(1 + monthlyRate, n) - 1);
+  
+  return Math.round(emi * 100) / 100;
+};
+
+// Add this effect to update EMI values when loan amount changes
+useEffect(() => {
+  if (emiLoanAmount && !isNaN(emiLoanAmount) && emiLoanAmount > 0) {
+    const updatedOptions = emiOptions.map(option => ({
+      ...option,
+      loan_amount: emiLoanAmount,
+      emi: calculateEMI(emiLoanAmount, option.months, emiInterestRate)
+    }));
     setEmiOptions(updatedOptions);
-  };
+  }
+}, [emiLoanAmount, emiInterestRate]);
+
+// Update the handleLoanAmountChange function
+const handleLoanAmountChange = (value) => {
+  setEmiLoanAmount(value);
+  
+  if (value && !isNaN(value) && value > 0) {
+    const updatedOptions = emiOptions.map(option => ({
+      ...option,
+      loan_amount: value,
+      emi: calculateEMI(value, option.months, emiInterestRate)
+    }));
+    setEmiOptions(updatedOptions);
+  }
+};
 
   // =======================
   // HOTELS
@@ -1135,6 +1167,96 @@ const removePoi = (idx) => {
   if (confirmDelete) {
     setCancelPolicies(prev => prev.filter((_, i) => i !== idx));
   }
+};
+
+
+
+
+  // Add these after your other state declarations, before the useEffect hooks
+
+// Static content for Booking Policy
+const bookingPolicyTemplates = [
+  {
+    title: "Standard Booking Policy",
+    content: `1. A non-refundable deposit of INR 25,000 per person is required to confirm the booking.
+2. Balance payment must be made 45 days prior to departure.
+3. For bookings made within 45 days of departure, full payment is required at the time of booking.
+4. In case of non-payment of balance amount within the stipulated time, the booking stands automatically cancelled with forfeiture of deposit.
+5. All payments should be made by cheque/DD/online transfer in favour of "Travel Company".
+6. Booking is confirmed only after receiving the deposit and signed booking form.`
+  },
+  {
+    title: "Flexible Booking Policy",
+    content: `1. Book now with just 10% of the tour cost.
+2. Second installment of 40% payable 60 days before departure.
+3. Final balance of 50% payable 30 days before departure.
+4. Easy EMI options available for 3, 6, 9 and 12 months.
+5. Special discount for full payment at the time of booking.
+6. Group booking discounts available for 10+ passengers.`
+  },
+  {
+    title: "Early Bird Booking",
+    content: `1. Book 90 days in advance and get 15% discount.
+2. Deposit of INR 20,000 per person to secure the seats.
+3. Balance payment 60 days prior to departure.
+4. Cancellation allowed with 50% deposit refund if cancelled 90+ days before departure.
+5. Special rates for senior citizens and children.
+6. Free travel insurance for bookings made 120 days in advance.`
+  }
+];
+
+// Static content for Cancellation Policy
+const cancellationPolicyTemplates = [
+  {
+    title: "Standard Cancellation Charges",
+    content: `Cancellation received:`,
+    charges: `• 45 days or more before departure: 25% of tour cost
+• 30-44 days before departure: 50% of tour cost
+• 15-29 days before departure: 75% of tour cost
+• 0-14 days before departure: 100% of tour cost
+• No show: 100% of tour cost
+• Special conditions apply for peak season and holiday periods.`
+  },
+  {
+    title: "Flexible Cancellation",
+    content: `Cancellation Policy with Travel Credit:`,
+    charges: `• 60+ days before departure: Full refund minus INR 5,000 processing fee
+• 30-59 days before departure: 50% refund or 75% travel credit
+• 15-29 days before departure: 25% refund or 50% travel credit
+• 8-14 days before departure: 10% refund or 30% travel credit
+• 0-7 days before departure: No refund, 15% travel credit
+• Travel credit valid for 1 year from date of cancellation.`
+  },
+  {
+    title: "Non-Refundable Policy",
+    content: `Important Cancellation Terms:`,
+    charges: `• All cancellations will attract cancellation charges.
+• Once booked, dates cannot be changed.
+• No refund for unused services.
+• In case of visa rejection, only recoverable amounts will be refunded.
+• No refund for early check-out or no-show.
+• Force majeure conditions as per company policy.`
+  }
+];
+
+// Add state for showing/hiding templates
+const [showBookingTemplates, setShowBookingTemplates] = useState(false);
+const [showCancellationTemplates, setShowCancellationTemplates] = useState(false);
+
+
+// Add these functions after your other handler functions
+
+const handleBookingTemplateSelect = (template) => {
+  setPoiText(template.content);
+  setShowBookingTemplates(false);
+};
+
+const handleCancellationTemplateSelect = (template) => {
+  setCancelItem({
+    ...cancelItem,
+    cancellation_policy: `${template.content}\n\n${template.charges}`
+  });
+  setShowCancellationTemplates(false);
 };
 
   // =======================
@@ -2254,17 +2376,36 @@ const goBack = () => {
       }
 
       // EMI Options
-      const validEmiOptions = emiOptions.filter(opt =>
-        opt.loan_amount && opt.loan_amount > 0 && opt.emi && opt.emi > 0
-      );
-      
-      if (validEmiOptions.length > 0) {
-        await fetch(`${baseurl}/api/emi-options/emi/bulk`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ tour_id: id, emi_options: validEmiOptions })
-        });
-      }
+     // 6) EMI OPTIONS - UPDATED
+if (emiLoanAmount && !isNaN(emiLoanAmount) && emiLoanAmount > 0) {
+  // Use the global loan amount
+  await fetch(`${baseurl}/api/emi-options/emi/bulk`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ 
+      tour_id: id, 
+      loan_amount: emiLoanAmount 
+      // Remove the emi_options array from here
+      // The backend will generate all options based on loan_amount
+    })
+  });
+} else {
+  // Fallback to existing behavior if no global loan amount
+  const validEmiOptions = emiOptions.filter(opt =>
+    opt.loan_amount && opt.loan_amount > 0 && opt.emi && opt.emi > 0
+  );
+  if (validEmiOptions.length > 0) {
+    await fetch(`${baseurl}/api/emi-options/emi/bulk`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        tour_id: id, 
+        emi_options: validEmiOptions 
+      })
+    });
+  }
+}
+
 
       // Hotels
       // Hotels
@@ -2568,17 +2709,35 @@ const createTour = async () => {
       }
 
       // 8) EMI OPTIONS BULK
-      const validEmiOptions = emiOptions.filter(opt =>
-        opt.loan_amount && opt.loan_amount > 0 && opt.emi && opt.emi > 0
-      );
-
-      if (validEmiOptions.length > 0) {
-        await fetch(`${baseurl}/api/emi-options/emi/bulk`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ tour_id: tourId, emi_options: validEmiOptions })
-        });
-      }
+      // 6) EMI OPTIONS - UPDATED
+if (emiLoanAmount && !isNaN(emiLoanAmount) && emiLoanAmount > 0) {
+  // Use the global loan amount
+  await fetch(`${baseurl}/api/emi-options/emi/bulk`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ 
+      tour_id: tourId, 
+      loan_amount: emiLoanAmount 
+      // Remove the emi_options array from here
+      // The backend will generate all options based on loan_amount
+    })
+  });
+} else {
+  // Fallback to existing behavior if no global loan amount
+  const validEmiOptions = emiOptions.filter(opt =>
+    opt.loan_amount && opt.loan_amount > 0 && opt.emi && opt.emi > 0
+  );
+  if (validEmiOptions.length > 0) {
+    await fetch(`${baseurl}/api/emi-options/emi/bulk`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        tour_id: tourId, 
+        emi_options: validEmiOptions 
+      })
+    });
+  }
+}
 
       // 9) HOTELS BULK
       if (hotelRows.length > 0) {
@@ -3656,84 +3815,156 @@ const handleSaveClick = () => {
 
               {/* ======== EMI OPTIONS (MANUAL) ======== */}
               <Tab eventKey="emiOptions" title="EMI Options">
-                <Table striped bordered hover responsive className="align-middle">
-                  <thead className="table-dark">
-                    <tr>
-                      <th width="5%">#</th>
-                      <th width="30%">Particulars</th>
-                      <th width="25%">Loan Amount</th>
-                      <th width="15%">Months</th>
-                      <th width="25%">EMI</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {emiOptions.map((option, index) => (
-                      <tr key={index}>
-                        <td className="text-center">{index + 1}</td>
-                        <td>
-                          <Form.Control
-                            type="text"
-                            value={option.particulars}
-                            readOnly
-                            plaintext
-                            className="border-0 bg-transparent"
-                          />
-                        </td>
-                        <td>
-                          <Form.Group className="mb-0">
-                            <InputGroup>
-                              <InputGroup.Text>₹</InputGroup.Text>
-                              <Form.Control
-                                type="number"
-                                min="0"
-                                step="1000"
-                                value={option.loan_amount || ''}
-                                onChange={(e) => handleLoanAmountChange(index, e.target.value)}
-                                placeholder="Optional"
-                              />
-                            </InputGroup>
-                          </Form.Group>
-                        </td>
-                        <td className="text-center">
-                          <Form.Control
-                            type="text"
-                            value={option.months}
-                            readOnly
-                            plaintext
-                            className="border-0 bg-transparent text-center"
-                          />
-                        </td>
-                        <td>
-                          <Form.Group className="mb-0">
-                            <InputGroup>
-                              <InputGroup.Text>₹</InputGroup.Text>
-                              <Form.Control
-                                type="number"
-                                min="0"
-                                step="100"
-                                value={option.emi || ''}
-                                onChange={(e) => handleEMIChange(index, e.target.value)}
-                                placeholder="Optional"
-                              />
-                            </InputGroup>
-                          </Form.Group>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </Table>
+  <Card className="mb-4">
+    <Card.Header>EMI Calculator</Card.Header>
+    <Card.Body>
+      <Row>
+        <Col md={6}>
+          <Form.Group className="mb-3">
+            <Form.Label>Loan Amount *</Form.Label>
+            <InputGroup>
+              <InputGroup.Text>₹</InputGroup.Text>
+              <Form.Control
+                type="number"
+                min="0"
+                step="1000"
+                value={emiLoanAmount}
+                onChange={(e) => handleLoanAmountChange(e.target.value)}
+                placeholder="Enter loan amount"
+              />
+            </InputGroup>
+            <Form.Text className="text-muted">
+              This amount will be used for all EMI calculations
+            </Form.Text>
+          </Form.Group>
+        </Col>
+        
+        <Col md={6}>
+          <Form.Group className="mb-3">
+            <Form.Label>Interest Rate (%) *</Form.Label>
+            <InputGroup>
+              <InputGroup.Text>%</InputGroup.Text>
+              <Form.Control
+                type="number"
+                min="0"
+                max="50"
+                step="0.1"
+                value={emiInterestRate}
+                onChange={(e) => setEmiInterestRate(e.target.value)}
+              />
+            </InputGroup>
+            <Form.Text className="text-muted">
+              Annual interest rate for EMI calculation
+            </Form.Text>
+          </Form.Group>
+        </Col>
+      </Row>
+      
+      {emiLoanAmount && emiLoanAmount > 0 && (
+        <Alert variant="info" className="mt-3">
+          <strong>Note:</strong> EMI values are automatically calculated based on the loan amount 
+          and interest rate. All EMI options will use the same loan amount of ₹{emiLoanAmount} 
+          with {emiInterestRate}% annual interest rate.
+        </Alert>
+      )}
+    </Card.Body>
+  </Card>
 
-                 <Form.Group className="mt-3">
-                  <Form.Label>EMI Remarks</Form.Label>
-                  <Form.Control
-                    as="textarea"
-                    rows={3}
-                    name="emi_remarks"
-                    value={formData.emi_remarks}
-                    onChange={handleBasicChange}
-                  />
-                </Form.Group>
-              </Tab>
+  <Table striped bordered hover responsive className="align-middle">
+    <thead className="table-dark">
+      <tr>
+        <th width="5%">#</th>
+        <th width="30%">Particulars</th>
+        <th width="25%">Loan Amount</th>
+        <th width="15%">Months</th>
+        <th width="25%">EMI (Calculated)</th>
+      </tr>
+    </thead>
+    <tbody>
+      {emiOptions.map((option, index) => (
+        <tr key={index}>
+          <td className="text-center">{index + 1}</td>
+          <td>
+            <Form.Control
+              type="text"
+              value={option.particulars}
+              readOnly
+              plaintext
+              className="border-0 bg-transparent"
+            />
+          </td>
+          <td>
+            <Form.Group className="mb-0">
+              <InputGroup>
+                <InputGroup.Text>₹</InputGroup.Text>
+                <Form.Control
+                  type="number"
+                  min="0"
+                  step="1000"
+                  value={option.loan_amount || ''}
+                  onChange={(e) => {
+                    // If you want to allow individual editing, keep this
+                    // Otherwise, make it read-only
+                    const updatedOptions = [...emiOptions];
+                    updatedOptions[index].loan_amount = e.target.value;
+                    updatedOptions[index].emi = calculateEMI(
+                      e.target.value, 
+                      option.months, 
+                      emiInterestRate
+                    );
+                    setEmiOptions(updatedOptions);
+                  }}
+                  placeholder="Enter amount"
+                  readOnly={!!emiLoanAmount} // Make read-only if global loan amount is set
+                />
+              </InputGroup>
+            </Form.Group>
+          </td>
+          <td className="text-center">
+            <Form.Control
+              type="text"
+              value={option.months}
+              readOnly
+              plaintext
+              className="border-0 bg-transparent text-center"
+            />
+          </td>
+          <td>
+            <Form.Group className="mb-0">
+              <InputGroup>
+                <InputGroup.Text>₹</InputGroup.Text>
+                <Form.Control
+                  type="number"
+                  min="0"
+                  step="100"
+                  value={option.emi || ''}
+                  readOnly
+                  className="bg-light"
+                  style={{ fontWeight: 'bold' }}
+                />
+              </InputGroup>
+            </Form.Group>
+            <small className="text-muted">
+              Monthly payment for {option.months} months
+            </small>
+          </td>
+        </tr>
+      ))}
+    </tbody>
+  </Table>
+
+  <Form.Group className="mt-4">
+    <Form.Label>EMI Remarks</Form.Label>
+    <Form.Control
+      as="textarea"
+      rows={3}
+      name="emi_remarks"
+      value={formData.emi_remarks}
+      onChange={handleBasicChange}
+      placeholder="Enter any EMI-related remarks or notes..."
+    />
+  </Form.Group>
+</Tab>
 
               <Tab eventKey="inclusions" title="Inclusions">
                 <Form.Group className="mb-3">
@@ -4864,20 +5095,66 @@ const handleSaveClick = () => {
   </Tabs>
 </Tab>
 
-              <Tab eventKey="bookingPoi" title="Booking Policy">
+                           <Tab eventKey="bookingPoi" title="Booking POI">
                 <Form.Group className="mb-3">
                   <Row>
                     <Col md={8}>
-                      <Form.Label>Booking Policy</Form.Label>
+                      <div className="d-flex justify-content-between align-items-center mb-2">
+                        <Form.Label>Booking Policy</Form.Label>
+                        <Button
+                          variant="outline-info"
+                          size="sm"
+                          onClick={() => setShowBookingTemplates(!showBookingTemplates)}
+                        >
+                          {showBookingTemplates ? 'Hide Templates' : 'Show Templates'}
+                        </Button>
+                      </div>
+                      
+                      {/* Template Selection Box */}
+                      {showBookingTemplates && (
+                        <Card className="mb-3 border-info">
+                          {/* <Card.Header className="bg-info text-white"> */}
+                            <strong>Booking Policy Templates</strong>
+                            {/* <small className="float-end">Click to select</small> */}
+                          {/* </Card.Header> */}
+                          <Card.Body className="p-0">
+                            <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
+                              {bookingPolicyTemplates.map((template, index) => (
+                                <div
+                                  key={index}
+                                  className="p-3 border-bottom hover-cursor-pointer"
+                                  onClick={() => handleBookingTemplateSelect(template)}
+                                  style={{
+                                    cursor: 'pointer',
+                                    backgroundColor: '#f8f9fa'
+                                  }}
+                                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#e9ecef'}
+                                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#f8f9fa'}
+                                >
+                                  <strong className="text-primary">{template.title}</strong>
+                                  <div className="text-muted small mt-1" style={{
+                                    whiteSpace: 'nowrap',
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis'
+                                  }}>
+                                    {template.content.substring(0, 100)}...
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </Card.Body>
+                        </Card>
+                      )}
+                      
                       <Form.Control
                         as="textarea"
-                        rows={3}
+                        rows={4}
                         value={poiText}
                         onChange={(e) => setPoiText(e.target.value)}
-                        placeholder="Type and click Add"
+                        placeholder="Type booking policy here or select from templates above"
                       />
                     </Col>
-
+              
                     <Col md={4}>
                       <Form.Label>Amount Details</Form.Label>
                       <Form.Control
@@ -4888,7 +5165,7 @@ const handleSaveClick = () => {
                       />
                     </Col>
                   </Row>
-
+              
                   <Form.Group className="mt-3">
                     <Form.Label>Booking Policy Remarks</Form.Label>
                     <Form.Control
@@ -4900,7 +5177,7 @@ const handleSaveClick = () => {
                     />
                   </Form.Group>
                 </Form.Group>
-
+              
                 {bookingPois.length > 0 && (
                   <Table striped bordered hover size="sm">
                     <thead>
@@ -4915,7 +5192,7 @@ const handleSaveClick = () => {
                       {bookingPois.map((p, idx) => (
                         <tr key={idx}>
                           <td>{idx + 1}</td>
-                          <td>{p.item}</td>
+                          <td style={{ whiteSpace: 'pre-line' }}>{p.item}</td>
                           <td>{p.amount_details}</td>
                           <td>
                             <div className="d-flex gap-1">
@@ -4942,91 +5219,138 @@ const handleSaveClick = () => {
                     </tbody>
                   </Table>
                 )}
-              </Tab>
-
-              <Tab eventKey="cancellation" title="Cancellation Policy">
-                <Row>
-                  <Col md={8}>
-                    <Form.Group>
-                      <Form.Label>Cancellation Policy</Form.Label>
-                      <Form.Control
-                        as="textarea"
-                        rows={3}
-                        name="cancellation_policy"
-                        value={cancelItem.cancellation_policy}
-                        onChange={handleCancelChange}
-                        placeholder="Type cancellation policy here"
-                      />
-                    </Form.Group>
-                  </Col>
-
-                  <Col md={4}>
-                    <Form.Group>
-                      <Form.Label>Charges</Form.Label>
-                      <Form.Control
-                        type="text"
-                        name="charges"
-                        value={cancelItem.charges}
-                        onChange={handleCancelChange}
-                        placeholder="Example: No refund / 50% retained"
-                      />
-                    </Form.Group>
-                  </Col>
-                </Row>
-
-                <Form.Group className="mt-3">
-                  <Form.Label>Cancellation Remarks</Form.Label>
-                  <Form.Control
-                    as="textarea"
-                    rows={3}
-                    name="cancellation_remarks"
-                    value={formData.cancellation_remarks}
-                    onChange={handleBasicChange}
-                  />
-                </Form.Group>
-
-                {cancelPolicies.length > 0 && (
-                  <Table striped bordered hover className="mt-3" size="sm">
-                    <thead>
-                      <tr>
-                        <th>#</th>
-                        <th>Cancellation Policy</th>
-                        <th>Charges</th>
-                        <th>Action</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {cancelPolicies.map((c, idx) => (
-                        <tr key={idx}>
-                          <td>{idx + 1}</td>
-                          <td>{c.cancellation_policy}</td>
-                          <td>{c.charges || "-"}</td>
-                          <td>
-                            <div className="d-flex gap-1">
-                              <Button
-                                variant="outline-warning"
-                                size="sm"
-                                onClick={() => editCancelRow(idx)}
-                                title="Edit"
-                              >
-                                <Pencil size={14} />
-                              </Button>
-                              <Button
-                                variant="outline-danger"
-                                size="sm"
-                                onClick={() => removeCancelRow(idx)}
-                                title="Remove"
-                              >
-                                <Trash size={14} />
-                              </Button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </Table>
-                )}
-              </Tab>
+                          </Tab>
+              
+                          <Tab eventKey="cancellation" title="Cancellation Policy">
+                            <Row>
+                              <Col md={8}>
+                                <div className="d-flex justify-content-between align-items-center mb-2">
+                                  <Form.Label>Cancellation Policy</Form.Label>
+                                  <Button
+                                    variant="outline-info"
+                                    size="sm"
+                                    onClick={() => setShowCancellationTemplates(!showCancellationTemplates)}
+                                  >
+                                    {showCancellationTemplates ? 'Hide Templates' : 'Show Templates'}
+                                  </Button>
+                                </div>
+                                
+                                {/* Template Selection Box */}
+                                {showCancellationTemplates && (
+                                  <Card className="mb-3 border-info">
+                                    {/* <Card.Header className="bg-info text-white"> */}
+                                      <strong>Cancellation Policy Templates</strong>
+                                      {/* <small className="float-end">Click to select</small> */}
+                                    {/* </Card.Header> */}
+                                    <Card.Body className="p-0">
+                                      <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
+                                        {cancellationPolicyTemplates.map((template, index) => (
+                                          <div
+                                            key={index}
+                                            className="p-3 border-bottom hover-cursor-pointer"
+                                            onClick={() => handleCancellationTemplateSelect(template)}
+                                            style={{
+                                              cursor: 'pointer',
+                                              backgroundColor: '#f8f9fa'
+                                            }}
+                                            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#e9ecef'}
+                                            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#f8f9fa'}
+                                          >
+                                            <strong className="text-primary">{template.title}</strong>
+                                            <div className="text-muted small mt-1" style={{
+                                              whiteSpace: 'nowrap',
+                                              overflow: 'hidden',
+                                              textOverflow: 'ellipsis'
+                                            }}>
+                                              {template.content.substring(0, 50)}... {template.charges.substring(0, 50)}...
+                                            </div>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    </Card.Body>
+                                  </Card>
+                                )}
+                                
+                                <Form.Control
+                                  as="textarea"
+                                  rows={4}
+                                  name="cancellation_policy"
+                                  value={cancelItem.cancellation_policy}
+                                  onChange={handleCancelChange}
+                                  placeholder="Type cancellation policy here or select from templates above"
+                                  style={{ whiteSpace: 'pre-line' }}
+                                />
+                              </Col>
+              
+                              <Col md={4}>
+                                <Form.Label>Charges</Form.Label>
+                                <Form.Control
+                                  type="text"
+                                  name="charges"
+                                  value={cancelItem.charges}
+                                  onChange={handleCancelChange}
+                                  placeholder="Example: No refund / 50% retained"
+                                />
+                              </Col>
+                            </Row>
+              
+                            <Form.Group className="mt-3">
+                              <Form.Label>Cancellation Remarks</Form.Label>
+                              <Form.Control
+                                as="textarea"
+                                rows={3}
+                                name="cancellation_remarks"
+                                value={formData.cancellation_remarks}
+                                onChange={handleBasicChange}
+                              />
+                            </Form.Group>
+              
+                            {cancelPolicies.length > 0 && (
+                              <Table striped bordered hover className="mt-3" size="sm">
+                                <thead>
+                                  <tr>
+                                    <th>#</th>
+                                    <th>Cancellation Policy</th>
+                                    <th>Charges</th>
+                                    <th>Action</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {cancelPolicies.map((c, idx) => (
+                                    <tr key={idx}>
+                                      <td>{idx + 1}</td>
+                                      <td style={{ whiteSpace: 'pre-line', maxWidth: '400px' }}>
+                                        <div style={{ maxHeight: '100px', overflowY: 'auto' }}>
+                                          {c.cancellation_policy}
+                                        </div>
+                                      </td>
+                                      <td>{c.charges || "-"}</td>
+                                      <td>
+                                        <div className="d-flex gap-1">
+                                          <Button
+                                            variant="outline-warning"
+                                            size="sm"
+                                            onClick={() => editCancelRow(idx)}
+                                            title="Edit"
+                                          >
+                                            <Pencil size={14} />
+                                          </Button>
+                                          <Button
+                                            variant="outline-danger"
+                                            size="sm"
+                                            onClick={() => removeCancelRow(idx)}
+                                            title="Remove"
+                                          >
+                                            <Trash size={14} />
+                                          </Button>
+                                        </div>
+                                      </td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </Table>
+                            )}
+                          </Tab>
 
               <Tab eventKey="instructions" title="Instructions">
                 <Form.Group className="mb-3">
