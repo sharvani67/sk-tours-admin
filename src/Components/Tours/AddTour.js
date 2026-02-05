@@ -202,93 +202,51 @@ const [transportItem, setTransportItem] = useState({
 
   // Add these after your other state declarations, before the useEffect hooks
 
-  // Replace the current template arrays with these:
+// Static content for Booking Policy
+const bookingPolicyTemplates = [
+  {
+    title: "Booking Policy",
+    content: `Per Person Booking Amount`,
+  },
+  // {
+  //   title: "New Booking Policy",
+  //   content: `New Person Booking Amount`,
+  // }
+];
 
-  // Add state for showing/hiding templates
+// Static content for Cancellation Policy
+const cancellationPolicyTemplates = [
+  {
+    title: "Cancellation Policy",
+    content: `45 Days to 30 Days Cost per person`,
+    // charges: "No separate charges field needed",
+  },
+  //  {
+  //   title: "New Cancellation Policy",
+  //   content: `55 Days to 30 Days Cost per person`,
+  //   charges: "No separate charges field needed",
+  // }
+];
+
+// Add state for showing/hiding templates
 const [showBookingTemplates, setShowBookingTemplates] = useState(false);
 const [showCancellationTemplates, setShowCancellationTemplates] = useState(false);
 
 
-// Static content for Booking Policy Remarks
-const bookingRemarksTemplates = [
-  {
-    title: "Standard Booking Remarks",
-    content: `• All bookings are subject to availability at the time of confirmation.
-• Prices are subject to change without prior notice.
-• Early booking is recommended to secure seats.
-• Group bookings (10+ passengers) require special quotation.
-• For any special requests, please inform at the time of booking.
-• Tour itinerary may change due to unforeseen circumstances.`
-  },
-  {
-    title: "Payment Related Remarks",
-    content: `• All payments should be made by cheque/DD/online transfer.
-• No cash payments accepted for amounts above ₹50,000.
-• Payment receipts will be issued within 3 working days.
-• For online payments, please share the transaction reference.
-• Partial payments are not considered as confirmation.
-• Final confirmation only after full payment receipt.`
-  },
-  {
-    title: "Documentation Remarks",
-    content: `• Passport copy required for all international tours.
-• PAN card copy mandatory for payments above ₹2,00,000.
-• Aadhar card required for domestic flight bookings.
-• Medical certificates required for senior citizens.
-• Parental consent form for children traveling alone.
-• Visa processing may take additional 15-20 working days.`
-  }
-];
+// Add these functions after your other handler functions
 
-// Static content for Cancellation Policy Remarks
-const cancellationRemarksTemplates = [
-  {
-    title: "Standard Cancellation Remarks",
-    content: `• All cancellations must be in writing/email.
-• Refunds will be processed within 15-20 working days.
-• Bank charges will be deducted from refund amount.
-• No refund for partially used services.
-• Force majeure cancellations subject to company discretion.
-• Insurance claims to be handled directly with insurer.`
-  },
-  {
-    title: "Refund Processing Remarks",
-    content: `• Refunds processed to the same account from which payment was made.
-• Processing time: 15-20 working days from cancellation date.
-• ₹500 processing fee applicable on all refunds.
-• GST on cancellation charges will be applicable.
-• Refunds may be delayed during bank holidays.
-• For quick refunds, provide cancellation authority letter.`
-  },
-  {
-    title: "Special Cases Remarks",
-    content: `• Visa rejection cases: Only recoverable amounts refunded.
-• Medical emergencies: Full documentation required.
-• Natural disasters: As per government advisories.
-• Airline/hotel cancellations: Subject to their policies.
-• Group cancellations: Special terms apply.
-• Peak season cancellations: Higher charges may apply.`
-  }
-];
-
-// Replace the template selection handlers:
-
-const handleBookingRemarksTemplateSelect = (template) => {
-  setFormData(prev => ({
-    ...prev,
-    booking_poi_remarks: template.content
-  }));
+const handleBookingTemplateSelect = (template) => {
+  setPoiText(template.content);
   setShowBookingTemplates(false);
 };
 
-const handleCancellationRemarksTemplateSelect = (template) => {
-  setFormData(prev => ({
-    ...prev,
-    cancellation_remarks: template.content
-  }));
+const handleCancellationTemplateSelect = (template) => {
+  setCancelItem({
+    ...cancelItem,
+    cancellation_policy: `${template.content}\n\n`
+  });
   setShowCancellationTemplates(false);
 };
-  
 
   // INSTRUCTIONS
   const [instructionText, setInstructionText] = useState('');
@@ -2924,37 +2882,40 @@ useEffect(() => {
         </div>
         
         {/* Template Selection Box */}
-       {/* Template Selection Box */}
-{showBookingTemplates && (
-  <Card className="mb-3 border-info">
-    <Card.Body className="p-0">
-      <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
-        {bookingRemarksTemplates.map((template, index) => (
-          <div
-            key={index}
-            className="p-3 border-bottom hover-cursor-pointer"
-            onClick={() => handleBookingRemarksTemplateSelect(template)}
-            style={{
-              cursor: 'pointer',
-              backgroundColor: '#f8f9fa'
-            }}
-            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#e9ecef'}
-            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#f8f9fa'}
-          >
-            <strong className="text-primary">{template.title}</strong>
-            <div className="text-muted small mt-1" style={{
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis'
-            }}>
-              {template.content.substring(0, 100)}...
-            </div>
-          </div>
-        ))}
-      </div>
-    </Card.Body>
-  </Card>
-)}
+        {showBookingTemplates && (
+          <Card className="mb-3 border-info">
+            {/* <Card.Header className="bg-info text-white"> */}
+              <strong>Booking Policy Templates</strong>
+              {/* <small className="float-end">Click to select</small> */}
+            {/* </Card.Header> */}
+            <Card.Body className="p-0">
+              <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
+                {bookingPolicyTemplates.map((template, index) => (
+                  <div
+                    key={index}
+                    className="p-3 border-bottom hover-cursor-pointer"
+                    onClick={() => handleBookingTemplateSelect(template)}
+                    style={{
+                      cursor: 'pointer',
+                      backgroundColor: '#f8f9fa'
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#e9ecef'}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#f8f9fa'}
+                  >
+                    <strong className="text-primary">{template.title}</strong>
+                    <div className="text-muted small mt-1" style={{
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis'
+                    }}>
+                      {template.content.substring(0, 100)}...
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </Card.Body>
+          </Card>
+        )}
         
         <Form.Control
           as="textarea"
@@ -3044,18 +3005,18 @@ useEffect(() => {
                       {showCancellationTemplates ? 'Hide Templates' : 'Show Templates'}
                     </Button>
                   </div>
-                  
+
+
                   {/* Template Selection Box */}
-               {/* Template Selection Box */}
 {showCancellationTemplates && (
   <Card className="mb-3 border-info">
     <Card.Body className="p-0">
       <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
-        {cancellationRemarksTemplates.map((template, index) => (
+        {cancellationPolicyTemplates.map((template, index) => (
           <div
             key={index}
             className="p-3 border-bottom hover-cursor-pointer"
-            onClick={() => handleCancellationRemarksTemplateSelect(template)}
+            onClick={() => handleCancellationTemplateSelect(template)}
             style={{
               cursor: 'pointer',
               backgroundColor: '#f8f9fa'
@@ -3069,7 +3030,8 @@ useEffect(() => {
               overflow: 'hidden',
               textOverflow: 'ellipsis'
             }}>
-              {template.content.substring(0, 100)}...
+              {template.content.substring(0, 50)}...
+              {template.charges && ` ${template.charges.substring(0, 50)}...`}
             </div>
           </div>
         ))}
@@ -3077,6 +3039,7 @@ useEffect(() => {
     </Card.Body>
   </Card>
 )}
+
                   
                   <Form.Control
                     as="textarea"

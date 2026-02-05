@@ -175,54 +175,54 @@ const Navbar = ({ children }) => {
     icon: <FiMessageSquare className="sidebar-icon" />,
     matchPaths: ["/enquiries"],
   },
-  {
-    label: "Exhibition",
-    path: "/exhibition",
-    icon: <FiArchive className="sidebar-icon" />,
-    matchPaths: [
-      "/exhibition",
-      "/about-exhibition",
-      "/domestic-exhibitions",
-      "/international-exhibitions",
-      "/add-exhibition/domestic",
-      "/add-exhibition/international",
-      "/add-exhibition-faq",
-      "/edit-exhibition/domestic/:id",
-      "/edit-exhibition/international/:id",
-      "/edit-exhibition-faq/:id"
-    ],
-    submenu: [
-      {
-        label: "About Exhibition",
-        path: "/about-exhibition",
-        icon: <FiInfo className="sidebar-icon" />,
-      },
-      {
-        label: "Domestic Exhibition",
-        path: "/domestic-exhibitions",
-        icon: <FiHome className="sidebar-icon" />,
-      },
-      {
-        label: "International Exhibition",
-        path: "/international-exhibitions",
-        icon: <FiGlobe className="sidebar-icon" />,
-      },
-    ],
-  },
-  {
-    label: "MICE",  // ADDED NEW MICE SECTION
-    path: "/mice",
-    icon: <FiBriefcase className="sidebar-icon" />,
-    matchPaths: [
-      "/mice",
-      "/mice-domestic",
-      "/mice-international",
-      "/add-mice-domestic",
-      "/add-mice-international",
-      "/edit-mice-domestic/:id",
-      "/edit-mice-international/:id"
-    ],
-  },
+  // {
+  //   label: "Exhibition",
+  //   path: "/exhibition",
+  //   icon: <FiArchive className="sidebar-icon" />,
+  //   matchPaths: [
+  //     "/exhibition",
+  //     "/about-exhibition",
+  //     "/domestic-exhibitions",
+  //     "/international-exhibitions",
+  //     "/add-exhibition/domestic",
+  //     "/add-exhibition/international",
+  //     "/add-exhibition-faq",
+  //     "/edit-exhibition/domestic/:id",
+  //     "/edit-exhibition/international/:id",
+  //     "/edit-exhibition-faq/:id"
+  //   ],
+  //   submenu: [
+  //     {
+  //       label: "About Exhibition",
+  //       path: "/about-exhibition",
+  //       icon: <FiInfo className="sidebar-icon" />,
+  //     },
+  //     {
+  //       label: "Domestic Exhibition",
+  //       path: "/domestic-exhibitions",
+  //       icon: <FiHome className="sidebar-icon" />,
+  //     },
+  //     {
+  //       label: "International Exhibition",
+  //       path: "/international-exhibitions",
+  //       icon: <FiGlobe className="sidebar-icon" />,
+  //     },
+  //   ],
+  // },
+  // {
+  //   label: "MICE",  // ADDED NEW MICE SECTION
+  //   path: "/mice",
+  //   icon: <FiBriefcase className="sidebar-icon" />,
+  //   matchPaths: [
+  //     "/mice",
+  //     "/mice-domestic",
+  //     "/mice-international",
+  //     "/add-mice-domestic",
+  //     "/add-mice-international",
+  //     "/edit-mice-domestic/:id",
+  //     "/edit-mice-international/:id"
+  //   ],
+  // },
   {
     label: "INTL-Group-Tours", 
     path: "/intl-group-tours",
