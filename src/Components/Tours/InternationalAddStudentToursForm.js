@@ -1124,70 +1124,88 @@ const removeCancelRow = (idx) => {
 
   // Add these after your other state declarations, before the useEffect hooks
 
-// Static content for Booking Policy
-const bookingPolicyTemplates = [
+// Replace the current template arrays with these:
+
+// Static content for Booking Policy Remarks
+const bookingRemarksTemplates = [
   {
-    title: "Standard Booking Policy",
-    content: `1. A non-refundable deposit of INR 25,000 per person is required to confirm the booking.
-2. Balance payment must be made 45 days prior to departure.
-3. For bookings made within 45 days of departure, full payment is required at the time of booking.
-4. In case of non-payment of balance amount within the stipulated time, the booking stands automatically cancelled with forfeiture of deposit.
-5. All payments should be made by cheque/DD/online transfer in favour of "Travel Company".
-6. Booking is confirmed only after receiving the deposit and signed booking form.`
+    title: "Standard Booking Remarks",
+    content: `• All bookings are subject to availability at the time of confirmation.
+• Prices are subject to change without prior notice.
+• Early booking is recommended to secure seats.
+• Group bookings (10+ passengers) require special quotation.
+• For any special requests, please inform at the time of booking.
+• Tour itinerary may change due to unforeseen circumstances.`
   },
   {
-    title: "Flexible Booking Policy",
-    content: `1. Book now with just 10% of the tour cost.
-2. Second installment of 40% payable 60 days before departure.
-3. Final balance of 50% payable 30 days before departure.
-4. Easy EMI options available for 3, 6, 9 and 12 months.
-5. Special discount for full payment at the time of booking.
-6. Group booking discounts available for 10+ passengers.`
+    title: "Payment Related Remarks",
+    content: `• All payments should be made by cheque/DD/online transfer.
+• No cash payments accepted for amounts above ₹50,000.
+• Payment receipts will be issued within 3 working days.
+• For online payments, please share the transaction reference.
+• Partial payments are not considered as confirmation.
+• Final confirmation only after full payment receipt.`
   },
   {
-    title: "Early Bird Booking",
-    content: `1. Book 90 days in advance and get 15% discount.
-2. Deposit of INR 20,000 per person to secure the seats.
-3. Balance payment 60 days prior to departure.
-4. Cancellation allowed with 50% deposit refund if cancelled 90+ days before departure.
-5. Special rates for senior citizens and children.
-6. Free travel insurance for bookings made 120 days in advance.`
+    title: "Documentation Remarks",
+    content: `• Passport copy required for all international tours.
+• PAN card copy mandatory for payments above ₹2,00,000.
+• Aadhar card required for domestic flight bookings.
+• Medical certificates required for senior citizens.
+• Parental consent form for children traveling alone.
+• Visa processing may take additional 15-20 working days.`
   }
 ];
 
-// Static content for Cancellation Policy
-const cancellationPolicyTemplates = [
+// Static content for Cancellation Policy Remarks
+const cancellationRemarksTemplates = [
   {
-    title: "Standard Cancellation Charges",
-    content: `Cancellation received:`,
-    charges: `• 45 days or more before departure: 25% of tour cost
-• 30-44 days before departure: 50% of tour cost
-• 15-29 days before departure: 75% of tour cost
-• 0-14 days before departure: 100% of tour cost
-• No show: 100% of tour cost
-• Special conditions apply for peak season and holiday periods.`
+    title: "Standard Cancellation Remarks",
+    content: `• All cancellations must be in writing/email.
+• Refunds will be processed within 15-20 working days.
+• Bank charges will be deducted from refund amount.
+• No refund for partially used services.
+• Force majeure cancellations subject to company discretion.
+• Insurance claims to be handled directly with insurer.`
   },
   {
-    title: "Flexible Cancellation",
-    content: `Cancellation Policy with Travel Credit:`,
-    charges: `• 60+ days before departure: Full refund minus INR 5,000 processing fee
-• 30-59 days before departure: 50% refund or 75% travel credit
-• 15-29 days before departure: 25% refund or 50% travel credit
-• 8-14 days before departure: 10% refund or 30% travel credit
-• 0-7 days before departure: No refund, 15% travel credit
-• Travel credit valid for 1 year from date of cancellation.`
+    title: "Refund Processing Remarks",
+    content: `• Refunds processed to the same account from which payment was made.
+• Processing time: 15-20 working days from cancellation date.
+• ₹500 processing fee applicable on all refunds.
+• GST on cancellation charges will be applicable.
+• Refunds may be delayed during bank holidays.
+• For quick refunds, provide cancellation authority letter.`
   },
   {
-    title: "Non-Refundable Policy",
-    content: `Important Cancellation Terms:`,
-    charges: `• All cancellations will attract cancellation charges.
-• Once booked, dates cannot be changed.
-• No refund for unused services.
-• In case of visa rejection, only recoverable amounts will be refunded.
-• No refund for early check-out or no-show.
-• Force majeure conditions as per company policy.`
+    title: "Special Cases Remarks",
+    content: `• Visa rejection cases: Only recoverable amounts refunded.
+• Medical emergencies: Full documentation required.
+• Natural disasters: As per government advisories.
+• Airline/hotel cancellations: Subject to their policies.
+• Group cancellations: Special terms apply.
+• Peak season cancellations: Higher charges may apply.`
   }
 ];
+
+// Replace the template selection handlers:
+
+const handleBookingRemarksTemplateSelect = (template) => {
+  setFormData(prev => ({
+    ...prev,
+    booking_poi_remarks: template.content
+  }));
+  setShowBookingTemplates(false);
+};
+
+const handleCancellationRemarksTemplateSelect = (template) => {
+  setFormData(prev => ({
+    ...prev,
+    cancellation_remarks: template.content
+  }));
+  setShowCancellationTemplates(false);
+};
+
 
 // Add state for showing/hiding templates
 const [showBookingTemplates, setShowBookingTemplates] = useState(false);
@@ -1195,19 +1213,6 @@ const [showCancellationTemplates, setShowCancellationTemplates] = useState(false
 
 
 // Add these functions after your other handler functions
-
-const handleBookingTemplateSelect = (template) => {
-  setPoiText(template.content);
-  setShowBookingTemplates(false);
-};
-
-const handleCancellationTemplateSelect = (template) => {
-  setCancelItem({
-    ...cancelItem,
-    cancellation_policy: `${template.content}\n\n${template.charges}`
-  });
-  setShowCancellationTemplates(false);
-};
 
 
   // =======================
@@ -4959,40 +4964,37 @@ const handleSaveClick = () => {
                     </div>
                     
                     {/* Template Selection Box */}
-                    {showBookingTemplates && (
-                      <Card className="mb-3 border-info">
-                        {/* <Card.Header className="bg-info text-white"> */}
-                          <strong>Booking Policy Templates</strong>
-                          {/* <small className="float-end">Click to select</small> */}
-                        {/* </Card.Header> */}
-                        <Card.Body className="p-0">
-                          <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
-                            {bookingPolicyTemplates.map((template, index) => (
-                              <div
-                                key={index}
-                                className="p-3 border-bottom hover-cursor-pointer"
-                                onClick={() => handleBookingTemplateSelect(template)}
-                                style={{
-                                  cursor: 'pointer',
-                                  backgroundColor: '#f8f9fa'
-                                }}
-                                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#e9ecef'}
-                                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#f8f9fa'}
-                              >
-                                <strong className="text-primary">{template.title}</strong>
-                                <div className="text-muted small mt-1" style={{
-                                  whiteSpace: 'nowrap',
-                                  overflow: 'hidden',
-                                  textOverflow: 'ellipsis'
-                                }}>
-                                  {template.content.substring(0, 100)}...
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        </Card.Body>
-                      </Card>
-                    )}
+                   {/* Template Selection Box */}
+{showBookingTemplates && (
+  <Card className="mb-3 border-info">
+    <Card.Body className="p-0">
+      <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
+        {bookingRemarksTemplates.map((template, index) => (
+          <div
+            key={index}
+            className="p-3 border-bottom hover-cursor-pointer"
+            onClick={() => handleBookingRemarksTemplateSelect(template)}
+            style={{
+              cursor: 'pointer',
+              backgroundColor: '#f8f9fa'
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#e9ecef'}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#f8f9fa'}
+          >
+            <strong className="text-primary">{template.title}</strong>
+            <div className="text-muted small mt-1" style={{
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis'
+            }}>
+              {template.content.substring(0, 100)}...
+            </div>
+          </div>
+        ))}
+      </div>
+    </Card.Body>
+  </Card>
+)}
                     
                     <Form.Control
                       as="textarea"
@@ -5084,40 +5086,37 @@ const handleSaveClick = () => {
                               </div>
                               
                               {/* Template Selection Box */}
-                              {showCancellationTemplates && (
-                                <Card className="mb-3 border-info">
-                                  {/* <Card.Header className="bg-info text-white"> */}
-                                    <strong>Cancellation Policy Templates</strong>
-                                    {/* <small className="float-end">Click to select</small> */}
-                                  {/* </Card.Header> */}
-                                  <Card.Body className="p-0">
-                                    <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
-                                      {cancellationPolicyTemplates.map((template, index) => (
-                                        <div
-                                          key={index}
-                                          className="p-3 border-bottom hover-cursor-pointer"
-                                          onClick={() => handleCancellationTemplateSelect(template)}
-                                          style={{
-                                            cursor: 'pointer',
-                                            backgroundColor: '#f8f9fa'
-                                          }}
-                                          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#e9ecef'}
-                                          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#f8f9fa'}
-                                        >
-                                          <strong className="text-primary">{template.title}</strong>
-                                          <div className="text-muted small mt-1" style={{
-                                            whiteSpace: 'nowrap',
-                                            overflow: 'hidden',
-                                            textOverflow: 'ellipsis'
-                                          }}>
-                                            {template.content.substring(0, 50)}... {template.charges.substring(0, 50)}...
-                                          </div>
-                                        </div>
-                                      ))}
-                                    </div>
-                                  </Card.Body>
-                                </Card>
-                              )}
+                             {/* Template Selection Box */}
+{showCancellationTemplates && (
+  <Card className="mb-3 border-info">
+    <Card.Body className="p-0">
+      <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
+        {cancellationRemarksTemplates.map((template, index) => (
+          <div
+            key={index}
+            className="p-3 border-bottom hover-cursor-pointer"
+            onClick={() => handleCancellationRemarksTemplateSelect(template)}
+            style={{
+              cursor: 'pointer',
+              backgroundColor: '#f8f9fa'
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#e9ecef'}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#f8f9fa'}
+          >
+            <strong className="text-primary">{template.title}</strong>
+            <div className="text-muted small mt-1" style={{
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis'
+            }}>
+              {template.content.substring(0, 100)}...
+            </div>
+          </div>
+        ))}
+      </div>
+    </Card.Body>
+  </Card>
+)}
                               
                               <Form.Control
                                 as="textarea"
