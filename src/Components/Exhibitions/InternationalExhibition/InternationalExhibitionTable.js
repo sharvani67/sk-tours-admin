@@ -1,66 +1,43 @@
 import React from 'react';
-import { FaEdit, FaTrash } from 'react-icons/fa';
 
-const InternationalExhibitionTable = ({ exhibitions, onEdit, onDelete, onAddNew, showForm }) => {
+function InternationalExhibitionTable({ exhibitions, onAddNew, onEdit, onDelete }) {
   return (
-    <>
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <h2>International Exhibition</h2>
-        <button className="btn btn-primary" onClick={onAddNew}>
-          + Add New Exhibition
+    <div className="table-container">
+      <div className="table-header">
+        <h3>International Exhibitions</h3>
+        <button onClick={onAddNew} className="add-new-btn">
+          + Add New International Exhibition
         </button>
       </div>
-
-      <div className="card mb-4">
-        <div className="card-body">
-          <div className="table-responsive">
-            <table className="table table-striped table-hover">
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Exhibition Name</th>
-                  <th>Country</th>
-                  <th>Start Date</th>
-                  <th>End Date</th>
-                  <th>Description</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {exhibitions.map((exhibition) => (
-                  <tr key={exhibition.id}>
-                    <td>{exhibition.id}</td>
-                    <td>{exhibition.name}</td>
-                    <td>{exhibition.country}</td>
-                    <td>{exhibition.startDate}</td>
-                    <td>{exhibition.endDate}</td>
-                    <td>{exhibition.description.substring(0, 30)}...</td>
-                    <td>
-                      <button 
-                        className="btn btn-sm btn-info me-2" 
-                        onClick={() => onEdit(exhibition)}
-                      >
-                        <FaEdit />
-                      </button>
-                      <button 
-                        className="btn btn-sm btn-danger me-2"
-                        onClick={() => onDelete(exhibition.id)}
-                      >
-                        <FaTrash />
-                      </button>
-                      <button className="btn btn-sm btn-success">
-                        Book
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-    </>
+      <table className="data-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Countries</th>
+            <th>Last Updated</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {exhibitions.map((item) => (
+            <tr key={item.id}>
+              <td>{item.id}</td>
+              <td>{item.countries.join(', ')}</td>
+              <td>{item.lastUpdated}</td>
+              <td className="actions">
+                <button onClick={() => onEdit(item.id)} className="edit-btn">
+                  Edit
+                </button>
+                <button onClick={() => onDelete(item.id)} className="delete-btn">
+                  Delete
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
-};
+}
 
 export default InternationalExhibitionTable;
