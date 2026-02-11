@@ -139,11 +139,11 @@ const AddTour = () => {
 
   // Add this state for EMI
 const [emiLoanAmount, setEmiLoanAmount] = useState('');
-const [emiInterestRate, setEmiInterestRate] = useState(10);
+const [emiInterestRate, setEmiInterestRate] = useState(18);
 
 
 // Add this function to calculate EMI
-const calculateEMI = (loanAmount, months, interestRate = 10) => {
+const calculateEMI = (loanAmount, months, interestRate = 18) => {
   const principal = parseFloat(loanAmount);
   const monthlyRate = (interestRate / 100) / 12;
   const n = parseInt(months, 10);
@@ -1404,7 +1404,7 @@ if (hotelRows.length > 0) {
   // Create the payload in the format expected by backend
   const hotelPayload = {
     tour_id: tourId,
-    "hotels[]": hotelRows  // Change from 'hotels' to 'hotels[]'
+    "hotels": hotelRows  // Change from 'hotels' to 'hotels[]'
   };
   
   console.log('Sending hotel payload:', hotelPayload);
@@ -1658,7 +1658,7 @@ if (hotelRows.length > 0) {
   // Create the payload in the format expected by backend
   const hotelPayload = {
     tour_id: id,
-    "hotels[]": hotelRows  // Change from 'hotels' to 'hotels[]'
+    "hotels": hotelRows  // Change from 'hotels' to 'hotels[]'
   };
   
   console.log('Sending hotel payload:', hotelPayload);
