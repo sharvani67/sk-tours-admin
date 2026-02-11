@@ -155,14 +155,14 @@ function Exhibition() {
   };
 
   // Form submission handlers
-  const handleAboutSubmit = async (e) => {
+const handleAboutSubmit = async (e) => {
   e.preventDefault();
   setLoading(true);
   setError('');
 
   const formData = new FormData();
   
-  // Add banner image
+  // Only add banner image if a new one is selected
   if (aboutForm.bannerImage) {
     formData.append('bannerImage', aboutForm.bannerImage);
   }
@@ -172,25 +172,23 @@ function Exhibition() {
     q.question.trim() !== '' && q.answer.trim() !== ''
   );
   
+  // Add mode flag to indicate if we're editing or creating
+  formData.append('isEdit', aboutExhibition ? 'true' : 'false');
   formData.append('questions', JSON.stringify(validQuestions));
 
   try {
     console.log('Submitting to:', `${baseurl}/api/exhibitions/about`);
+    console.log('Is edit mode:', aboutExhibition ? 'true' : 'false');
+    console.log('Has banner image:', aboutForm.bannerImage ? 'yes' : 'no');
     
     const response = await fetch(`${baseurl}/api/exhibitions/about`, {
       method: 'POST',
       body: formData
-      // Note: Don't set Content-Type header for FormData - browser sets it automatically
     });
 
-    console.log('Response status:', response.status);
-    console.log('Response headers:', response.headers);
-
-    // First, get the response as text to see what's being returned
     const responseText = await response.text();
     console.log('Response text (first 500 chars):', responseText.substring(0, 500));
 
-    // Try to parse as JSON
     let result;
     try {
       result = JSON.parse(responseText);
@@ -203,7 +201,7 @@ function Exhibition() {
 
     if (response.ok) {
       alert(result.message || 'About Exhibition saved successfully!');
-      fetchData(); // Refresh data
+      fetchData();
       resetForms();
       setShowForm(false);
     } else {
@@ -669,28 +667,39 @@ function Exhibition() {
                     <h2>{aboutExhibition ? 'Edit About Exhibition' : 'Add About Exhibition'}</h2>
                     <form onSubmit={handleAboutSubmit}>
                       {/* Banner Image Upload */}
-                      <div className="form-group">
-                        <label htmlFor="bannerImage">Banner Image *</label>
-                        <input
-                          type="file"
-                          id="bannerImage"
-                          accept="image/*"
-                          onChange={handleBannerImageChange}
-                          required={!aboutExhibition}
-                        />
-                        {aboutForm.bannerImagePreview && (
-                          <div className="image-preview">
-                            <img 
-                              src={aboutForm.bannerImagePreview} 
-                              alt="Banner Preview" 
-                              style={{ maxWidth: '300px', maxHeight: '200px' }}
-                            />
-                          </div>
-                        )}
-                        {aboutExhibition && !aboutForm.bannerImagePreview && (
-                          <p className="hint">Current image will be kept if no new image is selected</p>
-                        )}
-                      </div>
+                      {/* Banner Image Upload */}
+<div className="form-group">
+  <label htmlFor="bannerImage">
+    Banner Image {!aboutExhibition && '*'}
+  </label>
+  <input
+    type="file"
+    id="bannerImage"
+    accept="image/*"
+    onChange={handleBannerImageChange}
+    required={!aboutExhibition} // Only required for new records
+  />
+  {aboutForm.bannerImagePreview && (
+    <div className="image-preview">
+      <img 
+        src={aboutForm.bannerImagePreview} 
+        alt="Banner Preview" 
+        style={{ maxWidth: '300px', maxHeight: '200px' }}
+      />
+    </div>
+  )}
+  {aboutExhibition && !aboutForm.bannerImagePreview && !aboutForm.bannerImage && (
+    <div className="mt-2">
+      <p className="text-muted small">Current image:</p>
+      <img 
+        src={`${baseurl}/uploads/exhibition/${aboutExhibition.banner_image}`}
+        alt="Current Banner" 
+        style={{ maxWidth: '200px', maxHeight: '150px', objectFit: 'cover' }}
+      />
+      <p className="text-muted small mt-1">Leave empty to keep current image</p>
+    </div>
+  )}
+</div>
 
                       {/* Questions and Answers */}
                       <div className="form-group">
