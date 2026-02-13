@@ -87,7 +87,7 @@ const Navbar = ({ children }) => {
     );
   };
 
- const navStructure = [
+  const navStructure = [
   { 
     label: "Add Videos", 
     path: "/add-video", 
@@ -209,20 +209,6 @@ const Navbar = ({ children }) => {
       },
     ],
   },
-  // {
-  //   label: "MICE",  // ADDED NEW MICE SECTION
-  //   path: "/mice",
-  //   icon: <FiBriefcase className="sidebar-icon" />,
-  //   matchPaths: [
-  //     "/mice",
-  //     "/mice-domestic",
-  //     "/mice-international",
-  //     "/add-mice-domestic",
-  //     "/add-mice-international",
-  //     "/edit-mice-domestic/:id",
-  //     "/edit-mice-international/:id"
-  //   ],
-  // },
   {
     label: "INTL-Group-Tours", 
     path: "/intl-group-tours",
@@ -271,6 +257,16 @@ const Navbar = ({ children }) => {
     icon: <FiMapPin className="sidebar-icon" />,
     matchPaths: ["/intl-destinations", "/intl-add-destination"],
   },
+  { 
+    label: "Mice", 
+    path: "/mice", 
+    icon: <FiBriefcase className="sidebar-icon" /> 
+  },
+  { 
+    label: "Offline Flights", 
+    path: "/offline-flights-table", 
+    icon: <FiMap className="sidebar-icon" /> 
+  },
   {
     label: "Payments",
     path: "/payments",
@@ -295,6 +291,8 @@ const Navbar = ({ children }) => {
     matchPaths: ["/visa-appointments"],
   },
 ];
+
+
   const handleNavClick = (label, path) => {
     if (path) {
       navigate(path);

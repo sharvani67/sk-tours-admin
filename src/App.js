@@ -96,10 +96,9 @@ import Exhibition from "./Components/Exhibitions/Exhibition";
 import AboutExhibitionForm from "./Components/Exhibitions/AboutExhibition/AboutExhibitionForm";
 import DomesticExhibitionForm from "./Components/Exhibitions/DomesticExhibition/DomesticExhibitionForm";
 import InternationalExhibitionForm from "./Components/Exhibitions/InternationalExhibition/InternationalExhibitionForm";
-import Mice from "./Components/Mice/Mice"; // NEW: Import Mice component
-import AboutMiceForm from "./Components/Mice/AboutMice/AboutMiceForm";
-import MiceDomesticForm from "./Components/Mice/MiceDomestic/MiceDomesticForm";
-import MiceInternationalForm from "./Components/Mice/MiceInternational/MiceInternationalForm";
+// import AboutMiceForm from "./Components/Mice/AboutMice/AboutMiceForm";
+// import MiceDomesticForm from "./Components/Mice/MiceDomestic/MiceDomesticForm";
+// import MiceInternationalForm from "./Components/Mice/MiceInternational/MiceInternationalForm";
 
 
 import INTLTourDetails from "./INTLTourDetails"
@@ -113,7 +112,9 @@ import Enquiries from './Components/Enquires/Enquires';
 import Payments from "./Components/Payments/Payments"
 
 import AdminCarousel from "./Components/Home/AdminCarousel";
-
+import Mice from "./Components/Mice/Mice"
+import OfflineFlightsTable from "./Components/OfflineFlights/OfflineFlightsTable";
+import OfflineFlights from "./Components/OfflineFlights/OfflineFlights";
 
 
 
@@ -242,37 +243,8 @@ function App() {
                 <Route path="/exhibition/international/edit/:id" element={<InternationalExhibitionForm />} />
 
                  <Route path="/mice" element={<Mice />} />
-
-                   {/* MICE Form Routes */}
-        <Route path="/mice/about/new" element={<AboutMiceForm />} />
-        <Route path="/mice/about/edit/:id" element={<AboutMiceForm />} />
-        <Route path="/mice/domestic/new" element={<MiceDomesticForm />} />
-        <Route path="/mice/domestic/edit/:id" element={<MiceDomesticForm />} />
-        <Route path="/mice/international/new" element={<MiceInternationalForm />} />
-        <Route path="/mice/international/edit/:id" element={<MiceInternationalForm />} />
-        
-        {/* Additional routes for direct access */}
-        <Route path="/mice-domestic" element={<Mice />} />
-        <Route path="/mice-international" element={<Mice />} />
-        <Route path="/add-mice-domestic" element={<MiceDomesticForm />} />
-        <Route path="/add-mice-international" element={<MiceInternationalForm />} />
-        <Route path="/edit-mice-domestic/:id" element={<MiceDomesticForm />} />
-        <Route path="/edit-mice-international/:id" element={<MiceInternationalForm />} />
-
-
-         {/* Additional routes for direct access */}
-        <Route path="/mice/domestic" element={<Mice />} />
-        <Route path="/mice/international" element={<Mice />} />
-        <Route path="/mice/enquiry" element={<Mice />} />
-        <Route path="/add-mice-domestic" element={<MiceDomesticForm />} />
-        <Route path="/add-mice-international" element={<MiceInternationalForm />} />
-        <Route path="/edit-mice-domestic/:id" element={<MiceDomesticForm />} />
-        <Route path="/edit-mice-international/:id" element={<MiceInternationalForm />} />
-
-
-
-
-
+                   <Route path="/offline-flights-table" element={<OfflineFlightsTable />} />
+                 <Route path="/add-offline-flight" element={<OfflineFlights />} />
                 
                 <Route path="/add-video" element={<AdminVideoManager />} /> 
                 <Route path="/add-card" element={<AdminDomesticTours />} />
@@ -283,6 +255,12 @@ function App() {
                 <Route path="/contact-us" element={<ContactUs />} />
                 <Route path="/enquiries" element={<Enquiries />} />
                  <Route path="/payments" element={<Payments />} />
+
+
+
+
+
+
               
 
       </Routes>
