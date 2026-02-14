@@ -9,8 +9,9 @@ import {
   Badge,
 } from "react-bootstrap";
 import {
-  FiMenu,FiHome,FiUsers,FiUser, FiLogOut,FiX, FiBell,FiClock,FiFlag,FiMap,FiMapPin,FiGift,FiArchive,FiAnchor,FiSettings,
-  FiVideo,FiInfo,FiGlobe,FiMessageSquare,FiDollarSign, FiBriefcase 
+  FiMenu, FiHome, FiUsers, FiUser, FiLogOut, FiX, FiBell, FiClock,
+  FiFlag, FiMap, FiMapPin, FiGift, FiArchive, FiAnchor, FiSettings,FiLayers, 
+  FiVideo, FiInfo, FiGlobe, FiMessageSquare, FiDollarSign, FiBriefcase
 } from "react-icons/fi";
 
 import { useNavigate, useLocation } from "react-router-dom";
@@ -294,6 +295,17 @@ const Navbar = ({ children }) => {
     icon: <FiMapPin className="sidebar-icon" />,
     matchPaths: ["/visa-appointments"],
   },
+  {
+  label: "Vendors",
+  path: "/vendors",
+  icon: <FiHome  className="sidebar-icon" />,
+},
+{
+  label: "Vendor Categories",
+  path: "/category-table",
+  icon: <FiLayers className="sidebar-icon" />,
+}
+,
 ];
   const handleNavClick = (label, path) => {
     if (path) {
