@@ -391,10 +391,10 @@ const removeOptionalTourRow = (idx) => {
 
   // Add this state for EMI
 const [emiLoanAmount, setEmiLoanAmount] = useState('');
-const [emiInterestRate, setEmiInterestRate] = useState(10);
+const [emiInterestRate, setEmiInterestRate] = useState(18);
 
 // Add this function to calculate EMI
-const calculateEMI = (loanAmount, months, interestRate = 10) => {
+const calculateEMI = (loanAmount, months, interestRate = 18) => {
   const principal = parseFloat(loanAmount);
   const monthlyRate = (interestRate / 100) / 12;
   const n = parseInt(months, 10);

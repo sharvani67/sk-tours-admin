@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Button, Spinner, Alert } from 'react-bootstrap';
 import Navbar from '../../Shared/Navbar/Navbar';
-import { baseurl } from '../../Api/Baseurl'; // Your base URL
+import { baseurl } from '../../Api/Baseurl';
 import './Exhibition.css';
+import { FaTrash, FaEdit } from 'react-icons/fa';
 
 function Exhibition() {
   const [activeTab, setActiveTab] = useState('about');
@@ -23,10 +24,12 @@ function Exhibition() {
   });
 
   const [domesticForm, setDomesticForm] = useState({
+    id: null, // For editing
     countries: ['']
   });
 
   const [internationalForm, setInternationalForm] = useState({
+    id: null, // For editing
     countries: ['']
   });
 
@@ -65,6 +68,44 @@ function Exhibition() {
       setError('Error fetching exhibition data. Please try again.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Fetch single domestic country for editing
+  const fetchDomesticCountry = async (id) => {
+    try {
+      const response = await fetch(`${baseurl}/api/exhibitions/domestic/${id}`);
+      if (response.ok) {
+        const data = await response.json();
+        setDomesticForm({
+          id: data.id,
+          countries: [data.country_name]
+        });
+        setActiveTab('domestic');
+        setShowForm(true);
+      }
+    } catch (err) {
+      console.error('Error fetching domestic country:', err);
+      setError('Error fetching country data. Please try again.');
+    }
+  };
+
+  // Fetch single international country for editing
+  const fetchInternationalCountry = async (id) => {
+    try {
+      const response = await fetch(`${baseurl}/api/exhibitions/international/${id}`);
+      if (response.ok) {
+        const data = await response.json();
+        setInternationalForm({
+          id: data.id,
+          countries: [data.country_name]
+        });
+        setActiveTab('international');
+        setShowForm(true);
+      }
+    } catch (err) {
+      console.error('Error fetching international country:', err);
+      setError('Error fetching country data. Please try again.');
     }
   };
 
@@ -156,67 +197,64 @@ function Exhibition() {
 
   // Form submission handlers
   const handleAboutSubmit = async (e) => {
-  e.preventDefault();
-  setLoading(true);
-  setError('');
+    e.preventDefault();
+    setLoading(true);
+    setError('');
 
-  const formData = new FormData();
-  
-  // Add banner image
-  if (aboutForm.bannerImage) {
-    formData.append('bannerImage', aboutForm.bannerImage);
-  }
-  
-  // Add questions as JSON
-  const validQuestions = aboutForm.questions.filter(q => 
-    q.question.trim() !== '' && q.answer.trim() !== ''
-  );
-  
-  formData.append('questions', JSON.stringify(validQuestions));
-
-  try {
-    console.log('Submitting to:', `${baseurl}/api/exhibitions/about`);
+    const formData = new FormData();
     
-    const response = await fetch(`${baseurl}/api/exhibitions/about`, {
-      method: 'POST',
-      body: formData
-      // Note: Don't set Content-Type header for FormData - browser sets it automatically
-    });
+    // Only add banner image if a new one is selected
+    if (aboutForm.bannerImage) {
+      formData.append('bannerImage', aboutForm.bannerImage);
+    }
+    
+    // Add questions as JSON
+    const validQuestions = aboutForm.questions.filter(q => 
+      q.question.trim() !== '' && q.answer.trim() !== ''
+    );
+    
+    // Add mode flag to indicate if we're editing or creating
+    formData.append('isEdit', aboutExhibition ? 'true' : 'false');
+    formData.append('questions', JSON.stringify(validQuestions));
 
-    console.log('Response status:', response.status);
-    console.log('Response headers:', response.headers);
-
-    // First, get the response as text to see what's being returned
-    const responseText = await response.text();
-    console.log('Response text (first 500 chars):', responseText.substring(0, 500));
-
-    // Try to parse as JSON
-    let result;
     try {
-      result = JSON.parse(responseText);
-    } catch (parseError) {
-      console.error('Failed to parse JSON:', parseError);
-      console.error('Full response:', responseText);
-      setError('Server returned invalid response. Please check the console.');
-      return;
-    }
+      console.log('Submitting to:', `${baseurl}/api/exhibitions/about`);
+      console.log('Is edit mode:', aboutExhibition ? 'true' : 'false');
+      console.log('Has banner image:', aboutForm.bannerImage ? 'yes' : 'no');
+      
+      const response = await fetch(`${baseurl}/api/exhibitions/about`, {
+        method: 'POST',
+        body: formData
+      });
 
-    if (response.ok) {
-      alert(result.message || 'About Exhibition saved successfully!');
-      fetchData(); // Refresh data
-      resetForms();
-      setShowForm(false);
-    } else {
-      setError(result.error || 'Error saving About Exhibition');
-    }
-  } catch (err) {
-    console.error('Network or other error:', err);
-    setError('Error submitting form. Please try again.');
-  } finally {
-    setLoading(false);
-  }
-};
+      const responseText = await response.text();
+      console.log('Response text (first 500 chars):', responseText.substring(0, 500));
 
+      let result;
+      try {
+        result = JSON.parse(responseText);
+      } catch (parseError) {
+        console.error('Failed to parse JSON:', parseError);
+        console.error('Full response:', responseText);
+        setError('Server returned invalid response. Please check the console.');
+        return;
+      }
+
+      if (response.ok) {
+        alert(result.message || 'About Exhibition saved successfully!');
+        fetchData();
+        resetForms();
+        setShowForm(false);
+      } else {
+        setError(result.error || 'Error saving About Exhibition');
+      }
+    } catch (err) {
+      console.error('Network or other error:', err);
+      setError('Error submitting form. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleDomesticSubmit = async (e) => {
     e.preventDefault();
@@ -234,23 +272,40 @@ function Exhibition() {
     }
 
     try {
-      const response = await fetch(`${baseurl}/api/exhibitions/domestic/bulk`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ countries: validCountries })
-      });
+      let response;
+      let message = '';
+
+      if (domesticForm.id) {
+        // Update existing country
+        response = await fetch(`${baseurl}/api/exhibitions/domestic/${domesticForm.id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ country_name: validCountries[0] })
+        });
+        message = 'Domestic country updated successfully!';
+      } else {
+        // Add new countries (bulk)
+        response = await fetch(`${baseurl}/api/exhibitions/domestic/bulk`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ countries: validCountries })
+        });
+        message = 'Domestic countries added successfully!';
+      }
 
       const result = await response.json();
 
       if (response.ok) {
-        alert(result.message || 'Domestic countries added successfully!');
-        fetchData(); // Refresh data
+        alert(result.message || message);
+        fetchData();
         resetForms();
         setShowForm(false);
       } else {
-        setError(result.error || 'Error adding domestic countries');
+        setError(result.error || 'Error processing domestic countries');
       }
     } catch (err) {
       console.error('Error submitting domestic countries:', err);
@@ -276,23 +331,40 @@ function Exhibition() {
     }
 
     try {
-      const response = await fetch(`${baseurl}/api/exhibitions/international/bulk`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ countries: validCountries })
-      });
+      let response;
+      let message = '';
+
+      if (internationalForm.id) {
+        // Update existing country
+        response = await fetch(`${baseurl}/api/exhibitions/international/${internationalForm.id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ country_name: validCountries[0] })
+        });
+        message = 'International country updated successfully!';
+      } else {
+        // Add new countries (bulk)
+        response = await fetch(`${baseurl}/api/exhibitions/international/bulk`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ countries: validCountries })
+        });
+        message = 'International countries added successfully!';
+      }
 
       const result = await response.json();
 
       if (response.ok) {
-        alert(result.message || 'International countries added successfully!');
-        fetchData(); // Refresh data
+        alert(result.message || message);
+        fetchData();
         resetForms();
         setShowForm(false);
       } else {
-        setError(result.error || 'Error adding international countries');
+        setError(result.error || 'Error processing international countries');
       }
     } catch (err) {
       console.error('Error submitting international countries:', err);
@@ -317,7 +389,7 @@ function Exhibition() {
 
       if (response.ok) {
         alert(result.message || 'Domestic country deleted successfully');
-        fetchData(); // Refresh data
+        fetchData();
       } else {
         alert(result.error || 'Failed to delete domestic country');
       }
@@ -341,7 +413,7 @@ function Exhibition() {
 
       if (response.ok) {
         alert(result.message || 'International country deleted successfully');
-        fetchData(); // Refresh data
+        fetchData();
       } else {
         alert(result.error || 'Failed to delete international country');
       }
@@ -358,9 +430,11 @@ function Exhibition() {
       questions: [{ id: Date.now(), question: '', answer: '' }]
     });
     setDomesticForm({
+      id: null,
       countries: ['']
     });
     setInternationalForm({
+      id: null,
       countries: ['']
     });
   };
@@ -370,17 +444,17 @@ function Exhibition() {
     
     // If editing About Exhibition and it exists, populate form
     if (activeTab === 'about' && aboutExhibition) {
-     setAboutForm({
-  bannerImage: null,
- bannerImagePreview: `${baseurl}/uploads/exhibition/${aboutExhibition.banner_image}`,
-  questions: aboutExhibition.questions.length > 0 
-    ? aboutExhibition.questions.map((q, index) => ({
-        id: Date.now() + index,
-        question: q.question,
-        answer: q.answer
-      }))
-    : [{ id: Date.now(), question: '', answer: '' }]
-});
+      setAboutForm({
+        bannerImage: null,
+        bannerImagePreview: `${baseurl}/uploads/exhibition/${aboutExhibition.banner_image}`,
+        questions: aboutExhibition.questions.length > 0 
+          ? aboutExhibition.questions.map((q, index) => ({
+              id: Date.now() + index,
+              question: q.question,
+              answer: q.answer
+            }))
+          : [{ id: Date.now(), question: '', answer: '' }]
+      });
     }
     
     setShowForm(true);
@@ -434,11 +508,11 @@ function Exhibition() {
                 <tbody>
                   <tr>
                     <td>
-                     <img 
-                          src={`${baseurl}/uploads/exhibition/${aboutExhibition.banner_image}`}  // Changed from /exhibition/ to /uploads/exhibition/
-                          alt="Banner" 
-                          style={{ width: '100px', height: '60px', objectFit: 'cover' }}
-                        />
+                      <img 
+                        src={`${baseurl}/uploads/exhibition/${aboutExhibition.banner_image}`}
+                        alt="Banner" 
+                        style={{ width: '100px', height: '60px', objectFit: 'cover' }}
+                      />
                     </td>
                     <td>{aboutExhibition.questions.length}</td>
                     <td>{new Date(aboutExhibition.updated_at).toLocaleDateString()}</td>
@@ -447,9 +521,9 @@ function Exhibition() {
                         variant="outline-primary" 
                         size="sm"
                         onClick={handleAddNew}
-                        className="edit-btn"
+                        className="edit-btn me-2"
                       >
-                        Edit
+                        <FaEdit />
                       </Button>
                     </td>
                   </tr>
@@ -492,12 +566,20 @@ function Exhibition() {
                     <td>{new Date(item.created_at).toLocaleDateString()}</td>
                     <td className="actions">
                       <Button 
+                        variant="outline-primary" 
+                        size="sm"
+                        onClick={() => fetchDomesticCountry(item.id)}
+                        className="edit-btn me-2"
+                      >
+                        <FaEdit />
+                      </Button>
+                      <Button 
                         variant="outline-danger" 
                         size="sm"
                         onClick={() => handleDeleteDomestic(item.id)}
                         className="delete-btn"
                       >
-                        Delete
+                        <FaTrash />
                       </Button>
                     </td>
                   </tr>
@@ -533,12 +615,20 @@ function Exhibition() {
                     <td>{new Date(item.created_at).toLocaleDateString()}</td>
                     <td className="actions">
                       <Button 
+                        variant="outline-primary" 
+                        size="sm"
+                        onClick={() => fetchInternationalCountry(item.id)}
+                        className="edit-btn me-2"
+                      >
+                        <FaEdit />
+                      </Button>
+                      <Button 
                         variant="outline-danger" 
                         size="sm"
                         onClick={() => handleDeleteInternational(item.id)}
                         className="delete-btn"
                       >
-                        Delete
+                        <FaTrash />
                       </Button>
                     </td>
                   </tr>
@@ -670,7 +760,9 @@ function Exhibition() {
                     <form onSubmit={handleAboutSubmit}>
                       {/* Banner Image Upload */}
                       <div className="form-group">
-                        <label htmlFor="bannerImage">Banner Image *</label>
+                        <label htmlFor="bannerImage">
+                          Banner Image {!aboutExhibition && '*'}
+                        </label>
                         <input
                           type="file"
                           id="bannerImage"
@@ -687,8 +779,16 @@ function Exhibition() {
                             />
                           </div>
                         )}
-                        {aboutExhibition && !aboutForm.bannerImagePreview && (
-                          <p className="hint">Current image will be kept if no new image is selected</p>
+                        {aboutExhibition && !aboutForm.bannerImagePreview && !aboutForm.bannerImage && (
+                          <div className="mt-2">
+                            <p className="text-muted small">Current image:</p>
+                            <img 
+                              src={`${baseurl}/uploads/exhibition/${aboutExhibition.banner_image}`}
+                              alt="Current Banner" 
+                              style={{ maxWidth: '200px', maxHeight: '150px', objectFit: 'cover' }}
+                            />
+                            <p className="text-muted small mt-1">Leave empty to keep current image</p>
+                          </div>
                         )}
                       </div>
 
@@ -753,10 +853,10 @@ function Exhibition() {
                 {/* Domestic Form */}
                 {activeTab === 'domestic' && (
                   <>
-                    <h2>Add Domestic Countries</h2>
+                    <h2>{domesticForm.id ? 'Edit Domestic Country' : 'Add Domestic Countries'}</h2>
                     <form onSubmit={handleDomesticSubmit}>
                       <div className="form-group">
-                        <label>Add Country Names (Domestic)</label>
+                        <label>Country Name{domesticForm.id ? '' : 's (Domestic)'}</label>
                         {domesticForm.countries.map((country, index) => (
                           <div key={index} className="country-input-group">
                             <input
@@ -766,7 +866,7 @@ function Exhibition() {
                               onChange={(e) => handleDomesticCountryChange(index, e.target.value)}
                               required
                             />
-                            {domesticForm.countries.length > 1 && (
+                            {!domesticForm.id && domesticForm.countries.length > 1 && (
                               <button 
                                 type="button" 
                                 onClick={() => removeDomesticCountry(index)}
@@ -777,18 +877,20 @@ function Exhibition() {
                             )}
                           </div>
                         ))}
-                        <button 
-                          type="button" 
-                          onClick={addDomesticCountry}
-                          className="add-btn"
-                        >
-                          + Add Another Country
-                        </button>
+                        {!domesticForm.id && (
+                          <button 
+                            type="button" 
+                            onClick={addDomesticCountry}
+                            className="add-btn"
+                          >
+                            + Add Another Country
+                          </button>
+                        )}
                       </div>
 
                       <div className="form-actions">
                         <button type="submit" className="submit-btn" disabled={loading}>
-                          Save Domestic Countries
+                          {domesticForm.id ? 'Update Country' : 'Save Domestic Countries'}
                         </button>
                         <button type="button" onClick={handleCancel} className="cancel-btn" disabled={loading}>
                           Cancel
@@ -801,13 +903,10 @@ function Exhibition() {
                 {/* International Form */}
                 {activeTab === 'international' && (
                   <>
-                    <h2>Add International Countries</h2>
+                    <h2>{internationalForm.id ? 'Edit International Country' : 'Add International Countries'}</h2>
                     <form onSubmit={handleInternationalSubmit}>
                       <div className="form-group">
-                        <label>Add Country Names (International)</label>
-                        {internationalForm.countries.length === 0 && (
-                          <p className="hint">Click "Add Country" to start adding countries</p>
-                        )}
+                        <label>Country Name{internationalForm.id ? '' : 's (International)'}</label>
                         {internationalForm.countries.map((country, index) => (
                           <div key={index} className="country-input-group">
                             <input
@@ -817,7 +916,7 @@ function Exhibition() {
                               onChange={(e) => handleInternationalCountryChange(index, e.target.value)}
                               required
                             />
-                            {internationalForm.countries.length > 1 && (
+                            {!internationalForm.id && internationalForm.countries.length > 1 && (
                               <button 
                                 type="button" 
                                 onClick={() => removeInternationalCountry(index)}
@@ -828,18 +927,20 @@ function Exhibition() {
                             )}
                           </div>
                         ))}
-                        <button 
-                          type="button" 
-                          onClick={addInternationalCountry}
-                          className="add-btn"
-                        >
-                          + Add Country
-                        </button>
+                        {!internationalForm.id && (
+                          <button 
+                            type="button" 
+                            onClick={addInternationalCountry}
+                            className="add-btn"
+                          >
+                            + Add Another Country
+                          </button>
+                        )}
                       </div>
 
                       <div className="form-actions">
                         <button type="submit" className="submit-btn" disabled={loading}>
-                          Save International Countries
+                          {internationalForm.id ? 'Update Country' : 'Save International Countries'}
                         </button>
                         <button type="button" onClick={handleCancel} className="cancel-btn" disabled={loading}>
                           Cancel
