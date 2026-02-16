@@ -168,6 +168,51 @@ useEffect(() => {
   }
 }, [emiLoanAmount, emiInterestRate]);
 
+
+// Add this useEffect to set initial prefilled content
+useEffect(() => {
+  // Only set default content if it's a new tour (not edit mode)
+  // and if the arrays are empty
+  if (!isEditMode) {
+    // Prefill Booking Policy if empty
+    if (bookingPois.length === 0) {
+      setBookingPois([
+        {
+          item: "Per Person Booking Amount",
+          amount_details: ""
+        },
+        {
+          item: "30 Days Prior Per person cost ",
+          amount_details: "50 % of the tour cost"
+        },
+         {
+          item: "21 Days Prior Per person cost",
+          amount_details: "Balance amount to pay"
+        }
+
+      ]);
+    }
+
+    // Prefill Cancellation Policy if empty
+    if (cancelPolicies.length === 0) {
+      setCancelPolicies([
+        {
+          cancellation_policy: "45 Days to 30 Days Cost per person ",
+          charges: ""
+        },
+        {
+          cancellation_policy: "30 Days to 21 Days Cost per person ",
+          charges: "50% of tour cost"
+        },
+        {
+          cancellation_policy: "21 Days till Departure date Cost per person",
+          charges: "100 % Cancellation applies"
+        }
+      ]);
+    }
+  }
+}, [isEditMode]); // Run only once when component mounts
+
   // HOTELS
   const [hotelItem, setHotelItem] = useState({
     city: '',
@@ -203,50 +248,40 @@ const [transportItem, setTransportItem] = useState({
   // Add these after your other state declarations, before the useEffect hooks
 
 // Static content for Booking Policy
-const bookingPolicyTemplates = [
-  {
-    title: "Booking Policy",
-    content: `Per Person Booking Amount`,
-  },
-  // {
-  //   title: "New Booking Policy",
-  //   content: `New Person Booking Amount`,
-  // }
-];
+// const bookingPolicyTemplates = [
+//   {
+//     title: "Booking Policy",
+//     content: `Per Person Booking Amount`,
+//   }
+// ];
 
 // Static content for Cancellation Policy
-const cancellationPolicyTemplates = [
-  {
-    title: "Cancellation Policy",
-    content: `45 Days to 30 Days Cost per person`,
-    // charges: "No separate charges field needed",
-  },
-  //  {
-  //   title: "New Cancellation Policy",
-  //   content: `55 Days to 30 Days Cost per person`,
-  //   charges: "No separate charges field needed",
-  // }
-];
+// const cancellationPolicyTemplates = [
+//   {
+//     title: "Cancellation Policy",
+//     content: `45 Days to 30 Days Cost per person`
+//   }
+// ];
 
 // Add state for showing/hiding templates
-const [showBookingTemplates, setShowBookingTemplates] = useState(false);
-const [showCancellationTemplates, setShowCancellationTemplates] = useState(false);
+// const [showBookingTemplates, setShowBookingTemplates] = useState(false);
+// const [showCancellationTemplates, setShowCancellationTemplates] = useState(false);
 
 
 // Add these functions after your other handler functions
 
-const handleBookingTemplateSelect = (template) => {
-  setPoiText(template.content);
-  setShowBookingTemplates(false);
-};
+// const handleBookingTemplateSelect = (template) => {
+//   setPoiText(template.content);
+//   setShowBookingTemplates(false);
+// };
 
-const handleCancellationTemplateSelect = (template) => {
-  setCancelItem({
-    ...cancelItem,
-    cancellation_policy: `${template.content}\n\n`
-  });
-  setShowCancellationTemplates(false);
-};
+// const handleCancellationTemplateSelect = (template) => {
+//   setCancelItem({
+//     ...cancelItem,
+//     cancellation_policy: `${template.content}\n\n`
+//   });
+//   setShowCancellationTemplates(false);
+// };
 
   // INSTRUCTIONS
   const [instructionText, setInstructionText] = useState('');
@@ -2422,7 +2457,7 @@ useEffect(() => {
 
 <Tab eventKey="emiOptions" title="EMI Options">
   <Card className="mb-4">
-    <Card.Header>EMI Calculator</Card.Header>
+    {/* <Card>EMI Calculator</Card> */}
     <Card.Body>
       <Row>
         <Col md={6}>
@@ -2439,9 +2474,6 @@ useEffect(() => {
                 placeholder="Enter loan amount"
               />
             </InputGroup>
-            <Form.Text className="text-muted">
-              This amount will be used for all EMI calculations
-            </Form.Text>
           </Form.Group>
         </Col>
         
@@ -2459,9 +2491,6 @@ useEffect(() => {
                 onChange={(e) => setEmiInterestRate(e.target.value)}
               />
             </InputGroup>
-            <Form.Text className="text-muted">
-              Annual interest rate for EMI calculation
-            </Form.Text>
           </Form.Group>
         </Col>
       </Row>
@@ -2550,9 +2579,6 @@ useEffect(() => {
                 />
               </InputGroup>
             </Form.Group>
-            <small className="text-muted">
-              Monthly payment for {option.months} months
-            </small>
           </td>
         </tr>
       ))}
@@ -2679,62 +2705,75 @@ useEffect(() => {
               </Tab>
 
                 <Tab eventKey="transport" title="Flights">
-  <Row className="mt-3">
-    <Col md={12}>
-      <Form.Group>
-        <Form.Label>Flight Details</Form.Label>
-        <Form.Control
-          as="textarea"
-          rows={4}
-          name="description"
-          value={transportItem.description}
-          onChange={handleTransportChange}
-          placeholder="Enter flight details here..."
-        />
-      </Form.Group>
-    </Col>
-  </Row>
+                  <Row className="mt-3">
+                    <Col md={12}>
+                      <Form.Group>
+                        <Form.Label>Flight Details</Form.Label>
+                        <Form.Control
+                          as="textarea"
+                          rows={4}
+                          name="description"
+                          value={transportItem.description}
+                          onChange={handleTransportChange}
+                          placeholder="Enter flight details here..."
+                        />
+                      </Form.Group>
+                    </Col>
+                  </Row>
 
-  {transports.length > 0 && (
-    <Table striped bordered hover size="sm" className="mt-3">
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>Description</th>
-          <th>Action</th>
-        </tr>
-      </thead>
-      <tbody>
-        {transports.map((t, idx) => (
-          <tr key={idx}>
-            <td>{idx + 1}</td>
-            <td>{t.description || 'NA'}</td>
-            <td>
-              <div className="d-flex gap-1">
-                <Button
-                  variant="outline-warning"
-                  size="sm"
-                  onClick={() => editTransportRow(idx)}
-                  title="Edit"
-                >
-                  <Pencil size={14} />
-                </Button>
-                <Button
-                  variant="outline-danger"
-                  size="sm"
-                  onClick={() => removeTransportRow(idx)}
-                  title="Remove"
-                >
-                  <Trash size={14} />
-                </Button>
-              </div>
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </Table>
-  )}
-</Tab>
+                   {/* Add this new form group for Flight Remarks */}
+                  <Form.Group className="mt-3">
+                    <Form.Label>Flight Remarks</Form.Label>
+                    <Form.Control
+                      as="textarea"
+                      rows={3}
+                      name="transport_remarks"
+                      value={formData.transport_remarks}
+                      onChange={handleBasicChange}
+                      placeholder="Enter any remarks about flights..."
+                    />
+                  </Form.Group>
+
+                  {transports.length > 0 && (
+                    <Table striped bordered hover size="sm" className="mt-3">
+                      <thead>
+                        <tr>
+                          <th>#</th>
+                          <th>Description</th>
+                          <th>Action</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {transports.map((t, idx) => (
+                          <tr key={idx}>
+                            <td>{idx + 1}</td>
+                            <td>{t.description || 'NA'}</td>
+                            <td>
+                              <div className="d-flex gap-1">
+                                <Button
+                                  variant="outline-warning"
+                                  size="sm"
+                                  onClick={() => editTransportRow(idx)}
+                                  title="Edit"
+                                >
+                                  <Pencil size={14} />
+                                </Button>
+                                <Button
+                                  variant="outline-danger"
+                                  size="sm"
+                                  onClick={() => removeTransportRow(idx)}
+                                  title="Remove"
+                                >
+                                  <Trash size={14} />
+                                </Button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </Table>
+                  )}
+                </Tab>
 
               <Tab eventKey="hotels" title="Hotels">
                 <Row className="align-items-end">
@@ -2870,59 +2909,13 @@ useEffect(() => {
   <Form.Group className="mb-3">
     <Row>
       <Col md={8}>
-        <div className="d-flex justify-content-between align-items-center mb-2">
-          <Form.Label>Booking Policy</Form.Label>
-          <Button
-            variant="outline-info"
-            size="sm"
-            onClick={() => setShowBookingTemplates(!showBookingTemplates)}
-          >
-            {showBookingTemplates ? 'Hide Templates' : 'Show Templates'}
-          </Button>
-        </div>
-        
-        {/* Template Selection Box */}
-        {showBookingTemplates && (
-          <Card className="mb-3 border-info">
-            {/* <Card.Header className="bg-info text-white"> */}
-              <strong>Booking Policy Templates</strong>
-              {/* <small className="float-end">Click to select</small> */}
-            {/* </Card.Header> */}
-            <Card.Body className="p-0">
-              <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
-                {bookingPolicyTemplates.map((template, index) => (
-                  <div
-                    key={index}
-                    className="p-3 border-bottom hover-cursor-pointer"
-                    onClick={() => handleBookingTemplateSelect(template)}
-                    style={{
-                      cursor: 'pointer',
-                      backgroundColor: '#f8f9fa'
-                    }}
-                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#e9ecef'}
-                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#f8f9fa'}
-                  >
-                    <strong className="text-primary">{template.title}</strong>
-                    <div className="text-muted small mt-1" style={{
-                      whiteSpace: 'nowrap',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis'
-                    }}>
-                      {template.content.substring(0, 100)}...
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </Card.Body>
-          </Card>
-        )}
-        
+        <Form.Label>Booking Policy</Form.Label>
         <Form.Control
           as="textarea"
           rows={4}
           value={poiText}
           onChange={(e) => setPoiText(e.target.value)}
-          placeholder="Type booking policy here or select from templates above"
+          placeholder="Type booking policy here"
         />
       </Col>
 
@@ -2990,137 +2983,92 @@ useEffect(() => {
       </tbody>
     </Table>
   )}
-            </Tab>
+</Tab>
 
             <Tab eventKey="cancellation" title="Cancellation Policy">
-              <Row>
-                <Col md={8}>
-                  <div className="d-flex justify-content-between align-items-center mb-2">
-                    <Form.Label>Cancellation Policy</Form.Label>
-                    <Button
-                      variant="outline-info"
-                      size="sm"
-                      onClick={() => setShowCancellationTemplates(!showCancellationTemplates)}
-                    >
-                      {showCancellationTemplates ? 'Hide Templates' : 'Show Templates'}
-                    </Button>
-                  </div>
+  <Row>
+    <Col md={8}>
+      <Form.Label>Cancellation Policy</Form.Label>
+      <Form.Control
+        as="textarea"
+        rows={4}
+        name="cancellation_policy"
+        value={cancelItem.cancellation_policy}
+        onChange={handleCancelChange}
+        placeholder="Type cancellation policy here"
+        style={{ whiteSpace: 'pre-line' }}
+      />
+    </Col>
 
+    <Col md={4}>
+      <Form.Label>Charges</Form.Label>
+      <Form.Control
+        type="text"
+        name="charges"
+        value={cancelItem.charges}
+        onChange={handleCancelChange}
+        placeholder="Example: No refund / 50% retained"
+      />
+    </Col>
+  </Row>
 
-                  {/* Template Selection Box */}
-{showCancellationTemplates && (
-  <Card className="mb-3 border-info">
-    <Card.Body className="p-0">
-      <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
-        {cancellationPolicyTemplates.map((template, index) => (
-          <div
-            key={index}
-            className="p-3 border-bottom hover-cursor-pointer"
-            onClick={() => handleCancellationTemplateSelect(template)}
-            style={{
-              cursor: 'pointer',
-              backgroundColor: '#f8f9fa'
-            }}
-            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#e9ecef'}
-            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#f8f9fa'}
-          >
-            <strong className="text-primary">{template.title}</strong>
-            <div className="text-muted small mt-1" style={{
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis'
-            }}>
-              {template.content.substring(0, 50)}...
-              {template.charges && ` ${template.charges.substring(0, 50)}...`}
-            </div>
-          </div>
+  <Form.Group className="mt-3">
+    <Form.Label>Cancellation Remarks</Form.Label>
+    <Form.Control
+      as="textarea"
+      rows={3}
+      name="cancellation_remarks"
+      value={formData.cancellation_remarks}
+      onChange={handleBasicChange}
+    />
+  </Form.Group>
+
+  {cancelPolicies.length > 0 && (
+    <Table striped bordered hover className="mt-3" size="sm">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Cancellation Policy</th>
+          <th>Charges</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {cancelPolicies.map((c, idx) => (
+          <tr key={idx}>
+            <td>{idx + 1}</td>
+            <td style={{ whiteSpace: 'pre-line', maxWidth: '400px' }}>
+              <div style={{ maxHeight: '100px', overflowY: 'auto' }}>
+                {c.cancellation_policy}
+              </div>
+            </td>
+            <td>{c.charges || "-"}</td>
+            <td>
+              <div className="d-flex gap-1">
+                <Button
+                  variant="outline-warning"
+                  size="sm"
+                  onClick={() => editCancelRow(idx)}
+                  title="Edit"
+                >
+                  <Pencil size={14} />
+                </Button>
+                <Button
+                  variant="outline-danger"
+                  size="sm"
+                  onClick={() => removeCancelRow(idx)}
+                  title="Remove"
+                >
+                  <Trash size={14} />
+                </Button>
+              </div>
+            </td>
+          </tr>
         ))}
-      </div>
-    </Card.Body>
-  </Card>
-)}
-
-                  
-                  <Form.Control
-                    as="textarea"
-                    rows={4}
-                    name="cancellation_policy"
-                    value={cancelItem.cancellation_policy}
-                    onChange={handleCancelChange}
-                    placeholder="Type cancellation policy here or select from templates above"
-                    style={{ whiteSpace: 'pre-line' }}
-                  />
-                </Col>
-
-                <Col md={4}>
-                  <Form.Label>Charges</Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="charges"
-                    value={cancelItem.charges}
-                    onChange={handleCancelChange}
-                    placeholder="Example: No refund / 50% retained"
-                  />
-                </Col>
-              </Row>
-
-              <Form.Group className="mt-3">
-                <Form.Label>Cancellation Remarks</Form.Label>
-                <Form.Control
-                  as="textarea"
-                  rows={3}
-                  name="cancellation_remarks"
-                  value={formData.cancellation_remarks}
-                  onChange={handleBasicChange}
-                />
-              </Form.Group>
-
-              {cancelPolicies.length > 0 && (
-                <Table striped bordered hover className="mt-3" size="sm">
-                  <thead>
-                    <tr>
-                      <th>#</th>
-                      <th>Cancellation Policy</th>
-                      <th>Charges</th>
-                      <th>Action</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {cancelPolicies.map((c, idx) => (
-                      <tr key={idx}>
-                        <td>{idx + 1}</td>
-                        <td style={{ whiteSpace: 'pre-line', maxWidth: '400px' }}>
-                          <div style={{ maxHeight: '100px', overflowY: 'auto' }}>
-                            {c.cancellation_policy}
-                          </div>
-                        </td>
-                        <td>{c.charges || "-"}</td>
-                        <td>
-                          <div className="d-flex gap-1">
-                            <Button
-                              variant="outline-warning"
-                              size="sm"
-                              onClick={() => editCancelRow(idx)}
-                              title="Edit"
-                            >
-                              <Pencil size={14} />
-                            </Button>
-                            <Button
-                              variant="outline-danger"
-                              size="sm"
-                              onClick={() => removeCancelRow(idx)}
-                              title="Remove"
-                            >
-                              <Trash size={14} />
-                            </Button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </Table>
-              )}
-            </Tab>
+      </tbody>
+    </Table>
+  )}
+</Tab>
 
               <Tab eventKey="instructions" title="Instructions">
                 <Form.Group className="mb-3">

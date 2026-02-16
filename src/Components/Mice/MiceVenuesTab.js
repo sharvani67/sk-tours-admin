@@ -29,7 +29,7 @@ const VenuesTab = ({ venues, getImageUrl, handleDeleteImage, resetForms, setActi
                 onClick={() => handleDeleteImage(venue.id, 'venues')}
                 className="delete-btn"
               >
-                <FaTrash />
+                <FaTrash  style={{color:"red"}} />
               </Button>
             </div>
           ))

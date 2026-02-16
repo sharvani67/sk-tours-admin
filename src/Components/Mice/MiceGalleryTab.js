@@ -29,7 +29,7 @@ const GalleryTab = ({ miceGallery, getImageUrl, handleDeleteImage, resetForms, s
                 onClick={() => handleDeleteImage(image.id, 'gallery')}
                 className="delete-btn"
               >
-                <FaTrash />
+                <FaTrash style={{color:"red"}} />
               </Button>
             </div>
           ))

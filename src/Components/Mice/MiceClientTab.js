@@ -65,7 +65,7 @@ const ClientsTab = ({
                 }}
                 className="delete-btn"
               >
-                <FaTrash />
+                <FaTrash style={{color:"red"}} />
               </Button>
             </div>
           ))

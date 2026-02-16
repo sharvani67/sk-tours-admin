@@ -29,7 +29,7 @@ const EventsTab = ({ upcomingEvents, getImageUrl, handleDeleteImage, resetForms,
                 onClick={() => handleDeleteImage(event.id, 'events')}
                 className="delete-btn"
               >
-                <FaTrash />
+                <FaTrash style={{color:"red"}} />
               </Button>
             </div>
           ))
