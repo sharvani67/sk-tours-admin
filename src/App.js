@@ -112,6 +112,11 @@ import Enquiries from './Components/Enquires/Enquires';
 import Payments from "./Components/Payments/Payments"
 
 import AdminCarousel from "./Components/Home/AdminCarousel";
+import AddVendors from "./Components/Vendors/AddVendors";
+import Vendors from "./Components/Vendors/Vendors";
+import CategoryTable from "./Components/Vendors/Category/CategoryTable";
+import AddCategory from "./Components/Vendors/Category/AddCategory";
+
 import Mice from "./Components/Mice/Mice"
 import OfflineFlightsTable from "./Components/OfflineFlights/OfflineFlightsTable";
 import OfflineFlights from "./Components/OfflineFlights/OfflineFlights";
@@ -255,6 +260,14 @@ function App() {
                 <Route path="/contact-us" element={<ContactUs />} />
                 <Route path="/enquiries" element={<Enquiries />} />
                  <Route path="/payments" element={<Payments />} />
+                 <Route path="/add-vendors" element={<AddVendors />} />
+                  <Route path="/add-vendors/:id" element={<AddVendors />} />
+                 <Route path="/Vendors" element={<Vendors />} />
+                
+                               <Route path="/category-table" element={<CategoryTable />} />
+                               <Route path="/vendor-category" element={<AddCategory />} />
+                                                              <Route path="/vendor-category/:id" element={<AddCategory />} />
+
 
 
 
