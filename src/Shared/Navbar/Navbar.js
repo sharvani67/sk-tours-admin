@@ -268,6 +268,11 @@ const Navbar = ({ children }) => {
     path: "/offline-flights-table", 
     icon: <FiMap className="sidebar-icon" /> 
   },
+   { 
+    label: "Offline Hotels", 
+    path: "/offline-hotels-table", 
+    icon: <FiMap className="sidebar-icon" /> 
+  },
   {
     label: "Payments",
     path: "/payments",

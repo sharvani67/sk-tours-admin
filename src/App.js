@@ -121,6 +121,8 @@ import Mice from "./Components/Mice/Mice"
 import OfflineFlightsTable from "./Components/OfflineFlights/OfflineFlightsTable";
 import OfflineFlights from "./Components/OfflineFlights/OfflineFlights";
 
+import OfflineHotelsTable from "./Components/OfflineHotels/OfflineHotelsTable";
+import OfflineHotels from "./Components/OfflineHotels/OfflineHotelsForm";
 
 
 function App() {
@@ -250,6 +252,9 @@ function App() {
                  <Route path="/mice" element={<Mice />} />
                    <Route path="/offline-flights-table" element={<OfflineFlightsTable />} />
                  <Route path="/add-offline-flight" element={<OfflineFlights />} />
+
+                      <Route path="/offline-hotels-table" element={<OfflineHotelsTable />} />
+                 <Route path="/add-offline-hotels" element={<OfflineHotels />} />
                 
                 <Route path="/add-video" element={<AdminVideoManager />} /> 
                 <Route path="/add-card" element={<AdminDomesticTours />} />
