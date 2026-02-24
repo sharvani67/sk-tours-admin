@@ -252,9 +252,11 @@ function App() {
                  <Route path="/mice" element={<Mice />} />
                    <Route path="/offline-flights-table" element={<OfflineFlightsTable />} />
                  <Route path="/add-offline-flight" element={<OfflineFlights />} />
+                  <Route path="/add-offline-flight/:id" element={<OfflineFlights />} />
 
                       <Route path="/offline-hotels-table" element={<OfflineHotelsTable />} />
                  <Route path="/add-offline-hotels" element={<OfflineHotels />} />
+                  <Route path="/add-offline-hotels/:id" element={<OfflineHotels />} />
                 
                 <Route path="/add-video" element={<AdminVideoManager />} /> 
                 <Route path="/add-card" element={<AdminDomesticTours />} />

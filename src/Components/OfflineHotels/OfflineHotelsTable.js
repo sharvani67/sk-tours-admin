@@ -1,253 +1,49 @@
 // OfflineHotelsTable.js
-import React, { useState } from 'react';
-import { Container, Card, Alert } from 'react-bootstrap';
+import React, { useState, useEffect } from 'react';
+import { Container, Card, Alert, Spinner } from 'react-bootstrap';
 import Navbar from '../../Shared/Navbar/Navbar';
 import ReusableTable from '../../Shared/TableLayout/DataTable';
 import { useNavigate } from 'react-router-dom';
 import { Pencil, Trash, Building } from 'react-bootstrap-icons';
+import axios from 'axios';
 
 const OfflineHotelsTable = () => {
   const [filteredHotels, setFilteredHotels] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  // Static dummy data for offline hotels
-  const dummyHotels = [
-    {
-      id: 1,
-      serial_no: 1,
-      hotel_name: 'Taj Mahal Palace',
-      hotel_code: 'TMP-MUM',
-      city: 'Mumbai',
-      country: 'India',
-      address: 'Apollo Bunder, Colaba, Mumbai',
-      star_rating: 5,
-      room_type: 'Deluxe Ocean View',
-      price_per_night: 25000,
-      available_rooms: 15,
-      check_in_time: '14:00',
-      check_out_time: '11:00',
-      amenities: 'Free WiFi, Swimming Pool, Spa, Restaurant, Gym, Room Service',
-      cancellation_policy: 'Free cancellation up to 7 days before check-in',
-      meal_plan: 'Breakfast Included',
-      contact_number: '+91 22 6665 3366',
-      email: 'reservations@tajhotels.com',
-      website: 'www.tajhotels.com',
-      status: 'Active',
-      created_at: '2024-01-15T10:30:00Z'
-    },
-    {
-      id: 2,
-      serial_no: 2,
-      hotel_name: 'The Oberoi Udaivilas',
-      hotel_code: 'OUB-UDA',
-      city: 'Udaipur',
-      country: 'India',
-      address: 'Haridasji Ki Magri, Udaipur',
-      star_rating: 5,
-      room_type: 'Luxury Room with Lake View',
-      price_per_night: 35000,
-      available_rooms: 8,
-      check_in_time: '14:00',
-      check_out_time: '12:00',
-      amenities: 'Free WiFi, Swimming Pool, Spa, Fine Dining, Yoga, Boat Rides',
-      cancellation_policy: 'Free cancellation up to 14 days before check-in',
-      meal_plan: 'Breakfast & Dinner Included',
-      contact_number: '+91 294 243 3300',
-      email: 'reservations.udaivilas@oberoihotels.com',
-      website: 'www.oberoihotels.com',
-      status: 'Active',
-      created_at: '2024-02-10T09:15:00Z'
-    },
-    {
-      id: 3,
-      serial_no: 3,
-      hotel_name: 'ITC Grand Chola',
-      hotel_code: 'IGC-CHE',
-      city: 'Chennai',
-      country: 'India',
-      address: 'No. 63, Mount Road, Guindy, Chennai',
-      star_rating: 5,
-      room_type: 'Executive Club Room',
-      price_per_night: 18000,
-      available_rooms: 25,
-      check_in_time: '15:00',
-      check_out_time: '12:00',
-      amenities: 'Free WiFi, Swimming Pool, Spa, Multiple Restaurants, Gym, Business Center',
-      cancellation_policy: 'Free cancellation up to 3 days before check-in',
-      meal_plan: 'Breakfast Included',
-      contact_number: '+91 44 2220 0000',
-      email: 'reservations@itchotels.in',
-      website: 'www.itchotels.com',
-      status: 'Active',
-      created_at: '2024-03-05T14:20:00Z'
-    },
-    {
-      id: 4,
-      serial_no: 4,
-      hotel_name: 'The Leela Palace',
-      hotel_code: 'TLP-DEL',
-      city: 'New Delhi',
-      country: 'India',
-      address: 'Diplomatic Enclave, Chanakyapuri, New Delhi',
-      star_rating: 5,
-      room_type: 'Palace Room',
-      price_per_night: 28000,
-      available_rooms: 12,
-      check_in_time: '14:00',
-      check_out_time: '12:00',
-      amenities: 'Free WiFi, Swimming Pool, Spa, Fine Dining, Butler Service, Gym',
-      cancellation_policy: 'Free cancellation up to 7 days before check-in',
-      meal_plan: 'Breakfast Included',
-      contact_number: '+91 11 3933 1234',
-      email: 'reservations.delhi@theleela.com',
-      website: 'www.theleela.com',
-      status: 'Active',
-      created_at: '2024-01-28T11:45:00Z'
-    },
-    {
-      id: 5,
-      serial_no: 5,
-      hotel_name: 'JW Marriott',
-      hotel_code: 'JWM-BLR',
-      city: 'Bengaluru',
-      country: 'India',
-      address: '24/1, Vittal Mallya Road, Bengaluru',
-      star_rating: 5,
-      room_type: 'Executive Suite',
-      price_per_night: 22000,
-      available_rooms: 10,
-      check_in_time: '15:00',
-      check_out_time: '12:00',
-      amenities: 'Free WiFi, Swimming Pool, Spa, Multiple Restaurants, Gym, Lounge Access',
-      cancellation_policy: 'Free cancellation up to 24 hours before check-in',
-      meal_plan: 'Breakfast Included',
-      contact_number: '+91 80 6718 9999',
-      email: 'reservations.blr@marriott.com',
-      website: 'www.marriott.com',
-      status: 'Active',
-      created_at: '2024-02-18T16:30:00Z'
-    },
-    {
-      id: 6,
-      serial_no: 6,
-      hotel_name: 'The Park',
-      hotel_code: 'TPK-KOL',
-      city: 'Kolkata',
-      country: 'India',
-      address: '17, Park Street, Kolkata',
-      star_rating: 4,
-      room_type: 'Deluxe Room',
-      price_per_night: 12000,
-      available_rooms: 20,
-      check_in_time: '14:00',
-      check_out_time: '11:00',
-      amenities: 'Free WiFi, Swimming Pool, Spa, Restaurant, Bar, Gym',
-      cancellation_policy: 'Free cancellation up to 48 hours before check-in',
-      meal_plan: 'Room Only',
-      contact_number: '+91 33 2249 7336',
-      email: 'reservations@theparkhotels.com',
-      website: 'www.theparkhotels.com',
-      status: 'Under Renovation',
-      created_at: '2024-03-12T10:00:00Z'
-    },
-    {
-      id: 7,
-      serial_no: 7,
-      hotel_name: 'Fort Jadhavgadh',
-      hotel_code: 'FJH-PUN',
-      city: 'Pune',
-      country: 'India',
-      address: 'Pune Bangalore Highway, Saswad, Pune',
-      star_rating: 4,
-      room_type: 'Heritage Room',
-      price_per_night: 15000,
-      available_rooms: 18,
-      check_in_time: '13:00',
-      check_out_time: '11:00',
-      amenities: 'Free WiFi, Swimming Pool, Spa, Heritage Restaurant, Rooftop Dining',
-      cancellation_policy: 'Free cancellation up to 5 days before check-in',
-      meal_plan: 'Breakfast Included',
-      contact_number: '+91 20 6675 2323',
-      email: 'reservations@fortjadhavgadh.com',
-      website: 'www.fortjadhavgadh.com',
-      status: 'Active',
-      created_at: '2024-02-22T13:15:00Z'
-    },
-    {
-      id: 8,
-      serial_no: 8,
-      hotel_name: 'Novotel',
-      hotel_code: 'NOV-HYD',
-      city: 'Hyderabad',
-      country: 'India',
-      address: 'Gachibowli, Hyderabad',
-      star_rating: 4,
-      room_type: 'Superior Room',
-      price_per_night: 9500,
-      available_rooms: 35,
-      check_in_time: '14:00',
-      check_out_time: '12:00',
-      amenities: 'Free WiFi, Swimming Pool, Restaurant, Bar, Gym, Conference Rooms',
-      cancellation_policy: 'Free cancellation up to 24 hours before check-in',
-      meal_plan: 'Breakfast Included',
-      contact_number: '+91 40 6624 2424',
-      email: 'reservations@novotel.com',
-      website: 'www.novotel.com',
-      status: 'Active',
-      created_at: '2024-03-08T09:30:00Z'
-    },
-    {
-      id: 9,
-      serial_no: 9,
-      hotel_name: 'Alila Fort Bishangarh',
-      hotel_code: 'AFB-JAI',
-      city: 'Jaipur',
-      country: 'India',
-      address: 'Bishangarh, Jaipur',
-      star_rating: 5,
-      room_type: 'Fort Suite',
-      price_per_night: 42000,
-      available_rooms: 5,
-      check_in_time: '15:00',
-      check_out_time: '12:00',
-      amenities: 'Free WiFi, Swimming Pool, Spa, Fine Dining, Heritage Tours, Gym',
-      cancellation_policy: 'Free cancellation up to 14 days before check-in',
-      meal_plan: 'Breakfast & Dinner Included',
-      contact_number: '+91 1582 252 700',
-      email: 'reservations.bishangarh@alilahotels.com',
-      website: 'www.alilahotels.com',
-      status: 'Active',
-      created_at: '2024-01-20T15:45:00Z'
-    },
-    {
-      id: 10,
-      serial_no: 10,
-      hotel_name: 'Radisson Blu',
-      hotel_code: 'RBL-AGR',
-      city: 'Agra',
-      country: 'India',
-      address: 'Taj East Gate Road, Agra',
-      star_rating: 4,
-      room_type: 'Deluxe Room with Taj View',
-      price_per_night: 11000,
-      available_rooms: 22,
-      check_in_time: '14:00',
-      check_out_time: '11:00',
-      amenities: 'Free WiFi, Swimming Pool, Restaurant, Bar, Rooftop Terrace with Taj View',
-      cancellation_policy: 'Free cancellation up to 48 hours before check-in',
-      meal_plan: 'Breakfast Included',
-      contact_number: '+91 562 402 2222',
-      email: 'reservations.agra@radisson.com',
-      website: 'www.radissonblu.com',
-      status: 'Active',
-      created_at: '2024-02-05T12:00:00Z'
-    }
-  ];
+  // API base URL - adjust this based on your environment
+  const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
-  // Initialize state with dummy data
-  useState(() => {
-    setFilteredHotels(dummyHotels);
+  // Fetch hotels from API
+  const fetchHotels = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const response = await axios.get(`${API_BASE_URL}/offline-hotels`);
+      
+      if (response.data.success) {
+        // Add serial numbers to the data
+        const hotelsWithSerial = response.data.data.map((hotel, index) => ({
+          ...hotel,
+          serial_no: index + 1
+        }));
+        setFilteredHotels(hotelsWithSerial);
+      } else {
+        setError('Failed to fetch hotels');
+      }
+    } catch (err) {
+      console.error('Error fetching hotels:', err);
+      setError(err.response?.data?.message || 'Error fetching hotels. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch hotels on component mount
+  useEffect(() => {
+    fetchHotels();
   }, []);
 
   // Handle Delete Hotel
@@ -257,19 +53,24 @@ const OfflineHotelsTable = () => {
     }
 
     try {
-      // Simulate API call
-      alert('Hotel deleted successfully (Static Demo)');
-      // Remove from local state
-      setFilteredHotels(prev => prev.filter(hotel => hotel.id !== hotelId));
+      const response = await axios.delete(`${API_BASE_URL}/offline-hotels/${hotelId}`);
+      
+      if (response.data.success) {
+        alert('Hotel deleted successfully');
+        // Refresh the list
+        fetchHotels();
+      } else {
+        alert('Error deleting hotel. Please try again.');
+      }
     } catch (err) {
       console.error('Error deleting hotel:', err);
-      alert('Error deleting hotel. Please try again.');
+      alert(err.response?.data?.message || 'Error deleting hotel. Please try again.');
     }
   };
 
   // Handle Edit - Navigate to add/edit form with ID
   const handleEdit = (hotelId) => {
-    navigate(`/add-offline-hotel/${hotelId}`);
+    navigate(`/add-offline-hotels/${hotelId}`);
   };
 
   // Format price with currency
@@ -285,7 +86,23 @@ const OfflineHotelsTable = () => {
 
   // Get star rating as stars
   const getStarRating = (rating) => {
+    if (!rating) return '—';
     return '★'.repeat(rating) + '☆'.repeat(5 - rating);
+  };
+
+  // Format date
+  const formatDate = (dateString) => {
+    if (!dateString) return 'N/A';
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-IN', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+      });
+    } catch {
+      return 'Invalid Date';
+    }
   };
 
   // Define table columns
@@ -306,20 +123,14 @@ const OfflineHotelsTable = () => {
       render: (item) => (
         <div className="d-flex align-items-center">
           <Building className="me-2 text-primary" size={16} />
-          <span className="fw-bold">{item.hotel_name || 'N/A'}</span>
+          <span className="fw-bold">{item.hotel_name || item.property_name || 'N/A'}</span>
         </div>
       ),
       style: { minWidth: '180px' }
     },
     {
-      key: 'hotel_code',
-      title: 'Hotel Code',
-      render: (item) => item.hotel_code || 'N/A',
-      style: { textAlign: 'center' }
-    },
-    {
       key: 'city',
-      title: 'City',
+      title: 'Location',
       render: (item) => (
         <span>
           {item.city || 'N/A'}, {item.country || 'IN'}
@@ -338,40 +149,45 @@ const OfflineHotelsTable = () => {
       style: { textAlign: 'center', minWidth: '100px' }
     },
     {
-      key: 'room_type',
-      title: 'Room Type',
-      render: (item) => item.room_type || 'N/A',
-      style: { minWidth: '150px' }
-    },
-    {
-      key: 'price_per_night',
+      key: 'price',
       title: 'Price/Night',
       render: (item) => (
-        <span className="fw-bold text-success">
-          {formatPrice(item.price_per_night)}
-        </span>
+        <div>
+          <span className="fw-bold text-success">
+            {formatPrice(item.price)}
+          </span>
+          {item.sale_price && (
+            <div>
+              <small className="text-muted text-decoration-line-through">
+                {formatPrice(item.original_price)}
+              </small>
+              <span className="badge bg-danger ms-1">Sale</span>
+            </div>
+          )}
+        </div>
       ),
       style: { textAlign: 'right', fontWeight: 'bold' }
     },
     {
-      key: 'available_rooms',
-      title: 'Available Rooms',
+      key: 'rooms',
+      title: 'Rooms',
       render: (item) => (
-        <span className={`badge ${item.available_rooms > 10 ? 'bg-success' : 'bg-warning'}`}>
-          {item.available_rooms || 0}
+        <span className={`badge ${item.rooms > 10 ? 'bg-success' : 'bg-warning'}`}>
+          {item.rooms || 0}
         </span>
       ),
       style: { textAlign: 'center' }
     },
     {
-      key: 'check_in_out',
+      key: 'check_dates',
       title: 'Check-in/out',
       render: (item) => (
-        <span>
-          {item.check_in_time || '14:00'} / {item.check_out_time || '11:00'}
-        </span>
+        <div>
+          <div>In: {item.check_in_date ? new Date(item.check_in_date).toLocaleDateString() : 'N/A'}</div>
+          <div>Out: {item.check_out_date ? new Date(item.check_out_date).toLocaleDateString() : 'N/A'}</div>
+        </div>
       ),
-      style: { textAlign: 'center' }
+      style: { textAlign: 'center', minWidth: '120px' }
     },
     {
       key: 'amenities',
@@ -390,16 +206,16 @@ const OfflineHotelsTable = () => {
     {
       key: 'meal_plan',
       title: 'Meal Plan',
-      render: (item) => item.meal_plan || 'Room Only',
+      render: (item) => item.meal_plan_description || 'Room Only',
       style: { textAlign: 'center' }
     },
     {
       key: 'status',
       title: 'Status',
       render: (item) => {
-        const status = item.status || 'Active';
+        const status = item.status || 'Available';
         return (
-          <span className={`badge ${status === 'Active' ? 'bg-success' : 'bg-warning'}`}>
+          <span className={`badge ${status === 'Available' ? 'bg-success' : 'bg-warning'}`}>
             {status}
           </span>
         );
@@ -407,32 +223,20 @@ const OfflineHotelsTable = () => {
       style: { textAlign: 'center' }
     },
     {
-      key: 'contact',
-      title: 'Contact',
+      key: 'occupancy',
+      title: 'Guests',
       render: (item) => (
-        <div>
-          <div>{item.contact_number || 'N/A'}</div>
-          <small className="text-muted">{item.email || ''}</small>
-        </div>
+        <span>
+          {item.adults || 0} Adults, {item.children || 0} Children
+          {item.pets ? ', Pets' : ''}
+        </span>
       ),
-      style: { minWidth: '150px' }
+      style: { textAlign: 'center', minWidth: '120px' }
     },
     {
       key: 'created_at',
       title: 'Added On',
-      render: (item) => {
-        if (!item.created_at) return 'N/A';
-        try {
-          const date = new Date(item.created_at);
-          return date.toLocaleDateString('en-IN', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric'
-          });
-        } catch {
-          return 'Invalid Date';
-        }
-      }
+      render: (item) => formatDate(item.created_at)
     },
     {
       key: 'actions',
@@ -481,7 +285,7 @@ const OfflineHotelsTable = () => {
         </div>
 
         {error && (
-          <Alert variant="danger" className="mb-4">
+          <Alert variant="danger" className="mb-4" dismissible onClose={() => setError('')}>
             {error}
           </Alert>
         )}
@@ -491,20 +295,27 @@ const OfflineHotelsTable = () => {
             <div className="d-flex align-items-center">
               <Building className="text-primary me-2" size={20} />
               <h5 className="mb-0">Offline Hotels List</h5>
-              <span className="badge bg-primary ms-3">
-                {filteredHotels.length} Hotels
-              </span>
+              {!loading && (
+                <span className="badge bg-primary ms-3">
+                  {filteredHotels.length} Hotels
+                </span>
+              )}
             </div>
           </Card.Header>
           <Card.Body className="p-0">
-            {filteredHotels.length === 0 ? (
+            {loading ? (
+              <div className="text-center py-5">
+                <Spinner animation="border" variant="primary" />
+                <p className="mt-3 text-muted">Loading hotels...</p>
+              </div>
+            ) : filteredHotels.length === 0 ? (
               <div className="text-center py-5">
                 <Building size={48} className="text-muted mb-3" />
                 <h5 className="text-muted">No Offline Hotels Found</h5>
                 <p className="text-muted mb-3">Click the "Add Offline Hotel" button to create your first hotel listing</p>
                 <button
                   className="btn btn-primary"
-                  onClick={() => navigate('/add-offline-hotel')}
+                  onClick={() => navigate('/add-offline-hotels')}
                 >
                   <Building className="me-2" size={16} />
                   Add Your First Hotel
@@ -516,7 +327,7 @@ const OfflineHotelsTable = () => {
                 data={filteredHotels}
                 columns={columns}
                 initialEntriesPerPage={10}
-                searchPlaceholder="Search by hotel name, city, or room type..."
+                searchPlaceholder="Search by hotel name, city, or location..."
                 showSearch={true}
                 showEntriesSelector={true}
                 showPagination={true}

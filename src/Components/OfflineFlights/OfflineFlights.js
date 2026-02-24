@@ -1,19 +1,21 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Container, Card, Form, Row, Col, Button, InputGroup, Alert, Spinner } from 'react-bootstrap';
 import Navbar from '../../Shared/Navbar/Navbar';
 import { indianAirports, countries } from './airports';
 import axios from 'axios';
 import { baseurl } from '../../Api/Baseurl';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
 function OfflineFlights() {
   const [bookingType, setBookingType] = useState('oneWay');
   const [selectedFromAirport, setSelectedFromAirport] = useState('');
   const [selectedToAirport, setSelectedToAirport] = useState('');
   const [loading, setLoading] = useState(false);
+  const [fetchLoading, setFetchLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-   const navigate = useNavigate();
+  const navigate = useNavigate();
+  const { id } = useParams(); // Get ID from URL if editing
   
   // Get unique cities from airports
   const indianCities = [...new Set(indianAirports.map(airport => airport.city))].sort();
@@ -187,6 +189,126 @@ function OfflineFlights() {
     maxPrice: '28,800'
   });
 
+  // Fetch flight data if editing
+  useEffect(() => {
+    if (id) {
+      fetchFlightData(id);
+    }
+  }, [id]);
+
+  const fetchFlightData = async (flightId) => {
+    setFetchLoading(true);
+    setError('');
+    
+    try {
+      const response = await axios.get(`${baseurl}/api/offline-flights/${flightId}`);
+      
+      if (response.data.success) {
+        const flightData = response.data.data;
+        
+        // Set booking type
+        setBookingType(flightData.booking_type || 'oneWay');
+        
+        // Set flight details
+        setFlightDetails({
+          fromCountry: 'IN',
+          fromCity: flightData.from_city || '',
+          fromAirport: flightData.from_airport || '',
+          fromAirportCode: flightData.from_airport_code || '',
+          toCountry: 'IN',
+          toCity: flightData.to_city || '',
+          toAirport: flightData.to_airport || '',
+          toAirportCode: flightData.to_airport_code || '',
+          departureDate: flightData.departure_date ? flightData.departure_date.split('T')[0] : '',
+          returnDate: flightData.return_date ? flightData.return_date.split('T')[0] : '',
+          adults: flightData.adults || 1,
+          children: flightData.children || 0,
+          infants: flightData.infants || 0,
+          travellerClass: flightData.traveller_class || 'Economy',
+          flightTime: flightData.flight_time || '',
+          duration: flightData.duration || '',
+          arrivalTime: flightData.arrival_time || '',
+          flightType: flightData.flight_type || 'Non Stop',
+          destination: flightData.destination || '',
+          airline: flightData.airline || '',
+          flightNumber: flightData.flight_number || '',
+          baggageAllowance: flightData.baggage_allowance || '',
+          mealsSeatDescription: flightData.meals_seat_description || '',
+          refundableStatusDescription: flightData.refundable_status_description || '',
+          mealsIncluded: flightData.meals_included === 1 || flightData.meals_included === true,
+          pricePerAdult: flightData.price_per_adult || '',
+        });
+
+        // Set selected airports
+        setSelectedFromAirport(flightData.from_airport_code || '');
+        setSelectedToAirport(flightData.to_airport_code || '');
+
+        // Parse and set filters if available
+        if (flightData.filters && flightData.filters.length > 0) {
+          const filtersData = flightData.filters;
+          
+          // Update stops
+          const nonStopFilter = filtersData.find(f => f.filter_type === 'non_stop');
+          const oneStopFilter = filtersData.find(f => f.filter_type === 'one_stop');
+          
+          setFilters(prev => ({
+            ...prev,
+            hideNearbyAirports: filtersData.some(f => f.filter_type === 'hide_nearby' && f.is_selected === 1),
+            refundableFares: filtersData.some(f => f.filter_type === 'refundable' && f.is_selected === 1),
+            stops: [
+              { ...prev.stops[0], selected: nonStopFilter ? nonStopFilter.is_selected === 1 : prev.stops[0].selected },
+              { ...prev.stops[1], selected: oneStopFilter ? oneStopFilter.is_selected === 1 : prev.stops[1].selected }
+            ],
+            departureAirports: prev.departureAirports.map(airport => ({
+              ...airport,
+              selected: filtersData.some(f => 
+                f.filter_category === 'departure_airport' && 
+                f.filter_value === airport.code && 
+                f.is_selected === 1
+              )
+            })),
+            airlines: prev.airlines.map(airline => ({
+              ...airline,
+              selected: filtersData.some(f => 
+                f.filter_category === 'airline' && 
+                f.filter_value === airline.code && 
+                f.is_selected === 1
+              )
+            })),
+            aircraftSizes: prev.aircraftSizes.map(size => ({
+              ...size,
+              selected: filtersData.some(f => 
+                f.filter_category === 'aircraft_size' && 
+                f.filter_name === size.size && 
+                f.is_selected === 1
+              )
+            }))
+          }));
+
+          // Fetch price range data separately if needed
+          try {
+            const priceRangeResponse = await axios.get(`${baseurl}/api/offline-flights/${flightId}/price-range`);
+            if (priceRangeResponse.data.success) {
+              const priceRange = priceRangeResponse.data.data;
+              setFilters(prev => ({
+                ...prev,
+                minPrice: priceRange.min_price || prev.minPrice,
+                maxPrice: priceRange.max_price || prev.maxPrice
+              }));
+            }
+          } catch (priceError) {
+            console.log('Price range not found, using defaults');
+          }
+        }
+      }
+    } catch (err) {
+      console.error('Error fetching flight data:', err);
+      setError(err.response?.data?.message || 'Failed to fetch flight data');
+    } finally {
+      setFetchLoading(false);
+    }
+  };
+
   // Validation function
   const validateForm = () => {
     if (!flightDetails.fromCity) {
@@ -319,60 +441,65 @@ function OfflineFlights() {
   };
 
   // Submit handler with backend connection
-  // Submit handler with backend connection and navigation
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  clearMessages();
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    clearMessages();
 
-  // Validate form
-  if (!validateForm()) {
-    return;
-  }
+    // Validate form
+    if (!validateForm()) {
+      return;
+    }
 
-  setLoading(true);
+    setLoading(true);
 
-  try {
-    const formData = {
-      bookingType,
-      flightDetails,
-      filters
-    };
+    try {
+      const formData = {
+        bookingType,
+        flightDetails,
+        filters
+      };
 
-    console.log('Submitting offline flight data:', formData);
+      console.log('Submitting offline flight data:', formData);
 
-    // API call to backend
-    const response = await axios.post(`${baseurl}/api/offline-flights`, formData, {
-      headers: {
-        'Content-Type': 'application/json'
+      let response;
+      if (id) {
+        // Update existing flight
+        response = await axios.put(`${baseurl}/api/offline-flights/${id}`, formData, {
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+      } else {
+        // Create new flight
+        response = await axios.post(`${baseurl}/api/offline-flights`, formData, {
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
       }
-    });
 
-    if (response.data.success) {
-      setSuccess('Offline flight saved successfully!');
+      if (response.data.success) {
+        setSuccess(id ? 'Offline flight updated successfully!' : 'Offline flight saved successfully!');
+        
+        // Navigate to offline flights table after successful submission
+        setTimeout(() => {
+          navigate('/offline-flights-table');
+        }, 1500);
+      }
+    } catch (error) {
+      console.error('Error submitting offline flight:', error);
       
-      // Navigate to offline flights table after successful submission
-      setTimeout(() => {
-        navigate('/offline-flights-table');
-      }, 1500); // 1.5 second delay to show success message
+      if (error.response) {
+        setError(error.response.data.message || `Failed to ${id ? 'update' : 'save'} offline flight`);
+      } else if (error.request) {
+        setError('No response from server. Please check if the server is running.');
+      } else {
+        setError(`Error ${id ? 'updating' : 'submitting'} form. Please try again.`);
+      }
+    } finally {
+      setLoading(false);
     }
-  } catch (error) {
-    console.error('Error submitting offline flight:', error);
-    
-    if (error.response) {
-      // Server responded with error
-      setError(error.response.data.message || 'Failed to save offline flight');
-    } else if (error.request) {
-      // Request made but no response
-      setError('No response from server. Please check if the server is running.');
-    } else {
-      // Something else happened
-      setError('Error submitting form. Please try again.');
-    }
-  } finally {
-    setLoading(false);
-  }
-};
-
+  };
 
   // Reset form function
   const resetForm = () => {
@@ -408,13 +535,43 @@ const handleSubmit = async (e) => {
       pricePerAdult: '',
     });
     setSuccess('');
+    
+    // Reset filters to default
+    setFilters({
+      nonStop: true,
+      hideNearbyAirports: false,
+      refundableFares: false,
+      oneStop: false,
+      departureAirports: filters.departureAirports.map(airport => ({ ...airport, selected: false })),
+      stops: [
+        { ...filters.stops[0], selected: true },
+        { ...filters.stops[1], selected: false }
+      ],
+      departureTimeRanges: filters.departureTimeRanges.map((range, index) => ({ ...range, selected: index === 0 })),
+      arrivalTimeRanges: filters.arrivalTimeRanges.map((range, index) => ({ ...range, selected: index === 0 })),
+      airlines: filters.airlines.map((airline, index) => ({ ...airline, selected: index === 0 })),
+      aircraftSizes: filters.aircraftSizes.map((size, index) => ({ ...size, selected: index === 0 })),
+      minPrice: '6,848',
+      maxPrice: '28,800'
+    });
   };
+
+  if (fetchLoading) {
+    return (
+      <Navbar>
+        <Container fluid className="py-4 text-center">
+          <Spinner animation="border" variant="primary" />
+          <p className="mt-3">Loading flight data...</p>
+        </Container>
+      </Navbar>
+    );
+  }
 
   return (
     <Navbar>
       <Container fluid className="py-4">
         <div className="d-flex justify-content-between align-items-center mb-4">
-          <h2 className="mb-0">Offline Flights</h2>
+          <h2 className="mb-0">{id ? 'Edit Offline Flight' : 'Add Offline Flight'}</h2>
         </div>
 
         {/* Alert Messages */}
@@ -1030,10 +1187,10 @@ const handleSubmit = async (e) => {
                     aria-hidden="true"
                     className="me-2"
                   />
-                  Saving...
+                  {id ? 'Updating...' : 'Saving...'}
                 </>
               ) : (
-                'Save Offline Flight'
+                id ? 'Update Offline Flight' : 'Save Offline Flight'
               )}
             </Button>
           </div>

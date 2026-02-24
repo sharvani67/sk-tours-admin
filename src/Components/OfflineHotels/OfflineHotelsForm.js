@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Container, Card, Form, Row, Col, Button, InputGroup, Alert, Spinner, Tab, Nav } from 'react-bootstrap';
 import Navbar from '../../Shared/Navbar/Navbar';
 import axios from 'axios';
 import { baseurl } from '../../Api/Baseurl';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
 // Country data for dropdown
 const countries = [
@@ -55,7 +55,9 @@ const countries = [
 
 function OfflineHotels() {
   const navigate = useNavigate();
+  const { id } = useParams(); // Get ID from URL if editing
   const [loading, setLoading] = useState(false);
+  const [fetchLoading, setFetchLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [activeTab, setActiveTab] = useState('overview');
@@ -65,6 +67,7 @@ function OfflineHotels() {
   const [mainImagePreview, setMainImagePreview] = useState(null);
   const [additionalImageFiles, setAdditionalImageFiles] = useState([]);
   const [additionalImagePreviews, setAdditionalImagePreviews] = useState([]);
+  const [existingImages, setExistingImages] = useState([]);
 
   // Hotel Search Details (Based on images 1-4)
   const [searchDetails, setSearchDetails] = useState({
@@ -135,6 +138,144 @@ function OfflineHotels() {
       { id: 3, stars: 5, count: 206, selected: false }
     ]
   });
+
+  // Fetch hotel data if editing
+  useEffect(() => {
+    if (id) {
+      fetchHotelData(id);
+    }
+  }, [id]);
+
+  const fetchHotelData = async (hotelId) => {
+    setFetchLoading(true);
+    setError('');
+
+    try {
+      const response = await axios.get(`${baseurl}/api/offline-hotels/${hotelId}`);
+      
+      if (response.data.success) {
+        const hotelData = response.data.data;
+        
+        // Set search details
+        setSearchDetails({
+          country: hotelData.country || '',
+          city: hotelData.city || '',
+          location: hotelData.location || '',
+          propertyName: hotelData.property_name || '',
+          checkInDate: hotelData.check_in_date ? hotelData.check_in_date.split('T')[0] : '',
+          checkOutDate: hotelData.check_out_date ? hotelData.check_out_date.split('T')[0] : '',
+          rooms: hotelData.rooms || 1,
+          adults: hotelData.adults || 2,
+          children: hotelData.children || 0,
+          pets: hotelData.pets === 1 || hotelData.pets === true
+        });
+
+        // Set children ages
+        if (hotelData.children_ages && hotelData.children_ages.length > 0) {
+          setChildrenAges(hotelData.children_ages);
+        }
+
+        // Set hotel details
+        setHotelDetails({
+          hotelName: hotelData.hotel_name || '',
+          location: hotelData.hotel_location || '',
+          starRating: hotelData.star_rating || 3,
+          mainImage: hotelData.main_image || '',
+          additionalImages: hotelData.additional_images || [],
+          rating: hotelData.rating || 0,
+          totalRatings: hotelData.total_ratings || 0,
+          price: hotelData.price || '',
+          taxes: hotelData.taxes || '',
+          amenities: hotelData.amenities || '',
+          status: hotelData.status || 'Available',
+          freeStayForKids: hotelData.free_stay_for_kids === 1 || hotelData.free_stay_for_kids === true,
+          limitedTimeSale: hotelData.limited_time_sale === 1 || hotelData.limited_time_sale === true,
+          salePrice: hotelData.sale_price || '',
+          originalPrice: hotelData.original_price || '',
+          loginToBook: hotelData.login_to_book === 1 || hotelData.login_to_book === true,
+          payLater: hotelData.pay_later === 1 || hotelData.pay_later === true
+        });
+
+        // Set descriptions
+        setDescriptions({
+          overview: hotelData.overview_description || '',
+          hotelFacilities: hotelData.hotel_facilities_description || '',
+          airportTransfers: hotelData.airport_transfers_description || '',
+          mealPlan: hotelData.meal_plan_description || '',
+          taxesDescription: hotelData.taxes_description || ''
+        });
+
+       // Set main image preview if exists
+if (hotelData.main_image) {
+  // Remove any duplicate baseurl if the image path already starts with /uploads
+  const imageUrl = hotelData.main_image.startsWith('http') 
+    ? hotelData.main_image 
+    : `${baseurl}${hotelData.main_image}`;
+  setMainImagePreview(imageUrl);
+}
+
+// Set additional images
+if (hotelData.additional_images && hotelData.additional_images.length > 0) {
+  const imageUrls = hotelData.additional_images.map(img => {
+    return img.startsWith('http') ? img : `${baseurl}${img}`;
+  });
+  setAdditionalImagePreviews(imageUrls);
+  setExistingImages(hotelData.additional_images);
+}
+
+        // Set filters if available
+        if (hotelData.filters) {
+          const { priceRanges, starCategories, budget, searchLocalities } = hotelData.filters;
+
+          // Update price ranges selection
+          if (priceRanges && priceRanges.length > 0) {
+            setFilters(prev => ({
+              ...prev,
+              priceRanges: prev.priceRanges.map((range, index) => ({
+                ...range,
+                selected: priceRanges[index]?.is_selected === 1
+              }))
+            }));
+          }
+
+          // Update star categories selection
+          if (starCategories && starCategories.length > 0) {
+            setFilters(prev => ({
+              ...prev,
+              starCategories: prev.starCategories.map((star, index) => ({
+                ...star,
+                selected: starCategories[index]?.is_selected === 1
+              }))
+            }));
+          }
+
+          // Update budget
+          if (budget) {
+            setFilters(prev => ({
+              ...prev,
+              budget: {
+                min: budget.min_budget || '',
+                max: budget.max_budget || ''
+              }
+            }));
+          }
+
+          // Update search locality
+          if (searchLocalities && searchLocalities.length > 0) {
+            setFilters(prev => ({
+              ...prev,
+              searchLocality: searchLocalities[0]?.locality_name || ''
+            }));
+          }
+        }
+      }
+    } catch (err) {
+      console.error('Error fetching hotel data:', err);
+      setError(err.response?.data?.message || 'Failed to fetch hotel data');
+    } finally {
+      setFetchLoading(false);
+    }
+  };
 
   // Handle search details change
   const handleSearchChange = (e) => {
@@ -346,10 +487,10 @@ function OfflineHotels() {
       formData.append('searchDetails', JSON.stringify(searchDetails));
       formData.append('childrenAges', JSON.stringify(childrenAges));
       
-      // Update hotelDetails with additional image paths
+      // Update hotelDetails with existing images
       const updatedHotelDetails = {
         ...hotelDetails,
-        additionalImages: additionalImagePreviews // This will be replaced by server paths after upload
+        additionalImages: existingImages
       };
       formData.append('hotelDetails', JSON.stringify(updatedHotelDetails));
       
@@ -363,19 +504,30 @@ function OfflineHotels() {
       
       // Append additional image files
       if (additionalImageFiles.length > 0) {
-        additionalImageFiles.forEach((file, index) => {
+        additionalImageFiles.forEach((file) => {
           formData.append('additionalImages', file);
         });
       }
 
-      const response = await axios.post(`${baseurl}/api/offline-hotels`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-      });
+      let response;
+      if (id) {
+        // Update existing hotel
+        response = await axios.put(`${baseurl}/api/offline-hotels/${id}`, formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        });
+      } else {
+        // Create new hotel
+        response = await axios.post(`${baseurl}/api/offline-hotels`, formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        });
+      }
 
       if (response.data.success) {
-        setSuccess('Hotel saved successfully!');
+        setSuccess(id ? 'Hotel updated successfully!' : 'Hotel saved successfully!');
         setTimeout(() => {
           navigate('/offline-hotels-table');
         }, 1500);
@@ -383,11 +535,11 @@ function OfflineHotels() {
     } catch (error) {
       console.error('Error submitting hotel:', error);
       if (error.response) {
-        setError(error.response.data.message || 'Failed to save hotel');
+        setError(error.response.data.message || `Failed to ${id ? 'update' : 'save'} hotel`);
       } else if (error.request) {
         setError('No response from server. Please check if the server is running.');
       } else {
-        setError('Error submitting form. Please try again.');
+        setError(`Error ${id ? 'updating' : 'submitting'} form. Please try again.`);
       }
     } finally {
       setLoading(false);
@@ -445,14 +597,26 @@ function OfflineHotels() {
     setMainImagePreview(null);
     setAdditionalImageFiles([]);
     setAdditionalImagePreviews([]);
+    setExistingImages([]);
     setSuccess('');
   };
+
+  if (fetchLoading) {
+    return (
+      <Navbar>
+        <Container fluid className="py-4 text-center">
+          <Spinner animation="border" variant="primary" />
+          <p className="mt-3">Loading hotel data...</p>
+        </Container>
+      </Navbar>
+    );
+  }
 
   return (
     <Navbar>
       <Container fluid className="py-4">
         <div className="d-flex justify-content-between align-items-center mb-4">
-          <h2 className="mb-0">Offline Hotels</h2>
+          <h2 className="mb-0">{id ? 'Edit Offline Hotel' : 'Add Offline Hotel'}</h2>
         </div>
 
         {/* Alert Messages */}
@@ -1168,10 +1332,10 @@ function OfflineHotels() {
                     aria-hidden="true"
                     className="me-2"
                   />
-                  Saving...
+                  {id ? 'Updating...' : 'Saving...'}
                 </>
               ) : (
-                'Save Hotel'
+                id ? 'Update Hotel' : 'Save Hotel'
               )}
             </Button>
           </div>
