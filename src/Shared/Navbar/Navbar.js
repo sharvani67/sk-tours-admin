@@ -100,6 +100,12 @@ const Navbar = ({ children }) => {
     icon: <FiSettings className="sidebar-icon" />,
     matchPaths: ["/advanced-cruise-bookings"],
   },
+   { 
+    label: "Bungalows", 
+    path: "/bungalows", 
+    icon: <FiHome className="sidebar-icon" />,
+    matchPaths: ["/bungalows", "/add-bungalow", "/edit-bungalow"],
+  },
   {
     label: "Carousel Images",
     path: "/carousel-images",

@@ -123,6 +123,8 @@ import OfflineFlights from "./Components/OfflineFlights/OfflineFlights";
 
 import OfflineHotelsTable from "./Components/OfflineHotels/OfflineHotelsTable";
 import OfflineHotels from "./Components/OfflineHotels/OfflineHotelsForm";
+import AddBungalow from "./Components/Bunglow/AddBunglow";
+import BungalowsTable from "./Components/Bunglow/BunglowTable";
 
 
 function App() {
@@ -273,10 +275,10 @@ function App() {
                 
                                <Route path="/category-table" element={<CategoryTable />} />
                                <Route path="/vendor-category" element={<AddCategory />} />
-                                                              <Route path="/vendor-category/:id" element={<AddCategory />} />
+                              <Route path="/vendor-category/:id" element={<AddCategory />} />
 
-
-
+                 <Route path="/bungalows" element={<BungalowsTable />} />
+                 <Route path="/add-bungalow" element={<AddBungalow />} />
 
 
 
