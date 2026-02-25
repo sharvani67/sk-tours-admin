@@ -112,6 +112,7 @@ import Enquiries from './Components/Enquires/Enquires';
 import Payments from "./Components/Payments/Payments"
 
 import AdminCarousel from "./Components/Home/AdminCarousel";
+import UploadCarouselImage from "./Components/Home/UploadCarousel";
 import AddVendors from "./Components/Vendors/AddVendors";
 import Vendors from "./Components/Vendors/Vendors";
 import CategoryTable from "./Components/Vendors/Category/CategoryTable";
@@ -264,6 +265,7 @@ function App() {
                 <Route path="/add-card" element={<AdminDomesticTours />} />
                 <Route path="/leadspopup" element={<AdminLeads />} />
                  <Route path="/carousel-images" element={<AdminCarousel />} />
+                 <Route path="/admin/carousel/upload" element={<UploadCarouselImage />} />
 
 
                 <Route path="/contact-us" element={<ContactUs />} />
