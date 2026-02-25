@@ -14,182 +14,29 @@ const BungalowsTable = () => {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  // Static data based on the first image
-  const staticBungalowsData = [
-    {
-      id: 1,
-      bungalow_code: 'BUNG0001',
-      name: 'Alibaug',
-      price: 15400,
-      location: 'Alibaug',
-      bedrooms: 3,
-      bathrooms: 2,
-      capacity: 6,
-      main_image: '/images/alibaug.jpg',
-      status: 'available',
-      created_at: '2024-01-15T10:30:00Z'
-    },
-    {
-      id: 2,
-      bungalow_code: 'BUNG0002',
-      name: 'Aamby Valley',
-      price: 16400,
-      location: 'Aamby Valley',
-      bedrooms: 4,
-      bathrooms: 3,
-      capacity: 8,
-      main_image: '/images/aamby-valley.jpg',
-      status: 'available',
-      created_at: '2024-01-16T11:20:00Z'
-    },
-    {
-      id: 3,
-      bungalow_code: 'BUNG0003',
-      name: 'Goa',
-      price: 17400,
-      location: 'Goa',
-      bedrooms: 3,
-      bathrooms: 2,
-      capacity: 6,
-      main_image: '/images/goa.jpg',
-      status: 'available',
-      created_at: '2024-01-17T09:15:00Z'
-    },
-    {
-      id: 4,
-      bungalow_code: 'BUNG0004',
-      name: 'Igatpuri',
-      price: 10000,
-      location: 'Igatpuri',
-      bedrooms: 2,
-      bathrooms: 2,
-      capacity: 4,
-      main_image: '/images/igatpuri.jpg',
-      status: 'available',
-      created_at: '2024-01-18T14:45:00Z'
-    },
-    {
-      id: 5,
-      bungalow_code: 'BUNG0005',
-      name: 'Karjat',
-      price: 18400,
-      location: 'Karjat',
-      bedrooms: 3,
-      bathrooms: 3,
-      capacity: 7,
-      main_image: '/images/karjat.jpg',
-      status: 'available',
-      created_at: '2024-01-19T13:10:00Z'
-    },
-    {
-      id: 6,
-      bungalow_code: 'BUNG0006',
-      name: 'Khopoli',
-      price: 14400,
-      location: 'Khopoli',
-      bedrooms: 3,
-      bathrooms: 2,
-      capacity: 6,
-      main_image: '/images/khopoli.jpg',
-      status: 'available',
-      created_at: '2024-01-20T16:30:00Z'
-    },
-    {
-      id: 7,
-      bungalow_code: 'BUNG0007',
-      name: 'Kashid',
-      price: 12000,
-      location: 'Kashid',
-      bedrooms: 2,
-      bathrooms: 2,
-      capacity: 4,
-      main_image: '/images/kashid.jpg',
-      status: 'available',
-      created_at: '2024-01-21T10:00:00Z'
-    },
-    {
-      id: 8,
-      bungalow_code: 'BUNG0008',
-      name: 'Lonavala',
-      price: 13500,
-      location: 'Lonavala',
-      bedrooms: 2,
-      bathrooms: 2,
-      capacity: 4,
-      main_image: '/images/lonavala.jpg',
-      status: 'available',
-      created_at: '2024-01-22T12:25:00Z'
-    },
-    {
-      id: 9,
-      bungalow_code: 'BUNG0009',
-      name: 'Mahabaleshwar',
-      price: 19000,
-      location: 'Mahabaleshwar',
-      bedrooms: 4,
-      bathrooms: 3,
-      capacity: 8,
-      main_image: '/images/mahabaleshwar.jpg',
-      status: 'available',
-      created_at: '2024-01-23T15:40:00Z'
-    },
-    {
-      id: 10,
-      bungalow_code: 'BUNG0010',
-      name: 'Murbad',
-      price: 11000,
-      location: 'Murbad',
-      bedrooms: 2,
-      bathrooms: 1,
-      capacity: 4,
-      main_image: '/images/murbad.jpg',
-      status: 'available',
-      created_at: '2024-01-24T09:55:00Z'
-    },
-    {
-      id: 11,
-      bungalow_code: 'BUNG0011',
-      name: 'Neral',
-      price: 9500,
-      location: 'Neral',
-      bedrooms: 2,
-      bathrooms: 1,
-      capacity: 4,
-      main_image: '/images/neral.jpg',
-      status: 'available',
-      created_at: '2024-01-25T11:30:00Z'
-    }
-  ];
-
-  // Fetch Bungalows (using static data for now)
+  // Fetch Bungalows from API
   const fetchBungalows = async () => {
     try {
       setLoading(true);
       setError('');
 
-      // For now, using static data
-      // When API is ready, replace with:
-      // const response = await fetch(`${baseurl}/api/bungalows`);
-      // const result = await response.json();
-      // const bungalowsData = result.data || result;
+      const response = await fetch(`${baseurl}/api/bungalows`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch bungalows');
+      }
       
-      const bungalowsData = staticBungalowsData;
+      const bungalowsData = await response.json();
+      console.log('Fetched bungalows:', bungalowsData); // Debug log
 
       // Sort bungalows by created_at in descending order (newest first)
-      const sortedBungalows = bungalowsData.sort((a, b) => {
+      const sortedBungalows = [...bungalowsData].sort((a, b) => {
         const dateA = a.created_at ? new Date(a.created_at) : new Date(0);
         const dateB = b.created_at ? new Date(b.created_at) : new Date(0);
         return dateB - dateA;
       });
 
-      // Add serial numbers to the data
-      const bungalowsWithSerialNo = sortedBungalows.map((item, index) => ({
-        ...item,
-        serial_no: index + 1
-      }));
-
       setBungalows(sortedBungalows);
-      setFilteredBungalows(bungalowsWithSerialNo);
+      setFilteredBungalows(sortedBungalows);
     } catch (err) {
       console.error('Error fetching bungalows:', err);
       setError('Error fetching bungalows. Please try again.');
@@ -209,21 +56,16 @@ const BungalowsTable = () => {
     }
 
     try {
-      // When API is ready:
-      // const response = await fetch(`${baseurl}/api/bungalows/${bungalowId}`, {
-      //   method: 'DELETE',
-      // });
-      
-      // For now, filter out the deleted item
-      const updatedBungalows = bungalows.filter(b => b.id !== bungalowId);
-      setBungalows(updatedBungalows);
-      
-      const updatedWithSerialNo = updatedBungalows.map((item, index) => ({
-        ...item,
-        serial_no: index + 1
-      }));
-      setFilteredBungalows(updatedWithSerialNo);
-      
+      const response = await fetch(`${baseurl}/api/bungalows/${bungalowId}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete bungalow');
+      }
+
+      // Refresh the list after successful deletion
+      fetchBungalows();
       alert('Bungalow deleted successfully');
     } catch (err) {
       console.error('Error deleting bungalow:', err);
@@ -270,13 +112,38 @@ const BungalowsTable = () => {
   // Get status badge
   const getStatusBadge = (status) => {
     const statusConfig = {
-      available: { class: 'success', text: 'Available' },
-      booked: { class: 'danger', text: 'Booked' },
-      maintenance: { class: 'warning', text: 'Maintenance' }
+      1: { class: 'success', text: 'Available' },
+      0: { class: 'danger', text: 'Inactive' }
     };
     
-    const config = statusConfig[status] || { class: 'secondary', text: status };
+    const config = statusConfig[status] || { class: 'secondary', text: 'Unknown' };
     return <span className={`badge bg-${config.class}`}>{config.text}</span>;
+  };
+
+  // Get image display
+  const getImageDisplay = (mainImage) => {
+    if (!mainImage) return null;
+    
+    // Construct full image URL
+    const imageUrl = mainImage.startsWith('http') 
+      ? mainImage 
+      : `${baseurl}${mainImage}`;
+    
+    return (
+      <img
+        src={imageUrl}
+        alt="Bungalow"
+        style={{
+          width: '50px',
+          height: '50px',
+          objectFit: 'cover',
+          borderRadius: '4px'
+        }}
+        onError={(e) => {
+          e.target.style.display = 'none';
+        }}
+      />
+    );
   };
 
   // Define table columns
@@ -285,11 +152,15 @@ const BungalowsTable = () => {
       key: 'serial_no',
       title: 'S.No',
       render: (item, index) => {
-        if (item.serial_no) return item.serial_no;
-        if (index !== undefined) return index + 1;
-        return 'N/A';
+        return index + 1;
       },
       style: { fontWeight: 'bold', textAlign: 'center', width: '80px' }
+    },
+    {
+      key: 'image',
+      title: 'Image',
+      render: (item) => getImageDisplay(item.main_image),
+      style: { textAlign: 'center', width: '80px' }
     },
     {
       key: 'bungalow_code',
@@ -309,11 +180,6 @@ const BungalowsTable = () => {
       style: { fontWeight: '500', minWidth: '150px' }
     },
     {
-      key: 'location',
-      title: 'Location',
-      render: (item) => item.location || 'N/A'
-    },
-    {
       key: 'price',
       title: 'Price/Night',
       render: (item) => (
@@ -324,28 +190,19 @@ const BungalowsTable = () => {
       style: { textAlign: 'right', fontWeight: 'bold' }
     },
     {
-      key: 'bedrooms',
-      title: 'Bedrooms',
+      key: 'tour_costs',
+      title: 'Tour Costs (₹)',
       render: (item) => (
-        <span className="badge bg-info">{item.bedrooms || 0}</span>
+        <div className="small">
+          <div>Twin: {item.per_pax_twin ? formatPrice(item.per_pax_twin) : '—'}</div>
+          <div>Triple: {item.per_pax_triple ? formatPrice(item.per_pax_triple) : '—'}</div>
+          <div>Child (Bed): {item.child_with_bed ? formatPrice(item.child_with_bed) : '—'}</div>
+          <div>Child (No Bed): {item.child_without_bed ? formatPrice(item.child_without_bed) : '—'}</div>
+          <div>Infant: {item.infant ? formatPrice(item.infant) : '—'}</div>
+          <div>Single: {item.per_pax_single ? formatPrice(item.per_pax_single) : '—'}</div>
+        </div>
       ),
-      style: { textAlign: 'center' }
-    },
-    {
-      key: 'bathrooms',
-      title: 'Bathrooms',
-      render: (item) => (
-        <span className="badge bg-secondary">{item.bathrooms || 0}</span>
-      ),
-      style: { textAlign: 'center' }
-    },
-    {
-      key: 'capacity',
-      title: 'Capacity',
-      render: (item) => (
-        <span className="badge bg-warning text-dark">{item.capacity || 0} persons</span>
-      ),
-      style: { textAlign: 'center' }
+      style: { minWidth: '200px', fontSize: '0.9rem' }
     },
     {
       key: 'status',
@@ -366,21 +223,21 @@ const BungalowsTable = () => {
         <div className="d-flex gap-2 justify-content-center">
           <button
             className="btn btn-sm btn-outline-info"
-            onClick={() => handleView(item.id)}
+            onClick={() => handleView(item.bungalow_id)}
             title="View Bungalow Details"
           >
             <Eye size={16} />
           </button>
           <button
             className="btn btn-sm btn-outline-primary"
-            onClick={() => handleEdit(item.id)}
+            onClick={() => handleEdit(item.bungalow_id)}
             title="Edit Bungalow"
           >
             <Pencil size={16} />
           </button>
           <button
             className="btn btn-sm btn-outline-danger"
-            onClick={() => handleDelete(item.id)}
+            onClick={() => handleDelete(item.bungalow_id)}
             title="Delete Bungalow"
           >
             <Trash size={16} />
@@ -419,22 +276,22 @@ const BungalowsTable = () => {
         )}
 
         <Card className="shadow-sm">
-          <Card.Header className="bg-white py-3">
-            <div className="d-flex align-items-center">
+          {/* <Card.Header className="bg-white py-1"> */}
+            <div className="d-flex align-items-center py-3 px-3">
               <HouseDoor className="text-primary me-2" size={20} />
               <h5 className="mb-0">Bungalows List</h5>
               <span className="badge bg-primary ms-3">
-                {filteredBungalows.length} Bungalows
+                {bungalows.length} Bungalows
               </span>
             </div>
-          </Card.Header>
+          {/* </Card.Header> */}
           <Card.Body className="p-0">
             {loading ? (
               <div className="text-center py-5">
                 <Spinner animation="border" variant="primary" className="me-2" />
                 Loading bungalows...
               </div>
-            ) : filteredBungalows.length === 0 ? (
+            ) : bungalows.length === 0 ? (
               <div className="text-center py-5">
                 <HouseDoor size={48} className="text-muted mb-3" />
                 <h5 className="text-muted">No Bungalows Found</h5>
@@ -453,7 +310,7 @@ const BungalowsTable = () => {
                 data={filteredBungalows}
                 columns={columns}
                 initialEntriesPerPage={10}
-                searchPlaceholder="Search by code, name, or location..."
+                searchPlaceholder="Search by code or name..."
                 showSearch={true}
                 showEntriesSelector={true}
                 showPagination={true}

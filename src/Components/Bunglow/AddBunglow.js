@@ -21,7 +21,7 @@ const AddBungalow = () => {
   const { id } = useParams();
   const isEditMode = !!id;
 
-  const TAB_LIST = ['basic', 'images', 'overview', 'inclusiveExclusive', 'placesNearby', 'bookingPolicy', 'related'];
+  const TAB_LIST = ['basic', 'images', 'overview', 'tourCost', 'inclusiveExclusive', 'placesNearby', 'bookingPolicy', 'related'];
 
   const [activeTab, setActiveTab] = useState('basic');
   const [loading, setLoading] = useState(false);
@@ -37,7 +37,13 @@ const AddBungalow = () => {
     inclusive: '',
     exclusive: '',
     places_nearby: '',
-    booking_policy: ''
+    booking_policy: '',
+    per_pax_twin: '',
+    per_pax_triple: '',
+    child_with_bed: '',
+    child_without_bed: '',
+    infant: '',
+    per_pax_single: ''
   });
 
   // Images
@@ -54,7 +60,8 @@ const AddBungalow = () => {
     related_price: '',
     related_image: '',
     related_image_file: null,
-    sort_order: 0
+    sort_order: 0,
+    relation_id: null // Add this to track existing relations
   });
   const [relatedImagePreview, setRelatedImagePreview] = useState(null);
   const [editingRelated, setEditingRelated] = useState(null);
@@ -70,6 +77,15 @@ const AddBungalow = () => {
     }
     loadAllBungalows();
   }, [id]);
+
+  // Cleanup object URLs
+  useEffect(() => {
+    return () => {
+      if (relatedImagePreview && relatedImagePreview.startsWith('blob:')) {
+        URL.revokeObjectURL(relatedImagePreview);
+      }
+    };
+  }, [relatedImagePreview]);
 
   const loadAllBungalows = async () => {
     try {
@@ -114,11 +130,34 @@ const AddBungalow = () => {
         inclusive: data.bungalow.inclusive || '',
         exclusive: data.bungalow.exclusive || '',
         places_nearby: data.bungalow.places_nearby || '',
-        booking_policy: data.bungalow.booking_policy || ''
+        booking_policy: data.bungalow.booking_policy || '',
+        per_pax_twin: data.bungalow.per_pax_twin || '',
+        per_pax_triple: data.bungalow.per_pax_triple || '',
+        child_with_bed: data.bungalow.child_with_bed || '',
+        child_without_bed: data.bungalow.child_without_bed || '',
+        infant: data.bungalow.infant || '',
+        per_pax_single: data.bungalow.per_pax_single || ''
       });
 
-      setExistingImages(data.images || []);
-      setRelatedBungalows(data.related_bungalows || []);
+      // Fix image URLs - ensure they have full path
+      const imagesWithFullUrl = (data.images || []).map(img => ({
+        ...img,
+        image_url: img.image_url.startsWith('http') 
+          ? img.image_url 
+          : `${baseurl}${img.image_url}`
+      }));
+      setExistingImages(imagesWithFullUrl);
+      
+      // Fix related bungalow image URLs
+      const relatedWithFullUrl = (data.related_bungalows || []).map(rel => ({
+        ...rel,
+        related_image: rel.related_image && !rel.related_image.startsWith('blob:')
+          ? (rel.related_image.startsWith('http') 
+              ? rel.related_image 
+              : `${baseurl}${rel.related_image}`)
+          : null
+      }));
+      setRelatedBungalows(relatedWithFullUrl);
       
     } catch (err) {
       setError('Failed to load bungalow data: ' + err.message);
@@ -213,10 +252,12 @@ const AddBungalow = () => {
     try {
       setLoading(true);
       
+      // Delete old image
       await fetch(`${baseurl}/api/bungalows/images/${imageId}`, {
         method: 'DELETE'
       });
 
+      // Upload new image
       const formData = new FormData();
       formData.append('images', replacementFile);
       
@@ -227,6 +268,7 @@ const AddBungalow = () => {
 
       if (!uploadResponse.ok) throw new Error('Failed to upload new image');
       
+      // Reload data to get updated images
       await loadBungalowData();
       setSuccess('Image updated successfully');
       cancelEditImage();
@@ -261,13 +303,26 @@ const AddBungalow = () => {
 
   const handleRelatedImageChange = (e) => {
     const file = e.target.files ? e.target.files[0] : null;
+    
+    // Clean up previous preview URL
+    if (relatedImagePreview && relatedImagePreview.startsWith('blob:')) {
+      URL.revokeObjectURL(relatedImagePreview);
+    }
+    
     if (file) {
       const preview = URL.createObjectURL(file);
       setRelatedImagePreview(preview);
       setRelatedItem(prev => ({
         ...prev,
-        related_image: preview,
-        related_image_file: file
+        related_image: preview, // Temporary preview URL
+        related_image_file: file // Actual file for upload
+      }));
+    } else {
+      setRelatedImagePreview(null);
+      setRelatedItem(prev => ({
+        ...prev,
+        related_image: '',
+        related_image_file: null
       }));
     }
   };
@@ -283,9 +338,15 @@ const AddBungalow = () => {
         related_price: selected.price,
         related_image: selected.main_image || '',
         related_image_file: null,
-        sort_order: relatedBungalows.length
+        sort_order: relatedBungalows.length,
+        relation_id: null
       });
-      setRelatedImagePreview(selected.main_image || null);
+      // For existing bungalow image, ensure full URL
+      setRelatedImagePreview(selected.main_image 
+        ? (selected.main_image.startsWith('http') 
+            ? selected.main_image 
+            : `${baseurl}${selected.main_image}`)
+        : null);
     }
   };
 
@@ -312,18 +373,25 @@ const AddBungalow = () => {
       return;
     }
     
-    setRelatedBungalows(prev => [...prev, { ...relatedItem, sort_order: prev.length }]);
+    const newRelated = {
+      ...relatedItem,
+      sort_order: relatedBungalows.length
+    };
+    
+    setRelatedBungalows(prev => [...prev, newRelated]);
     resetRelatedForm();
     setShowRelatedForm(false);
   };
 
   const editRelatedBungalow = (idx) => {
-    setEditingRelated({ ...relatedBungalows[idx], index: idx });
+    const itemToEdit = relatedBungalows[idx];
+    setEditingRelated({ ...itemToEdit, index: idx });
     setRelatedItem({
-      ...relatedBungalows[idx],
+      ...itemToEdit,
       related_image_file: null
     });
-    setRelatedImagePreview(relatedBungalows[idx].related_image);
+    // For existing image, ensure it's using the full URL
+    setRelatedImagePreview(itemToEdit.related_image || null);
     setShowRelatedForm(true);
   };
 
@@ -331,7 +399,11 @@ const AddBungalow = () => {
     if (!editingRelated) return;
     
     const updated = [...relatedBungalows];
-    updated[editingRelated.index] = { ...relatedItem, sort_order: editingRelated.index };
+    updated[editingRelated.index] = { 
+      ...relatedItem, 
+      sort_order: editingRelated.index,
+      relation_id: editingRelated.relation_id // Preserve the relation_id
+    };
     setRelatedBungalows(updated);
     
     resetRelatedForm();
@@ -351,13 +423,19 @@ const AddBungalow = () => {
   };
 
   const resetRelatedForm = () => {
+    // Clean up preview URL
+    if (relatedImagePreview && relatedImagePreview.startsWith('blob:')) {
+      URL.revokeObjectURL(relatedImagePreview);
+    }
+    
     setEditingRelated(null);
     setRelatedItem({
       related_name: '',
       related_price: '',
       related_image: '',
       related_image_file: null,
-      sort_order: 0
+      sort_order: 0,
+      relation_id: null
     });
     setRelatedImagePreview(null);
   };
@@ -401,13 +479,11 @@ const AddBungalow = () => {
           const related = relatedBungalows[i];
           
           // Upload image if exists
-          let imageUrl = related.related_image;
+          let imageUrl = null;
           if (related.related_image_file) {
             imageUrl = await uploadRelatedImage(bungalowId, related.related_image_file);
           } else if (related.related_image && !related.related_image.startsWith('blob:')) {
             imageUrl = related.related_image;
-          } else {
-            imageUrl = null;
           }
           
           // Save related bungalow
@@ -457,11 +533,11 @@ const AddBungalow = () => {
         await uploadImages(id);
       }
 
-      // Get existing related bungalows
+      // Get existing related bungalows from database
       const relatedResponse = await fetch(`${baseurl}/api/bungalows/related/${id}`);
       const existingRelated = await relatedResponse.json();
 
-      // Delete removed related bungalows
+      // Delete removed related bungalows (those with relation_id that are no longer in state)
       for (const existing of existingRelated) {
         const stillExists = relatedBungalows.some(r => r.relation_id === existing.relation_id);
         if (!stillExists && existing.relation_id) {
@@ -475,11 +551,12 @@ const AddBungalow = () => {
       for (let i = 0; i < relatedBungalows.length; i++) {
         const related = relatedBungalows[i];
         
-        // Upload image if exists
+        // Upload new image if a file was selected
         let imageUrl = related.related_image;
         if (related.related_image_file) {
           imageUrl = await uploadRelatedImage(id, related.related_image_file);
         } else if (related.related_image && !related.related_image.startsWith('blob:')) {
+          // Keep existing image URL, ensure it's not a blob URL
           imageUrl = related.related_image;
         } else {
           imageUrl = null;
@@ -668,6 +745,10 @@ const AddBungalow = () => {
                                       objectFit: 'cover',
                                       borderRadius: '6px'
                                     }}
+                                    onError={(e) => {
+                                      e.target.onerror = null;
+                                      e.target.src = 'https://via.placeholder.com/150?text=Image+Not+Found';
+                                    }}
                                   />
                                   {image.is_main === 1 && (
                                     <div className="position-absolute top-0 start-0 bg-warning text-dark px-2 py-1 rounded-end">
@@ -769,6 +850,100 @@ const AddBungalow = () => {
                     placeholder="Enter overview description..."
                   />
                 </Form.Group>
+              </Tab>
+
+              {/* Tour Cost Tab */}
+              <Tab eventKey="tourCost" title="Tour Cost">
+                <Card>
+                  <Card.Header>Tour Cost Details</Card.Header>
+                  <Card.Body>
+                    <Table striped bordered hover>
+                      <thead>
+                        <tr>
+                          <th>Particulars - Cost in INR</th>
+                          <th>Rate (₹)</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td>Per pax on Twin Basis</td>
+                          <td>
+                            <Form.Control
+                              type="number"
+                              name="per_pax_twin"
+                              value={formData.per_pax_twin}
+                              onChange={handleBasicChange}
+                              placeholder="Enter rate"
+                            />
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>Per pax on Triple Basis</td>
+                          <td>
+                            <Form.Control
+                              type="number"
+                              name="per_pax_triple"
+                              value={formData.per_pax_triple}
+                              onChange={handleBasicChange}
+                              placeholder="Enter rate"
+                            />
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>Child with Bed</td>
+                          <td>
+                            <Form.Control
+                              type="number"
+                              name="child_with_bed"
+                              value={formData.child_with_bed}
+                              onChange={handleBasicChange}
+                              placeholder="Enter rate"
+                            />
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>Child without Bed</td>
+                          <td>
+                            <Form.Control
+                              type="number"
+                              name="child_without_bed"
+                              value={formData.child_without_bed}
+                              onChange={handleBasicChange}
+                              placeholder="Enter rate"
+                            />
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>Infant</td>
+                          <td>
+                            <Form.Control
+                              type="number"
+                              name="infant"
+                              value={formData.infant}
+                              onChange={handleBasicChange}
+                              placeholder="Enter rate"
+                            />
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>Per pax Single Occupancy</td>
+                          <td>
+                            <Form.Control
+                              type="number"
+                              name="per_pax_single"
+                              value={formData.per_pax_single}
+                              onChange={handleBasicChange}
+                              placeholder="Enter rate"
+                            />
+                          </td>
+                        </tr>
+                      </tbody>
+                    </Table>
+                    <Form.Text className="text-muted">
+                      Enter the tour cost rates in Indian Rupees (₹)
+                    </Form.Text>
+                  </Card.Body>
+                </Card>
               </Tab>
 
               {/* Inclusive & Exclusive Tab */}
@@ -932,6 +1107,10 @@ const AddBungalow = () => {
                                       borderRadius: '8px',
                                       border: '1px solid #ddd'
                                     }}
+                                    onError={(e) => {
+                                      e.target.onerror = null;
+                                      e.target.src = 'https://via.placeholder.com/200?text=Image+Not+Found';
+                                    }}
                                   />
                                 </div>
                               )}
@@ -969,12 +1148,12 @@ const AddBungalow = () => {
                     </thead>
                     <tbody>
                       {relatedBungalows.map((rel, idx) => (
-                        <tr key={idx}>
+                        <tr key={rel.relation_id || idx}>
                           <td>{idx + 1}</td>
                           <td>{rel.related_name}</td>
                           <td>₹{parseFloat(rel.related_price).toLocaleString('en-IN')}</td>
                           <td>
-                            {rel.related_image && !rel.related_image.startsWith('blob:') && (
+                            {rel.related_image && (
                               <img
                                 src={rel.related_image}
                                 alt={rel.related_name}
@@ -984,7 +1163,22 @@ const AddBungalow = () => {
                                   objectFit: 'cover',
                                   borderRadius: '4px'
                                 }}
+                                onError={(e) => {
+                                  e.target.onerror = null;
+                                  e.target.style.display = 'none';
+                                  // Optionally show a placeholder
+                                  const parent = e.target.parentNode;
+                                  if (parent) {
+                                    const placeholder = document.createElement('span');
+                                    placeholder.className = 'text-muted';
+                                    placeholder.innerText = 'No image';
+                                    parent.appendChild(placeholder);
+                                  }
+                                }}
                               />
+                            )}
+                            {!rel.related_image && (
+                              <span className="text-muted">No image</span>
                             )}
                           </td>
                           <td>

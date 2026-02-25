@@ -279,8 +279,7 @@ function App() {
 
                  <Route path="/bungalows" element={<BungalowsTable />} />
                  <Route path="/add-bungalow" element={<AddBungalow />} />
-
-
+                 <Route path="/add-bungalow/:id" element={<AddBungalow />} /> 
 
 
               
