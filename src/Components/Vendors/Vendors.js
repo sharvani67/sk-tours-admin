@@ -26,7 +26,8 @@ const Vendors = () => {
       // Transform API data to match your static UI structure
       const transformedData = response.data.map(vendor => ({
         id: vendor.id,
-        category: vendor.category_name || 'Travel Agent',
+        category_id: vendor.category_id,
+        category: vendor.category_name || 'Uncategorized', // Using the joined category_name
         title: vendor.title || 'Mr.',
         firstName: vendor.first_name || '',
         lastName: vendor.last_name || '',
@@ -35,11 +36,12 @@ const Vendors = () => {
         pinCode: vendor.pin_code || '',
         country: vendor.country || 'India',
         city: vendor.city || '',
-        isVerified: 'Verified',
-        isActive: vendor.is_active // Keep as boolean for badge rendering
+        isVerified: vendor.is_verified ? 'Verified' : 'Pending', // Add this field if exists
+        isActive: vendor.is_active
       }));
       
       setVendors(transformedData);
+      console.log("transformedData",transformedData);
       setError(null);
     } catch (error) {
       console.error('Error fetching vendors:', error);
@@ -81,14 +83,16 @@ const Vendors = () => {
       style: { fontWeight: 'bold', textAlign: 'center', width: '50px' }
     },
     {
-      key: 'category',
+      key: 'category_name',
       title: 'Category',
       render: (item) => item.category || "N/A"
+    
+
     },
     {
       key: 'name',
       title: 'Name',
-      render: (item) => `${item.title} ${item.firstName} ${item.lastName}`.trim()
+      render: (item) => item.firstName || "N/A"
     },
     {
       key: 'email',
@@ -128,19 +132,19 @@ const Vendors = () => {
       ),
       style: { textAlign: 'center' }
     },
-   {
-  key: 'isActive',
-  title: 'Is Active',
-  render: (item) => (
-    <Badge 
-      bg={item.isActive == 1 || item.isActive == true ? 'success' : 'secondary'}
-      className="px-3 py-2"
-    >
-      {item.isActive == 1 || item.isActive == true ? 'Active' : 'Inactive'}
-    </Badge>
-  ),
-  style: { textAlign: 'center' }
-},
+    {
+      key: 'isActive',
+      title: 'Is Active',
+      render: (item) => (
+        <Badge 
+          bg={item.isActive == 1 || item.isActive == true ? 'success' : 'secondary'}
+          className="px-3 py-2"
+        >
+          {item.isActive == 1 || item.isActive == true ? 'Active' : 'Inactive'}
+        </Badge>
+      ),
+      style: { textAlign: 'center' }
+    },
     {
       key: 'actions',
       title: 'Actions',

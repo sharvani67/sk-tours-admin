@@ -14,16 +14,15 @@ const AddVendors = () => {
   const [categories, setCategories] = useState([]);
   const [initialLoad, setInitialLoad] = useState(true);
   const [vendorDataLoaded, setVendorDataLoaded] = useState(false);
-  
+  const [showAddressFields, setShowAddressFields] = useState(true); // Controls visibility of address 
   // Modal state
   const [showModal, setShowModal] = useState(false);
   const [newCategory, setNewCategory] = useState('');
   const [categoryLoading, setCategoryLoading] = useState(false);
   const [categoryError, setCategoryError] = useState('');
   const [categorySuccess, setCategorySuccess] = useState('');
-  const [showAddressFields, setShowAddressFields] = useState(true); 
   const [formData, setFormData] = useState({
-    category_name: '',
+    category_id: '',
     title: 'Mr.',
     first_name: '',
     last_name: '',
@@ -147,46 +146,49 @@ const AddVendors = () => {
     }
   };
 
-  // Handle add category
-  const handleAddCategory = async () => {
-    if (!newCategory.trim()) {
-      setCategoryError('Category name is required');
-      return;
-    }
+const handleAddCategory = async () => {
+  if (!newCategory.trim()) {
+    setCategoryError('Category name is required');
+    return;
+  }
 
-    setCategoryLoading(true);
-    setCategoryError('');
-    setCategorySuccess('');
+  setCategoryLoading(true);
+  setCategoryError('');
+  setCategorySuccess('');
 
-    try {
-      const response = await axios.post(`${baseurl}/api/categories/add-category`, {
-        name: newCategory.trim()
-      });
+  try {
+    const response = await axios.post(`${baseurl}/api/categories/add-category`, {
+      name: newCategory.trim()
+    });
 
-      setCategorySuccess(response.data.message);
-      
-      // Refresh categories list
-      await fetchCategories();
-      
-      // Auto-select the newly added category
+    setCategorySuccess(response.data.message);
+    
+    // Refresh categories list
+    await fetchCategories();
+    
+    // Auto-select the newly added category by ID
+    // Find the newly added category in the categories list
+    const newCat = categories.find(cat => cat.name === newCategory.trim());
+    if (newCat) {
       setFormData(prev => ({
         ...prev,
-        category_name: newCategory.trim()
+        category_id: newCat.id
       }));
-
-      // Close modal after 1 second
-      setTimeout(() => {
-        handleCloseModal();
-        setCategorySuccess('');
-        setNewCategory('');
-      }, 1000);
-
-    } catch (error) {
-      setCategoryError(error.response?.data?.message || 'Failed to add category');
-    } finally {
-      setCategoryLoading(false);
     }
-  };
+
+    // Close modal after 1 second
+    setTimeout(() => {
+      handleCloseModal();
+      setCategorySuccess('');
+      setNewCategory('');
+    }, 1000);
+
+  } catch (error) {
+    setCategoryError(error.response?.data?.message || 'Failed to add category');
+  } finally {
+    setCategoryLoading(false);
+  }
+};
 
   // Modal handlers
   const handleShowModal = () => setShowModal(true);
@@ -207,7 +209,8 @@ const AddVendors = () => {
       
       // Set form data with fetched vendor data - using underscore naming
       const newFormData = {
-        category_name: vendorData.category_name || '',
+              category_id: vendorData.category_id || '',  
+
         title: vendorData.title || 'Mr.',
         first_name: vendorData.first_name || '',
         last_name: vendorData.last_name || '',
@@ -372,33 +375,32 @@ const AddVendors = () => {
           <h3 className="mb-4">{id ? 'Edit Vendor' : 'Add New Vendor'}</h3>
           
           <form onSubmit={handleSubmit}>
-            {/* Row 1 - Category with + button */}
-            <div className="row ven-row mb-3">
-              <div className="col-md-3 ven-field">
-                <div className="d-flex justify-content-between align-items-center">
-                  <label className="form-label ven-label">Category Name</label>
-                  <button 
-                    type="button"
-                    className="btn btn-sm btn-primary rounded-circle"
-                    onClick={handleShowModal}
-                    style={{ width: '30px', height: '30px', padding: '0' }}
-                    title="Add New Category"
-                  >
-                    +
-                  </button>
-                </div>
-                <select 
-                  className="form-select ven-input"
-                  name="category_name"
-                  value={formData.category_name}
-                  onChange={handleInputChange}
-                >
-                  <option value="">Select</option>
-                  {categories.map(cat => (
-                    <option key={cat.id} value={cat.name}>{cat.name}</option>
-                  ))}
-                </select>
-              </div>
+     <div className="row ven-row mb-3">
+        <div className="col-md-3 ven-field">
+  <div className="d-flex justify-content-between align-items-center">
+    <label className="form-label ven-label">Category Name</label>
+    <button 
+      type="button"
+      className="btn btn-sm btn-primary rounded-circle"
+      onClick={handleShowModal}
+      style={{ width: '30px', height: '30px', padding: '0' }}
+      title="Add New Category"
+    >
+      +
+    </button>
+  </div>
+  <select 
+    className="form-select ven-input"
+    name="category_id"
+    value={formData.category_id}
+    onChange={handleInputChange}
+  >
+    <option value="">Select</option>
+    {categories.map(cat => (
+      <option key={cat.id} value={cat.id}>{cat.name}</option>
+    ))}
+  </select>
+</div>
 
               <div className="col-md-2 ven-field">
                 <label className="form-label ven-label">Title</label>
@@ -439,8 +441,6 @@ const AddVendors = () => {
               </div>
             </div>
 
-            {/* Rest of your form remains exactly the same */}
-            {/* Row 2 */}
             <div className="row ven-row mb-3">
               <div className="col-md-4 ven-field">
                 <label className="form-label ven-label">Position</label>
@@ -540,140 +540,299 @@ const AddVendors = () => {
               </div>
             </div>
 
-      <div className="row ven-row mb-3">
+         <div className="row ven-row mb-3">
   <div className="col-md-12">
     <button 
       type="button"
       className="btn btn-info"
       onClick={() => setShowAddressFields(!showAddressFields)}
     >
-      {showAddressFields ? 'Hide Property' : 'Show Property'}
+      {showAddressFields ? 'Hide Property' : 'Show  Property'}
     </button>
   </div>
 </div>
-
-{/* Address Fields - Toggle visibility with button */}
 {showAddressFields && (
-  <>
-    {/* Address */}
-    <div className="row ven-row mb-3">
-      <div className="col-md-3 ven-field">
-        <label className="form-label ven-label">Address 1</label>
-        <input 
-          type="text" 
-          className="form-control ven-input"
-          name="address1"
-          value={formData.address1}
-          onChange={handleInputChange}
-          placeholder="Enter Address 1"
-        />
-      </div>
+            <>
 
-      <div className="col-md-3 ven-field">
-        <label className="form-label ven-label">Address 2</label>
-        <input 
-          type="text" 
-          className="form-control ven-input"
-          name="address2"
-          value={formData.address2}
-          onChange={handleInputChange}
-          placeholder="Enter Address 2"
-        />
-      </div>
-      <div className="col-md-3 ven-field">
-        <label className="form-label ven-label">Landmark</label>
-        <input 
-          type="text" 
-          className="form-control ven-input"
-          name="landmark"
-          value={formData.landmark}
-          onChange={handleInputChange}
-          placeholder="Enter Landmark"
-        />
-      </div>
-      <div className="col-md-3 ven-field">
-        <label className="form-label ven-label">Area</label>
-        <input 
-          type="text" 
-          className="form-control ven-input"
-          name="area"
-          value={formData.area}
-          onChange={handleInputChange}
-          placeholder="Enter Area"
-        />
-      </div>
-    </div>
+            
+              {/* Address */}
+              <div className="row ven-row mb-3">
+                <div className="col-md-3 ven-field">
+                  <label className="form-label ven-label">Address 1</label>
+                  <input 
+                    type="text" 
+                    className="form-control ven-input"
+                    name="address1"
+                    value={formData.address1}
+                    onChange={handleInputChange}
+                    placeholder="Enter Address 1"
+                  />
+                </div>
 
-    {/* Location */}
-    <div className="row ven-row mb-3">
-      <div className="col-md-3 ven-field">
-        <label className="form-label ven-label">Country</label>
-        <select 
-          className="form-select ven-input"
-          name="country"
-          value={formData.country}
-          onChange={handleInputChange}
-        >
-          <option value="India">India</option>
-        </select>
-      </div>
+                <div className="col-md-3 ven-field">
+                  <label className="form-label ven-label">Address 2</label>
+                  <input 
+                    type="text" 
+                    className="form-control ven-input"
+                    name="address2"
+                    value={formData.address2}
+                    onChange={handleInputChange}
+                    placeholder="Enter Address 2"
+                  />
+                </div>
+                <div className="col-md-3 ven-field">
+                  <label className="form-label ven-label">Landmark</label>
+                  <input 
+                    type="text" 
+                    className="form-control ven-input"
+                    name="landmark"
+                    value={formData.landmark}
+                    onChange={handleInputChange}
+                    placeholder="Enter Landmark"
+                  />
+                </div>
+                <div className="col-md-3 ven-field">
+                  <label className="form-label ven-label">Area</label>
+                  <input 
+                    type="text" 
+                    className="form-control ven-input"
+                    name="area"
+                    value={formData.area}
+                    onChange={handleInputChange}
+                    placeholder="Enter Area"
+                  />
+                </div>
+              </div>
 
-      <div className="col-md-3 ven-field">
-        <label className="form-label ven-label">State</label>
-        <select 
-          className="form-select ven-input"
-          name="state"
-          value={formData.state}
-          onChange={handleInputChange}
-        >
-          <option value="">Select State</option>
-          {staticStates.map((state, index) => (
-            <option key={index} value={state}>
-              {state}
-            </option>
-          ))}
-        </select>
-      </div>
+              {/* Location */}
+              <div className="row ven-row mb-3">
+                <div className="col-md-3 ven-field">
+                  <label className="form-label ven-label">Country</label>
+                  <select 
+                    className="form-select ven-input"
+                    name="country"
+                    value={formData.country}
+                    onChange={handleInputChange}
+                  >
+                    <option value="India">India</option>
+                  </select>
+                </div>
 
-      <div className="col-md-3 ven-field">
-        <label className="form-label ven-label">City</label>
-        <select 
-          className="form-select ven-input"
-          name="city"
-          value={formData.city}
-          onChange={handleInputChange}
-        >
-          <option value="">Select City</option>
-          {formData.state && staticCities[formData.state] ? (
-            staticCities[formData.state].map((city, index) => (
-              <option key={index} value={city}>
-                {city}
-              </option>
-            ))
-          ) : (
-            formData.city && formData.city !== '' && (
-              <option value={formData.city}>{formData.city}</option>
-            )
-          )}
-        </select>
-      </div>
+                <div className="col-md-3 ven-field">
+                  <label className="form-label ven-label">State</label>
+                  <select 
+                    className="form-select ven-input"
+                    name="state"
+                    value={formData.state}
+                    onChange={handleInputChange}
+                  >
+                    <option value="">Select State</option>
+                    {staticStates.map((state, index) => (
+                      <option key={index} value={state}>
+                        {state}
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
-      <div className="col-md-3 ven-field">
-        <label className="form-label ven-label">Pin Code</label>
-        <input 
-          type="text" 
-          className="form-control ven-input"
-          name="pin_code"
-          value={formData.pin_code}
-          onChange={handleInputChange}
-          placeholder="Enter Pin Code"
-        />
-      </div>
-    </div>
-  </>
-)}
+                <div className="col-md-3 ven-field">
+                  <label className="form-label ven-label">City</label>
+                  <select 
+                    className="form-select ven-input"
+                    name="city"
+                    value={formData.city}
+                    onChange={handleInputChange}
+                  >
+                    <option value="">Select City</option>
+                    {formData.state && staticCities[formData.state] ? (
+                      staticCities[formData.state].map((city, index) => (
+                        <option key={index} value={city}>
+                          {city}
+                        </option>
+                      ))
+                    ) : (
+                      formData.city && formData.city !== '' && (
+                        <option value={formData.city}>{formData.city}</option>
+                      )
+                    )}
+                  </select>
+                </div>
 
-            {/* Remark */}
+                <div className="col-md-3 ven-field">
+                  <label className="form-label ven-label">Pin Code</label>
+                  <input 
+                    type="text" 
+                    className="form-control ven-input"
+                    name="pin_code"
+                    value={formData.pin_code}
+                    onChange={handleInputChange}
+                    placeholder="Enter Pin Code"
+                  />
+                </div>
+              </div>
+
+              <div className="row ven-row mb-3">
+                <div className="col-md-3 ven-field">
+                  <label className="form-label ven-label">Visiting Card</label>
+                  <select 
+                    className="form-select ven-input"
+                    name="visiting_card_type"
+                    value={formData.visiting_card_type}
+                    onChange={handleInputChange}
+                  >
+                    <option value="">Select</option>
+                    <option value="Horizontal">Horizontal</option>
+                    <option value="Vertical">Vertical</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Visiting Card Upload */}
+              <div className="row ven-row mb-3">
+                <div className="col-md-3 ven-field">
+                  <label className="form-label ven-label">Front</label>
+                  <div className="input-group">
+                    <input 
+                      type="file" 
+                      className="form-control ven-input"
+                      id="front-file"
+                      name="front"
+                      onChange={handleFileChange}
+                      accept="image/*"
+                      style={{ display: 'none' }}
+                    />
+                    <span className="input-group-text" style={{cursor: 'pointer'}} onClick={() => document.getElementById('front-file').click()}>
+                      Choose file
+                    </span>
+                    <input 
+                      type="text" 
+                      className="form-control ven-input" 
+                      placeholder="No file chosen"
+                      value={existingFiles.front_image ? existingFiles.front_image.split('\\').pop().split('/').pop().replace(/^front-\d+-/, '') : files.front ? files.front.name : ''}
+                      readOnly
+                      onClick={() => document.getElementById('front-file').click()}
+                      style={{ cursor: 'pointer' }}
+                    />
+                  </div>
+                </div>
+
+                <div className="col-md-3 ven-field">
+                  <label className="form-label ven-label">Back</label>
+                  <div className="input-group">
+                    <input 
+                      type="file" 
+                      className="form-control ven-input"
+                      id="back-file"
+                      name="back"
+                      onChange={handleFileChange}
+                      accept="image/*"
+                      style={{ display: 'none' }}
+                    />
+                    <span className="input-group-text" style={{cursor: 'pointer'}} onClick={() => document.getElementById('back-file').click()}>
+                      Choose file
+                    </span>
+                    <input 
+                      type="text" 
+                      className="form-control ven-input" 
+                      placeholder="No file chosen"
+                      value={existingFiles.back_image ? existingFiles.back_image.split('\\').pop().split('/').pop().replace(/^back-\d+-/, '') : files.back ? files.back.name : ''}
+                      readOnly
+                      onClick={() => document.getElementById('back-file').click()}
+                      style={{ cursor: 'pointer' }}
+                    />
+                  </div>
+                </div>
+
+                <div className="col-md-3 ven-field">
+                  <label className="form-label ven-label">Flip Front</label>
+                  <div className="input-group">
+                    <input 
+                      type="file" 
+                      className="form-control ven-input"
+                      id="flip-front-file"
+                      name="flip_front"
+                      onChange={handleFileChange}
+                      accept="image/*"
+                      style={{ display: 'none' }}
+                    />
+                    <span className="input-group-text" style={{cursor: 'pointer'}} onClick={() => document.getElementById('flip-front-file').click()}>
+                      Choose file
+                    </span>
+                    <input 
+                      type="text" 
+                      className="form-control ven-input" 
+                      placeholder="No file chosen"
+                      value={existingFiles.flip_front_image ? existingFiles.flip_front_image.split('\\').pop().split('/').pop().replace(/^flip_front-\d+-/, '') : files.flip_front ? files.flip_front.name : ''}
+                      readOnly
+                      onClick={() => document.getElementById('flip-front-file').click()}
+                      style={{ cursor: 'pointer' }}
+                    />
+                  </div>
+                </div>
+
+                <div className="col-md-3 ven-field">
+                  <label className="form-label ven-label">Flip Back</label>
+                  <div className="input-group">
+                    <input 
+                      type="file" 
+                      className="form-control ven-input"
+                      id="flip-back-file"
+                      name="flip_back"
+                      onChange={handleFileChange}
+                      accept="image/*"
+                      style={{ display: 'none' }}
+                    />
+                    <span className="input-group-text" style={{cursor: 'pointer'}} onClick={() => document.getElementById('flip-back-file').click()}>
+                      Choose file
+                    </span>
+                    <input 
+                      type="text" 
+                      className="form-control ven-input" 
+                      placeholder="No file chosen"
+                      value={existingFiles.flip_back_image ? existingFiles.flip_back_image.split('\\').pop().split('/').pop().replace(/^flip_back-\d+-/, '') : files.flip_back ? files.flip_back.name : ''}
+                      readOnly
+                      onClick={() => document.getElementById('flip-back-file').click()}
+                      style={{ cursor: 'pointer' }}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Customer Profile */}
+              <div className="row ven-row mb-3">
+                <div className="col-md-6 ven-field">
+                  <label className="form-label ven-label">Customer Profile</label>
+                  <div className="input-group">
+                    <input 
+                      type="file" 
+                      className="form-control ven-input"
+                      id="customer-profile-file"
+                      name="customer_profile"
+                      onChange={handleFileChange}
+                      accept="image/*,.pdf"
+                      style={{ display: 'none' }}
+                    />
+                    <span className="input-group-text" style={{cursor: 'pointer'}} onClick={() => document.getElementById('customer-profile-file').click()}>
+                      Choose file
+                    </span>
+                    <input 
+                      type="text" 
+                      className="form-control ven-input" 
+                      placeholder="No file chosen"
+                      value={existingFiles.customer_profile ? existingFiles.customer_profile.split('\\').pop().split('/').pop().replace(/^customer_profile-\d+-/, '') : files.customer_profile ? files.customer_profile.name : ''}
+                      readOnly
+                      onClick={() => document.getElementById('customer-profile-file').click()}
+                      style={{ cursor: 'pointer' }}
+                    />
+                  </div>
+                </div>
+              </div>
+              
+            </>
+)
+}
+
+          
             <div className="row ven-row mb-3">
               <div className="col-md-12 ven-field">
                 <label className="form-label ven-label">Remark</label>
