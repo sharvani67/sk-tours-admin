@@ -311,8 +311,13 @@ const Navbar = ({ children }) => {
   label: "Vendor Categories",
   path: "/category-table",
   icon: <FiLayers className="sidebar-icon" />,
-}
-,
+},
+ { 
+    label: "Weekend Gate Way", 
+    path: "/weekend-gateways", 
+    icon: <FiClock className="sidebar-icon" />,
+    matchPaths: ["/weekend-gateways", "/add-weekend-gateway", "/edit-weekend-gateway"],
+  },
 ];
 
 
