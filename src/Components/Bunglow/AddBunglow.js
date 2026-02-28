@@ -46,6 +46,22 @@ const AddBungalow = () => {
     per_pax_single: ''
   });
 
+  // Booking Form State
+  const [bookingForm, setBookingForm] = useState({
+    city: '',
+    bungalow_no: 'BUG0001',
+    contact_person: '',
+    cell_no: '',
+    email_id: '',
+    address: '',
+    pin_code: '',
+    state: '',
+    country: '',
+    no_of_people: 1
+  });
+
+  const [guestDetails, setGuestDetails] = useState([]);
+
   // Images
   const [imageFiles, setImageFiles] = useState([]);
   const [existingImages, setExistingImages] = useState([]);
@@ -61,12 +77,18 @@ const AddBungalow = () => {
     related_image: '',
     related_image_file: null,
     sort_order: 0,
-    relation_id: null // Add this to track existing relations
+    relation_id: null
   });
   const [relatedImagePreview, setRelatedImagePreview] = useState(null);
   const [editingRelated, setEditingRelated] = useState(null);
   const [showRelatedForm, setShowRelatedForm] = useState(false);
   const [allBungalows, setAllBungalows] = useState([]);
+
+  // Cities List
+  const cities = [
+    'Alibaug', 'Aamby Valley', 'Goa', 'Igatpuri', 'Karjat', 
+    'Khopoli', 'Kashid', 'Lonavala', 'Mahabaleshwar', 'Murbad', 'Neral'
+  ];
 
   // Load bungalow data if in edit mode
   useEffect(() => {
@@ -77,6 +99,24 @@ const AddBungalow = () => {
     }
     loadAllBungalows();
   }, [id]);
+
+  // Update guest boxes when number of people changes
+  useEffect(() => {
+    const numPeople = parseInt(bookingForm.no_of_people) || 0;
+    const newGuests = [...guestDetails];
+    
+    // Add rows if needed
+    while (newGuests.length < numPeople) {
+      newGuests.push({ name: '', age: '', cell_no: '', email_id: '' });
+    }
+    
+    // Remove rows if needed
+    while (newGuests.length > numPeople) {
+      newGuests.pop();
+    }
+    
+    setGuestDetails(newGuests);
+  }, [bookingForm.no_of_people]);
 
   // Cleanup object URLs
   useEffect(() => {
@@ -107,6 +147,11 @@ const AddBungalow = () => {
         setFormData(prev => ({
           ...prev,
           bungalow_code: data.next_bungalow_code
+        }));
+        // Update booking form bungalow number
+        setBookingForm(prev => ({
+          ...prev,
+          bungalow_no: data.next_bungalow_code
         }));
       }
     } catch (err) {
@@ -139,7 +184,13 @@ const AddBungalow = () => {
         per_pax_single: data.bungalow.per_pax_single || ''
       });
 
-      // Fix image URLs - ensure they have full path
+      // Update booking form with bungalow code
+      setBookingForm(prev => ({
+        ...prev,
+        bungalow_no: data.bungalow.bungalow_code || 'BUG0001'
+      }));
+
+      // Fix image URLs
       const imagesWithFullUrl = (data.images || []).map(img => ({
         ...img,
         image_url: img.image_url.startsWith('http') 
@@ -169,6 +220,125 @@ const AddBungalow = () => {
   const handleBasicChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  // Booking Form Handlers
+  const handleBookingChange = (e) => {
+    const { name, value } = e.target;
+    setBookingForm(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleGuestChange = (index, field, value) => {
+    const updatedGuests = [...guestDetails];
+    updatedGuests[index][field] = value;
+    setGuestDetails(updatedGuests);
+  };
+
+ const handleBookingSubmit = async () => {
+  // Validate form
+  if (!bookingForm.city) {
+    alert('Please select a city');
+    return;
+  }
+  if (!bookingForm.contact_person) {
+    alert('Please enter contact person name');
+    return;
+  }
+  if (!bookingForm.cell_no) {
+    alert('Please enter cell number');
+    return;
+  }
+
+  // Validate guest details
+  for (let i = 0; i < guestDetails.length; i++) {
+    const guest = guestDetails[i];
+    if (!guest.name || !guest.age || !guest.cell_no || !guest.email_id) {
+      alert(`Please fill all details for guest ${i + 1}`);
+      return;
+    }
+  }
+
+  try {
+    setLoading(true);
+    
+    // Prepare the data for API
+    const bookingData = {
+      bungalow_code: bookingForm.bungalow_no,
+      city: bookingForm.city,
+      contact_person: bookingForm.contact_person,
+      cell_no: bookingForm.cell_no,
+      email_id: bookingForm.email_id,
+      address: bookingForm.address,
+      pin_code: bookingForm.pin_code,
+      state: bookingForm.state,
+      country: bookingForm.country || 'India',
+      no_of_people: parseInt(bookingForm.no_of_people),
+      guests: guestDetails.map(guest => ({
+        name: guest.name,
+        age: parseInt(guest.age),
+        cell_no: guest.cell_no,
+        email_id: guest.email_id
+      }))
+    };
+
+    console.log('Sending booking data:', bookingData);
+
+    // Send data to backend
+    const response = await fetch(`${baseurl}/api/bungalows/bookings`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(bookingData)
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.error || 'Failed to submit booking');
+    }
+
+    console.log('Booking saved successfully:', result);
+    
+    // Show success message
+    setSuccess('Booking submitted successfully!');
+    
+    // Reset form after successful submission
+    resetBookingForm();
+    
+    // Clear success message after 3 seconds
+    setTimeout(() => {
+      setSuccess('');
+    }, 3000);
+    
+  } catch (err) {
+    console.error('Error submitting booking:', err);
+    setError('Failed to submit booking: ' + err.message);
+    
+    // Clear error message after 5 seconds
+    setTimeout(() => {
+      setError('');
+    }, 5000);
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+  const resetBookingForm = () => {
+    setBookingForm(prev => ({
+      city: '',
+      bungalow_no: prev.bungalow_no,
+      contact_person: '',
+      cell_no: '',
+      email_id: '',
+      address: '',
+      pin_code: '',
+      state: '',
+      country: '',
+      no_of_people: 1
+    }));
+    setGuestDetails([]);
   };
 
   // Image Handlers
@@ -304,7 +474,6 @@ const AddBungalow = () => {
   const handleRelatedImageChange = (e) => {
     const file = e.target.files ? e.target.files[0] : null;
     
-    // Clean up previous preview URL
     if (relatedImagePreview && relatedImagePreview.startsWith('blob:')) {
       URL.revokeObjectURL(relatedImagePreview);
     }
@@ -314,8 +483,8 @@ const AddBungalow = () => {
       setRelatedImagePreview(preview);
       setRelatedItem(prev => ({
         ...prev,
-        related_image: preview, // Temporary preview URL
-        related_image_file: file // Actual file for upload
+        related_image: preview,
+        related_image_file: file
       }));
     } else {
       setRelatedImagePreview(null);
@@ -341,7 +510,6 @@ const AddBungalow = () => {
         sort_order: relatedBungalows.length,
         relation_id: null
       });
-      // For existing bungalow image, ensure full URL
       setRelatedImagePreview(selected.main_image 
         ? (selected.main_image.startsWith('http') 
             ? selected.main_image 
@@ -390,7 +558,6 @@ const AddBungalow = () => {
       ...itemToEdit,
       related_image_file: null
     });
-    // For existing image, ensure it's using the full URL
     setRelatedImagePreview(itemToEdit.related_image || null);
     setShowRelatedForm(true);
   };
@@ -402,7 +569,7 @@ const AddBungalow = () => {
     updated[editingRelated.index] = { 
       ...relatedItem, 
       sort_order: editingRelated.index,
-      relation_id: editingRelated.relation_id // Preserve the relation_id
+      relation_id: editingRelated.relation_id
     };
     setRelatedBungalows(updated);
     
@@ -423,7 +590,6 @@ const AddBungalow = () => {
   };
 
   const resetRelatedForm = () => {
-    // Clean up preview URL
     if (relatedImagePreview && relatedImagePreview.startsWith('blob:')) {
       URL.revokeObjectURL(relatedImagePreview);
     }
@@ -456,7 +622,6 @@ const AddBungalow = () => {
     try {
       setLoading(true);
       
-      // Create bungalow
       const response = await fetch(`${baseurl}/api/bungalows`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -468,17 +633,14 @@ const AddBungalow = () => {
       const result = await response.json();
       const bungalowId = result.bungalow_id;
 
-      // Upload main bungalow images
       if (imageFiles.length > 0) {
         await uploadImages(bungalowId);
       }
 
-      // Save related bungalows
       if (relatedBungalows.length > 0) {
         for (let i = 0; i < relatedBungalows.length; i++) {
           const related = relatedBungalows[i];
           
-          // Upload image if exists
           let imageUrl = null;
           if (related.related_image_file) {
             imageUrl = await uploadRelatedImage(bungalowId, related.related_image_file);
@@ -486,7 +648,6 @@ const AddBungalow = () => {
             imageUrl = related.related_image;
           }
           
-          // Save related bungalow
           await fetch(`${baseurl}/api/bungalows/related/${bungalowId}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -519,7 +680,6 @@ const AddBungalow = () => {
     try {
       setLoading(true);
       
-      // Update bungalow
       const response = await fetch(`${baseurl}/api/bungalows/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -528,16 +688,13 @@ const AddBungalow = () => {
 
       if (!response.ok) throw new Error('Failed to update bungalow');
 
-      // Upload new images for main bungalow
       if (imageFiles.length > 0) {
         await uploadImages(id);
       }
 
-      // Get existing related bungalows from database
       const relatedResponse = await fetch(`${baseurl}/api/bungalows/related/${id}`);
       const existingRelated = await relatedResponse.json();
 
-      // Delete removed related bungalows (those with relation_id that are no longer in state)
       for (const existing of existingRelated) {
         const stillExists = relatedBungalows.some(r => r.relation_id === existing.relation_id);
         if (!stillExists && existing.relation_id) {
@@ -547,23 +704,19 @@ const AddBungalow = () => {
         }
       }
 
-      // Add or update related bungalows
       for (let i = 0; i < relatedBungalows.length; i++) {
         const related = relatedBungalows[i];
         
-        // Upload new image if a file was selected
         let imageUrl = related.related_image;
         if (related.related_image_file) {
           imageUrl = await uploadRelatedImage(id, related.related_image_file);
         } else if (related.related_image && !related.related_image.startsWith('blob:')) {
-          // Keep existing image URL, ensure it's not a blob URL
           imageUrl = related.related_image;
         } else {
           imageUrl = null;
         }
         
         if (related.relation_id) {
-          // Update existing
           await fetch(`${baseurl}/api/bungalows/related/${related.relation_id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
@@ -575,7 +728,6 @@ const AddBungalow = () => {
             })
           });
         } else {
-          // Add new
           await fetch(`${baseurl}/api/bungalows/related/${id}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -993,19 +1145,249 @@ const AddBungalow = () => {
                 </Form.Group>
               </Tab>
 
-              {/* Booking Policy Tab */}
+              {/* Booking Policy Tab with Booking Form */}
               <Tab eventKey="bookingPolicy" title="Booking Policy">
-                <Form.Group className="mb-3">
-                  <Form.Label>Booking Policy</Form.Label>
-                  <Form.Control
-                    as="textarea"
-                    rows={8}
-                    name="booking_policy"
-                    value={formData.booking_policy}
-                    onChange={handleBasicChange}
-                    placeholder="Enter booking policy..."
-                  />
-                </Form.Group>
+                <Row>
+                   <Col md={6}>
+                    <Card className="mb-4">
+                      <Card.Header as="h5">Booking Form</Card.Header>
+                      <Card.Body>
+                        <Form>
+                          {/* City Selection */}
+                          <Form.Group className="mb-3">
+                            <Form.Label>Name of the City</Form.Label>
+                            <Form.Select
+                              name="city"
+                              value={bookingForm.city}
+                              onChange={handleBookingChange}
+                            >
+                              <option value="">Select City</option>
+                              {cities.map((city, idx) => (
+                                <option key={idx} value={city}>{city}</option>
+                              ))}
+                            </Form.Select>
+                          </Form.Group>
+
+                          {/* Bungalow No */}
+                          <Form.Group className="mb-3">
+                            <Form.Label>Bungalow No</Form.Label>
+                            <Form.Control
+                              type="text"
+                              name="bungalow_no"
+                              value={bookingForm.bungalow_no}
+                              readOnly
+                              style={{ backgroundColor: '#f8f9fa', fontWeight: 'bold' }}
+                            />
+                          </Form.Group>
+
+                          {/* Contact Person */}
+                          <Form.Group className="mb-3">
+                            <Form.Label>Contact Person</Form.Label>
+                            <Form.Control
+                              type="text"
+                              name="contact_person"
+                              value={bookingForm.contact_person}
+                              onChange={handleBookingChange}
+                              placeholder="Enter contact person name"
+                            />
+                          </Form.Group>
+
+                          {/* Cell No and Email */}
+                          <Row>
+                            <Col md={6}>
+                              <Form.Group className="mb-3">
+                                <Form.Label>Cell No</Form.Label>
+                                <Form.Control
+                                  type="tel"
+                                  name="cell_no"
+                                  value={bookingForm.cell_no}
+                                  onChange={handleBookingChange}
+                                  placeholder="Enter cell number"
+                                />
+                              </Form.Group>
+                            </Col>
+                            <Col md={6}>
+                              <Form.Group className="mb-3">
+                                <Form.Label>Email ID</Form.Label>
+                                <Form.Control
+                                  type="email"
+                                  name="email_id"
+                                  value={bookingForm.email_id}
+                                  onChange={handleBookingChange}
+                                  placeholder="Enter email"
+                                />
+                              </Form.Group>
+                            </Col>
+                          </Row>
+
+                          {/* Address */}
+                          <Form.Group className="mb-3">
+                            <Form.Label>Address</Form.Label>
+                            <Form.Control
+                              as="textarea"
+                              rows={2}
+                              name="address"
+                              value={bookingForm.address}
+                              onChange={handleBookingChange}
+                              placeholder="Enter address"
+                            />
+                          </Form.Group>
+
+                          {/* City, Pin Code, State, Country */}
+                          <Row>
+                            <Col md={6}>
+                              <Form.Group className="mb-3">
+                                <Form.Label>City</Form.Label>
+                                <Form.Control
+                                  type="text"
+                                  name="city_location"
+                                  value={bookingForm.city}
+                                  onChange={(e) => setBookingForm(prev => ({...prev, city: e.target.value}))}
+                                  placeholder="Enter city"
+                                />
+                              </Form.Group>
+                            </Col>
+                            <Col md={6}>
+                              <Form.Group className="mb-3">
+                                <Form.Label>Pin Code</Form.Label>
+                                <Form.Control
+                                  type="text"
+                                  name="pin_code"
+                                  value={bookingForm.pin_code}
+                                  onChange={handleBookingChange}
+                                  placeholder="Enter pin code"
+                                />
+                              </Form.Group>
+                            </Col>
+                          </Row>
+
+                          <Row>
+                            <Col md={6}>
+                              <Form.Group className="mb-3">
+                                <Form.Label>State</Form.Label>
+                                <Form.Control
+                                  type="text"
+                                  name="state"
+                                  value={bookingForm.state}
+                                  onChange={handleBookingChange}
+                                  placeholder="Enter state"
+                                />
+                              </Form.Group>
+                            </Col>
+                            <Col md={6}>
+                              <Form.Group className="mb-3">
+                                <Form.Label>Country</Form.Label>
+                                <Form.Control
+                                  type="text"
+                                  name="country"
+                                  value={bookingForm.country}
+                                  onChange={handleBookingChange}
+                                  placeholder="Enter country"
+                                />
+                              </Form.Group>
+                            </Col>
+                          </Row>
+
+                          {/* Number of People */}
+                          <Form.Group className="mb-3">
+                            <Form.Label>No of People</Form.Label>
+                            <Form.Control
+                              type="number"
+                              min="1"
+                              max="10"
+                              name="no_of_people"
+                              value={bookingForm.no_of_people}
+                              onChange={handleBookingChange}
+                            />
+                          </Form.Group>
+
+                          {/* Guest Details Table */}
+                          {guestDetails.length > 0 && (
+                            <div className="mt-4">
+                              <h6>Guest Details</h6>
+                              <Table striped bordered hover size="sm">
+                                <thead>
+                                  <tr>
+                                    <th>Name</th>
+                                    <th>Age</th>
+                                    <th>Cell No</th>
+                                    <th>Email ID</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {guestDetails.map((guest, idx) => (
+                                    <tr key={idx}>
+                                      <td>
+                                        <Form.Control
+                                          type="text"
+                                          size="sm"
+                                          value={guest.name}
+                                          onChange={(e) => handleGuestChange(idx, 'name', e.target.value)}
+                                          placeholder="Name"
+                                        />
+                                      </td>
+                                      <td>
+                                        <Form.Control
+                                          type="number"
+                                          size="sm"
+                                          value={guest.age}
+                                          onChange={(e) => handleGuestChange(idx, 'age', e.target.value)}
+                                          placeholder="Age"
+                                        />
+                                      </td>
+                                      <td>
+                                        <Form.Control
+                                          type="tel"
+                                          size="sm"
+                                          value={guest.cell_no}
+                                          onChange={(e) => handleGuestChange(idx, 'cell_no', e.target.value)}
+                                          placeholder="Cell No"
+                                        />
+                                      </td>
+                                      <td>
+                                        <Form.Control
+                                          type="email"
+                                          size="sm"
+                                          value={guest.email_id}
+                                          onChange={(e) => handleGuestChange(idx, 'email_id', e.target.value)}
+                                          placeholder="Email"
+                                        />
+                                      </td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </Table>
+                            </div>
+                          )}
+
+                          {/* Form Buttons */}
+                          <div className="d-flex gap-2 justify-content-end mt-3">
+                            <Button variant="secondary" size="sm" onClick={resetBookingForm}>
+                              Reset
+                            </Button>
+                            <Button variant="primary" size="sm" onClick={handleBookingSubmit}>
+                              Submit Booking
+                            </Button>
+                          </div>
+                        </Form>
+                      </Card.Body>
+                    </Card>
+                  </Col>
+                  
+                  <Col md={6}>
+                    <Form.Group className="mb-3">
+                      <Form.Label>Booking Policy Text</Form.Label>
+                      <Form.Control
+                        as="textarea"
+                        rows={6}
+                        name="booking_policy"
+                        value={formData.booking_policy}
+                        onChange={handleBasicChange}
+                        placeholder="Enter booking policy..."
+                      />
+                    </Form.Group>
+                  </Col>
+                </Row>
               </Tab>
 
               {/* Related Bungalows Tab */}
@@ -1166,7 +1548,6 @@ const AddBungalow = () => {
                                 onError={(e) => {
                                   e.target.onerror = null;
                                   e.target.style.display = 'none';
-                                  // Optionally show a placeholder
                                   const parent = e.target.parentNode;
                                   if (parent) {
                                     const placeholder = document.createElement('span');
