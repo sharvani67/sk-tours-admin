@@ -126,6 +126,7 @@ import OfflineHotelsTable from "./Components/OfflineHotels/OfflineHotelsTable";
 import OfflineHotels from "./Components/OfflineHotels/OfflineHotelsForm";
 import AddBungalow from "./Components/Bunglow/AddBunglow";
 import BungalowsTable from "./Components/Bunglow/BunglowTable";
+import MicEnquiryForm from "./Components/Mice/MicEnquiryForm";
 
 import WeekendGatewayTable from './Components/Weekend/WeekendTable';
 import AddWeekendGateway from './Components/Weekend/AddWeekendForm';
@@ -285,6 +286,7 @@ function App() {
                  <Route path="/bungalows" element={<BungalowsTable />} />
                  <Route path="/add-bungalow" element={<AddBungalow />} />
                  <Route path="/add-bungalow/:id" element={<AddBungalow />} /> 
+                 <Route path="/micenquiry-form" element={<MicEnquiryForm />} />
 
 
 <Route path="/weekend-gateways" element={<WeekendGatewayTable />} />

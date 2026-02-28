@@ -3,6 +3,7 @@ import { Container, Row, Col, Card, Button, Spinner, Alert } from 'react-bootstr
 import Navbar from '../../Shared/Navbar/Navbar';
 import { baseurl } from '../../Api/Baseurl';
 import './Mice.css';
+import { useNavigate } from 'react-router-dom';
 
 // Import tab components
 import MiceMainTab from './MiceMainTab';
@@ -12,6 +13,7 @@ import ClientsTab from './MiceClientTab';
 import VenuesTab from './MiceVenuesTab';
 import GalleryTab from './MiceGalleryTab';
 import EventsTab from './MiceEventsTab';
+import MicEnquiryForm from './MicEnquiryForm'; // Import the enquiry form component
 
 // Import form components
 import MiceMainForm from './MiceMainForm';
@@ -49,6 +51,7 @@ const getImageUrl = (type, filename) => {
 };
 
 function Mice() {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('main');
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -344,6 +347,12 @@ function Mice() {
   };
 
   const handleAddNew = () => {
+    // For enquiry tab, navigate to the enquiry form page
+    if (activeTab === 'enquiry') {
+      navigate('/micenquiry-form');
+      return;
+    }
+    
     resetForms();
     
     if (activeTab === 'main' && miceMain) {
@@ -395,9 +404,9 @@ function Mice() {
       handleDeletePackage,
       handleDeleteImage,
       fetchPackage,
-      resetForms,      // Add this
-      setActiveTab,     // Add this
-      setShowForm       // Add this
+      resetForms,
+      setActiveTab,
+      setShowForm
     };
 
     switch (activeTab) {
@@ -415,6 +424,8 @@ function Mice() {
         return <GalleryTab miceGallery={miceGallery} {...commonProps} />;
       case 'events':
         return <EventsTab upcomingEvents={upcomingEvents} {...commonProps} />;
+      case 'enquiry':
+        return <MicEnquiryForm />;
       default:
         return null;
     }
@@ -462,10 +473,17 @@ function Mice() {
             MICE Gallery
           </button>
           <button
-            className={`nav-link text-start ${activeTab === 'events' ? 'active' : ''}`}
+            className={`nav-link text-start mb-2 ${activeTab === 'events' ? 'active' : ''}`}
             onClick={() => { setActiveTab('events'); setShowForm(false); resetForms(); }}
           >
             Upcoming Events
+          </button>
+          {/* New Enquiry Tab */}
+          <button
+            className={`nav-link text-start ${activeTab === 'enquiry' ? 'active' : ''}`}
+            onClick={() => { setActiveTab('enquiry'); setShowForm(false); resetForms(); }}
+          >
+            Enquiry Form
           </button>
         </nav>
       </Card.Body>
@@ -516,6 +534,7 @@ function Mice() {
                 <button className={`tab ${activeTab === 'venues' ? 'active' : ''}`} onClick={() => { setActiveTab('venues'); setShowForm(false); resetForms(); }}>Venues</button>
                 <button className={`tab ${activeTab === 'gallery' ? 'active' : ''}`} onClick={() => { setActiveTab('gallery'); setShowForm(false); resetForms(); }}>Gallery</button>
                 <button className={`tab ${activeTab === 'events' ? 'active' : ''}`} onClick={() => { setActiveTab('events'); setShowForm(false); resetForms(); }}>Events</button>
+                <button className={`tab ${activeTab === 'enquiry' ? 'active' : ''}`} onClick={() => { setActiveTab('enquiry'); setShowForm(false); resetForms(); }}>Enquiry</button>
               </div>
             </div>
 
@@ -599,5 +618,3 @@ function Mice() {
 }
 
 export default Mice;
-
-
