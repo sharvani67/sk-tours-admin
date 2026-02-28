@@ -128,6 +128,9 @@ import AddBungalow from "./Components/Bunglow/AddBunglow";
 import BungalowsTable from "./Components/Bunglow/BunglowTable";
 import MicEnquiryForm from "./Components/Mice/MicEnquiryForm";
 
+import WeekendGatewayTable from './Components/Weekend/WeekendTable';
+import AddWeekendGateway from './Components/Weekend/AddWeekendForm';
+
 
 function App() {
   return (
@@ -284,6 +287,11 @@ function App() {
                  <Route path="/add-bungalow" element={<AddBungalow />} />
                  <Route path="/add-bungalow/:id" element={<AddBungalow />} /> 
                  <Route path="/micenquiry-form" element={<MicEnquiryForm />} />
+
+
+<Route path="/weekend-gateways" element={<WeekendGatewayTable />} />
+<Route path="/add-weekend-gateway" element={<AddWeekendGateway />} />
+<Route path="/add-weekend-gateway/:id" element={<AddWeekendGateway />} />
 
 
               
