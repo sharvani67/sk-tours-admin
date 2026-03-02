@@ -49,14 +49,14 @@ const AddBungalow = () => {
   // Booking Form State
   const [bookingForm, setBookingForm] = useState({
     city: '',
-    bungalow_no: 'BUG0001',
+    bungalow_no: 'BUNG0001',
     contact_person: '',
     cell_no: '',
     email_id: '',
     address: '',
     pin_code: '',
     state: '',
-    country: '',
+    country: 'India',
     no_of_people: 1
   });
 
@@ -166,6 +166,7 @@ const AddBungalow = () => {
       if (!response.ok) throw new Error('Failed to fetch bungalow data');
       
       const data = await response.json();
+      console.log('Loaded bungalow data:', data); // Debug log
       
       setFormData({
         bungalow_code: data.bungalow.bungalow_code || '',
@@ -187,7 +188,7 @@ const AddBungalow = () => {
       // Update booking form with bungalow code
       setBookingForm(prev => ({
         ...prev,
-        bungalow_no: data.bungalow.bungalow_code || 'BUG0001'
+        bungalow_no: data.bungalow.bungalow_code || 'BUNG0001'
       }));
 
       // Fix image URLs
@@ -199,16 +200,29 @@ const AddBungalow = () => {
       }));
       setExistingImages(imagesWithFullUrl);
       
-      // Fix related bungalow image URLs
-      const relatedWithFullUrl = (data.related_bungalows || []).map(rel => ({
-        ...rel,
-        related_image: rel.related_image && !rel.related_image.startsWith('blob:')
-          ? (rel.related_image.startsWith('http') 
-              ? rel.related_image 
-              : `${baseurl}${rel.related_image}`)
-          : null
-      }));
-      setRelatedBungalows(relatedWithFullUrl);
+      // Fix related bungalow image URLs - IMPORTANT FIX
+      if (data.related_bungalows && data.related_bungalows.length > 0) {
+        console.log('Related bungalows from API:', data.related_bungalows); // Debug log
+        
+        const relatedWithFullUrl = data.related_bungalows.map(rel => ({
+          ...rel,
+          relation_id: rel.relation_id,
+          related_name: rel.related_name,
+          related_price: rel.related_price,
+          related_image: rel.related_image && !rel.related_image.startsWith('blob:')
+            ? (rel.related_image.startsWith('http') 
+                ? rel.related_image 
+                : `${baseurl}${rel.related_image}`)
+            : null,
+          sort_order: rel.sort_order || 0
+        }));
+        
+        console.log('Processed related bungalows:', relatedWithFullUrl); // Debug log
+        setRelatedBungalows(relatedWithFullUrl);
+      } else {
+        console.log('No related bungalows found');
+        setRelatedBungalows([]);
+      }
       
     } catch (err) {
       setError('Failed to load bungalow data: ' + err.message);
@@ -234,96 +248,95 @@ const AddBungalow = () => {
     setGuestDetails(updatedGuests);
   };
 
- const handleBookingSubmit = async () => {
-  // Validate form
-  if (!bookingForm.city) {
-    alert('Please select a city');
-    return;
-  }
-  if (!bookingForm.contact_person) {
-    alert('Please enter contact person name');
-    return;
-  }
-  if (!bookingForm.cell_no) {
-    alert('Please enter cell number');
-    return;
-  }
-
-  // Validate guest details
-  for (let i = 0; i < guestDetails.length; i++) {
-    const guest = guestDetails[i];
-    if (!guest.name || !guest.age || !guest.cell_no || !guest.email_id) {
-      alert(`Please fill all details for guest ${i + 1}`);
+  const handleBookingSubmit = async () => {
+    // Validate form
+    if (!bookingForm.city) {
+      alert('Please select a city');
       return;
     }
-  }
-
-  try {
-    setLoading(true);
-    
-    // Prepare the data for API
-    const bookingData = {
-      bungalow_code: bookingForm.bungalow_no,
-      city: bookingForm.city,
-      contact_person: bookingForm.contact_person,
-      cell_no: bookingForm.cell_no,
-      email_id: bookingForm.email_id,
-      address: bookingForm.address,
-      pin_code: bookingForm.pin_code,
-      state: bookingForm.state,
-      country: bookingForm.country || 'India',
-      no_of_people: parseInt(bookingForm.no_of_people),
-      guests: guestDetails.map(guest => ({
-        name: guest.name,
-        age: parseInt(guest.age),
-        cell_no: guest.cell_no,
-        email_id: guest.email_id
-      }))
-    };
-
-    console.log('Sending booking data:', bookingData);
-
-    // Send data to backend
-    const response = await fetch(`${baseurl}/api/bungalows/bookings`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(bookingData)
-    });
-
-    const result = await response.json();
-
-    if (!response.ok) {
-      throw new Error(result.error || 'Failed to submit booking');
+    if (!bookingForm.contact_person) {
+      alert('Please enter contact person name');
+      return;
+    }
+    if (!bookingForm.cell_no) {
+      alert('Please enter cell number');
+      return;
     }
 
-    console.log('Booking saved successfully:', result);
-    
-    // Show success message
-    setSuccess('Booking submitted successfully!');
-    
-    // Reset form after successful submission
-    resetBookingForm();
-    
-    // Clear success message after 3 seconds
-    setTimeout(() => {
-      setSuccess('');
-    }, 3000);
-    
-  } catch (err) {
-    console.error('Error submitting booking:', err);
-    setError('Failed to submit booking: ' + err.message);
-    
-    // Clear error message after 5 seconds
-    setTimeout(() => {
-      setError('');
-    }, 5000);
-  } finally {
-    setLoading(false);
-  }
-};
+    // Validate guest details
+    for (let i = 0; i < guestDetails.length; i++) {
+      const guest = guestDetails[i];
+      if (!guest.name || !guest.age || !guest.cell_no || !guest.email_id) {
+        alert(`Please fill all details for guest ${i + 1}`);
+        return;
+      }
+    }
 
+    try {
+      setLoading(true);
+      
+      // Prepare the data for API
+      const bookingData = {
+        bungalow_code: bookingForm.bungalow_no,
+        city: bookingForm.city,
+        contact_person: bookingForm.contact_person,
+        cell_no: bookingForm.cell_no,
+        email_id: bookingForm.email_id,
+        address: bookingForm.address,
+        pin_code: bookingForm.pin_code,
+        state: bookingForm.state,
+        country: bookingForm.country || 'India',
+        no_of_people: parseInt(bookingForm.no_of_people),
+        guests: guestDetails.map(guest => ({
+          name: guest.name,
+          age: parseInt(guest.age),
+          cell_no: guest.cell_no,
+          email_id: guest.email_id
+        }))
+      };
+
+      console.log('Sending booking data:', bookingData);
+
+      // Send data to backend
+      const response = await fetch(`${baseurl}/api/bungalows/bookings`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(bookingData)
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to submit booking');
+      }
+
+      console.log('Booking saved successfully:', result);
+      
+      // Show success message
+      setSuccess('Booking submitted successfully!');
+      
+      // Reset form after successful submission
+      resetBookingForm();
+      
+      // Clear success message after 3 seconds
+      setTimeout(() => {
+        setSuccess('');
+      }, 3000);
+      
+    } catch (err) {
+      console.error('Error submitting booking:', err);
+      setError('Failed to submit booking: ' + err.message);
+      
+      // Clear error message after 5 seconds
+      setTimeout(() => {
+        setError('');
+      }, 5000);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const resetBookingForm = () => {
     setBookingForm(prev => ({
@@ -335,7 +348,7 @@ const AddBungalow = () => {
       address: '',
       pin_code: '',
       state: '',
-      country: '',
+      country: 'India',
       no_of_people: 1
     }));
     setGuestDetails([]);
@@ -543,7 +556,8 @@ const AddBungalow = () => {
     
     const newRelated = {
       ...relatedItem,
-      sort_order: relatedBungalows.length
+      sort_order: relatedBungalows.length,
+      relation_id: null // Ensure new items don't have an ID
     };
     
     setRelatedBungalows(prev => [...prev, newRelated]);
@@ -553,10 +567,16 @@ const AddBungalow = () => {
 
   const editRelatedBungalow = (idx) => {
     const itemToEdit = relatedBungalows[idx];
+    console.log('Editing related bungalow:', itemToEdit); // Debug log
+    
     setEditingRelated({ ...itemToEdit, index: idx });
     setRelatedItem({
-      ...itemToEdit,
-      related_image_file: null
+      related_name: itemToEdit.related_name || '',
+      related_price: itemToEdit.related_price || '',
+      related_image: itemToEdit.related_image || '',
+      related_image_file: null,
+      sort_order: itemToEdit.sort_order || 0,
+      relation_id: itemToEdit.relation_id || null
     });
     setRelatedImagePreview(itemToEdit.related_image || null);
     setShowRelatedForm(true);
@@ -695,6 +715,7 @@ const AddBungalow = () => {
       const relatedResponse = await fetch(`${baseurl}/api/bungalows/related/${id}`);
       const existingRelated = await relatedResponse.json();
 
+      // Delete related bungalows that are no longer in the list
       for (const existing of existingRelated) {
         const stillExists = relatedBungalows.some(r => r.relation_id === existing.relation_id);
         if (!stillExists && existing.relation_id) {
@@ -704,6 +725,7 @@ const AddBungalow = () => {
         }
       }
 
+      // Update or create related bungalows
       for (let i = 0; i < relatedBungalows.length; i++) {
         const related = relatedBungalows[i];
         
@@ -711,12 +733,14 @@ const AddBungalow = () => {
         if (related.related_image_file) {
           imageUrl = await uploadRelatedImage(id, related.related_image_file);
         } else if (related.related_image && !related.related_image.startsWith('blob:')) {
+          // Keep existing image URL
           imageUrl = related.related_image;
         } else {
           imageUrl = null;
         }
         
         if (related.relation_id) {
+          // Update existing
           await fetch(`${baseurl}/api/bungalows/related/${related.relation_id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
@@ -728,6 +752,7 @@ const AddBungalow = () => {
             })
           });
         } else {
+          // Create new
           await fetch(`${baseurl}/api/bungalows/related/${id}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -1148,14 +1173,14 @@ const AddBungalow = () => {
               {/* Booking Policy Tab with Booking Form */}
               <Tab eventKey="bookingPolicy" title="Booking Policy">
                 <Row>
-                   <Col md={6}>
+                  <Col md={6}>
                     <Card className="mb-4">
                       <Card.Header as="h5">Booking Form</Card.Header>
                       <Card.Body>
                         <Form>
                           {/* City Selection */}
                           <Form.Group className="mb-3">
-                            <Form.Label>Name of the City</Form.Label>
+                            <Form.Label>Name of the City *</Form.Label>
                             <Form.Select
                               name="city"
                               value={bookingForm.city}
@@ -1182,7 +1207,7 @@ const AddBungalow = () => {
 
                           {/* Contact Person */}
                           <Form.Group className="mb-3">
-                            <Form.Label>Contact Person</Form.Label>
+                            <Form.Label>Contact Person *</Form.Label>
                             <Form.Control
                               type="text"
                               name="contact_person"
@@ -1196,7 +1221,7 @@ const AddBungalow = () => {
                           <Row>
                             <Col md={6}>
                               <Form.Group className="mb-3">
-                                <Form.Label>Cell No</Form.Label>
+                                <Form.Label>Cell No *</Form.Label>
                                 <Form.Control
                                   type="tel"
                                   name="cell_no"
@@ -1233,21 +1258,9 @@ const AddBungalow = () => {
                             />
                           </Form.Group>
 
-                          {/* City, Pin Code, State, Country */}
+                          {/* Pin Code, State, Country */}
                           <Row>
-                            <Col md={6}>
-                              <Form.Group className="mb-3">
-                                <Form.Label>City</Form.Label>
-                                <Form.Control
-                                  type="text"
-                                  name="city_location"
-                                  value={bookingForm.city}
-                                  onChange={(e) => setBookingForm(prev => ({...prev, city: e.target.value}))}
-                                  placeholder="Enter city"
-                                />
-                              </Form.Group>
-                            </Col>
-                            <Col md={6}>
+                            <Col md={4}>
                               <Form.Group className="mb-3">
                                 <Form.Label>Pin Code</Form.Label>
                                 <Form.Control
@@ -1259,10 +1272,7 @@ const AddBungalow = () => {
                                 />
                               </Form.Group>
                             </Col>
-                          </Row>
-
-                          <Row>
-                            <Col md={6}>
+                            <Col md={4}>
                               <Form.Group className="mb-3">
                                 <Form.Label>State</Form.Label>
                                 <Form.Control
@@ -1274,7 +1284,7 @@ const AddBungalow = () => {
                                 />
                               </Form.Group>
                             </Col>
-                            <Col md={6}>
+                            <Col md={4}>
                               <Form.Group className="mb-3">
                                 <Form.Label>Country</Form.Label>
                                 <Form.Control
@@ -1290,7 +1300,7 @@ const AddBungalow = () => {
 
                           {/* Number of People */}
                           <Form.Group className="mb-3">
-                            <Form.Label>No of People</Form.Label>
+                            <Form.Label>No of People *</Form.Label>
                             <Form.Control
                               type="number"
                               min="1"
@@ -1308,10 +1318,10 @@ const AddBungalow = () => {
                               <Table striped bordered hover size="sm">
                                 <thead>
                                   <tr>
-                                    <th>Name</th>
-                                    <th>Age</th>
-                                    <th>Cell No</th>
-                                    <th>Email ID</th>
+                                    <th>Name *</th>
+                                    <th>Age *</th>
+                                    <th>Cell No *</th>
+                                    <th>Email ID *</th>
                                   </tr>
                                 </thead>
                                 <tbody>
@@ -1365,8 +1375,13 @@ const AddBungalow = () => {
                             <Button variant="secondary" size="sm" onClick={resetBookingForm}>
                               Reset
                             </Button>
-                            <Button variant="primary" size="sm" onClick={handleBookingSubmit}>
-                              Submit Booking
+                            <Button 
+                              variant="primary" 
+                              size="sm" 
+                              onClick={handleBookingSubmit}
+                              disabled={loading}
+                            >
+                              {loading ? 'Submitting...' : 'Submit Booking'}
                             </Button>
                           </div>
                         </Form>
@@ -1533,9 +1548,9 @@ const AddBungalow = () => {
                         <tr key={rel.relation_id || idx}>
                           <td>{idx + 1}</td>
                           <td>{rel.related_name}</td>
-                          <td>₹{parseFloat(rel.related_price).toLocaleString('en-IN')}</td>
+                          <td>₹{parseFloat(rel.related_price || 0).toLocaleString('en-IN')}</td>
                           <td>
-                            {rel.related_image && (
+                            {rel.related_image ? (
                               <img
                                 src={rel.related_image}
                                 alt={rel.related_name}
@@ -1547,18 +1562,10 @@ const AddBungalow = () => {
                                 }}
                                 onError={(e) => {
                                   e.target.onerror = null;
-                                  e.target.style.display = 'none';
-                                  const parent = e.target.parentNode;
-                                  if (parent) {
-                                    const placeholder = document.createElement('span');
-                                    placeholder.className = 'text-muted';
-                                    placeholder.innerText = 'No image';
-                                    parent.appendChild(placeholder);
-                                  }
+                                  e.target.src = 'https://via.placeholder.com/50?text=No+Image';
                                 }}
                               />
-                            )}
-                            {!rel.related_image && (
+                            ) : (
                               <span className="text-muted">No image</span>
                             )}
                           </td>
