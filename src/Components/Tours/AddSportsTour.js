@@ -18,7 +18,7 @@ import Navbar from '../../Shared/Navbar/Navbar';
 import { baseurl } from '../../Api/Baseurl';
 import { Pencil, Trash } from 'react-bootstrap-icons';
 
-const AddTour = () => {
+const AddSportsTour = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const isEditMode = !!id;
@@ -62,7 +62,7 @@ const AddTour = () => {
   // BASIC DETAILS
   const [formData, setFormData] = useState({
     tour_code: '',
-    tour_type: "individual",
+    tour_type: "sports",
     title: '',
     category_id: 1,
     primary_destination_id: '',
@@ -1108,7 +1108,7 @@ useEffect(() => {
       if (isEditMode) {
         await loadTourData();
       } else {
-        const tourCodeRes = await fetch(`${baseurl}/api/tours/next-tour-code?tour_type=individual`);
+        const tourCodeRes = await fetch(`${baseurl}/api/tours/next-tour-code?tour_type=sports`);
         if (tourCodeRes.ok) {
           const tourCodeData = await tourCodeRes.json();
           setFormData(prev => ({
@@ -1132,7 +1132,7 @@ useEffect(() => {
       setLoading(true);
       setError('');
       
-      const response = await fetch(`${baseurl}/api/tours/tour/full/individual/${id}`);
+      const response = await fetch(`${baseurl}/api/tours/tour/full/sports/${id}`);
       if (!response.ok) throw new Error('Failed to fetch tour data');
       
       const data = await response.json();
@@ -1313,7 +1313,7 @@ if (data.transport && Array.isArray(data.transport)) {
   };
 
   const handleCancel = () => {
-    navigate('/tours');
+    navigate('/sports-tours');
   };
 
   const isLastTab = activeTab === TAB_LIST[TAB_LIST.length - 1];
@@ -1540,7 +1540,7 @@ if (hotelRows.length > 0) {
 }
 
       setSuccess('Tour created successfully!');
-      setTimeout(() => navigate('/tours'), 1500);
+      setTimeout(() => navigate('/sports-tours'), 1500);
     } catch (err) {
       setError(err.message || 'Failed to create tour');
     } finally {
@@ -1794,7 +1794,7 @@ if (hotelRows.length > 0) {
 }
 
       setSuccess('Tour updated successfully!');
-      setTimeout(() => navigate('/tours'), 1500);
+      setTimeout(() => navigate('/sports-tours'), 1500);
     } catch (err) {
       console.error('Error updating tour:', err);
       setError(err.message || 'Failed to update tour');
@@ -3336,4 +3336,4 @@ useEffect(() => {
   );
 };
 
-export default AddTour;
+export default AddSportsTour;

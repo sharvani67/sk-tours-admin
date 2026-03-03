@@ -18,7 +18,7 @@ import Navbar from '../../Shared/Navbar/Navbar';
 import { baseurl } from '../../Api/Baseurl';
 import { Pencil, Trash } from 'react-bootstrap-icons';
 
-const INTLAddTour = () => {
+const INTLFestivalAddTour = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const isEditMode = !!id;
@@ -171,7 +171,7 @@ const handleVisaFormFileChangeWithEdit = async (index, action, file) => {
   // BASIC DETAILS
   const [formData, setFormData] = useState({
     tour_code: '',
-    tour_type: "individual",
+    tour_type: "festival",
     title: '',
     category_id: 1,
     primary_destination_id: '',
@@ -1825,7 +1825,7 @@ useEffect(() => {
         }));
         
         // Fetch tour code with is_international=1 parameter
-        const tourCodeRes = await fetch(`${baseurl}/api/tours/next-tour-code?tour_type=individual&is_international=${isInternational}`);
+        const tourCodeRes = await fetch(`${baseurl}/api/tours/next-tour-code?tour_type=festival&is_international=${isInternational}`);
         if (tourCodeRes.ok) {
           const tourCodeData = await tourCodeRes.json();
           setFormData(prev => ({
@@ -1849,7 +1849,7 @@ useEffect(() => {
       setLoading(true);
       setError('');
       
-      const response = await fetch(`${baseurl}/api/tours/tour/full/individual/${id}`);
+      const response = await fetch(`${baseurl}/api/tours/tour/full/festival/${id}`);
       if (!response.ok) throw new Error('Failed to fetch tour data');
       
       const data = await response.json();
@@ -2141,7 +2141,7 @@ const goBack = () => {
 };
 
   const handleCancel = () => {
-    navigate('/intl-tours');
+    navigate('/intl-festival-tours');
   };
 
   const isLastTab = activeTab === TAB_LIST[TAB_LIST.length - 1];
@@ -2401,7 +2401,7 @@ if (touristVisaItems.length > 0 || transitVisaItems.length > 0 || businessVisaIt
       }
 
       setSuccess('Tour created successfully!');
-      setTimeout(() => navigate('/intl-tours'), 1500);
+      setTimeout(() => navigate('/intl-festival-tours'), 1500);
     } catch (err) {
       setError(err.message || 'Failed to create tour');
     } finally {
@@ -2704,7 +2704,7 @@ if (touristVisaItems.length > 0 || transitVisaItems.length > 0 || businessVisaIt
       }
 
       setSuccess('Tour updated successfully!');
-      setTimeout(() => navigate('/intl-tours'), 1500);
+      setTimeout(() => navigate('/intl-festival-tours'), 1500);
     } catch (err) {
       console.error('Error updating tour:', err);
       setError(err.message || 'Failed to update tour');
@@ -5039,4 +5039,4 @@ const handleSaveClick = () => {
   );
 };
 
-export default INTLAddTour;
+export default INTLFestivalAddTour;

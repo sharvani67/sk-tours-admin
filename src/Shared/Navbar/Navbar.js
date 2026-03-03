@@ -176,6 +176,22 @@ const Navbar = ({ children }) => {
     icon: <FiUsers className="sidebar-icon" />,
     matchPaths: ["/student-tours", "/add-student-tour"],
   },
+
+  {
+    label: "DOM-Sports Tours",
+    path: "/sports-tours",
+    icon: <FiUsers className="sidebar-icon" />,
+    matchPaths: ["/sports-tours", "/add-sports-tour", "/edit-sports-tour"],
+  },
+  // NEW: DOM-Festival Tours
+  {
+    label: "DOM-Festival Tours",
+    path: "/festival-tours",
+    icon: <FiGift className="sidebar-icon" />,
+    matchPaths: ["/festival-tours", "/add-festival-tour", "/edit-festival-tour"],
+  },
+
+  
   {
     label: "Enquiries",
     path: "/enquiries",
@@ -252,6 +268,22 @@ const Navbar = ({ children }) => {
     icon: <FiUsers className="sidebar-icon" />,
     matchPaths: ["/intl-student-tours", "/intl-add-student-tour"],
   },
+
+    // NEW: INTL-Sports Tours
+  {
+    label: "INTL-Sports Tours",
+    path: "/intl-sports-tours",
+    icon: <FiUsers className="sidebar-icon" />,
+    matchPaths: ["/intl-sports-tours", "/intl-add-sports-tour", "/intl-edit-sports-tour"],
+  },
+  // NEW: INTL-Festival Tours
+  {
+    label: "INTL-Festival Tours",
+    path: "/intl-festival-tours",
+    icon: <FiGift className="sidebar-icon" />,
+    matchPaths: ["/intl-festival-tours", "/intl-add-festival-tour", "/intl-edit-festival-tour"],
+  },
+
   {
     label: "International Countries",
     path: "/intl-countries",

@@ -1121,10 +1121,29 @@ const removeCancelRow = (idx) => {
 
 
 
+// Add this useEffect to set initial prefilled content for international tours
 useEffect(() => {
   // Only set default content if it's a new tour (not edit mode)
-  // and if the arrays are empty
   if (!isEditMode) {
+    // Prefill all remarks fields including visa remarks
+    setFormData(prev => ({
+      ...prev,
+      cost_remarks: "All costs are per person and subject to change based on availability. Taxes extra as applicable.",
+      hotel_remarks: "Hotel categories are subject to availability. Standard, Deluxe, and Executive categories based on room types and amenities.",
+      transport_remarks: "Flight prices are indicative and subject to change at the time of booking. Airline and timing subject to availability.",
+      booking_poi_remarks: "Booking amount is non-refundable. Balance payment to be made as per the payment schedule.",
+      cancellation_remarks: "Cancellation charges apply as per the policy mentioned above. No refunds for no-shows.",
+      emi_remarks: "EMI options available with 18% interest rate. Terms and conditions apply.",
+      optional_tour_remarks: "Optional tours are subject to availability and weather conditions. Prices are per person."
+    }));
+
+    // Prefill tourist visa remarks
+    setTouristVisaRemarks(
+      "Visa requirements are subject to change based on embassy regulations. " +
+      "Processing time may vary. It is recommended to apply at least 3-4 weeks before departure. " +
+      "All documents must be original and valid for at least 6 months from the date of return."
+    );
+
     // Prefill Booking Policy if empty
     if (bookingPois.length === 0) {
       setBookingPois([
@@ -1136,11 +1155,10 @@ useEffect(() => {
           item: "30 Days Prior Per person cost ",
           amount_details: "50 % of the tour cost"
         },
-         {
+        {
           item: "21 Days Prior Per person cost",
           amount_details: "Balance amount to pay"
         }
-
       ]);
     }
 
