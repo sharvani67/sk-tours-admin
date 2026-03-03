@@ -85,6 +85,9 @@ import LadiesTourDetails from "./Components/Tours/LadiesTourDetails";
 import SeniorCitizenTourDetails from "./Components/Tours/SetizenTourDetails";
 import StudentTourDetails from "./Components/Tours/StudentTourDetails";
 import HoneymoonTourDetails from "./Components/Tours/HoneyMoonTourDetails";
+import SportsTourDetails from "./Components/Tours/SportsTourDetails"
+import FestivalTourDetails from "./Components/Tours/FestivalTourDetails"
+
 import AdminVideoManager from "./Components/Home/AdminVideoManager";
 import AdminDomesticTours from "./Components/Home/AdminDomesticTours";
 import AdminLeads from "./Components/Home/AdminLeads";
@@ -107,6 +110,8 @@ import INTLLadiesTourDetails from "./INTLLadiesDetails"
 import INTLSeniorCitizenTourDetails from "./INTLSeniorCitizenDetails"
 import INTLStudentTourDetails from  "./INTLStudentDetails"
 import INTLHoneymoonTourDetails from "./INTLHoneymoonDetails"
+import INTLSportsTourDetails from "./INTLSportsTourDetails"
+import INTLFestivalTourDetails from "./INTLFestivalTourDetails"
 
 import Enquiries from './Components/Enquires/Enquires';
 import Payments from "./Components/Payments/Payments"
@@ -130,6 +135,14 @@ import MicEnquiryForm from "./Components/Mice/MicEnquiryForm";
 
 import WeekendGatewayTable from './Components/Weekend/WeekendTable';
 import AddWeekendGateway from './Components/Weekend/AddWeekendForm';
+import SportsTours from "./Components/Tours/SportsTours";
+import AddSportsTour from "./Components/Tours/AddSportsTour";
+import INTLSportsTours from "./Components/Tours/InternationalSportsToursTable";
+import INTLSportsAddTour from "./Components/Tours/InternationalSportsAddTourForm";
+import FestivalTours from "./Components/Tours/FestivalTours";
+import AddFestivalTour from "./Components/Tours/AddFestivalTour";
+import INTLFestivalTours from "./Components/Tours/InternationalFestivalToursTable";
+import INTLFestivalAddTour from "./Components/Tours/InternationalFestivalAddTourForm";
 
 
 function App() {
@@ -194,6 +207,8 @@ function App() {
                <Route path="/senior-citizen-tour-details/:tourId" element={<SeniorCitizenTourDetails />} />
                  <Route path="/student-tour-details/:tourId" element={<StudentTourDetails />} />
                   <Route path="/honeymoon-tour-details/:tourId" element={<HoneymoonTourDetails />} />
+                     <Route path="/sports-tour-details/:tourId" element={<SportsTourDetails />} />
+                        <Route path="/festival-tour-details/:tourId" element={<FestivalTourDetails />} />
 
 
 
@@ -203,6 +218,10 @@ function App() {
                <Route path="/intl-senior-citizen-tour-details/:tourId" element={<INTLSeniorCitizenTourDetails />} />
                  <Route path="/intl-student-tour-details/:tourId" element={<INTLStudentTourDetails />} />
                   <Route path="/intl-honeymoon-tour-details/:tourId" element={<INTLHoneymoonTourDetails />} />
+                    <Route path="/intl-sports-tour-details/:tourId" element={<INTLSportsTourDetails />} />
+                        <Route path="/intl-festival-tour-details/:tourId" element={<INTLFestivalTourDetails />} />
+
+
        
                 <Route path="/ladies-special-tours" element={<LadiesSpecialTours />} />
                 <Route path="/add-ladies-special-tour" element={<AddLadiesSpecialTour />} />
@@ -244,6 +263,27 @@ function App() {
                 <Route path="/intl-honeymoon-tours" element={<INTLHoneymoonTours />} />
                 <Route path="/intl-add-honeymoon-tour" element={<INTLAddHoneymoonTour />} />
                 <Route path="/intl-edit-honeymoon-tour/:id" element={<INTLAddHoneymoonTour />} />
+
+
+                 <Route path="/sports-tours" element={<SportsTours />} />
+                <Route path="/add-sports-tour" element={<AddSportsTour />} />
+                <Route path="/edit-sports-tour/:id" element={<AddSportsTour />} />
+
+                 <Route path="/intl-sports-tours" element={<INTLSportsTours />} />
+                <Route path="/intl-add-sports-tour" element={<INTLSportsAddTour />} />
+                <Route path="/intl-edit-sports-tour/:id" element={<INTLSportsAddTour />} />
+
+
+                 <Route path="/festival-tours" element={<FestivalTours />} />
+                <Route path="/add-festival-tour" element={<AddFestivalTour />} />
+                <Route path="/edit-festival-tour/:id" element={<AddFestivalTour />} />
+
+
+                   <Route path="/intl-festival-tours" element={<INTLFestivalTours />} />
+                <Route path="/intl-add-festival-tour" element={<INTLFestivalAddTour />} />
+                <Route path="/intl-edit-festival-tour/:id" element={<INTLFestivalAddTour  />} />
+
+
 
 
                  <Route path="/exhibition" element={<Exhibition />} />
