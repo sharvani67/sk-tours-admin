@@ -72,14 +72,9 @@ const MicEnquiryForm = () => {
     }
   };
 
-  // Handle View - Navigate to view details page
-  const handleView = (enquiryId) => {
-    navigate(`/view-enquiry/${enquiryId}`);
-  };
-
   // Handle Edit - Navigate to edit form
   const handleEdit = (enquiryId) => {
-    navigate(`/edit-enquiry/${enquiryId}`);
+    navigate(`/micenquiryform/${enquiryId}`);
   };
 
   // Define table columns for MICE Enquiries
@@ -221,42 +216,13 @@ const MicEnquiryForm = () => {
       },
       style: { minWidth: '150px' }
     },
-    // {
-    //   key: 'created_at',
-    //   title: 'Created At',
-    //   render: (item) => {
-    //     if (!item.created_at) return 'N/A';
-        
-    //     try {
-    //       const date = new Date(item.created_at);
-    //       if (isNaN(date.getTime())) {
-    //         return 'Invalid Date';
-    //       }
-    //       return date.toLocaleDateString('en-US', {
-    //         year: 'numeric',
-    //         month: 'short',
-    //         day: 'numeric',
-    //         hour: '2-digit',
-    //         minute: '2-digit'
-    //       });
-    //     } catch (error) {
-    //       return 'Invalid Date';
-    //     }
-    //   },
-    //   style: { minWidth: '140px' }
-    // },
+   
     {
       key: 'actions',
       title: 'Actions',
       render: (item) => (
         <div className="d-flex gap-2 justify-content-center">
-          <button
-            className="btn btn-sm btn-outline-info"
-            onClick={() => handleView(item.id)}
-            title="View Details"
-          >
-            <Eye />
-          </button>
+    
           <button
             className="btn btn-sm btn-outline-primary"
             onClick={() => handleEdit(item.id)}

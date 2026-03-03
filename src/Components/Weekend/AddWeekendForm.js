@@ -1111,12 +1111,11 @@ const AddWeekendGateway = () => {
               {/* Booking Policy Tab with Weekend Booking Form */}
               <Tab eventKey="bookingPolicy" title="Booking Policy">
                 <Row>
-                    <Col md={6}>
+                    {/* <Col md={6}>
                     <Card className="mb-4">
                       <Card.Header as="h5">Weekend Gateway Booking Form</Card.Header>
                       <Card.Body>
                         <Form>
-                          {/* Property Name and City */}
                           <Row>
                             <Col md={6}>
                               <Form.Group className="mb-3">
@@ -1148,7 +1147,6 @@ const AddWeekendGateway = () => {
                             </Col>
                           </Row>
 
-                          {/* Person Name, Cell No, Email */}
                           <Row>
                             <Col md={4}>
                               <Form.Group className="mb-3">
@@ -1188,7 +1186,6 @@ const AddWeekendGateway = () => {
                             </Col>
                           </Row>
 
-                          {/* Address */}
                           <Form.Group className="mb-3">
                             <Form.Label>Address</Form.Label>
                             <Form.Control
@@ -1201,7 +1198,6 @@ const AddWeekendGateway = () => {
                             />
                           </Form.Group>
 
-                          {/* City, Pin Code, State, Country */}
                           <Row>
                             <Col md={3}>
                               <Form.Group className="mb-3">
@@ -1253,7 +1249,6 @@ const AddWeekendGateway = () => {
                             </Col>
                           </Row>
 
-                          {/* No of Adults, Rooms, Children */}
                           <Row>
                             <Col md={4}>
                               <Form.Group className="mb-3">
@@ -1296,7 +1291,6 @@ const AddWeekendGateway = () => {
                             </Col>
                           </Row>
 
-                          {/* Child Details Table */}
                           {childDetails.length > 0 && (
                             <div className="mt-4">
                               <h6>Child Details</h6>
@@ -1355,7 +1349,6 @@ const AddWeekendGateway = () => {
                             </div>
                           )}
 
-                          {/* Form Buttons */}
                           <div className="d-flex gap-2 justify-content-end mt-3">
                             <Button variant="secondary" size="sm" onClick={resetWeekendBookingForm}>
                               Reset
@@ -1372,16 +1365,16 @@ const AddWeekendGateway = () => {
                         </Form>
                       </Card.Body>
                     </Card>
-                  </Col>
+                  </Col> */}
                   
-                  <Col md={6}>
+                  <Col md={12}>
                     <Form.Group className="mb-3">
                       <Form.Label>Booking Policy Text</Form.Label>
                       <Form.Control
                         as="textarea"
                         rows={6}
                         name="booking_policy"
-                        value={formData.booking_policy}
+                        value={formData.booking_policy}   
                         onChange={handleBasicChange}
                         placeholder="Enter booking policy..."
                       />
@@ -1390,7 +1383,6 @@ const AddWeekendGateway = () => {
                 </Row>
               </Tab>
 
-              {/* Related Gateways Tab */}
               <Tab eventKey="related" title="Related Gateways">
                 {!showRelatedForm ? (
                   <div className="mb-3">
@@ -1594,7 +1586,6 @@ const AddWeekendGateway = () => {
               </Tab>
             </Tabs>
 
-            {/* Navigation Buttons */}
             <div className="d-flex justify-content-end gap-2 mt-4">
               <Button
                 variant="secondary"

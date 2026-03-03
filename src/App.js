@@ -130,6 +130,7 @@ import MicEnquiryForm from "./Components/Mice/MicEnquiryForm";
 
 import WeekendGatewayTable from './Components/Weekend/WeekendTable';
 import AddWeekendGateway from './Components/Weekend/AddWeekendForm';
+import MicEnquiryFormEdit from "./Components/Mice/MicEnquiryFormEdit";
 
 
 function App() {
@@ -293,7 +294,7 @@ function App() {
 <Route path="/add-weekend-gateway" element={<AddWeekendGateway />} />
 <Route path="/add-weekend-gateway/:id" element={<AddWeekendGateway />} />
 
-
+<Route path="/micenquiryform/:id" element={<MicEnquiryFormEdit />} />
               
 
       </Routes>

@@ -1148,12 +1148,11 @@ const AddBungalow = () => {
               {/* Booking Policy Tab with Booking Form */}
               <Tab eventKey="bookingPolicy" title="Booking Policy">
                 <Row>
-                   <Col md={6}>
-                    <Card className="mb-4">
+                   {/* <Col md={6}> */}
+                    {/* <Card className="mb-4">
                       <Card.Header as="h5">Booking Form</Card.Header>
                       <Card.Body>
                         <Form>
-                          {/* City Selection */}
                           <Form.Group className="mb-3">
                             <Form.Label>Name of the City</Form.Label>
                             <Form.Select
@@ -1168,7 +1167,6 @@ const AddBungalow = () => {
                             </Form.Select>
                           </Form.Group>
 
-                          {/* Bungalow No */}
                           <Form.Group className="mb-3">
                             <Form.Label>Bungalow No</Form.Label>
                             <Form.Control
@@ -1180,7 +1178,6 @@ const AddBungalow = () => {
                             />
                           </Form.Group>
 
-                          {/* Contact Person */}
                           <Form.Group className="mb-3">
                             <Form.Label>Contact Person</Form.Label>
                             <Form.Control
@@ -1192,7 +1189,6 @@ const AddBungalow = () => {
                             />
                           </Form.Group>
 
-                          {/* Cell No and Email */}
                           <Row>
                             <Col md={6}>
                               <Form.Group className="mb-3">
@@ -1220,7 +1216,6 @@ const AddBungalow = () => {
                             </Col>
                           </Row>
 
-                          {/* Address */}
                           <Form.Group className="mb-3">
                             <Form.Label>Address</Form.Label>
                             <Form.Control
@@ -1233,7 +1228,6 @@ const AddBungalow = () => {
                             />
                           </Form.Group>
 
-                          {/* City, Pin Code, State, Country */}
                           <Row>
                             <Col md={6}>
                               <Form.Group className="mb-3">
@@ -1288,7 +1282,6 @@ const AddBungalow = () => {
                             </Col>
                           </Row>
 
-                          {/* Number of People */}
                           <Form.Group className="mb-3">
                             <Form.Label>No of People</Form.Label>
                             <Form.Control
@@ -1301,7 +1294,6 @@ const AddBungalow = () => {
                             />
                           </Form.Group>
 
-                          {/* Guest Details Table */}
                           {guestDetails.length > 0 && (
                             <div className="mt-4">
                               <h6>Guest Details</h6>
@@ -1360,7 +1352,6 @@ const AddBungalow = () => {
                             </div>
                           )}
 
-                          {/* Form Buttons */}
                           <div className="d-flex gap-2 justify-content-end mt-3">
                             <Button variant="secondary" size="sm" onClick={resetBookingForm}>
                               Reset
@@ -1371,10 +1362,10 @@ const AddBungalow = () => {
                           </div>
                         </Form>
                       </Card.Body>
-                    </Card>
-                  </Col>
+                    </Card> */}
+                  {/* </Col> */}
                   
-                  <Col md={6}>
+                  <Col md={12}>
                     <Form.Group className="mb-3">
                       <Form.Label>Booking Policy Text</Form.Label>
                       <Form.Control

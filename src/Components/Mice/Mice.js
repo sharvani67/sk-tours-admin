@@ -13,7 +13,7 @@ import ClientsTab from './MiceClientTab';
 import VenuesTab from './MiceVenuesTab';
 import GalleryTab from './MiceGalleryTab';
 import EventsTab from './MiceEventsTab';
-import MicEnquiryForm from './MicEnquiryForm'; // Import the enquiry form component
+import MicEnquiryForm from './MicEnquiryForm';
 
 // Import form components
 import MiceMainForm from './MiceMainForm';
@@ -249,6 +249,10 @@ function Mice() {
     }
   };
 
+  const handleEditEnquiry = (id) => {
+    navigate(`/micenquiryform/${id}`);
+  };
+
   const handleDeletePackage = async (id) => {
     if (!window.confirm('Are you sure you want to delete this package? This action cannot be undone.')) {
       return;
@@ -347,7 +351,7 @@ function Mice() {
   };
 
   const handleAddNew = () => {
-    // For enquiry tab, navigate to the enquiry form page
+    // For enquiry tab, navigate to the add enquiry form page
     if (activeTab === 'enquiry') {
       navigate('/micenquiry-form');
       return;
@@ -406,7 +410,8 @@ function Mice() {
       fetchPackage,
       resetForms,
       setActiveTab,
-      setShowForm
+      setShowForm,
+      handleEditEnquiry // Pass the edit handler for enquiries
     };
 
     switch (activeTab) {
@@ -425,7 +430,8 @@ function Mice() {
       case 'events':
         return <EventsTab upcomingEvents={upcomingEvents} {...commonProps} />;
       case 'enquiry':
-        return <MicEnquiryForm />;
+        // Pass the edit handler to the MicEnquiryForm component
+        return <MicEnquiryForm onEdit={handleEditEnquiry} />;
       default:
         return null;
     }
