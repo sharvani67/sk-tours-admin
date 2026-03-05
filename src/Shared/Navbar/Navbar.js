@@ -350,6 +350,12 @@ const Navbar = ({ children }) => {
     icon: <FiClock className="sidebar-icon" />,
     matchPaths: ["/weekend-gateways", "/add-weekend-gateway", "/edit-weekend-gateway"],
   },
+   { 
+    label: "FlightTax", 
+    path: "/Flighttax", 
+    icon: <FiMap className="sidebar-icon" />,
+    matchPaths: ["/Flighttax", "/addflighttax", ],
+  },
 ];
 
 

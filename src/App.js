@@ -144,6 +144,8 @@ import FestivalTours from "./Components/Tours/FestivalTours";
 import AddFestivalTour from "./Components/Tours/AddFestivalTour";
 import INTLFestivalTours from "./Components/Tours/InternationalFestivalToursTable";
 import INTLFestivalAddTour from "./Components/Tours/InternationalFestivalAddTourForm";
+import FlightTax from "./Components/FlightTax/FlightTax";
+import AddFlightTax from "./Components/FlightTax/AddFlightTax";
 
 
 function App() {
@@ -335,6 +337,11 @@ function App() {
 <Route path="/add-weekend-gateway/:id" element={<AddWeekendGateway />} />
 
 <Route path="/micenquiryform/:id" element={<MicEnquiryFormEdit />} />
+<Route path="/Flighttax" element={<FlightTax />} />
+<Route path="/addflighttax" element={<AddFlightTax />} />
+<Route path="/addflighttax/:id" element={<AddFlightTax />} />
+
+
               
 
       </Routes>
