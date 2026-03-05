@@ -1,4 +1,3 @@
-// StudentTours.js
 import React, { useState, useEffect } from 'react';
 import { Container, Card, Alert, Spinner, Modal, Button } from 'react-bootstrap';
 import Navbar from '../../Shared/Navbar/Navbar';
@@ -6,8 +5,9 @@ import { baseurl } from '../../Api/Baseurl';
 import ReusableTable from '../../Shared/TableLayout/DataTable';
 import { useNavigate } from 'react-router-dom';
 import { Eye, Pencil, Trash } from 'react-bootstrap-icons';
+import Form from 'react-bootstrap/Form';
 
-const StudentTours = () => {
+const INTStudentTours = () => {
   const [tours, setTours] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -25,7 +25,7 @@ const StudentTours = () => {
       const response = await fetch(`${baseurl}/api/tours`);
       const result = await response.json();
 
-      // Filter tours where tour_type is "Student"
+      // Filter tours where tour_type is "Student" and international
       const filteredTours = result.filter(tour => 
         tour.tour_type && tour.tour_type.toLowerCase() === "student" && tour.is_international === 1
       );
@@ -105,6 +105,28 @@ const StudentTours = () => {
     setTourToDelete(null);
   };
 
+  // Handle status toggle
+  const handleStatusToggle = async (tour) => {
+    const newStatus = tour.status ? 0 : 1;
+
+    try {
+      await fetch(`${baseurl}/api/tours/status/${tour.tour_id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus }),
+      });
+
+      setTours(prev =>
+        prev.map(t =>
+          t.tour_id === tour.tour_id ? { ...t, status: newStatus } : t
+        )
+      );
+    } catch (err) {
+      console.error('Status update failed', err);
+      setError('Failed to update status');
+    }
+  };
+
   // Columns (same structure)
   const columns = [
     {
@@ -144,20 +166,29 @@ const StudentTours = () => {
       render: (item) => item.base_price_adult ? `₹${item.base_price_adult}` : 'N/A',
       style: { textAlign: 'right' }
     },
-    // {
-    //   key: 'is_international',
-    //   title: 'International?',
-    //   render: (item) => item.is_international ? "Yes" : "No",
-    //   style: { textAlign: "center" }
-    // },
-    // {
-    //   key: 'created_at',
-    //   title: 'Created At',
-    //   render: (item) =>
-    //     item.created_at
-    //       ? new Date(item.created_at).toLocaleDateString('en-US')
-    //       : 'N/A'
-    // },
+    {
+      key: 'status',
+      title: 'Status',
+      render: (item) => (
+        <div className="d-flex align-items-center justify-content-center gap-2">
+          <span
+            className={`fw-semibold ${
+              item.status === 1 ? 'text-success' : 'text-danger'
+            }`}
+          >
+            {item.status === 1 ? 'Active' : 'Inactive'}
+          </span>
+
+          <Form.Check
+            type="switch"
+            id={`status-switch-${item.tour_id}`}
+            checked={item.status === 1}
+            onChange={() => handleStatusToggle(item)}
+          />
+        </div>
+      ),
+      style: { textAlign: 'center', minWidth: '160px' }
+    },
     {
       key: 'actions',
       title: 'Actions',
@@ -197,14 +228,15 @@ const StudentTours = () => {
     duration_days: tour.duration_days || "N/A",
     base_price_adult: tour.base_price_adult || 0,
     is_international: tour.is_international || false,
-    created_at: tour.created_at || ""
+    created_at: tour.created_at || "",
+    status: tour.status ?? 1,
   }));
 
   return (
     <Navbar>
       <Container>
         <div className="d-flex justify-content-between align-items-center mb-4">
-          <h2 className="mb-0">Student Tours</h2>
+          <h2 className="mb-0">International Student Tours</h2>
           <div className="d-flex gap-2">
             <button
               className="btn btn-success"
@@ -226,15 +258,15 @@ const StudentTours = () => {
             {loading ? (
               <div className="text-center py-5">
                 <Spinner animation="border" role="status" className="me-2" />
-                Loading student tours...
+                Loading International student tours...
               </div>
             ) : (
               <ReusableTable
-                title="Student Tours"
+                title="International Student Tours"
                 data={tableData}
                 columns={columns}
                 initialEntriesPerPage={15}
-                searchPlaceholder="Search student tours..."
+                searchPlaceholder="Search International student tours..."
                 showSearch={true}
                 showEntriesSelector={true}
                 showPagination={true}
@@ -250,7 +282,7 @@ const StudentTours = () => {
           </Modal.Header>
           <Modal.Body>
             <p>
-              Are you sure you want to delete the student tour "<strong>{tourToDelete?.title}</strong>" (Tour Code: {tourToDelete?.tour_code})?
+              Are you sure you want to delete the International student tour "<strong>{tourToDelete?.title}</strong>" (Tour Code: {tourToDelete?.tour_code})?
             </p>
             <p className="text-danger">
               <strong>Warning:</strong> This action cannot be undone.
@@ -281,4 +313,4 @@ const StudentTours = () => {
   );
 };
 
-export default StudentTours;
+export default INTStudentTours;

@@ -522,7 +522,7 @@ useEffect(() => {
     // Prefill all remarks fields
     setFormData(prev => ({
       ...prev,
-      cost_remarks: "All costs are per person and subject to change based on availability. Taxes extra as applicable.",
+      cost_remarks: "Please note that while the tour price has been indicated, it may vary if you choose dates closer to departure or during periods when the season transitions from low to high. We therefore kindly request you to confirm the final tour price before proceeding with your booking and to mention the tour code when inquiring to receive the exact cost. Child pricing is calculated based on the standard hotel category, and if you choose Deluxe or Executive accommodations, child rates may be adjusted accordingly.",
       hotel_remarks: "Hotel categories are subject to availability. Standard, Deluxe, and Executive categories based on room types and amenities.",
       transport_remarks: "Flight prices are indicative and subject to change at the time of booking. Airline and timing subject to availability.",
       booking_poi_remarks: "Booking amount is non-refundable. Balance payment to be made as per the payment schedule.",
