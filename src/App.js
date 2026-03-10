@@ -131,6 +131,10 @@ import OfflineHotelsTable from "./Components/OfflineHotels/OfflineHotelsTable";
 import OfflineHotels from "./Components/OfflineHotels/OfflineHotelsForm";
 import AddBungalow from "./Components/Bunglow/AddBunglow";
 import BungalowsTable from "./Components/Bunglow/BunglowTable";
+
+import OneDayPicnicTable from './Components/OneDayPicnic/OneDayPicnicTable';
+import AddOneDayPicnic from './Components/OneDayPicnic/AddOneDayPicnic';
+
 import MicEnquiryForm from "./Components/Mice/MicEnquiryForm";
 
 import WeekendGatewayTable from './Components/Weekend/WeekendTable';
@@ -329,6 +333,11 @@ function App() {
                  <Route path="/bungalows" element={<BungalowsTable />} />
                  <Route path="/add-bungalow" element={<AddBungalow />} />
                  <Route path="/add-bungalow/:id" element={<AddBungalow />} /> 
+
+                 <Route path="/one-day-picnic" element={<OneDayPicnicTable />} />
+                <Route path="/add-one-day-picnic" element={<AddOneDayPicnic />} />
+                <Route path="/add-one-day-picnic/:id" element={<AddOneDayPicnic />} />
+
                  <Route path="/micenquiry-form" element={<MicEnquiryForm />} />
 
 

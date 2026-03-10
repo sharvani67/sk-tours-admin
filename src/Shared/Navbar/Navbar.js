@@ -311,6 +311,15 @@ const Navbar = ({ children }) => {
     path: "/offline-hotels-table", 
     icon: <FiMap className="sidebar-icon" /> 
   },
+
+   // NEW: One Day Picnic
+  { 
+    label: "One Day Picnic", 
+    path: "/one-day-picnic", 
+    icon: <FiMap className="sidebar-icon" />,
+    matchPaths: ["/one-day-picnic", "/add-one-day-picnic", "/edit-one-day-picnic"],
+  },
+  
   {
     label: "Payments",
     path: "/payments",
