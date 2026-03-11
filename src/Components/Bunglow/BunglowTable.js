@@ -26,7 +26,7 @@ const BungalowsTable = () => {
       }
       
       const bungalowsData = await response.json();
-      console.log('Fetched bungalows:', bungalowsData); // Debug log
+      console.log('Fetched bungalows:', bungalowsData);
 
       // Sort bungalows by created_at in descending order (newest first)
       const sortedBungalows = [...bungalowsData].sort((a, b) => {
@@ -146,7 +146,7 @@ const BungalowsTable = () => {
     );
   };
 
-  // Define table columns
+  // Define table columns - REMOVED tour costs column
   const columns = [
     {
       key: 'serial_no',
@@ -188,21 +188,6 @@ const BungalowsTable = () => {
         </span>
       ),
       style: { textAlign: 'right', fontWeight: 'bold' }
-    },
-    {
-      key: 'tour_costs',
-      title: 'Tour Costs (₹)',
-      render: (item) => (
-        <div className="small">
-          <div>Twin: {item.per_pax_twin ? formatPrice(item.per_pax_twin) : '—'}</div>
-          <div>Triple: {item.per_pax_triple ? formatPrice(item.per_pax_triple) : '—'}</div>
-          <div>Child (Bed): {item.child_with_bed ? formatPrice(item.child_with_bed) : '—'}</div>
-          <div>Child (No Bed): {item.child_without_bed ? formatPrice(item.child_without_bed) : '—'}</div>
-          <div>Infant: {item.infant ? formatPrice(item.infant) : '—'}</div>
-          <div>Single: {item.per_pax_single ? formatPrice(item.per_pax_single) : '—'}</div>
-        </div>
-      ),
-      style: { minWidth: '200px', fontSize: '0.9rem' }
     },
     {
       key: 'status',
@@ -276,15 +261,13 @@ const BungalowsTable = () => {
         )}
 
         <Card className="shadow-sm">
-          {/* <Card.Header className="bg-white py-1"> */}
-            <div className="d-flex align-items-center py-3 px-3">
-              <HouseDoor className="text-primary me-2" size={20} />
-              <h5 className="mb-0">Bungalows List</h5>
-              <span className="badge bg-primary ms-3">
-                {bungalows.length} Bungalows
-              </span>
-            </div>
-          {/* </Card.Header> */}
+          <div className="d-flex align-items-center py-3 px-3">
+            <HouseDoor className="text-primary me-2" size={20} />
+            <h5 className="mb-0">Bungalows List</h5>
+            <span className="badge bg-primary ms-3">
+              {bungalows.length} Bungalows
+            </span>
+          </div>
           <Card.Body className="p-0">
             {loading ? (
               <div className="text-center py-5">

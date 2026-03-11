@@ -21,29 +21,31 @@ const AddWeekendGateway = () => {
   const { id } = useParams();
   const isEditMode = !!id;
 
-  const TAB_LIST = ['basic', 'images', 'overview', 'tourCost', 'inclusiveExclusive', 'placesNearby', 'bookingPolicy', 'related'];
+  // Updated TAB_LIST - Added tourCost tab back
+  const TAB_LIST = ['basic', 'images', 'overview', 'tourCost', 'inclusiveExclusive', 'placesNearby', 'bookingPolicy', 'cancellationPolicy', 'related'];
 
   const [activeTab, setActiveTab] = useState('basic');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  // Basic Details
+  // Basic Details - WITH tour cost fields
   const [formData, setFormData] = useState({
     gateway_code: '',
     name: '',
     price: '',
-    overview: '',
-    inclusive: '',
-    exclusive: '',
-    places_nearby: '',
-    booking_policy: '',
     per_pax_twin: '',
     per_pax_triple: '',
     child_with_bed: '',
     child_without_bed: '',
     infant: '',
-    per_pax_single: ''
+    per_pax_single: '',
+    overview: '',
+    inclusive: '',
+    exclusive: '',
+    places_nearby: '',
+    booking_policy: '',
+    cancellation_policy: ''
   });
 
   // Weekend Booking Form State
@@ -167,21 +169,19 @@ const AddWeekendGateway = () => {
         gateway_code: data.gateway.gateway_code || '',
         name: data.gateway.name || '',
         price: data.gateway.price || '',
-        overview: data.gateway.overview || '',
-        inclusive: data.gateway.inclusive || '',
-        exclusive: data.gateway.exclusive || '',
-        places_nearby: data.gateway.places_nearby || '',
-        booking_policy: data.gateway.booking_policy || '',
         per_pax_twin: data.gateway.per_pax_twin || '',
         per_pax_triple: data.gateway.per_pax_triple || '',
         child_with_bed: data.gateway.child_with_bed || '',
         child_without_bed: data.gateway.child_without_bed || '',
         infant: data.gateway.infant || '',
-        per_pax_single: data.gateway.per_pax_single || ''
+        per_pax_single: data.gateway.per_pax_single || '',
+        overview: data.gateway.overview || '',
+        inclusive: data.gateway.inclusive || '',
+        exclusive: data.gateway.exclusive || '',
+        places_nearby: data.gateway.places_nearby || '',
+        booking_policy: data.gateway.booking_policy || '',
+        cancellation_policy: data.gateway.cancellation_policy || ''
       });
-
-      // Note: Property name is NOT automatically set from gateway name
-      // User will enter it manually in the booking form
 
       const imagesWithFullUrl = (data.images || []).map(img => ({
         ...img,
@@ -506,7 +506,8 @@ const AddWeekendGateway = () => {
     
     const newRelated = {
       ...relatedItem,
-      sort_order: relatedGateways.length
+      sort_order: relatedGateways.length,
+      relation_id: null
     };
     
     setRelatedGateways(prev => [...prev, newRelated]);
@@ -793,7 +794,7 @@ const AddWeekendGateway = () => {
                         name="price"
                         value={formData.price}
                         onChange={handleBasicChange}
-                        placeholder="Enter price"
+                        placeholder="Enter price per night"
                       />
                     </Form.Group>
                   </Col>
@@ -967,7 +968,7 @@ const AddWeekendGateway = () => {
                 </Form.Group>
               </Tab>
 
-              {/* Tour Cost Tab */}
+              {/* Tour Cost Tab (RESTORED) */}
               <Tab eventKey="tourCost" title="Tour Cost">
                 <Card>
                   <Card.Header>Tour Cost Details</Card.Header>
@@ -1108,281 +1109,42 @@ const AddWeekendGateway = () => {
                 </Form.Group>
               </Tab>
 
-              {/* Booking Policy Tab with Weekend Booking Form */}
+              {/* Booking Policy Tab */}
               <Tab eventKey="bookingPolicy" title="Booking Policy">
-                <Row>
-                    {/* <Col md={6}>
-                    <Card className="mb-4">
-                      <Card.Header as="h5">Weekend Gateway Booking Form</Card.Header>
-                      <Card.Body>
-                        <Form>
-                          <Row>
-                            <Col md={6}>
-                              <Form.Group className="mb-3">
-                                <Form.Label>Name of the Property *</Form.Label>
-                                <Form.Control
-                                  type="text"
-                                  name="property_name"
-                                  value={bookingForm.property_name}
-                                  onChange={handleBookingChange}
-                                  placeholder="Enter property name"
-                                  style={{ fontWeight: 'bold' }}
-                                />
-                              </Form.Group>
-                            </Col>
-                            <Col md={6}>
-                              <Form.Group className="mb-3">
-                                <Form.Label>City *</Form.Label>
-                                <Form.Select
-                                  name="city"
-                                  value={bookingForm.city}
-                                  onChange={handleBookingChange}
-                                >
-                                  <option value="">Select City</option>
-                                  {cities.map((city, idx) => (
-                                    <option key={idx} value={city}>{city}</option>
-                                  ))}
-                                </Form.Select>
-                              </Form.Group>
-                            </Col>
-                          </Row>
-
-                          <Row>
-                            <Col md={4}>
-                              <Form.Group className="mb-3">
-                                <Form.Label>Person Name *</Form.Label>
-                                <Form.Control
-                                  type="text"
-                                  name="person_name"
-                                  value={bookingForm.person_name}
-                                  onChange={handleBookingChange}
-                                  placeholder="Enter person name"
-                                />
-                              </Form.Group>
-                            </Col>
-                            <Col md={4}>
-                              <Form.Group className="mb-3">
-                                <Form.Label>Cell No *</Form.Label>
-                                <Form.Control
-                                  type="tel"
-                                  name="cell_no"
-                                  value={bookingForm.cell_no}
-                                  onChange={handleBookingChange}
-                                  placeholder="Enter cell number"
-                                />
-                              </Form.Group>
-                            </Col>
-                            <Col md={4}>
-                              <Form.Group className="mb-3">
-                                <Form.Label>Email ID</Form.Label>
-                                <Form.Control
-                                  type="email"
-                                  name="email_id"
-                                  value={bookingForm.email_id}
-                                  onChange={handleBookingChange}
-                                  placeholder="Enter email"
-                                />
-                              </Form.Group>
-                            </Col>
-                          </Row>
-
-                          <Form.Group className="mb-3">
-                            <Form.Label>Address</Form.Label>
-                            <Form.Control
-                              as="textarea"
-                              rows={2}
-                              name="address"
-                              value={bookingForm.address}
-                              onChange={handleBookingChange}
-                              placeholder="Enter address"
-                            />
-                          </Form.Group>
-
-                          <Row>
-                            <Col md={3}>
-                              <Form.Group className="mb-3">
-                                <Form.Label>City</Form.Label>
-                                <Form.Control
-                                  type="text"
-                                  name="city_location"
-                                  value={bookingForm.city_location}
-                                  onChange={handleBookingChange}
-                                  placeholder="City"
-                                />
-                              </Form.Group>
-                            </Col>
-                            <Col md={3}>
-                              <Form.Group className="mb-3">
-                                <Form.Label>Pin Code</Form.Label>
-                                <Form.Control
-                                  type="text"
-                                  name="pin_code"
-                                  value={bookingForm.pin_code}
-                                  onChange={handleBookingChange}
-                                  placeholder="Pin code"
-                                />
-                              </Form.Group>
-                            </Col>
-                            <Col md={3}>
-                              <Form.Group className="mb-3">
-                                <Form.Label>State</Form.Label>
-                                <Form.Control
-                                  type="text"
-                                  name="state"
-                                  value={bookingForm.state}
-                                  onChange={handleBookingChange}
-                                  placeholder="State"
-                                />
-                              </Form.Group>
-                            </Col>
-                            <Col md={3}>
-                              <Form.Group className="mb-3">
-                                <Form.Label>Country</Form.Label>
-                                <Form.Control
-                                  type="text"
-                                  name="country"
-                                  value={bookingForm.country}
-                                  onChange={handleBookingChange}
-                                  placeholder="Country"
-                                />
-                              </Form.Group>
-                            </Col>
-                          </Row>
-
-                          <Row>
-                            <Col md={4}>
-                              <Form.Group className="mb-3">
-                                <Form.Label>No of Adults</Form.Label>
-                                <Form.Control
-                                  type="number"
-                                  min="1"
-                                  max="20"
-                                  name="no_of_adults"
-                                  value={bookingForm.no_of_adults}
-                                  onChange={handleBookingChange}
-                                />
-                              </Form.Group>
-                            </Col>
-                            <Col md={4}>
-                              <Form.Group className="mb-3">
-                                <Form.Label>No of Rooms</Form.Label>
-                                <Form.Control
-                                  type="number"
-                                  min="1"
-                                  max="10"
-                                  name="no_of_rooms"
-                                  value={bookingForm.no_of_rooms}
-                                  onChange={handleBookingChange}
-                                />
-                              </Form.Group>
-                            </Col>
-                            <Col md={4}>
-                              <Form.Group className="mb-3">
-                                <Form.Label>No of Child</Form.Label>
-                                <Form.Control
-                                  type="number"
-                                  min="0"
-                                  max="10"
-                                  name="no_of_child"
-                                  value={bookingForm.no_of_child}
-                                  onChange={handleBookingChange}
-                                />
-                              </Form.Group>
-                            </Col>
-                          </Row>
-
-                          {childDetails.length > 0 && (
-                            <div className="mt-4">
-                              <h6>Child Details</h6>
-                              <Table striped bordered hover size="sm">
-                                <thead>
-                                  <tr>
-                                    <th>Name</th>
-                                    <th>Age</th>
-                                    <th>Cell No</th>
-                                    <th>Email ID</th>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  {childDetails.map((child, idx) => (
-                                    <tr key={idx}>
-                                      <td>
-                                        <Form.Control
-                                          type="text"
-                                          size="sm"
-                                          value={child.name}
-                                          onChange={(e) => handleChildChange(idx, 'name', e.target.value)}
-                                          placeholder="Name"
-                                        />
-                                      </td>
-                                      <td>
-                                        <Form.Control
-                                          type="number"
-                                          size="sm"
-                                          value={child.age}
-                                          onChange={(e) => handleChildChange(idx, 'age', e.target.value)}
-                                          placeholder="Age"
-                                        />
-                                      </td>
-                                      <td>
-                                        <Form.Control
-                                          type="tel"
-                                          size="sm"
-                                          value={child.cell_no}
-                                          onChange={(e) => handleChildChange(idx, 'cell_no', e.target.value)}
-                                          placeholder="Cell No"
-                                        />
-                                      </td>
-                                      <td>
-                                        <Form.Control
-                                          type="email"
-                                          size="sm"
-                                          value={child.email_id}
-                                          onChange={(e) => handleChildChange(idx, 'email_id', e.target.value)}
-                                          placeholder="Email"
-                                        />
-                                      </td>
-                                    </tr>
-                                  ))}
-                                </tbody>
-                              </Table>
-                            </div>
-                          )}
-
-                          <div className="d-flex gap-2 justify-content-end mt-3">
-                            <Button variant="secondary" size="sm" onClick={resetWeekendBookingForm}>
-                              Reset
-                            </Button>
-                            <Button 
-                              variant="primary" 
-                              size="sm" 
-                              onClick={handleWeekendBookingSubmit}
-                              disabled={loading}
-                            >
-                              {loading ? 'Submitting...' : 'Submit'}
-                            </Button>
-                          </div>
-                        </Form>
-                      </Card.Body>
-                    </Card>
-                  </Col> */}
-                  
-                  <Col md={12}>
-                    <Form.Group className="mb-3">
-                      <Form.Label>Booking Policy Text</Form.Label>
-                      <Form.Control
-                        as="textarea"
-                        rows={6}
-                        name="booking_policy"
-                        value={formData.booking_policy}   
-                        onChange={handleBasicChange}
-                        placeholder="Enter booking policy..."
-                      />
-                    </Form.Group>
-                  </Col>
-                </Row>
+                <Col md={12}>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Booking Policy Text</Form.Label>
+                    <Form.Control
+                      as="textarea"
+                      rows={6}
+                      name="booking_policy"
+                      value={formData.booking_policy}   
+                      onChange={handleBasicChange}
+                      placeholder="Enter booking policy..."
+                    />
+                  </Form.Group>
+                </Col>
               </Tab>
 
+              {/* Cancellation Policy Tab */}
+              <Tab eventKey="cancellationPolicy" title="Cancellation Policy">
+                <Form.Group className="mb-3">
+                  <Form.Label>Cancellation Policy Details</Form.Label>
+                  <Form.Control
+                    as="textarea"
+                    rows={8}
+                    name="cancellation_policy"
+                    value={formData.cancellation_policy}
+                    onChange={handleBasicChange}
+                    placeholder="Enter cancellation policy details, deadlines, refund percentages, etc..."
+                  />
+                  <Form.Text className="text-muted">
+                    Specify cancellation terms, deadlines, refund percentages, and any other cancellation-related information.
+                  </Form.Text>
+                </Form.Group>
+              </Tab>
+
+              {/* Related Gateways Tab */}
               <Tab eventKey="related" title="Related Gateways">
                 {!showRelatedForm ? (
                   <div className="mb-3">
@@ -1525,9 +1287,9 @@ const AddWeekendGateway = () => {
                         <tr key={rel.relation_id || idx}>
                           <td>{idx + 1}</td>
                           <td>{rel.related_name}</td>
-                          <td>₹{parseFloat(rel.related_price).toLocaleString('en-IN')}</td>
+                          <td>₹{parseFloat(rel.related_price || 0).toLocaleString('en-IN')}</td>
                           <td>
-                            {rel.related_image && (
+                            {rel.related_image ? (
                               <img
                                 src={rel.related_image}
                                 alt={rel.related_name}
@@ -1549,8 +1311,7 @@ const AddWeekendGateway = () => {
                                   }
                                 }}
                               />
-                            )}
-                            {!rel.related_image && (
+                            ) : (
                               <span className="text-muted">No image</span>
                             )}
                           </td>

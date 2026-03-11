@@ -21,29 +21,26 @@ const AddBungalow = () => {
   const { id } = useParams();
   const isEditMode = !!id;
 
-  const TAB_LIST = ['basic', 'images', 'overview', 'tourCost', 'inclusiveExclusive', 'placesNearby', 'bookingPolicy', 'related'];
+  // Updated TAB_LIST - Removed tourCost, added bungalowRate and cancellationPolicy
+  const TAB_LIST = ['basic', 'images', 'overview', 'bungalowRate', 'inclusiveExclusive', 'placesNearby', 'bookingPolicy', 'cancellationPolicy', 'related'];
 
   const [activeTab, setActiveTab] = useState('basic');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  // Basic Details
+  // Basic Details - REMOVED tour cost fields
   const [formData, setFormData] = useState({
     bungalow_code: '',
     name: '',
     price: '',
+    bungalow_rate: '',
     overview: '',
     inclusive: '',
     exclusive: '',
     places_nearby: '',
     booking_policy: '',
-    per_pax_twin: '',
-    per_pax_triple: '',
-    child_with_bed: '',
-    child_without_bed: '',
-    infant: '',
-    per_pax_single: ''
+    cancellation_policy: ''
   });
 
   // Booking Form State
@@ -166,23 +163,19 @@ const AddBungalow = () => {
       if (!response.ok) throw new Error('Failed to fetch bungalow data');
       
       const data = await response.json();
-      console.log('Loaded bungalow data:', data); // Debug log
+      console.log('Loaded bungalow data:', data);
       
       setFormData({
         bungalow_code: data.bungalow.bungalow_code || '',
         name: data.bungalow.name || '',
         price: data.bungalow.price || '',
+        bungalow_rate: data.bungalow.bungalow_rate || '',
         overview: data.bungalow.overview || '',
         inclusive: data.bungalow.inclusive || '',
         exclusive: data.bungalow.exclusive || '',
         places_nearby: data.bungalow.places_nearby || '',
         booking_policy: data.bungalow.booking_policy || '',
-        per_pax_twin: data.bungalow.per_pax_twin || '',
-        per_pax_triple: data.bungalow.per_pax_triple || '',
-        child_with_bed: data.bungalow.child_with_bed || '',
-        child_without_bed: data.bungalow.child_without_bed || '',
-        infant: data.bungalow.infant || '',
-        per_pax_single: data.bungalow.per_pax_single || ''
+        cancellation_policy: data.bungalow.cancellation_policy || ''
       });
 
       // Update booking form with bungalow code
@@ -200,9 +193,9 @@ const AddBungalow = () => {
       }));
       setExistingImages(imagesWithFullUrl);
       
-      // Fix related bungalow image URLs - IMPORTANT FIX
+      // Fix related bungalow image URLs
       if (data.related_bungalows && data.related_bungalows.length > 0) {
-        console.log('Related bungalows from API:', data.related_bungalows); // Debug log
+        console.log('Related bungalows from API:', data.related_bungalows);
         
         const relatedWithFullUrl = data.related_bungalows.map(rel => ({
           ...rel,
@@ -217,7 +210,7 @@ const AddBungalow = () => {
           sort_order: rel.sort_order || 0
         }));
         
-        console.log('Processed related bungalows:', relatedWithFullUrl); // Debug log
+        console.log('Processed related bungalows:', relatedWithFullUrl);
         setRelatedBungalows(relatedWithFullUrl);
       } else {
         console.log('No related bungalows found');
@@ -567,7 +560,7 @@ const AddBungalow = () => {
 
   const editRelatedBungalow = (idx) => {
     const itemToEdit = relatedBungalows[idx];
-    console.log('Editing related bungalow:', itemToEdit); // Debug log
+    console.log('Editing related bungalow:', itemToEdit);
     
     setEditingRelated({ ...itemToEdit, index: idx });
     setRelatedItem({
@@ -855,7 +848,7 @@ const AddBungalow = () => {
                         name="price"
                         value={formData.price}
                         onChange={handleBasicChange}
-                        placeholder="Enter price"
+                        placeholder="Enter price per night"
                       />
                     </Form.Group>
                   </Col>
@@ -1029,98 +1022,22 @@ const AddBungalow = () => {
                 </Form.Group>
               </Tab>
 
-              {/* Tour Cost Tab */}
-              <Tab eventKey="tourCost" title="Tour Cost">
-                <Card>
-                  <Card.Header>Tour Cost Details</Card.Header>
-                  <Card.Body>
-                    <Table striped bordered hover>
-                      <thead>
-                        <tr>
-                          <th>Particulars - Cost in INR</th>
-                          <th>Rate (₹)</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr>
-                          <td>Per pax on Twin Basis</td>
-                          <td>
-                            <Form.Control
-                              type="number"
-                              name="per_pax_twin"
-                              value={formData.per_pax_twin}
-                              onChange={handleBasicChange}
-                              placeholder="Enter rate"
-                            />
-                          </td>
-                        </tr>
-                        <tr>
-                          <td>Per pax on Triple Basis</td>
-                          <td>
-                            <Form.Control
-                              type="number"
-                              name="per_pax_triple"
-                              value={formData.per_pax_triple}
-                              onChange={handleBasicChange}
-                              placeholder="Enter rate"
-                            />
-                          </td>
-                        </tr>
-                        <tr>
-                          <td>Child with Bed</td>
-                          <td>
-                            <Form.Control
-                              type="number"
-                              name="child_with_bed"
-                              value={formData.child_with_bed}
-                              onChange={handleBasicChange}
-                              placeholder="Enter rate"
-                            />
-                          </td>
-                        </tr>
-                        <tr>
-                          <td>Child without Bed</td>
-                          <td>
-                            <Form.Control
-                              type="number"
-                              name="child_without_bed"
-                              value={formData.child_without_bed}
-                              onChange={handleBasicChange}
-                              placeholder="Enter rate"
-                            />
-                          </td>
-                        </tr>
-                        <tr>
-                          <td>Infant</td>
-                          <td>
-                            <Form.Control
-                              type="number"
-                              name="infant"
-                              value={formData.infant}
-                              onChange={handleBasicChange}
-                              placeholder="Enter rate"
-                            />
-                          </td>
-                        </tr>
-                        <tr>
-                          <td>Per pax Single Occupancy</td>
-                          <td>
-                            <Form.Control
-                              type="number"
-                              name="per_pax_single"
-                              value={formData.per_pax_single}
-                              onChange={handleBasicChange}
-                              placeholder="Enter rate"
-                            />
-                          </td>
-                        </tr>
-                      </tbody>
-                    </Table>
-                    <Form.Text className="text-muted">
-                      Enter the tour cost rates in Indian Rupees (₹)
-                    </Form.Text>
-                  </Card.Body>
-                </Card>
+              {/* Bungalow Rate Tab (NEW) */}
+              <Tab eventKey="bungalowRate" title="Bungalow Rate">
+                <Form.Group className="mb-3">
+                  <Form.Label>Bungalow Rate Details</Form.Label>
+                  <Form.Control
+                    as="textarea"
+                    rows={8}
+                    name="bungalow_rate"
+                    value={formData.bungalow_rate}
+                    onChange={handleBasicChange}
+                    placeholder="Enter bungalow rate details, seasonal pricing, or any other rate-related information..."
+                  />
+                  <Form.Text className="text-muted">
+                    Enter detailed rate information including seasonal rates, weekend rates, special offers, etc.
+                  </Form.Text>
+                </Form.Group>
               </Tab>
 
               {/* Inclusive & Exclusive Tab */}
@@ -1170,230 +1087,39 @@ const AddBungalow = () => {
                 </Form.Group>
               </Tab>
 
-              {/* Booking Policy Tab with Booking Form */}
+              {/* Booking Policy Tab */}
               <Tab eventKey="bookingPolicy" title="Booking Policy">
-                <Row>
-                   {/* <Col md={6}> */}
-                    {/* <Card className="mb-4">
-                      <Card.Header as="h5">Booking Form</Card.Header>
-                      <Card.Body>
-                        <Form>
-                          <Form.Group className="mb-3">
-                            <Form.Label>Name of the City *</Form.Label>
-                            <Form.Select
-                              name="city"
-                              value={bookingForm.city}
-                              onChange={handleBookingChange}
-                            >
-                              <option value="">Select City</option>
-                              {cities.map((city, idx) => (
-                                <option key={idx} value={city}>{city}</option>
-                              ))}
-                            </Form.Select>
-                          </Form.Group>
+                <Col md={12}>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Booking Policy Text</Form.Label>
+                    <Form.Control
+                      as="textarea"
+                      rows={6}
+                      name="booking_policy"
+                      value={formData.booking_policy}
+                      onChange={handleBasicChange}
+                      placeholder="Enter booking policy..."
+                    />
+                  </Form.Group>
+                </Col>
+              </Tab>
 
-                          <Form.Group className="mb-3">
-                            <Form.Label>Bungalow No</Form.Label>
-                            <Form.Control
-                              type="text"
-                              name="bungalow_no"
-                              value={bookingForm.bungalow_no}
-                              readOnly
-                              style={{ backgroundColor: '#f8f9fa', fontWeight: 'bold' }}
-                            />
-                          </Form.Group>
-
-                          <Form.Group className="mb-3">
-                            <Form.Label>Contact Person *</Form.Label>
-                            <Form.Control
-                              type="text"
-                              name="contact_person"
-                              value={bookingForm.contact_person}
-                              onChange={handleBookingChange}
-                              placeholder="Enter contact person name"
-                            />
-                          </Form.Group>
-
-                          <Row>
-                            <Col md={6}>
-                              <Form.Group className="mb-3">
-                                <Form.Label>Cell No *</Form.Label>
-                                <Form.Control
-                                  type="tel"
-                                  name="cell_no"
-                                  value={bookingForm.cell_no}
-                                  onChange={handleBookingChange}
-                                  placeholder="Enter cell number"
-                                />
-                              </Form.Group>
-                            </Col>
-                            <Col md={6}>
-                              <Form.Group className="mb-3">
-                                <Form.Label>Email ID</Form.Label>
-                                <Form.Control
-                                  type="email"
-                                  name="email_id"
-                                  value={bookingForm.email_id}
-                                  onChange={handleBookingChange}
-                                  placeholder="Enter email"
-                                />
-                              </Form.Group>
-                            </Col>
-                          </Row>
-
-                          <Form.Group className="mb-3">
-                            <Form.Label>Address</Form.Label>
-                            <Form.Control
-                              as="textarea"
-                              rows={2}
-                              name="address"
-                              value={bookingForm.address}
-                              onChange={handleBookingChange}
-                              placeholder="Enter address"
-                            />
-                          </Form.Group>
-
-                          <Row>
-                            <Col md={4}>
-                              <Form.Group className="mb-3">
-                                <Form.Label>Pin Code</Form.Label>
-                                <Form.Control
-                                  type="text"
-                                  name="pin_code"
-                                  value={bookingForm.pin_code}
-                                  onChange={handleBookingChange}
-                                  placeholder="Enter pin code"
-                                />
-                              </Form.Group>
-                            </Col>
-                            <Col md={4}>
-                              <Form.Group className="mb-3">
-                                <Form.Label>State</Form.Label>
-                                <Form.Control
-                                  type="text"
-                                  name="state"
-                                  value={bookingForm.state}
-                                  onChange={handleBookingChange}
-                                  placeholder="Enter state"
-                                />
-                              </Form.Group>
-                            </Col>
-                            <Col md={4}>
-                              <Form.Group className="mb-3">
-                                <Form.Label>Country</Form.Label>
-                                <Form.Control
-                                  type="text"
-                                  name="country"
-                                  value={bookingForm.country}
-                                  onChange={handleBookingChange}
-                                  placeholder="Enter country"
-                                />
-                              </Form.Group>
-                            </Col>
-                          </Row>
-
-                          <Form.Group className="mb-3">
-                            <Form.Label>No of People *</Form.Label>
-                            <Form.Control
-                              type="number"
-                              min="1"
-                              max="10"
-                              name="no_of_people"
-                              value={bookingForm.no_of_people}
-                              onChange={handleBookingChange}
-                            />
-                          </Form.Group>
-
-                          {guestDetails.length > 0 && (
-                            <div className="mt-4">
-                              <h6>Guest Details</h6>
-                              <Table striped bordered hover size="sm">
-                                <thead>
-                                  <tr>
-                                    <th>Name *</th>
-                                    <th>Age *</th>
-                                    <th>Cell No *</th>
-                                    <th>Email ID *</th>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  {guestDetails.map((guest, idx) => (
-                                    <tr key={idx}>
-                                      <td>
-                                        <Form.Control
-                                          type="text"
-                                          size="sm"
-                                          value={guest.name}
-                                          onChange={(e) => handleGuestChange(idx, 'name', e.target.value)}
-                                          placeholder="Name"
-                                        />
-                                      </td>
-                                      <td>
-                                        <Form.Control
-                                          type="number"
-                                          size="sm"
-                                          value={guest.age}
-                                          onChange={(e) => handleGuestChange(idx, 'age', e.target.value)}
-                                          placeholder="Age"
-                                        />
-                                      </td>
-                                      <td>
-                                        <Form.Control
-                                          type="tel"
-                                          size="sm"
-                                          value={guest.cell_no}
-                                          onChange={(e) => handleGuestChange(idx, 'cell_no', e.target.value)}
-                                          placeholder="Cell No"
-                                        />
-                                      </td>
-                                      <td>
-                                        <Form.Control
-                                          type="email"
-                                          size="sm"
-                                          value={guest.email_id}
-                                          onChange={(e) => handleGuestChange(idx, 'email_id', e.target.value)}
-                                          placeholder="Email"
-                                        />
-                                      </td>
-                                    </tr>
-                                  ))}
-                                </tbody>
-                              </Table>
-                            </div>
-                          )}
-
-                          <div className="d-flex gap-2 justify-content-end mt-3">
-                            <Button variant="secondary" size="sm" onClick={resetBookingForm}>
-                              Reset
-                            </Button>
-                            <Button 
-                              variant="primary" 
-                              size="sm" 
-                              onClick={handleBookingSubmit}
-                              disabled={loading}
-                            >
-                              {loading ? 'Submitting...' : 'Submit Booking'}
-                            </Button>
-                          </div>
-                        </Form>
-                      </Card.Body>
-                    </Card> */}
-                  {/* </Col> */}
-                  
-                  <Col md={12}>
-                    <Form.Group className="mb-3">
-                      <Form.Label>Booking Policy Text</Form.Label>
-                      <Form.Control
-                        as="textarea"
-                        rows={6}
-                        name="booking_policy"
-                        value={formData.booking_policy}
-                        onChange={handleBasicChange}
-                        placeholder="Enter booking policy..."
-                      />
-                    </Form.Group>
-                  </Col>
-                </Row>
+              {/* Cancellation Policy Tab (NEW) */}
+              <Tab eventKey="cancellationPolicy" title="Cancellation Policy">
+                <Form.Group className="mb-3">
+                  <Form.Label>Cancellation Policy Details</Form.Label>
+                  <Form.Control
+                    as="textarea"
+                    rows={8}
+                    name="cancellation_policy"
+                    value={formData.cancellation_policy}
+                    onChange={handleBasicChange}
+                    placeholder="Enter cancellation policy details, deadlines, refund percentages, etc..."
+                  />
+                  <Form.Text className="text-muted">
+                    Specify cancellation terms, deadlines, refund percentages, and any other cancellation-related information.
+                  </Form.Text>
+                </Form.Group>
               </Tab>
 
               {/* Related Bungalows Tab */}

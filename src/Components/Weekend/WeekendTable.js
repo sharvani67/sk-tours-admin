@@ -133,6 +133,7 @@ const WeekendGatewayTable = () => {
     );
   };
 
+  // Updated columns - WITH tour costs column
   const columns = [
     {
       key: 'serial_no',

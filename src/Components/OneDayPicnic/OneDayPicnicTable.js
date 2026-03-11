@@ -189,21 +189,6 @@ const OneDayPicnicTable = () => {
       style: { textAlign: 'right', fontWeight: 'bold' }
     },
     {
-      key: 'tour_costs',
-      title: 'Tour Costs (₹)',
-      render: (item) => (
-        <div className="small">
-          <div>Twin: {item.per_pax_twin ? formatPrice(item.per_pax_twin) : '—'}</div>
-          <div>Triple: {item.per_pax_triple ? formatPrice(item.per_pax_triple) : '—'}</div>
-          <div>Child (Bed): {item.child_with_bed ? formatPrice(item.child_with_bed) : '—'}</div>
-          <div>Child (No Bed): {item.child_without_bed ? formatPrice(item.child_without_bed) : '—'}</div>
-          <div>Infant: {item.infant ? formatPrice(item.infant) : '—'}</div>
-          <div>Single: {item.per_pax_single ? formatPrice(item.per_pax_single) : '—'}</div>
-        </div>
-      ),
-      style: { minWidth: '200px', fontSize: '0.9rem' }
-    },
-    {
       key: 'status',
       title: 'Status',
       render: (item) => getStatusBadge(item.status),
