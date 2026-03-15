@@ -96,9 +96,9 @@ import ContactUs from "./Components/ContactUs/ContactUs";
 
 
 import Exhibition from "./Components/Exhibitions/Exhibition";
-import AboutExhibitionForm from "./Components/Exhibitions/AboutExhibition/AboutExhibitionForm";
-import DomesticExhibitionForm from "./Components/Exhibitions/DomesticExhibition/DomesticExhibitionForm";
-import InternationalExhibitionForm from "./Components/Exhibitions/InternationalExhibition/InternationalExhibitionForm";
+// import AboutExhibitionForm from "./Components/Exhibitions/AboutExhibition/AboutExhibitionForm";
+// import DomesticExhibitionForm from "./Components/Exhibitions/DomesticExhibition/DomesticExhibitionForm";
+// import InternationalExhibitionForm from "./Components/Exhibitions/InternationalExhibition/InternationalExhibitionForm";
 // import AboutMiceForm from "./Components/Mice/AboutMice/AboutMiceForm";
 // import MiceDomesticForm from "./Components/Mice/MiceDomestic/MiceDomesticForm";
 // import MiceInternationalForm from "./Components/Mice/MiceInternational/MiceInternationalForm";
@@ -296,12 +296,12 @@ function App() {
                  <Route path="/exhibition" element={<Exhibition />} />
                  <Route path="/domestic-exhibition" element={<Exhibition />} />
                  <Route path="/international-exhibition" element={<Exhibition />} />
-                 <Route path="/exhibition/about/new" element={<AboutExhibitionForm />} />
+                 {/* <Route path="/exhibition/about/new" element={<AboutExhibitionForm />} />
                 <Route path="/exhibition/about/edit/:id" element={<AboutExhibitionForm />} />
                 <Route path="/exhibition/domestic/new" element={<DomesticExhibitionForm />} />
                 <Route path="/exhibition/domestic/edit/:id" element={<DomesticExhibitionForm />} />
                 <Route path="/exhibition/international/new" element={<InternationalExhibitionForm />} />
-                <Route path="/exhibition/international/edit/:id" element={<InternationalExhibitionForm />} />
+                <Route path="/exhibition/international/edit/:id" element={<InternationalExhibitionForm />} /> */}
 
                  <Route path="/mice" element={<Mice />} />
                    <Route path="/offline-flights-table" element={<OfflineFlightsTable />} />
