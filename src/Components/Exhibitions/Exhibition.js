@@ -38,9 +38,8 @@ function Exhibition() {
   });
 
   // City form state for dynamic addition
-  const [cityEntries, setCityEntries] = useState([
-    { id: Date.now(), cityName: '', price: '', image: null, imagePreview: '', existingImage: '' }
-  ]);
+  const [cityEntries, setCityEntries] = useState([]);
+  const [showCitySection, setShowCitySection] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -90,17 +89,23 @@ function Exhibition() {
           country_name: data.country_name
         });
         
-        // Convert cities to cityEntries format
-        const entries = data.cities.map(city => ({
-          id: city.id,
-          cityName: city.city_name,
-          price: city.price,
-          image: null,
-          imagePreview: city.image ? `${baseurl}/uploads/exhibition/${city.image}` : '',
-          existingImage: city.image || ''
-        }));
+        // Convert cities to cityEntries format if they exist
+        if (data.cities && data.cities.length > 0) {
+          const entries = data.cities.map(city => ({
+            id: city.id,
+            cityName: city.city_name,
+            price: city.price,
+            image: null,
+            imagePreview: city.image ? `${baseurl}/uploads/exhibition/${city.image}` : '',
+            existingImage: city.image || ''
+          }));
+          setCityEntries(entries);
+          setShowCitySection(true);
+        } else {
+          setCityEntries([]);
+          setShowCitySection(false);
+        }
         
-        setCityEntries(entries);
         setActiveTab('domestic');
         setShowForm(true);
       }
@@ -121,16 +126,22 @@ function Exhibition() {
           country_name: data.country_name
         });
         
-        const entries = data.cities.map(city => ({
-          id: city.id,
-          cityName: city.city_name,
-          price: city.price,
-          image: null,
-          imagePreview: city.image ? `${baseurl}/uploads/exhibition/${city.image}` : '',
-          existingImage: city.image || ''
-        }));
+        if (data.cities && data.cities.length > 0) {
+          const entries = data.cities.map(city => ({
+            id: city.id,
+            cityName: city.city_name,
+            price: city.price,
+            image: null,
+            imagePreview: city.image ? `${baseurl}/uploads/exhibition/${city.image}` : '',
+            existingImage: city.image || ''
+          }));
+          setCityEntries(entries);
+          setShowCitySection(true);
+        } else {
+          setCityEntries([]);
+          setShowCitySection(false);
+        }
         
-        setCityEntries(entries);
         setActiveTab('international');
         setShowForm(true);
       }
@@ -201,6 +212,10 @@ function Exhibition() {
   const removeCityEntry = (id) => {
     if (cityEntries.length > 1) {
       setCityEntries(cityEntries.filter(entry => entry.id !== id));
+    } else {
+      // If removing the last city, hide the section
+      setCityEntries([]);
+      setShowCitySection(false);
     }
   };
 
@@ -236,6 +251,17 @@ function Exhibition() {
     } else {
       setInternationalForm({ ...internationalForm, country_name: value });
     }
+  };
+
+  // Toggle city section
+  const toggleCitySection = () => {
+    if (!showCitySection) {
+      // Add a default empty city entry when showing the section
+      setCityEntries([{ id: Date.now(), cityName: '', price: '', image: null, imagePreview: '', existingImage: '' }]);
+    } else {
+      setCityEntries([]);
+    }
+    setShowCitySection(!showCitySection);
   };
 
   // Form submission handlers
@@ -293,47 +319,52 @@ function Exhibition() {
       return;
     }
 
-    // Validate city entries
-    const validEntries = cityEntries.filter(entry => 
-      entry.cityName.trim() !== '' && entry.price > 0
-    );
-
-    if (validEntries.length === 0) {
-      setError('Please add at least one valid city with price');
-      setLoading(false);
-      return;
-    }
-
-    // For new entries, check if images are provided
-    if (!domesticForm.id) {
-      const missingImages = validEntries.some(entry => !entry.image && !entry.existingImage);
-      if (missingImages) {
-        setError('Please upload an image for each city');
-        setLoading(false);
-        return;
-      }
-    }
-
     const formData = new FormData();
     formData.append('country_name', domesticForm.country_name.trim());
     
-    // Prepare arrays for cities, prices, and existing data
-    const cityNames = validEntries.map(entry => entry.cityName.trim());
-    const prices = validEntries.map(entry => entry.price);
-    const existingImages = validEntries.map(entry => entry.existingImage || '').filter(img => img !== '');
-    const existingCityIds = validEntries.map(entry => entry.id).filter(id => typeof id === 'number');
-    
-    formData.append('cityNames', JSON.stringify(cityNames));
-    formData.append('prices', JSON.stringify(prices));
-    formData.append('existingImages', JSON.stringify(existingImages));
-    formData.append('existingCityIds', JSON.stringify(existingCityIds));
-    
-    // Append images for entries that have new images
-    validEntries.forEach(entry => {
-      if (entry.image) {
-        formData.append('images', entry.image);
+    // Handle cities if they exist
+    if (showCitySection && cityEntries.length > 0) {
+      const validEntries = cityEntries.filter(entry => 
+        entry.cityName.trim() !== '' && entry.price > 0
+      );
+
+      if (validEntries.length === 0) {
+        setError('Please fill in city details or disable cities section');
+        setLoading(false);
+        return;
       }
-    });
+
+      // For new entries, check if images are provided
+      if (!domesticForm.id) {
+        const missingImages = validEntries.some(entry => !entry.image && !entry.existingImage);
+        if (missingImages) {
+          setError('Please upload an image for each city');
+          setLoading(false);
+          return;
+        }
+      }
+
+      const cityNames = validEntries.map(entry => entry.cityName.trim());
+      const prices = validEntries.map(entry => entry.price);
+      const existingImages = validEntries.map(entry => entry.existingImage || '').filter(img => img !== '');
+      const existingCityIds = validEntries.map(entry => entry.id).filter(id => typeof id === 'number');
+      
+      formData.append('cityNames', JSON.stringify(cityNames));
+      formData.append('prices', JSON.stringify(prices));
+      formData.append('existingImages', JSON.stringify(existingImages));
+      formData.append('existingCityIds', JSON.stringify(existingCityIds));
+      
+      // Append images for entries that have new images
+      validEntries.forEach(entry => {
+        if (entry.image) {
+          formData.append('images', entry.image);
+        }
+      });
+    } else {
+      // If no cities, send empty arrays
+      formData.append('cityNames', JSON.stringify([]));
+      formData.append('prices', JSON.stringify([]));
+    }
 
     try {
       let response;
@@ -378,43 +409,48 @@ function Exhibition() {
       return;
     }
 
-    const validEntries = cityEntries.filter(entry => 
-      entry.cityName.trim() !== '' && entry.price > 0
-    );
-
-    if (validEntries.length === 0) {
-      setError('Please add at least one valid city with price');
-      setLoading(false);
-      return;
-    }
-
-    if (!internationalForm.id) {
-      const missingImages = validEntries.some(entry => !entry.image && !entry.existingImage);
-      if (missingImages) {
-        setError('Please upload an image for each city');
-        setLoading(false);
-        return;
-      }
-    }
-
     const formData = new FormData();
     formData.append('country_name', internationalForm.country_name.trim());
     
-    const cityNames = validEntries.map(entry => entry.cityName.trim());
-    const prices = validEntries.map(entry => entry.price);
-    const existingImages = validEntries.map(entry => entry.existingImage || '').filter(img => img !== '');
-    const existingCityIds = validEntries.map(entry => entry.id).filter(id => typeof id === 'number');
-    
-    formData.append('cityNames', JSON.stringify(cityNames));
-    formData.append('prices', JSON.stringify(prices));
-    formData.append('existingImages', JSON.stringify(existingImages));
-    formData.append('existingCityIds', JSON.stringify(existingCityIds));
-    
-    validEntries.forEach(entry => {
-      if (entry.image) {
-        formData.append('images', entry.image);
+    if (showCitySection && cityEntries.length > 0) {
+      const validEntries = cityEntries.filter(entry => 
+        entry.cityName.trim() !== '' && entry.price > 0
+      );
+
+      if (validEntries.length === 0) {
+        setError('Please fill in city details or disable cities section');
+        setLoading(false);
+        return;
       }
-    });
+
+      if (!internationalForm.id) {
+        const missingImages = validEntries.some(entry => !entry.image && !entry.existingImage);
+        if (missingImages) {
+          setError('Please upload an image for each city');
+          setLoading(false);
+          return;
+        }
+      }
+
+      const cityNames = validEntries.map(entry => entry.cityName.trim());
+      const prices = validEntries.map(entry => entry.price);
+      const existingImages = validEntries.map(entry => entry.existingImage || '').filter(img => img !== '');
+      const existingCityIds = validEntries.map(entry => entry.id).filter(id => typeof id === 'number');
+      
+      formData.append('cityNames', JSON.stringify(cityNames));
+      formData.append('prices', JSON.stringify(prices));
+      formData.append('existingImages', JSON.stringify(existingImages));
+      formData.append('existingCityIds', JSON.stringify(existingCityIds));
+      
+      validEntries.forEach(entry => {
+        if (entry.image) {
+          formData.append('images', entry.image);
+        }
+      });
+    } else {
+      formData.append('cityNames', JSON.stringify([]));
+      formData.append('prices', JSON.stringify([]));
+    }
 
     try {
       let response;
@@ -511,7 +547,8 @@ function Exhibition() {
       id: null,
       country_name: ''
     });
-    setCityEntries([{ id: Date.now(), cityName: '', price: '', image: null, imagePreview: '', existingImage: '' }]);
+    setCityEntries([]);
+    setShowCitySection(false);
   };
 
   const handleAddNew = () => {
@@ -956,84 +993,100 @@ function Exhibition() {
                         />
                       </div>
 
-                      <div className="cities-section">
-                        <div className="section-header">
-                          <h4>Cities with Images and Prices</h4>
-                          <button type="button" onClick={addCityEntry} className="add-btn">
-                            <FaPlus /> Add City
-                          </button>
-                        </div>
+                      <div className="city-toggle-section">
+                        <Button 
+                          type="button" 
+                          variant={showCitySection ? "danger" : "primary"}
+                          onClick={toggleCitySection}
+                          className="mb-3"
+                        >
+                          {showCitySection ? 'Remove Cities Section' : '+ Add Cities with Details'}
+                        </Button>
+                        {showCitySection && (
+                          <p className="text-muted small">Add cities with their own images and prices (optional)</p>
+                        )}
+                      </div>
 
-                        {cityEntries.map((entry, index) => (
-                          <div key={entry.id} className="city-entry-card">
-                            <div className="city-entry-header">
-                              <h5>City {index + 1}</h5>
-                              {cityEntries.length > 1 && (
-                                <button 
-                                  type="button" 
-                                  onClick={() => removeCityEntry(entry.id)}
-                                  className="remove-btn"
-                                >
-                                  Remove City
-                                </button>
-                              )}
-                            </div>
-                            
-                            <div className="city-entry-body">
-                              <div className="row">
-                                <div className="col-md-4">
-                                  <div className="form-group">
-                                    <label>City Name *</label>
-                                    <input
-                                      type="text"
-                                      placeholder="Enter city name"
-                                      value={entry.cityName}
-                                      onChange={(e) => handleCityChange(entry.id, 'cityName', e.target.value)}
-                                      required
-                                    />
-                                  </div>
-                                </div>
-                                
-                                <div className="col-md-4">
-                                  <div className="form-group">
-                                    <label>Price (₹) *</label>
-                                    <input
-                                      type="number"
-                                      placeholder="Enter price"
-                                      value={entry.price}
-                                      onChange={(e) => handleCityChange(entry.id, 'price', e.target.value)}
-                                      required
-                                      min="0"
-                                      step="0.01"
-                                    />
-                                  </div>
-                                </div>
-                                
-                                <div className="col-md-4">
-                                  <div className="form-group">
-                                    <label>Image {!entry.existingImage && '*'}</label>
-                                    <input
-                                      type="file"
-                                      accept="image/*"
-                                      onChange={(e) => handleCityImageChange(entry.id, e)}
-                                      required={!entry.existingImage && !domesticForm.id && !internationalForm.id}
-                                    />
-                                  </div>
-                                </div>
+                      {showCitySection && (
+                        <div className="cities-section">
+                          <div className="section-header">
+                            <h4>Cities with Images and Prices</h4>
+                            <button type="button" onClick={addCityEntry} className="add-btn">
+                              <FaPlus /> Add City
+                            </button>
+                          </div>
+
+                          {cityEntries.map((entry, index) => (
+                            <div key={entry.id} className="city-entry-card">
+                              <div className="city-entry-header">
+                                <h5>City {index + 1}</h5>
+                                {cityEntries.length > 1 && (
+                                  <button 
+                                    type="button" 
+                                    onClick={() => removeCityEntry(entry.id)}
+                                    className="remove-btn"
+                                  >
+                                    Remove City
+                                  </button>
+                                )}
                               </div>
                               
-                              {(entry.imagePreview || entry.existingImage) && (
-                                <div className="image-preview">
-                                  <img 
-                                    src={entry.imagePreview || `${baseurl}/uploads/exhibition/${entry.existingImage}`}
-                                    alt={`City ${index + 1}`}
-                                  />
+                              <div className="city-entry-body">
+                                <div className="row">
+                                  <div className="col-md-4">
+                                    <div className="form-group">
+                                      <label>City Name *</label>
+                                      <input
+                                        type="text"
+                                        placeholder="Enter city name"
+                                        value={entry.cityName}
+                                        onChange={(e) => handleCityChange(entry.id, 'cityName', e.target.value)}
+                                        required={showCitySection}
+                                      />
+                                    </div>
+                                  </div>
+                                  
+                                  <div className="col-md-4">
+                                    <div className="form-group">
+                                      <label>Price (₹) *</label>
+                                      <input
+                                        type="number"
+                                        placeholder="Enter price"
+                                        value={entry.price}
+                                        onChange={(e) => handleCityChange(entry.id, 'price', e.target.value)}
+                                        required={showCitySection}
+                                        min="0"
+                                        step="0.01"
+                                      />
+                                    </div>
+                                  </div>
+                                  
+                                  <div className="col-md-4">
+                                    <div className="form-group">
+                                      <label>Image {!entry.existingImage && '*'}</label>
+                                      <input
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={(e) => handleCityImageChange(entry.id, e)}
+                                        required={!entry.existingImage && !domesticForm.id && !internationalForm.id && showCitySection}
+                                      />
+                                    </div>
+                                  </div>
                                 </div>
-                              )}
+                                
+                                {(entry.imagePreview || entry.existingImage) && (
+                                  <div className="image-preview">
+                                    <img 
+                                      src={entry.imagePreview || `${baseurl}/uploads/exhibition/${entry.existingImage}`}
+                                      alt={`City ${index + 1}`}
+                                    />
+                                  </div>
+                                )}
+                              </div>
                             </div>
-                          </div>
-                        ))}
-                      </div>
+                          ))}
+                        </div>
+                      )}
 
                       <div className="form-actions">
                         <button type="submit" className="submit-btn" disabled={loading}>
