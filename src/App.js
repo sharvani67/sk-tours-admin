@@ -305,12 +305,6 @@ function App() {
                  <Route path="/exhibition" element={<Exhibition />} />
                  <Route path="/domestic-exhibition" element={<Exhibition />} />
                  <Route path="/international-exhibition" element={<Exhibition />} />
-                 {/* <Route path="/exhibition/about/new" element={<AboutExhibitionForm />} />
-                <Route path="/exhibition/about/edit/:id" element={<AboutExhibitionForm />} />
-                <Route path="/exhibition/domestic/new" element={<DomesticExhibitionForm />} />
-                <Route path="/exhibition/domestic/edit/:id" element={<DomesticExhibitionForm />} />
-                <Route path="/exhibition/international/new" element={<InternationalExhibitionForm />} />
-                <Route path="/exhibition/international/edit/:id" element={<InternationalExhibitionForm />} /> */}
 
                  <Route path="/mice" element={<Mice />} />
                    <Route path="/offline-flights-table" element={<OfflineFlightsTable />} />
