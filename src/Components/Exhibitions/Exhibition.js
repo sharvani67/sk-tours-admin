@@ -595,7 +595,7 @@ function Exhibition() {
             <div className="table-header">
               <h3>International Exhibitions</h3>
               <Button variant="success" onClick={handleAddNew}>
-                + Add International Countries
+                + Add International Cities
               </Button>
             </div>
             <table className="data-table">
