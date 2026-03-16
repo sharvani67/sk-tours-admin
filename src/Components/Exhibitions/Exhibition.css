@@ -354,3 +354,74 @@
     align-items: flex-start;
   }
 }
+
+
+/* Add these styles to your existing Exhibition.css */
+
+.horizontal-tabs-container {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  width: 100%;
+  overflow: visible;
+}
+
+.tabs-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  padding: 10px;
+  gap: 5px;
+}
+
+.tab-btn {
+  padding: 12px 24px;
+  border: none;
+  background: none;
+  color: #666;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+  flex: 0 1 auto;
+}
+
+.tab-btn:hover {
+  background: #f0f0f0;
+  color: #333;
+}
+
+.tab-btn.active {
+  background: #007bff;
+  color: white;
+}
+
+/* Remove the old sidebar styles if you want */
+/* You can delete or comment out the .nav-link styles if not needed elsewhere */
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .tab-btn {
+    padding: 10px 18px;
+    font-size: 14px;
+  }
+  
+  .tabs-wrapper {
+    flex-direction: column;
+  }
+  
+  .tab-btn {
+    width: 100%;
+    text-align: left;
+  }
+}
+
+/* Update form container for better spacing */
+.form-container {
+  background: #fff;
+  border-radius: 8px;
+  padding: 30px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  margin-top: 20px;
+}

@@ -73,17 +73,21 @@
 
 .image-item .delete-btn {
   position: absolute;
-  top: 5px;
-  right: 5px;
-  background: rgba(255,255,255,0.9);
+  top: 8px;
+  right: 8px;
+  background: rgba(255,255,255,0.95);
   border: none;
-  border-radius: 4px;
-  padding: 4px 8px;
-  display: none;
+  border-radius: 6px;
+  padding: 6px 8px;
+  cursor: pointer;
+  opacity: 0.8;
+  transition: all 0.2s ease;
 }
 
-.image-item:hover .delete-btn {
-  display: block;
+.image-item .delete-btn:hover {
+  opacity: 1;
+  background: #ff4d4f;
+  color: #fff;
 }
 
 .form-container {
@@ -240,4 +244,72 @@
   width: 1rem;
   height: 1rem;
   border-width: 0.15em;
+}
+
+
+
+.horizontal-tabs-container {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  width: 100%;
+  overflow: visible; /* Change from overflow-x: auto to visible */
+}
+
+.tabs-wrapper {
+  display: flex;
+  flex-wrap: wrap; /* Change from nowrap to wrap */
+  padding: 10px;
+  gap: 5px;
+  /* Remove min-width: min-content */
+}
+
+.tab-btn {
+  padding: 10px 20px;
+  border: none;
+  background: none;
+  color: #666;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+  flex: 0 1 auto; /* Allow buttons to shrink if needed */
+}
+
+.tab-btn:hover {
+  background: #f0f0f0;
+  color: #333;
+}
+
+.tab-btn.active {
+  background: #007bff;
+  color: white;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .tab-btn {
+    padding: 8px 15px;
+    font-size: 13px;
+  }
+  
+  /* For very small screens, make tabs full width */
+  .tabs-wrapper {
+    flex-direction: column;
+  }
+  
+  .tab-btn {
+    width: 100%;
+    text-align: left;
+  }
+}
+
+/* Style for the form container */
+.form-container {
+  background: #fff;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }

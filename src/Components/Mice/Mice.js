@@ -437,65 +437,6 @@ function Mice() {
     }
   };
 
-  const Sidebar = () => (
-    <Card className="mb-4">
-      <Card.Body className="p-3">
-        <h5 className="mb-3">MICE Management</h5>
-        <nav className="nav flex-column">
-          <button
-            className={`nav-link text-start mb-2 ${activeTab === 'main' ? 'active' : ''}`}
-            onClick={() => { setActiveTab('main'); setShowForm(false); resetForms(); }}
-          >
-            MICE Main Page
-          </button>
-          <button
-            className={`nav-link text-start mb-2 ${activeTab === 'freeflow' ? 'active' : ''}`}
-            onClick={() => { setActiveTab('freeflow'); setShowForm(false); resetForms(); }}
-          >
-            Free Flow Entry
-          </button>
-          <button
-            className={`nav-link text-start mb-2 ${activeTab === 'packages' ? 'active' : ''}`}
-            onClick={() => { setActiveTab('packages'); setShowForm(false); resetForms(); }}
-          >
-            Sample Packages
-          </button>
-          <button
-            className={`nav-link text-start mb-2 ${activeTab === 'clients' ? 'active' : ''}`}
-            onClick={() => { setActiveTab('clients'); setShowForm(false); resetForms(); }}
-          >
-            Our Clients
-          </button>
-          <button
-            className={`nav-link text-start mb-2 ${activeTab === 'venues' ? 'active' : ''}`}
-            onClick={() => { setActiveTab('venues'); setShowForm(false); resetForms(); }}
-          >
-            Venues
-          </button>
-          <button
-            className={`nav-link text-start mb-2 ${activeTab === 'gallery' ? 'active' : ''}`}
-            onClick={() => { setActiveTab('gallery'); setShowForm(false); resetForms(); }}
-          >
-            MICE Gallery
-          </button>
-          <button
-            className={`nav-link text-start mb-2 ${activeTab === 'events' ? 'active' : ''}`}
-            onClick={() => { setActiveTab('events'); setShowForm(false); resetForms(); }}
-          >
-            Upcoming Events
-          </button>
-          {/* New Enquiry Tab */}
-          <button
-            className={`nav-link text-start ${activeTab === 'enquiry' ? 'active' : ''}`}
-            onClick={() => { setActiveTab('enquiry'); setShowForm(false); resetForms(); }}
-          >
-            Enquiry Form
-          </button>
-        </nav>
-      </Card.Body>
-    </Card>
-  );
-
   const formProps = {
     loading,
     handleCancel,
@@ -525,25 +466,63 @@ function Mice() {
           </Alert>
         )}
 
-        <Row>
-          <Col md={3} lg={2} className="d-none d-md-block">
-            <Sidebar />
-          </Col>
-          
-          <Col md={9} lg={10}>
-            <div className="d-md-none mb-4">
-              <div className="tabs">
-                <button className={`tab ${activeTab === 'main' ? 'active' : ''}`} onClick={() => { setActiveTab('main'); setShowForm(false); resetForms(); }}>Main</button>
-                <button className={`tab ${activeTab === 'freeflow' ? 'active' : ''}`} onClick={() => { setActiveTab('freeflow'); setShowForm(false); resetForms(); }}>Free Flow</button>
-                <button className={`tab ${activeTab === 'packages' ? 'active' : ''}`} onClick={() => { setActiveTab('packages'); setShowForm(false); resetForms(); }}>Packages</button>
-                <button className={`tab ${activeTab === 'clients' ? 'active' : ''}`} onClick={() => { setActiveTab('clients'); setShowForm(false); resetForms(); }}>Clients</button>
-                <button className={`tab ${activeTab === 'venues' ? 'active' : ''}`} onClick={() => { setActiveTab('venues'); setShowForm(false); resetForms(); }}>Venues</button>
-                <button className={`tab ${activeTab === 'gallery' ? 'active' : ''}`} onClick={() => { setActiveTab('gallery'); setShowForm(false); resetForms(); }}>Gallery</button>
-                <button className={`tab ${activeTab === 'events' ? 'active' : ''}`} onClick={() => { setActiveTab('events'); setShowForm(false); resetForms(); }}>Events</button>
-                <button className={`tab ${activeTab === 'enquiry' ? 'active' : ''}`} onClick={() => { setActiveTab('enquiry'); setShowForm(false); resetForms(); }}>Enquiry</button>
-              </div>
-            </div>
+        {/* Horizontal Tabs */}
+        <div className="horizontal-tabs-container mb-4">
+          <div className="tabs-wrapper">
+            <button
+              className={`tab-btn ${activeTab === 'main' ? 'active' : ''}`}
+              onClick={() => { setActiveTab('main'); setShowForm(false); resetForms(); }}
+            >
+              MICE Main Page
+            </button>
+            <button
+              className={`tab-btn ${activeTab === 'freeflow' ? 'active' : ''}`}
+              onClick={() => { setActiveTab('freeflow'); setShowForm(false); resetForms(); }}
+            >
+              Free Flow Entry
+            </button>
+            <button
+              className={`tab-btn ${activeTab === 'packages' ? 'active' : ''}`}
+              onClick={() => { setActiveTab('packages'); setShowForm(false); resetForms(); }}
+            >
+              Sample Packages
+            </button>
+            <button
+              className={`tab-btn ${activeTab === 'clients' ? 'active' : ''}`}
+              onClick={() => { setActiveTab('clients'); setShowForm(false); resetForms(); }}
+            >
+              Our Clients
+            </button>
+            <button
+              className={`tab-btn ${activeTab === 'venues' ? 'active' : ''}`}
+              onClick={() => { setActiveTab('venues'); setShowForm(false); resetForms(); }}
+            >
+              Venues
+            </button>
+            <button
+              className={`tab-btn ${activeTab === 'gallery' ? 'active' : ''}`}
+              onClick={() => { setActiveTab('gallery'); setShowForm(false); resetForms(); }}
+            >
+              MICE Gallery
+            </button>
+            <button
+              className={`tab-btn ${activeTab === 'events' ? 'active' : ''}`}
+              onClick={() => { setActiveTab('events'); setShowForm(false); resetForms(); }}
+            >
+              Upcoming Events
+            </button>
+            <button
+              className={`tab-btn ${activeTab === 'enquiry' ? 'active' : ''}`}
+              onClick={() => { setActiveTab('enquiry'); setShowForm(false); resetForms(); }}
+            >
+              Enquiry Form
+            </button>
+          </div>
+        </div>
 
+        {/* Content Area */}
+        <Row>
+          <Col xs={12}>
             {!showForm ? (
               renderTable()
             ) : (

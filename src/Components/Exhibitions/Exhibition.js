@@ -546,7 +546,7 @@ function Exhibition() {
             <div className="table-header">
               <h3>Domestic Exhibitions</h3>
               <Button variant="success" onClick={handleAddNew}>
-                + Add Domestic Countries
+                + Add Domestic Cities
               </Button>
             </div>
             <table className="data-table">
@@ -643,50 +643,9 @@ function Exhibition() {
     }
   };
 
-  // Sidebar Navigation Component
-  const Sidebar = () => (
-    <Card className="mb-4">
-      <Card.Body className="p-3">
-        <h5 className="mb-3">Exhibition Management</h5>
-        <nav className="nav flex-column">
-          <button
-            className={`nav-link text-start mb-2 ${activeTab === 'about' ? 'active' : ''}`}
-            onClick={() => {
-              setActiveTab('about');
-              setShowForm(false);
-              resetForms();
-            }}
-          >
-            About Exhibition
-          </button>
-          <button
-            className={`nav-link text-start mb-2 ${activeTab === 'domestic' ? 'active' : ''}`}
-            onClick={() => {
-              setActiveTab('domestic');
-              setShowForm(false);
-              resetForms();
-            }}
-          >
-            Domestic Exhibition
-          </button>
-          <button
-            className={`nav-link text-start ${activeTab === 'international' ? 'active' : ''}`}
-            onClick={() => {
-              setActiveTab('international');
-              setShowForm(false);
-              resetForms();
-            }}
-          >
-            International Exhibition
-          </button>
-        </nav>
-      </Card.Body>
-    </Card>
-  );
-
   return (
     <Navbar>
-      <Container>
+      <Container fluid>
         <div className="d-flex justify-content-between align-items-center mb-4">
           <h2 className="mb-0">Exhibition Management</h2>
         </div>
@@ -697,57 +656,51 @@ function Exhibition() {
           </Alert>
         )}
 
-        <Row>
-          {/* Sidebar for desktop */}
-          <Col md={3} lg={2} className="d-none d-md-block">
-            <Sidebar />
-          </Col>
-          
-          {/* Main Content */}
-          <Col md={9} lg={10}>
-            {/* Mobile Tabs */}
-            <div className="d-md-none mb-4">
-              <div className="tabs">
-                <button 
-                  className={`tab ${activeTab === 'about' ? 'active' : ''}`}
-                  onClick={() => {
-                    setActiveTab('about');
-                    setShowForm(false);
-                    resetForms();
-                  }}
-                >
-                  About
-                </button>
-                <button 
-                  className={`tab ${activeTab === 'domestic' ? 'active' : ''}`}
-                  onClick={() => {
-                    setActiveTab('domestic');
-                    setShowForm(false);
-                    resetForms();
-                  }}
-                >
-                  Domestic
-                </button>
-                <button 
-                  className={`tab ${activeTab === 'international' ? 'active' : ''}`}
-                  onClick={() => {
-                    setActiveTab('international');
-                    setShowForm(false);
-                    resetForms();
-                  }}
-                >
-                  International
-                </button>
-              </div>
-            </div>
+        {/* Horizontal Tabs */}
+        <div className="horizontal-tabs-container mb-4">
+          <div className="tabs-wrapper">
+            <button
+              className={`tab-btn ${activeTab === 'about' ? 'active' : ''}`}
+              onClick={() => {
+                setActiveTab('about');
+                setShowForm(false);
+                resetForms();
+              }}
+            >
+              About Exhibition
+            </button>
+            <button
+              className={`tab-btn ${activeTab === 'domestic' ? 'active' : ''}`}
+              onClick={() => {
+                setActiveTab('domestic');
+                setShowForm(false);
+                resetForms();
+              }}
+            >
+              Domestic Exhibition
+            </button>
+            <button
+              className={`tab-btn ${activeTab === 'international' ? 'active' : ''}`}
+              onClick={() => {
+                setActiveTab('international');
+                setShowForm(false);
+                resetForms();
+              }}
+            >
+              International Exhibition
+            </button>
+          </div>
+        </div>
 
-            {/* Render Table or Form based on showForm state */}
+        {/* Content Area */}
+        <Row>
+          <Col xs={12}>
             {!showForm ? (
               renderTable()
             ) : (
               <div className="form-container">
                 {loading && (
-                  <div className="text-center">
+                  <div className="text-center mb-4">
                     <Spinner animation="border" size="sm" className="me-2" />
                     Saving...
                   </div>
@@ -853,15 +806,15 @@ function Exhibition() {
                 {/* Domestic Form */}
                 {activeTab === 'domestic' && (
                   <>
-                    <h2>{domesticForm.id ? 'Edit Domestic Country' : 'Add Domestic Countries'}</h2>
+                    <h2>{domesticForm.id ? 'Edit Exhibition Product' : 'Add Exhibition Product'}</h2>
                     <form onSubmit={handleDomesticSubmit}>
                       <div className="form-group">
-                        <label>Country Name{domesticForm.id ? '' : 's (Domestic)'}</label>
+                        <label>Cities Name{domesticForm.id ? '' : 's (Domestic)'}</label>
                         {domesticForm.countries.map((country, index) => (
                           <div key={index} className="country-input-group">
                             <input
                               type="text"
-                              placeholder="Enter country name"
+                              placeholder="Enter cities name"
                               value={country}
                               onChange={(e) => handleDomesticCountryChange(index, e.target.value)}
                               required
@@ -883,14 +836,14 @@ function Exhibition() {
                             onClick={addDomesticCountry}
                             className="add-btn"
                           >
-                            + Add Another Country
+                            + Add Another City
                           </button>
                         )}
                       </div>
 
                       <div className="form-actions">
                         <button type="submit" className="submit-btn" disabled={loading}>
-                          {domesticForm.id ? 'Update Country' : 'Save Domestic Countries'}
+                          {domesticForm.id ? 'Update Cities' : 'Save Domestic Cities'}
                         </button>
                         <button type="button" onClick={handleCancel} className="cancel-btn" disabled={loading}>
                           Cancel
@@ -903,15 +856,15 @@ function Exhibition() {
                 {/* International Form */}
                 {activeTab === 'international' && (
                   <>
-                    <h2>{internationalForm.id ? 'Edit International Country' : 'Add International Countries'}</h2>
+                    <h2>{internationalForm.id ? 'Edit Exhibition Product' : 'Add Exhibition Product'}</h2>
                     <form onSubmit={handleInternationalSubmit}>
                       <div className="form-group">
-                        <label>Country Name{internationalForm.id ? '' : 's (International)'}</label>
+                        <label>Cities Name{internationalForm.id ? '' : 's (International)'}</label>
                         {internationalForm.countries.map((country, index) => (
                           <div key={index} className="country-input-group">
                             <input
                               type="text"
-                              placeholder="Enter country name"
+                              placeholder="Enter cities name"
                               value={country}
                               onChange={(e) => handleInternationalCountryChange(index, e.target.value)}
                               required
@@ -933,14 +886,14 @@ function Exhibition() {
                             onClick={addInternationalCountry}
                             className="add-btn"
                           >
-                            + Add Another Country
+                            + Add Another City
                           </button>
                         )}
                       </div>
 
                       <div className="form-actions">
                         <button type="submit" className="submit-btn" disabled={loading}>
-                          {internationalForm.id ? 'Update Country' : 'Save International Countries'}
+                          {internationalForm.id ? 'Update Cities' : 'Save International Cities'}
                         </button>
                         <button type="button" onClick={handleCancel} className="cancel-btn" disabled={loading}>
                           Cancel
