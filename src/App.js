@@ -150,7 +150,16 @@ import INTLFestivalTours from "./Components/Tours/InternationalFestivalToursTabl
 import INTLFestivalAddTour from "./Components/Tours/InternationalFestivalAddTourForm";
 import FlightTax from "./Components/FlightTax/FlightTax";
 import AddFlightTax from "./Components/FlightTax/AddFlightTax";
-
+import PassportTable from "./Components/Tours/Passport/PassportTable";
+import PassportForm from "./Components/Tours/Passport/PassportForm";
+import WeekendForm from "./Components/BookingForms/WeekendTable.js";
+import OnedayBookingForm from "./Components/BookingForms/OnedaybookingTable.js";
+import BungalowTable from "./Components/BookingForms/BungalowTable.js";
+import BookingView from "./Components/BookingForms/BookingView";
+import OnedaybookingView from "./Components/BookingForms/OnedaybookingView.js";
+import OnedaybookingTable from "./Components/BookingForms/OnedaybookingTable.js";
+import WeekendView from "./Components/BookingForms/WeekendView.js";
+import WeekendTable from "./Components/BookingForms/WeekendTable.js";
 
 function App() {
   return (
@@ -344,12 +353,24 @@ function App() {
 <Route path="/weekend-gateways" element={<WeekendGatewayTable />} />
 <Route path="/add-weekend-gateway" element={<AddWeekendGateway />} />
 <Route path="/add-weekend-gateway/:id" element={<AddWeekendGateway />} />
-
+<Route path="/Passport" element={<PassportTable />} />
+<Route path="/addPassport" element={<PassportForm />} />
+<Route path="/addPassport/:id" element={<PassportForm />} />
 <Route path="/micenquiryform/:id" element={<MicEnquiryFormEdit />} />
 <Route path="/Flighttax" element={<FlightTax />} />
 <Route path="/addflighttax" element={<AddFlightTax />} />
 <Route path="/addflighttax/:id" element={<AddFlightTax />} />
+<Route path="/Bookingtable" element={<BungalowTable />} />
+<Route path="/Bookingview" element={<BookingView  />} />
+<Route path="/Bookingview/:id" element={<BookingView  />} />
 
+<Route path="/onedaypicnicview" element={<OnedaybookingView  />} />
+<Route path="/onedaypicnicview/:id" element={<OnedaybookingView  />} />
+<Route path="/onedaypicnictable" element={<OnedaybookingTable />} />
+<Route path="/weekendview" element={<WeekendView />} />
+<Route path="/weekendview/:id" element={<WeekendView />} />
+
+<Route path="/weekendtable" element={<WeekendTable />} />
 
               
 

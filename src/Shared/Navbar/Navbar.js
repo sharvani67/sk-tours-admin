@@ -11,7 +11,7 @@ import {
 import {
   FiMenu, FiHome, FiUsers, FiUser, FiLogOut, FiX, FiBell, FiClock,
   FiFlag, FiMap, FiMapPin, FiGift, FiArchive, FiAnchor, FiSettings,FiLayers, 
-  FiVideo, FiInfo, FiGlobe, FiMessageSquare, FiDollarSign, FiBriefcase
+  FiVideo, FiInfo, FiGlobe, FiMessageSquare, FiDollarSign, FiBriefcase,FiFileText ,
 } from "react-icons/fi";
 
 import { useNavigate, useLocation } from "react-router-dom";
@@ -365,6 +365,21 @@ const Navbar = ({ children }) => {
     icon: <FiMap className="sidebar-icon" />,
     matchPaths: ["/Flighttax", "/addflighttax", ],
   },
+     { 
+    label: "Passport", 
+    path: "/Passport", 
+    icon: <FiMap className="sidebar-icon" />,
+    matchPaths: ["/Passport", "/addPassport", ],
+  },
+{
+  label: "Forms",
+  icon: <FiFileText className="sidebar-icon" />,
+  children: [
+    { label: "Booking Forms", path: "/Bookingtable" },
+    { label: "Oneday Forms", path: "/onedaypicnictable" },
+    { label: "Weekend Forms", path: "/weekendtable" }
+  ]
+}
 ];
 
 
@@ -505,22 +520,47 @@ const Navbar = ({ children }) => {
           }`}
         >
           <Nav className="flex-column">
-            {navStructure.map((item, index) => (
-              <Nav.Link
-                key={index}
-                className={`sidebar-link ${
-                  isActiveNavItem(item) ? "active" : ""
-                }`}
-                onClick={() => handleNavClick(item.label, item.path)}
-              >
-                <div className="d-flex align-items-center justify-content-between">
-                  <div className="d-flex align-items-center">
-                    {item.icon}
-                    <span className="ms-2 sidebar-label">{item.label}</span>
-                  </div>
-                </div>
-              </Nav.Link>
-            ))}
+          {navStructure.map((item, index) => (
+  <div key={index}>
+    <Nav.Link
+      className={`sidebar-link ${isActiveNavItem(item) ? "active" : ""}`}
+      onClick={() => {
+        if (item.children) {
+          toggleSection(item.label);
+        } else {
+          handleNavClick(item.label, item.path);
+        }
+      }}
+    >
+      <div className="d-flex align-items-center justify-content-between">
+        <div className="d-flex align-items-center">
+          {item.icon}
+          <span className="ms-2 sidebar-label">{item.label}</span>
+        </div>
+        {item.children && (
+          <span>{expandedSections[item.label] ? "▾" : "▸"}</span>
+        )}
+      </div>
+    </Nav.Link>
+
+    {/* Submenu */}
+    {item.children && expandedSections[item.label] && (
+      <div className="submenu ms-4">
+        {item.children.map((child, i) => (
+          <Nav.Link
+            key={i}
+            className={`sidebar-link ${
+              isActiveNavItem(child) ? "active" : ""
+            }`}
+            onClick={() => handleNavClick(child.label, child.path)}
+          >
+            {child.label}
+          </Nav.Link>
+        ))}
+      </div>
+    )}
+  </div>
+))}
           </Nav>
         </div>
 
