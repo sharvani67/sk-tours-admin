@@ -4,6 +4,7 @@ import Navbar from '../../Shared/Navbar/Navbar';
 import { baseurl } from '../../Api/Baseurl';
 import './Exhibition.css';
 import { FaTrash, FaEdit, FaEye, FaPlus, FaImage } from 'react-icons/fa';
+import { useNavigate } from 'react-router-dom';
 
 function Exhibition() {
   const [activeTab, setActiveTab] = useState('about');
@@ -12,6 +13,7 @@ function Exhibition() {
   const [selectedExhibition, setSelectedExhibition] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const navigate = useNavigate();
   
   // State for data
   const [aboutExhibition, setAboutExhibition] = useState(null);
@@ -368,6 +370,8 @@ function Exhibition() {
 
     try {
       let response;
+      let savedId = domesticForm.id;
+      
       if (domesticForm.id) {
         response = await fetch(`${baseurl}/api/exhibitions/domestic/${domesticForm.id}`, {
           method: 'PUT',
@@ -387,6 +391,13 @@ function Exhibition() {
         fetchData();
         resetForms();
         setShowForm(false);
+        
+        // Redirect to details page for new exhibition
+        if (!domesticForm.id && result.id) {
+          navigate(`/exhibition/details/${result.id}/domestic`);
+        } else if (domesticForm.id) {
+          navigate(`/exhibition/details/${domesticForm.id}/domestic`);
+        }
       } else {
         setError(result.error || 'Error processing request');
       }
@@ -454,6 +465,8 @@ function Exhibition() {
 
     try {
       let response;
+      let savedId = internationalForm.id;
+      
       if (internationalForm.id) {
         response = await fetch(`${baseurl}/api/exhibitions/international/${internationalForm.id}`, {
           method: 'PUT',
@@ -473,6 +486,13 @@ function Exhibition() {
         fetchData();
         resetForms();
         setShowForm(false);
+        
+        // Redirect to details page for new exhibition
+        if (!internationalForm.id && result.id) {
+          navigate(`/exhibition/details/${result.id}/international`);
+        } else if (internationalForm.id) {
+          navigate(`/exhibition/details/${internationalForm.id}/international`);
+        }
       } else {
         setError(result.error || 'Error processing request');
       }
@@ -576,6 +596,11 @@ function Exhibition() {
     setShowForm(false);
   };
 
+  // Navigate to details page
+  const goToDetails = (id, type) => {
+    navigate(`/exhibition/details/${id}/${type}`);
+  };
+
   // Render table based on active tab
   const renderTable = () => {
     if (loading) {
@@ -614,10 +639,10 @@ function Exhibition() {
                     <th>Questions</th>
                     <th>Last Updated</th>
                     <th>Actions</th>
-                  </tr>
+                   </tr>
                 </thead>
                 <tbody>
-                  <tr>
+                   <tr>
                     <td>
                       <img 
                         src={`${baseurl}/uploads/exhibition/${aboutExhibition.banner_image}`}
@@ -637,7 +662,7 @@ function Exhibition() {
                         <FaEdit />
                       </Button>
                     </td>
-                  </tr>
+                   </tr>
                 </tbody>
               </table>
             ) : (
@@ -662,14 +687,14 @@ function Exhibition() {
             </div>
             <table className="data-table">
               <thead>
-                <tr>
+                 <tr>
                   <th>ID</th>
                   <th>Category</th>
                   <th>Cities</th>
                   <th>Total Cities</th>
                   <th>Created At</th>
                   <th>Actions</th>
-                </tr>
+                 </tr>
               </thead>
               <tbody>
                 {domesticExhibitions.map((item) => (
@@ -707,9 +732,9 @@ function Exhibition() {
                       <Button 
                         variant="outline-primary" 
                         size="sm"
-                        onClick={() => fetchDomesticExhibition(item.id)}
+                        onClick={() => goToDetails(item.id, 'domestic')}
                         className="edit-btn me-2"
-                        title="Edit"
+                        title="Edit Full Details"
                       >
                         <FaEdit />
                       </Button>
@@ -741,14 +766,14 @@ function Exhibition() {
             </div>
             <table className="data-table">
               <thead>
-                <tr>
+                 <tr>
                   <th>ID</th>
                   <th>Category</th>
                   <th>Cities</th>
                   <th>Total Cities</th>
                   <th>Created At</th>
                   <th>Actions</th>
-                </tr>
+                 </tr>
               </thead>
               <tbody>
                 {internationalExhibitions.map((item) => (
@@ -786,9 +811,9 @@ function Exhibition() {
                       <Button 
                         variant="outline-primary" 
                         size="sm"
-                        onClick={() => fetchInternationalExhibition(item.id)}
+                        onClick={() => goToDetails(item.id, 'international')}
                         className="edit-btn me-2"
-                        title="Edit"
+                        title="Edit Full Details"
                       >
                         <FaEdit />
                       </Button>

@@ -96,6 +96,8 @@ import ContactUs from "./Components/ContactUs/ContactUs";
 
 
 import Exhibition from "./Components/Exhibitions/Exhibition";
+ import AddExhibitionDetails from './Components/Exhibitions/AddExhibition.js';
+
 // import AboutExhibitionForm from "./Components/Exhibitions/AboutExhibition/AboutExhibitionForm";
 // import DomesticExhibitionForm from "./Components/Exhibitions/DomesticExhibition/DomesticExhibitionForm";
 // import InternationalExhibitionForm from "./Components/Exhibitions/InternationalExhibition/InternationalExhibitionForm";
@@ -303,6 +305,8 @@ function App() {
 
 
                  <Route path="/exhibition" element={<Exhibition />} />
+                 <Route path="/exhibition/details/:id/:type" element={<AddExhibitionDetails />} />
+                
                  <Route path="/domestic-exhibition" element={<Exhibition />} />
                  <Route path="/international-exhibition" element={<Exhibition />} />
 
