@@ -224,110 +224,110 @@ const AddExhibitionDetails = () => {
 
   // Load exhibition data for editing
  // Load exhibition data for editing
+// Load exhibition data for editing
 const loadExhibitionData = async () => {
   try {
     setLoading(true);
     setError('');
     
+    // Use the correct endpoint based on type
     const endpoint = type === 'domestic' 
-      ? `${baseurl}/api/exhibitions/domestic/${id}`
-      : `${baseurl}/api/exhibitions/international/${id}`;
+      ? `${baseurl}/api/exhibitions/domestic/${id}/details`
+      : `${baseurl}/api/exhibitions/international/${id}/details`;
     
     const response = await fetch(endpoint);
     if (!response.ok) throw new Error('Failed to fetch exhibition data');
     
-    const data = await response.json();
+    const result = await response.json();
     
-    if (data) {
-      // Set basic form data
-      setFormData({
-        exhibition_name: data.country_name || '',
-        exhibition_type: type,
-        overview: data.overview || '',
-        duration_days: data.duration_days || '',
-        base_price_adult: data.base_price_adult || '',
-        emi_price: data.emi_price || '',
-        cost_remarks: data.cost_remarks || '',
-        hotel_remarks: data.hotel_remarks || '',
-        transport_remarks: data.transport_remarks || '',
-        booking_poi_remarks: data.booking_poi_remarks || '',
-        cancellation_remarks: data.cancellation_remarks || '',
-        emi_remarks: data.emi_remarks || '',
-        optional_tour_remarks: data.optional_tour_remarks || ''
-      });
+    // Check if the response has the expected structure
+    if (result.success && result.data) {
+      const data = result.data;
+      
+      // Set basic form data from the first tour in the tours array
+      if (data.tours && data.tours.length > 0) {
+        const tour = data.tours[0];
+        setFormData({
+          exhibition_name: data.exhibition?.country_name || '',
+          exhibition_type: type,
+          overview: tour.overview || '',
+          duration_days: tour.duration_days || '',
+          base_price_adult: tour.base_price_adult || '',
+          emi_price: tour.emi_price || '',
+          cost_remarks: tour.cost_remarks || '',
+          hotel_remarks: tour.hotel_remarks || '',
+          transport_remarks: tour.transport_remarks || '',
+          booking_poi_remarks: tour.booking_poi_remarks || '',
+          cancellation_remarks: tour.cancellation_remarks || '',
+          emi_remarks: tour.emi_remarks || '',
+          optional_tour_remarks: tour.optional_tour_remarks || ''
+        });
+      }
 
-      // Load from tours table via exhibition_id
-      const toursResponse = await fetch(`${baseurl}/api/exhibitions/tour-data/${id}?type=${type}`);
-      if (toursResponse.ok) {
-        const tourData = await toursResponse.json();
-        
-        if (tourData) {
-          // Set itineraries
-          if (tourData.itineraries && Array.isArray(tourData.itineraries)) {
-            setItineraries(tourData.itineraries);
-          }
+      // Set itineraries
+      if (data.itineraries && Array.isArray(data.itineraries)) {
+        setItineraries(data.itineraries);
+      }
 
-          // Set departures
-          if (tourData.departures && Array.isArray(tourData.departures)) {
-            setDepartures(tourData.departures);
-          }
+      // Set departures
+      if (data.departures && Array.isArray(data.departures)) {
+        setDepartures(data.departures);
+      }
 
-          // Set tour costs
-          if (tourData.tour_costs && Array.isArray(tourData.tour_costs)) {
-            setTourCosts(tourData.tour_costs);
-          }
+      // Set tour costs
+      if (data.costs && Array.isArray(data.costs)) {
+        setTourCosts(data.costs);
+      }
 
-          // Set optional tours
-          if (tourData.optional_tours && Array.isArray(tourData.optional_tours)) {
-            setOptionalTours(tourData.optional_tours);
-          }
+      // Set optional tours
+      if (data.optionaltours && Array.isArray(data.optionaltours)) {
+        setOptionalTours(data.optionaltours);
+      }
 
-          // Set inclusions
-          if (tourData.inclusions && Array.isArray(tourData.inclusions)) {
-            setInclusions(tourData.inclusions);
-          }
+      // Set inclusions
+      if (data.inclusions && Array.isArray(data.inclusions)) {
+        setInclusions(data.inclusions.map(inc => inc.item || inc));
+      }
 
-          // Set exclusions
-          if (tourData.exclusions && Array.isArray(tourData.exclusions)) {
-            setExclusions(tourData.exclusions);
-          }
+      // Set exclusions
+      if (data.exclusions && Array.isArray(data.exclusions)) {
+        setExclusions(data.exclusions.map(exc => exc.item || exc));
+      }
 
-          // Set transports
-          if (tourData.transports && Array.isArray(tourData.transports)) {
-            setTransports(tourData.transports);
-          }
+      // Set transports
+      if (data.transports && Array.isArray(data.transports)) {
+        setTransports(data.transports);
+      }
 
-          // Set hotels
-          if (tourData.hotels && Array.isArray(tourData.hotels)) {
-            setHotelRows(tourData.hotels);
-          }
+      // Set hotels
+      if (data.hotels && Array.isArray(data.hotels)) {
+        setHotelRows(data.hotels);
+      }
 
-          // Set booking POIs
-          if (tourData.booking_pois && Array.isArray(tourData.booking_pois)) {
-            setBookingPois(tourData.booking_pois);
-          }
+      // Set booking POIs
+      if (data.bookingpoi && Array.isArray(data.bookingpoi)) {
+        setBookingPois(data.bookingpoi);
+      }
 
-          // Set cancellation policies
-          if (tourData.cancellation_policies && Array.isArray(tourData.cancellation_policies)) {
-            setCancelPolicies(tourData.cancellation_policies);
-          }
+      // Set cancellation policies
+      if (data.cancellationpolicies && Array.isArray(data.cancellationpolicies)) {
+        setCancelPolicies(data.cancellationpolicies);
+      }
 
-          // Set instructions
-          if (tourData.instructions && Array.isArray(tourData.instructions)) {
-            setInstructions(tourData.instructions);
-          }
+      // Set instructions
+      if (data.instructions && Array.isArray(data.instructions)) {
+        setInstructions(data.instructions.map(inst => inst.item || inst));
+      }
 
-          // Set EMI options
-          if (tourData.emi_options && Array.isArray(tourData.emi_options) && tourData.emi_options.length > 0) {
-            setEmiOptions(tourData.emi_options);
-            if (tourData.emi_options[0].loan_amount) {
-              setEmiLoanAmount(tourData.emi_options[0].loan_amount);
-            }
-          }
+      // Set EMI options
+      if (data.emioptions && Array.isArray(data.emioptions) && data.emioptions.length > 0) {
+        setEmiOptions(data.emioptions);
+        if (data.emioptions[0].loan_amount) {
+          setEmiLoanAmount(data.emioptions[0].loan_amount);
         }
       }
 
-      // Set existing images - FIX: Use the correct endpoint
+      // Set existing images
       try {
         const imagesResponse = await fetch(`${baseurl}/api/exhibitions/exhibition-images/${id}`);
         if (imagesResponse.ok) {
@@ -350,8 +350,11 @@ const loadExhibitionData = async () => {
       }
 
       setSuccess('Exhibition data loaded successfully');
+    } else {
+      throw new Error('Invalid data structure received from API');
     }
   } catch (err) {
+    console.error('Error loading exhibition data:', err);
     setError('Failed to load exhibition data: ' + err.message);
   } finally {
     setLoading(false);
