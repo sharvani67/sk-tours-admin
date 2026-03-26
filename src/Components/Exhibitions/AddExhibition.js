@@ -10,7 +10,8 @@ import {
   Tabs,
   Tab,
   Table,
-  InputGroup
+  InputGroup,
+  Spinner
 } from 'react-bootstrap';
 import { useNavigate, useParams } from 'react-router-dom';
 import Navbar from '../../Shared/Navbar/Navbar';
@@ -20,7 +21,7 @@ import { Pencil, Trash } from 'react-bootstrap-icons';
 const AddExhibitionDetails = () => {
   const navigate = useNavigate();
   const { id, type } = useParams();
-  const isEditMode = !!id;
+  const isEditMode = !!id && id !== 'new';
 
   const TAB_LIST = [
     'basic',
@@ -164,6 +165,26 @@ const AddExhibitionDetails = () => {
   const [replacementFile, setReplacementFile] = useState(null);
   const [replacementPreview, setReplacementPreview] = useState(null);
 
+  // Check if we have an exhibition ID
+  if (!id || id === 'new') {
+    return (
+      <Navbar>
+        <Container>
+          <Alert variant="warning" className="mt-4">
+            <Alert.Heading>No Exhibition Selected</Alert.Heading>
+            <p>Please go back and select an exhibition first.</p>
+            <hr />
+            <div className="d-flex justify-content-end">
+              <Button onClick={() => navigate('/exhibition')} variant="primary">
+                Go Back to Exhibitions
+              </Button>
+            </div>
+          </Alert>
+        </Container>
+      </Navbar>
+    );
+  }
+
   // Calculate EMI
   const calculateEMI = (loanAmount, months, interestRate = 18) => {
     const principal = parseFloat(loanAmount);
@@ -223,146 +244,140 @@ const AddExhibitionDetails = () => {
   }, []);
 
   // Load exhibition data for editing
- // Load exhibition data for editing
-// Load exhibition data for editing
-const loadExhibitionData = async () => {
-  try {
-    setLoading(true);
-    setError('');
-    
-    // Use the correct endpoint based on type
-    const endpoint = type === 'domestic' 
-      ? `${baseurl}/api/exhibitions/domestic/${id}/details`
-      : `${baseurl}/api/exhibitions/international/${id}/details`;
-    
-    const response = await fetch(endpoint);
-    if (!response.ok) throw new Error('Failed to fetch exhibition data');
-    
-    const result = await response.json();
-    
-    // Check if the response has the expected structure
-    if (result.success && result.data) {
-      const data = result.data;
+  const loadExhibitionData = async () => {
+    try {
+      setLoading(true);
+      setError('');
       
-      // Set basic form data from the first tour in the tours array
-      if (data.tours && data.tours.length > 0) {
-        const tour = data.tours[0];
-        setFormData({
-          exhibition_name: data.exhibition?.country_name || '',
-          exhibition_type: type,
-          overview: tour.overview || '',
-          duration_days: tour.duration_days || '',
-          base_price_adult: tour.base_price_adult || '',
-          emi_price: tour.emi_price || '',
-          cost_remarks: tour.cost_remarks || '',
-          hotel_remarks: tour.hotel_remarks || '',
-          transport_remarks: tour.transport_remarks || '',
-          booking_poi_remarks: tour.booking_poi_remarks || '',
-          cancellation_remarks: tour.cancellation_remarks || '',
-          emi_remarks: tour.emi_remarks || '',
-          optional_tour_remarks: tour.optional_tour_remarks || ''
-        });
-      }
-
-      // Set itineraries
-      if (data.itineraries && Array.isArray(data.itineraries)) {
-        setItineraries(data.itineraries);
-      }
-
-      // Set departures
-      if (data.departures && Array.isArray(data.departures)) {
-        setDepartures(data.departures);
-      }
-
-      // Set tour costs
-      if (data.costs && Array.isArray(data.costs)) {
-        setTourCosts(data.costs);
-      }
-
-      // Set optional tours
-      if (data.optionaltours && Array.isArray(data.optionaltours)) {
-        setOptionalTours(data.optionaltours);
-      }
-
-      // Set inclusions
-      if (data.inclusions && Array.isArray(data.inclusions)) {
-        setInclusions(data.inclusions.map(inc => inc.item || inc));
-      }
-
-      // Set exclusions
-      if (data.exclusions && Array.isArray(data.exclusions)) {
-        setExclusions(data.exclusions.map(exc => exc.item || exc));
-      }
-
-      // Set transports
-      if (data.transports && Array.isArray(data.transports)) {
-        setTransports(data.transports);
-      }
-
-      // Set hotels
-      if (data.hotels && Array.isArray(data.hotels)) {
-        setHotelRows(data.hotels);
-      }
-
-      // Set booking POIs
-      if (data.bookingpoi && Array.isArray(data.bookingpoi)) {
-        setBookingPois(data.bookingpoi);
-      }
-
-      // Set cancellation policies
-      if (data.cancellationpolicies && Array.isArray(data.cancellationpolicies)) {
-        setCancelPolicies(data.cancellationpolicies);
-      }
-
-      // Set instructions
-      if (data.instructions && Array.isArray(data.instructions)) {
-        setInstructions(data.instructions.map(inst => inst.item || inst));
-      }
-
-      // Set EMI options
-      if (data.emioptions && Array.isArray(data.emioptions) && data.emioptions.length > 0) {
-        setEmiOptions(data.emioptions);
-        if (data.emioptions[0].loan_amount) {
-          setEmiLoanAmount(data.emioptions[0].loan_amount);
+      // Use the correct endpoint based on type
+      const endpoint = type === 'domestic' 
+        ? `${baseurl}/api/exhibitions/domestic/${id}/details`
+        : `${baseurl}/api/exhibitions/international/${id}/details`;
+      
+      const response = await fetch(endpoint);
+      if (!response.ok) throw new Error('Failed to fetch exhibition data');
+      
+      const result = await response.json();
+      
+      // Check if the response has the expected structure
+      if (result.success && result.data) {
+        const data = result.data;
+        
+        // Set basic form data from the first tour in the tours array
+        if (data.tours && data.tours.length > 0) {
+          const tour = data.tours[0];
+          setFormData({
+            exhibition_name: data.exhibition?.country_name || '',
+            exhibition_type: type,
+            overview: tour.overview || '',
+            duration_days: tour.duration_days || '',
+            base_price_adult: tour.base_price_adult || '',
+            emi_price: tour.emi_price || '',
+            cost_remarks: tour.cost_remarks || '',
+            hotel_remarks: tour.hotel_remarks || '',
+            transport_remarks: tour.transport_remarks || '',
+            booking_poi_remarks: tour.booking_poi_remarks || '',
+            cancellation_remarks: tour.cancellation_remarks || '',
+            emi_remarks: tour.emi_remarks || '',
+            optional_tour_remarks: tour.optional_tour_remarks || ''
+          });
         }
-      }
 
-      // Set existing images
-      try {
-        const imagesResponse = await fetch(`${baseurl}/api/exhibitions/exhibition-images/${id}`);
-        if (imagesResponse.ok) {
-          const imagesData = await imagesResponse.json();
-          // Ensure images have proper URL structure
-          const processedImages = imagesData.map(img => ({
-            ...img,
-            // If URL doesn't start with http, construct full URL
-            url: img.url.startsWith('http') ? img.url : `${baseurl}${img.url}`
-          }));
-          setExistingImages(processedImages);
-          console.log('Loaded images:', processedImages);
-        } else {
-          console.log('No images found for this exhibition');
+        // Set itineraries
+        if (data.itineraries && Array.isArray(data.itineraries)) {
+          setItineraries(data.itineraries);
+        }
+
+        // Set departures
+        if (data.departures && Array.isArray(data.departures)) {
+          setDepartures(data.departures);
+        }
+
+        // Set tour costs
+        if (data.costs && Array.isArray(data.costs)) {
+          setTourCosts(data.costs);
+        }
+
+        // Set optional tours
+        if (data.optionaltours && Array.isArray(data.optionaltours)) {
+          setOptionalTours(data.optionaltours);
+        }
+
+        // Set inclusions
+        if (data.inclusions && Array.isArray(data.inclusions)) {
+          setInclusions(data.inclusions.map(inc => inc.item || inc));
+        }
+
+        // Set exclusions
+        if (data.exclusions && Array.isArray(data.exclusions)) {
+          setExclusions(data.exclusions.map(exc => exc.item || exc));
+        }
+
+        // Set transports
+        if (data.transports && Array.isArray(data.transports)) {
+          setTransports(data.transports);
+        }
+
+        // Set hotels
+        if (data.hotels && Array.isArray(data.hotels)) {
+          setHotelRows(data.hotels);
+        }
+
+        // Set booking POIs
+        if (data.bookingpoi && Array.isArray(data.bookingpoi)) {
+          setBookingPois(data.bookingpoi);
+        }
+
+        // Set cancellation policies
+        if (data.cancellationpolicies && Array.isArray(data.cancellationpolicies)) {
+          setCancelPolicies(data.cancellationpolicies);
+        }
+
+        // Set instructions
+        if (data.instructions && Array.isArray(data.instructions)) {
+          setInstructions(data.instructions.map(inst => inst.item || inst));
+        }
+
+        // Set EMI options
+        if (data.emioptions && Array.isArray(data.emioptions) && data.emioptions.length > 0) {
+          setEmiOptions(data.emioptions);
+          if (data.emioptions[0].loan_amount) {
+            setEmiLoanAmount(data.emioptions[0].loan_amount);
+          }
+        }
+
+        // Set existing images
+        try {
+          const imagesResponse = await fetch(`${baseurl}/api/exhibitions/exhibition-images/${id}`);
+          if (imagesResponse.ok) {
+            const imagesData = await imagesResponse.json();
+            const processedImages = imagesData.map(img => ({
+              ...img,
+              url: img.url.startsWith('http') ? img.url : `${baseurl}${img.url}`
+            }));
+            setExistingImages(processedImages);
+          } else {
+            setExistingImages([]);
+          }
+        } catch (imgErr) {
+          console.error('Error loading images:', imgErr);
           setExistingImages([]);
         }
-      } catch (imgErr) {
-        console.error('Error loading images:', imgErr);
-        setExistingImages([]);
-      }
 
-      setSuccess('Exhibition data loaded successfully');
-    } else {
-      throw new Error('Invalid data structure received from API');
+        setSuccess('Exhibition data loaded successfully');
+      } else {
+        throw new Error('Invalid data structure received from API');
+      }
+    } catch (err) {
+      console.error('Error loading exhibition data:', err);
+      setError('Failed to load exhibition data: ' + err.message);
+    } finally {
+      setLoading(false);
     }
-  } catch (err) {
-    console.error('Error loading exhibition data:', err);
-    setError('Failed to load exhibition data: ' + err.message);
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   useEffect(() => {
-    if (id) {
+    if (id && id !== 'new') {
       loadExhibitionData();
     }
   }, [id]);
@@ -860,7 +875,6 @@ const loadExhibitionData = async () => {
       setLoading(true);
       setError('');
       
-      // Delete old image
       const deleteResponse = await fetch(`${baseurl}/api/exhibitions/exhibition-images/${imageId}`, {
         method: 'DELETE'
       });
@@ -869,7 +883,6 @@ const loadExhibitionData = async () => {
         throw new Error('Failed to delete old image');
       }
 
-      // Upload new image
       const formData = new FormData();
       formData.append('images', replacementFile);
       
@@ -882,7 +895,6 @@ const loadExhibitionData = async () => {
         throw new Error('Failed to upload new image');
       }
 
-      // Refresh images list
       const imagesResponse = await fetch(`${baseurl}/api/exhibitions/exhibition-images/${id}`);
       const imagesData = await imagesResponse.json();
       setExistingImages(imagesData);
@@ -977,132 +989,96 @@ const loadExhibitionData = async () => {
   const isLastTab = activeTab === TAB_LIST[TAB_LIST.length - 1];
 
   // Save Functions
- // Save Functions
-// Save Functions
-const saveExhibitionDetails = async () => {
-  if (!formData.exhibition_name.trim()) {
-    setError('Exhibition name is required');
-    setActiveTab('basic');
-    return;
-  }
+  const saveExhibitionDetails = async () => {
+    if (!formData.exhibition_name.trim()) {
+      setError('Exhibition name is required');
+      setActiveTab('basic');
+      return;
+    }
 
-  try {
-    setLoading(true);
-    setError('');
-    setSuccess('');
+    try {
+      setLoading(true);
+      setError('');
+      setSuccess('');
 
-    // If it's a new exhibition (no ID), we need to create it first
-    let exhibitionId = id;
-    
-    // For new exhibitions, we need to create the exhibition first
-    if (!isEditMode) {
-      const createResponse = await fetch(`${baseurl}/api/exhibitions/${type}`, {
+      const payload = {
+        exhibition_name: formData.exhibition_name,
+        duration_days: formData.duration_days,
+        overview: formData.overview,
+        base_price_adult: formData.base_price_adult,
+        emi_price: formData.emi_price,
+        cost_remarks: formData.cost_remarks,
+        hotel_remarks: formData.hotel_remarks,
+        transport_remarks: formData.transport_remarks,
+        booking_poi_remarks: formData.booking_poi_remarks,
+        cancellation_remarks: formData.cancellation_remarks,
+        emi_remarks: formData.emi_remarks,
+        optional_tour_remarks: formData.optional_tour_remarks,
+        itineraries,
+        departures,
+        tour_costs: tourCosts,
+        optional_tours: optionalTours,
+        emi_options: emiOptions,
+        emi_loan_amount: emiLoanAmount,
+        emi_interest_rate: emiInterestRate,
+        inclusions,
+        exclusions,
+        transports,
+        hotels: hotelRows,
+        booking_pois: bookingPois,
+        cancellation_policies: cancelPolicies,
+        instructions
+      };
+
+      const endpoint = type === 'domestic'
+        ? `${baseurl}/api/exhibitions/domestic/${id}/details`
+        : `${baseurl}/api/exhibitions/international/${id}/details`;
+
+      const response = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          country_name: formData.exhibition_name 
-        })
+        body: JSON.stringify(payload)
       });
-      
-      const createResult = await createResponse.json();
-      
-      if (!createResponse.ok) {
-        throw new Error(createResult.error || 'Failed to create exhibition');
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Error saving details');
       }
-      
-      exhibitionId = createResult.id;
-      
-      // Store the new ID in URL params for future operations
-      window.history.replaceState({}, '', `/exhibition/details/${exhibitionId}/${type}`);
-    }
 
-    const payload = {
-      exhibition_name: formData.exhibition_name,
-      duration_days: formData.duration_days,
-      overview: formData.overview,
-      base_price_adult: formData.base_price_adult,
-      emi_price: formData.emi_price,
-      cost_remarks: formData.cost_remarks,
-      hotel_remarks: formData.hotel_remarks,
-      transport_remarks: formData.transport_remarks,
-      booking_poi_remarks: formData.booking_poi_remarks,
-      cancellation_remarks: formData.cancellation_remarks,
-      emi_remarks: formData.emi_remarks,
-      optional_tour_remarks: formData.optional_tour_remarks,
-      itineraries,
-      departures,
-      tour_costs: tourCosts,
-      optional_tours: optionalTours,
-      emi_options: emiOptions,
-      emi_loan_amount: emiLoanAmount,
-      emi_interest_rate: emiInterestRate,
-      inclusions,
-      exclusions,
-      transports,
-      hotels: hotelRows,
-      booking_pois: bookingPois,
-      cancellation_policies: cancelPolicies,
-      instructions
-    };
-
-    // Save exhibition details
-    const endpoint = type === 'domestic'
-      ? `${baseurl}/api/exhibitions/domestic/${exhibitionId}/details`
-      : `${baseurl}/api/exhibitions/international/${exhibitionId}/details`;
-
-    const response = await fetch(endpoint, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
-
-    const result = await response.json();
-
-    if (!response.ok) {
-      throw new Error(result.error || 'Error saving details');
-    }
-
-    // Upload images after saving details (if there are any new images)
-    if (imageFiles.length > 0) {
-      console.log(`📤 Uploading ${imageFiles.length} images for exhibition ID: ${exhibitionId}`);
-      
-      const formDataImages = new FormData();
-      imageFiles.forEach((file) => {
-        formDataImages.append('images', file);
-      });
-      
-      // IMPORTANT: Use the correct endpoint with full path
-      const uploadResponse = await fetch(`${baseurl}/api/exhibitions/exhibition-images/upload/${exhibitionId}`, {
-        method: 'POST',
-        body: formDataImages
-      });
-      
-      const uploadResult = await uploadResponse.json();
-      
-      if (!uploadResponse.ok) {
-        console.error('Image upload error:', uploadResult);
-        setError('Details saved but images upload failed: ' + (uploadResult.error || 'Unknown error'));
+      if (imageFiles.length > 0) {
+        const formDataImages = new FormData();
+        imageFiles.forEach((file) => {
+          formDataImages.append('images', file);
+        });
+        
+        const uploadResponse = await fetch(`${baseurl}/api/exhibitions/exhibition-images/upload/${id}`, {
+          method: 'POST',
+          body: formDataImages
+        });
+        
+        const uploadResult = await uploadResponse.json();
+        
+        if (!uploadResponse.ok) {
+          setError('Details saved but images upload failed: ' + (uploadResult.error || 'Unknown error'));
+        } else {
+          setSuccess('Exhibition details and images saved successfully!');
+        }
       } else {
-        console.log('✅ Images uploaded successfully:', uploadResult);
-        setSuccess('Exhibition details and images saved successfully!');
+        setSuccess('Exhibition details saved successfully!');
       }
-    } else {
-      setSuccess('Exhibition details saved successfully!');
+      
+      setTimeout(() => {
+        navigate('/exhibition');
+      }, 2000);
+      
+    } catch (err) {
+      console.error('Error submitting form:', err);
+      setError('Error submitting form: ' + err.message);
+    } finally {
+      setLoading(false);
     }
-    
-    // Wait a bit before redirecting to show success message
-    setTimeout(() => {
-      navigate('/exhibition');
-    }, 2000);
-    
-  } catch (err) {
-    console.error('Error submitting form:', err);
-    setError('Error submitting form: ' + err.message);
-  } finally {
-    setLoading(false);
-  }
-};
-
+  };
 
   const handleSaveClick = () => {
     if (isLastTab) {
@@ -1176,6 +1152,17 @@ const saveExhibitionDetails = async () => {
   };
 
   const addConfig = getAddConfigForTab(activeTab);
+
+  if (loading && !success) {
+    return (
+      <Navbar>
+        <Container className="text-center py-5">
+          <Spinner animation="border" role="status" />
+          <p className="mt-2">Loading exhibition details...</p>
+        </Container>
+      </Navbar>
+    );
+  }
 
   return (
     <Navbar>
@@ -2279,8 +2266,7 @@ const saveExhibitionDetails = async () => {
                                       borderRadius: '6px'
                                     }}
                                     className="mb-2"
-                                     onError={(e) => {
-                                      // Fallback if image URL is broken
+                                    onError={(e) => {
                                       e.target.onerror = null;
                                       e.target.src = `${baseurl}/uploads/exhibition/default-image.jpg`;
                                     }}

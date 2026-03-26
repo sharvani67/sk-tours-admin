@@ -597,9 +597,10 @@ function Exhibition() {
   };
 
   // Navigate to details page
-  const goToDetails = (id, type) => {
-    navigate(`/exhibition/details/${id}/${type}`);
-  };
+ // Navigate to basic details page first
+const goToDetails = (id, type) => {
+  navigate(`/exhibition/basic/${id}/${type}`);
+};
 
   // Render table based on active tab
   const renderTable = () => {
