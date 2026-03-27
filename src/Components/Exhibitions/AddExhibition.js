@@ -1913,36 +1913,37 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
                       />
                     </Form.Group>
 
-                    <Form.Group className="mb-3">
-                      <Form.Label>Duration Days *</Form.Label>
-                      <Form.Control
-                        type="number"
-                        name="duration_days"
-                        value={formData.duration_days}
-                        onChange={handleBasicChange}
-                      />
-                    </Form.Group>
-
-                    <Form.Group className="mb-3">
-                      <Form.Label>Exhibition Price *</Form.Label>
-                      <Form.Control
-                        type="number"
-                        name="base_price_adult"
-                        value={formData.base_price_adult}
-                        onChange={handleBasicChange}
-                      />
-                    </Form.Group>
-
-                    <Form.Group className="mb-3">
-                      <Form.Label>EMI Price</Form.Label>
-                      <Form.Control
-                        type="number"
-                        name="emi_price"
-                        value={formData.emi_price}
-                        onChange={handleBasicChange}
-                        placeholder="Optional EMI price"
-                      />
-                    </Form.Group>
+                    {/* Aligned fields in a single row for admin itinerary tab */}
+                    <Row className="g-3 mb-3">
+                      <Col md={4}>
+                        <Form.Label>Duration Days *</Form.Label>
+                        <Form.Control
+                          type="text"
+                          name="duration_days"
+                          value={formData.duration_days}
+                          onChange={handleBasicChange}
+                        />
+                      </Col>
+                      <Col md={4}>
+                        <Form.Label>Tour Price *</Form.Label>
+                        <Form.Control
+                          type="text"
+                          name="base_price_adult"
+                          value={formData.base_price_adult}
+                          onChange={handleBasicChange}
+                        />
+                      </Col>
+                      <Col md={4}>
+                        <Form.Label>EMI Price</Form.Label>
+                        <Form.Control
+                          type="text"
+                          name="emi_price"
+                          value={formData.emi_price}
+                          onChange={handleBasicChange}
+                          placeholder="Optional EMI price"
+                        />
+                      </Col>
+                    </Row>
                   </Col>
 
                   <Col md={6}>
@@ -2055,8 +2056,8 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
                                 <Trash size={14} />
                               </Button>
                             </div>
-                           </td>
-                         </tr>
+                            </td>
+                          </tr>
                       ))}
                     </tbody>
                   </Table>
@@ -2084,11 +2085,11 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
                 {departures.length > 0 && (
                   <Table striped bordered hover size="sm">
                     <thead>
-                       <tr>
+                        <tr>
                         <th>#</th>
                         <th>Description</th>
                         <th>Action</th>
-                       </tr>
+                        </tr>
                     </thead>
                     <tbody>
                       {departures.map((dep, idx) => (
@@ -2104,8 +2105,8 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
                                 <Trash size={14} />
                               </Button>
                             </div>
-                           </td>
-                         </tr>
+                            </td>
+                          </tr>
                       ))}
                     </tbody>
                   </Table>
@@ -2119,7 +2120,7 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
                     <Form.Group>
                       <Form.Label>Pax *</Form.Label>
                       <Form.Control
-                        type="number"
+                        type="text"
                         name="pax"
                         value={tourCostItem.pax}
                         onChange={handleCostChange}
@@ -2130,7 +2131,7 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
                     <Form.Group>
                       <Form.Label>Standard Hotel</Form.Label>
                       <Form.Control
-                        type="number"
+                        type="text"
                         name="standard_hotel"
                         value={tourCostItem.standard_hotel}
                         onChange={handleCostChange}
@@ -2141,7 +2142,7 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
                     <Form.Group>
                       <Form.Label>Deluxe Hotel</Form.Label>
                       <Form.Control
-                        type="number"
+                        type="text"
                         name="deluxe_hotel"
                         value={tourCostItem.deluxe_hotel}
                         onChange={handleCostChange}
@@ -2152,7 +2153,7 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
                     <Form.Group>
                       <Form.Label>Executive Hotel</Form.Label>
                       <Form.Control
-                        type="number"
+                        type="text"
                         name="executive_hotel"
                         value={tourCostItem.executive_hotel}
                         onChange={handleCostChange}
@@ -2163,7 +2164,7 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
                     <Form.Group>
                       <Form.Label>Child With Bed</Form.Label>
                       <Form.Control
-                        type="number"
+                        type="text"
                         name="child_with_bed"
                         value={tourCostItem.child_with_bed}
                         onChange={handleCostChange}
@@ -2174,7 +2175,7 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
                     <Form.Group>
                       <Form.Label>Child No Bed</Form.Label>
                       <Form.Control
-                        type="number"
+                        type="text"
                         name="child_no_bed"
                         value={tourCostItem.child_no_bed}
                         onChange={handleCostChange}
@@ -2197,7 +2198,7 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
                 {tourCosts.length > 0 && (
                   <Table striped bordered hover size="sm" className="mt-3">
                     <thead>
-                       <tr>
+                        <tr>
                         <th>#</th>
                         <th>Pax</th>
                         <th>Standard</th>
@@ -2206,19 +2207,19 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
                         <th>Chd Bed</th>
                         <th>Chd NoBed</th>
                         <th>Action</th>
-                       </tr>
+                        </tr>
                     </thead>
                     <tbody>
                       {tourCosts.map((c, idx) => (
                         <tr key={idx}>
-                           <td>{idx + 1}</td>
-                           <td>{c.pax}</td>
-                           <td>{c.standard_hotel || 'NA'}</td>
-                           <td>{c.deluxe_hotel || 'NA'}</td>
-                           <td>{c.executive_hotel || 'NA'}</td>
-                           <td>{c.child_with_bed || 'NA'}</td>
-                           <td>{c.child_no_bed || 'NA'}</td>
-                           <td>
+                            <td>{idx + 1}</td>
+                            <td>{c.pax}</td>
+                            <td>{c.standard_hotel || 'NA'}</td>
+                            <td>{c.deluxe_hotel || 'NA'}</td>
+                            <td>{c.executive_hotel || 'NA'}</td>
+                            <td>{c.child_with_bed || 'NA'}</td>
+                            <td>{c.child_no_bed || 'NA'}</td>
+                            <td>
                             <div className="d-flex gap-1">
                               <Button variant="outline-warning" size="sm" onClick={() => editCostRow(idx)} title="Edit">
                                 <Pencil size={14} />
@@ -2227,8 +2228,8 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
                                 <Trash size={14} />
                               </Button>
                             </div>
-                           </td>
-                         </tr>
+                            </td>
+                          </tr>
                       ))}
                     </tbody>
                   </Table>
@@ -2334,7 +2335,7 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
                           <InputGroup>
                             <InputGroup.Text>₹</InputGroup.Text>
                             <Form.Control
-                              type="number"
+                              type="text"
                               min="0"
                               step="1000"
                               value={emiLoanAmount}
@@ -2350,7 +2351,7 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
                           <InputGroup>
                             <InputGroup.Text>%</InputGroup.Text>
                             <Form.Control
-                              type="number"
+                              type="text"
                               min="0"
                               max="50"
                               step="0.1"
@@ -2373,13 +2374,13 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
 
                 <Table striped bordered hover responsive className="align-middle">
                   <thead className="table-dark">
-                    <tr>
+                     <tr>
                       <th width="5%">#</th>
                       <th width="30%">Particulars</th>
                       <th width="25%">Loan Amount</th>
                       <th width="15%">Months</th>
                       <th width="25%">EMI (Calculated)</th>
-                    </tr>
+                     </tr>
                   </thead>
                   <tbody>
                     {emiOptions.map((option, index) => (
@@ -2398,7 +2399,7 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
                           <InputGroup>
                             <InputGroup.Text>₹</InputGroup.Text>
                             <Form.Control
-                              type="number"
+                              type="text"
                               min="0"
                               step="1000"
                               value={option.loan_amount || ''}
@@ -2420,7 +2421,7 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
                           <InputGroup>
                             <InputGroup.Text>₹</InputGroup.Text>
                             <Form.Control
-                              type="number"
+                              type="text"
                               min="0"
                               step="100"
                               value={option.emi || ''}
@@ -2430,7 +2431,7 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
                             />
                           </InputGroup>
                         </td>
-                      </tr>
+                       </tr>
                     ))}
                   </tbody>
                 </Table>
@@ -2464,11 +2465,11 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
                 {inclusions.length > 0 && (
                   <Table striped bordered hover size="sm">
                     <thead>
-                      <tr>
+                       <tr>
                         <th>#</th>
                         <th>Inclusion</th>
                         <th>Action</th>
-                      </tr>
+                       </tr>
                     </thead>
                     <tbody>
                       {inclusions.map((item, idx) => (
@@ -2485,7 +2486,7 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
                               </Button>
                             </div>
                           </td>
-                        </tr>
+                         </tr>
                       ))}
                     </tbody>
                   </Table>
@@ -2508,11 +2509,11 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
                 {exclusions.length > 0 && (
                   <Table striped bordered hover size="sm">
                     <thead>
-                      <tr>
+                       <tr>
                         <th>#</th>
                         <th>Exclusion</th>
                         <th>Action</th>
-                      </tr>
+                       </tr>
                     </thead>
                     <tbody>
                       {exclusions.map((item, idx) => (
@@ -2529,7 +2530,7 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
                               </Button>
                             </div>
                           </td>
-                        </tr>
+                         </tr>
                       ))}
                     </tbody>
                   </Table>
@@ -2569,11 +2570,11 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
                 {transports.length > 0 && (
                   <Table striped bordered hover size="sm" className="mt-3">
                     <thead>
-                      <tr>
+                       <tr>
                         <th>#</th>
                         <th>Description</th>
                         <th>Action</th>
-                      </tr>
+                       </tr>
                     </thead>
                     <tbody>
                       {transports.map((t, idx) => (
@@ -2590,7 +2591,7 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
                               </Button>
                             </div>
                           </td>
-                        </tr>
+                         </tr>
                       ))}
                     </tbody>
                   </Table>
@@ -2616,7 +2617,7 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
                     <Form.Group>
                       <Form.Label>Nights</Form.Label>
                       <Form.Control
-                        type="number"
+                        type="text"
                         name="nights"
                         value={hotelItem.nights}
                         onChange={handleHotelChange}
@@ -2675,7 +2676,7 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
                 {hotelRows.length > 0 && (
                   <Table striped bordered hover size="sm" className="mt-3">
                     <thead>
-                      <tr>
+                       <tr>
                         <th>#</th>
                         <th>City</th>
                         <th>Nights</th>
@@ -2683,7 +2684,7 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
                         <th>Deluxe Hotel</th>
                         <th>Executive Hotel</th>
                         <th>Action</th>
-                      </tr>
+                       </tr>
                     </thead>
                     <tbody>
                       {hotelRows.map((h, idx) => (
@@ -2704,7 +2705,7 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
                               </Button>
                             </div>
                           </td>
-                        </tr>
+                         </tr>
                       ))}
                     </tbody>
                   </Table>
@@ -2736,11 +2737,11 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
                       {touristVisaItems.length > 0 && (
                         <Table striped bordered hover size="sm" className="mt-3">
                           <thead>
-                            <tr>
+                             <tr>
                               <th>#</th>
                               <th>Description</th>
                               <th>Action</th>
-                            </tr>
+                             </tr>
                           </thead>
                           <tbody>
                             {touristVisaItems.map((item, idx) => (
@@ -2767,7 +2768,7 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
                                     </Button>
                                   </div>
                                 </td>
-                              </tr>
+                               </tr>
                             ))}
                           </tbody>
                         </Table>
@@ -2791,11 +2792,11 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
                       {transitVisaItems.length > 0 && (
                         <Table striped bordered hover size="sm" className="mt-3">
                           <thead>
-                            <tr>
+                             <tr>
                               <th>#</th>
                               <th>Description</th>
                               <th>Action</th>
-                            </tr>
+                             </tr>
                           </thead>
                           <tbody>
                             {transitVisaItems.map((item, idx) => (
@@ -2822,7 +2823,7 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
                                     </Button>
                                   </div>
                                 </td>
-                              </tr>
+                               </tr>
                             ))}
                           </tbody>
                         </Table>
@@ -2846,11 +2847,11 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
                       {businessVisaItems.length > 0 && (
                         <Table striped bordered hover size="sm" className="mt-3">
                           <thead>
-                            <tr>
+                             <tr>
                               <th>#</th>
                               <th>Description</th>
                               <th>Action</th>
-                            </tr>
+                             </tr>
                           </thead>
                           <tbody>
                             {businessVisaItems.map((item, idx) => (
@@ -2877,7 +2878,7 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
                                     </Button>
                                   </div>
                                 </td>
-                              </tr>
+                               </tr>
                             ))}
                           </tbody>
                         </Table>
@@ -2912,12 +2913,12 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
                       ) : (
                         <Table striped bordered hover size="sm">
                           <thead>
-                            <tr>
+                             <tr>
                               <th width="20%">Visa Type</th>
                               <th width="35%">Upload PDF</th>
                               <th width="35%">Upload Word</th>
                               <th width="10%">Actions</th>
-                            </tr>
+                             </tr>
                           </thead>
                           <tbody>
                             {visaFormItems.map((item, idx) => {
@@ -3052,7 +3053,7 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
                                       </Button>
                                     </div>
                                   </td>
-                                </tr>
+                                 </tr>
                               );
                             })}
                           </tbody>
@@ -3102,11 +3103,11 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
                           <Card.Body>
                             <Table striped bordered hover size="sm">
                               <thead>
-                                <tr>
+                                 <tr>
                                   <th>#</th>
                                   <th>Description</th>
                                   <th>Action</th>
-                                </tr>
+                                 </tr>
                               </thead>
                               <tbody>
                                 {photoItems.map((item, idx) => (
@@ -3133,7 +3134,7 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
                                         </Button>
                                       </div>
                                     </td>
-                                  </tr>
+                                   </tr>
                                 ))}
                               </tbody>
                             </Table>
@@ -3156,7 +3157,7 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
                       
                       <Table striped bordered hover size="sm">
                         <thead>
-                          <tr>
+                           <tr>
                             <th>Tourist Visa</th>
                             <th>Tourist Visa Charges</th>
                             <th>Transit Visa</th>
@@ -3164,7 +3165,7 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
                             <th>Business Visa</th>
                             <th>Business Visa Charges</th>
                             <th>Action</th>
-                          </tr>
+                           </tr>
                         </thead>
                         <tbody>
                           {visaFeesRows.map((row) => (
@@ -3234,7 +3235,7 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
                                   <Trash size={14} />
                                 </Button>
                               </td>
-                            </tr>
+                             </tr>
                           ))}
                         </tbody>
                       </Table>
@@ -3254,13 +3255,13 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
                       
                       <Table striped bordered hover size="sm">
                         <thead>
-                          <tr>
+                           <tr>
                             <th width="25%">Item</th>
                             <th width="25%">Tourist Visa</th>
                             <th width="25%">Transit Visa</th>
                             <th width="25%">Business Visa</th>
                             <th width="5%">Action</th>
-                          </tr>
+                           </tr>
                         </thead>
                         <tbody>
                           {submissionRows.map((row) => (
@@ -3311,7 +3312,7 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
                                   <Trash size={14} />
                                 </Button>
                               </td>
-                            </tr>
+                             </tr>
                           ))}
                         </tbody>
                       </Table>
@@ -3359,12 +3360,12 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
                 {bookingPois.length > 0 && (
                   <Table striped bordered hover size="sm">
                     <thead>
-                      <tr>
-                        <th>#</th>
-                        <th>Item</th>
-                        <th>Amount Details</th>
-                        <th>Action</th>
-                      </tr>
+                        <tr>
+                          <th>#</th>
+                          <th>Item</th>
+                          <th>Amount Details</th>
+                          <th>Action</th>
+                        </tr>
                     </thead>
                     <tbody>
                       {bookingPois.map((p, idx) => (
@@ -3464,7 +3465,7 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
                 )}
               </Tab>
 
-              {/* Tab 13: Instructions */}
+              {/* Tab 14: Instructions */}
               <Tab eventKey="instructions" title="Instructions">
                 <Form.Group className="mb-3">
                   <Form.Label>Add Instruction</Form.Label>
@@ -3508,7 +3509,7 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
                 )}
               </Tab>
 
-              {/* Tab 14: Images */}
+              {/* Tab 15: Images */}
               <Tab eventKey="images" title="Images">
                 <Card className="mb-4">
                   <Card.Header>Add New Images</Card.Header>
