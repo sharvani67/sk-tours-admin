@@ -29,13 +29,13 @@ function Exhibition() {
 
   const [domesticForm, setDomesticForm] = useState({
     id: null,
-    country_name: '',
+    domestic_category_name: '',
     cities: []
   });
 
   const [internationalForm, setInternationalForm] = useState({
     id: null,
-    country_name: '',
+    international_category_name: '',
     cities: []
   });
 
@@ -88,13 +88,14 @@ function Exhibition() {
         const data = await response.json();
         setDomesticForm({
           id: data.id,
-          country_name: data.country_name
+          domestic_category_name: data.domestic_category_name
         });
         
         // Convert cities to cityEntries format if they exist
         if (data.cities && data.cities.length > 0) {
           const entries = data.cities.map(city => ({
             id: city.id,
+            stateName: city.state_name || '',
             cityName: city.city_name,
             price: city.price,
             image: null,
@@ -125,12 +126,13 @@ function Exhibition() {
         const data = await response.json();
         setInternationalForm({
           id: data.id,
-          country_name: data.country_name
+          international_category_name: data.international_category_name
         });
         
         if (data.cities && data.cities.length > 0) {
           const entries = data.cities.map(city => ({
             id: city.id,
+            countryName: city.country_name || '',
             cityName: city.city_name,
             price: city.price,
             image: null,
@@ -205,17 +207,23 @@ function Exhibition() {
 
   // Handle city entries
   const addCityEntry = () => {
-    setCityEntries([
-      ...cityEntries,
-      { id: Date.now(), cityName: '', price: '', image: null, imagePreview: '', existingImage: '' }
-    ]);
+    if (activeTab === 'domestic') {
+      setCityEntries([
+        ...cityEntries,
+        { id: Date.now(), stateName: '', cityName: '', price: '', image: null, imagePreview: '', existingImage: '' }
+      ]);
+    } else {
+      setCityEntries([
+        ...cityEntries,
+        { id: Date.now(), countryName: '', cityName: '', price: '', image: null, imagePreview: '', existingImage: '' }
+      ]);
+    }
   };
 
   const removeCityEntry = (id) => {
     if (cityEntries.length > 1) {
       setCityEntries(cityEntries.filter(entry => entry.id !== id));
     } else {
-      // If removing the last city, hide the section
       setCityEntries([]);
       setShowCitySection(false);
     }
@@ -237,7 +245,7 @@ function Exhibition() {
             ...entry, 
             image: file, 
             imagePreview: reader.result,
-            existingImage: '' // Clear existing image when new one is selected
+            existingImage: ''
           } : entry
         ));
       };
@@ -249,17 +257,20 @@ function Exhibition() {
   const handleCategoryChange = (e, type) => {
     const { value } = e.target;
     if (type === 'domestic') {
-      setDomesticForm({ ...domesticForm, country_name: value });
+      setDomesticForm({ ...domesticForm, domestic_category_name: value });
     } else {
-      setInternationalForm({ ...internationalForm, country_name: value });
+      setInternationalForm({ ...internationalForm, international_category_name: value });
     }
   };
 
   // Toggle city section
   const toggleCitySection = () => {
     if (!showCitySection) {
-      // Add a default empty city entry when showing the section
-      setCityEntries([{ id: Date.now(), cityName: '', price: '', image: null, imagePreview: '', existingImage: '' }]);
+      if (activeTab === 'domestic') {
+        setCityEntries([{ id: Date.now(), stateName: '', cityName: '', price: '', image: null, imagePreview: '', existingImage: '' }]);
+      } else {
+        setCityEntries([{ id: Date.now(), countryName: '', cityName: '', price: '', image: null, imagePreview: '', existingImage: '' }]);
+      }
     } else {
       setCityEntries([]);
     }
@@ -315,14 +326,14 @@ function Exhibition() {
     setError('');
 
     // Validate form
-    if (!domesticForm.country_name.trim()) {
+    if (!domesticForm.domestic_category_name.trim()) {
       setError('Please enter category name');
       setLoading(false);
       return;
     }
 
     const formData = new FormData();
-    formData.append('country_name', domesticForm.country_name.trim());
+    formData.append('domestic_category_name', domesticForm.domestic_category_name.trim());
     
     // Handle cities if they exist
     if (showCitySection && cityEntries.length > 0) {
@@ -336,7 +347,6 @@ function Exhibition() {
         return;
       }
 
-      // For new entries, check if images are provided
       if (!domesticForm.id) {
         const missingImages = validEntries.some(entry => !entry.image && !entry.existingImage);
         if (missingImages) {
@@ -346,31 +356,30 @@ function Exhibition() {
         }
       }
 
+      const stateNames = validEntries.map(entry => entry.stateName.trim());
       const cityNames = validEntries.map(entry => entry.cityName.trim());
       const prices = validEntries.map(entry => entry.price);
       const existingImages = validEntries.map(entry => entry.existingImage || '').filter(img => img !== '');
       const existingCityIds = validEntries.map(entry => entry.id).filter(id => typeof id === 'number');
       
+      formData.append('stateNames', JSON.stringify(stateNames));
       formData.append('cityNames', JSON.stringify(cityNames));
       formData.append('prices', JSON.stringify(prices));
       formData.append('existingImages', JSON.stringify(existingImages));
       formData.append('existingCityIds', JSON.stringify(existingCityIds));
       
-      // Append images for entries that have new images
       validEntries.forEach(entry => {
         if (entry.image) {
           formData.append('images', entry.image);
         }
       });
     } else {
-      // If no cities, send empty arrays
       formData.append('cityNames', JSON.stringify([]));
       formData.append('prices', JSON.stringify([]));
     }
 
     try {
       let response;
-      let savedId = domesticForm.id;
       
       if (domesticForm.id) {
         response = await fetch(`${baseurl}/api/exhibitions/domestic/${domesticForm.id}`, {
@@ -392,7 +401,6 @@ function Exhibition() {
         resetForms();
         setShowForm(false);
         
-        // Redirect to details page for new exhibition
         if (!domesticForm.id && result.id) {
           navigate(`/exhibition/details/${result.id}/domestic`);
         } else if (domesticForm.id) {
@@ -414,14 +422,14 @@ function Exhibition() {
     setLoading(true);
     setError('');
 
-    if (!internationalForm.country_name.trim()) {
+    if (!internationalForm.international_category_name.trim()) {
       setError('Please enter category name');
       setLoading(false);
       return;
     }
 
     const formData = new FormData();
-    formData.append('country_name', internationalForm.country_name.trim());
+    formData.append('international_category_name', internationalForm.international_category_name.trim());
     
     if (showCitySection && cityEntries.length > 0) {
       const validEntries = cityEntries.filter(entry => 
@@ -443,11 +451,13 @@ function Exhibition() {
         }
       }
 
+      const countryNames = validEntries.map(entry => entry.countryName.trim());
       const cityNames = validEntries.map(entry => entry.cityName.trim());
       const prices = validEntries.map(entry => entry.price);
       const existingImages = validEntries.map(entry => entry.existingImage || '').filter(img => img !== '');
       const existingCityIds = validEntries.map(entry => entry.id).filter(id => typeof id === 'number');
       
+      formData.append('countryNames', JSON.stringify(countryNames));
       formData.append('cityNames', JSON.stringify(cityNames));
       formData.append('prices', JSON.stringify(prices));
       formData.append('existingImages', JSON.stringify(existingImages));
@@ -465,7 +475,6 @@ function Exhibition() {
 
     try {
       let response;
-      let savedId = internationalForm.id;
       
       if (internationalForm.id) {
         response = await fetch(`${baseurl}/api/exhibitions/international/${internationalForm.id}`, {
@@ -487,7 +496,6 @@ function Exhibition() {
         resetForms();
         setShowForm(false);
         
-        // Redirect to details page for new exhibition
         if (!internationalForm.id && result.id) {
           navigate(`/exhibition/details/${result.id}/international`);
         } else if (internationalForm.id) {
@@ -561,11 +569,11 @@ function Exhibition() {
     });
     setDomesticForm({
       id: null,
-      country_name: ''
+      domestic_category_name: ''
     });
     setInternationalForm({
       id: null,
-      country_name: ''
+      international_category_name: ''
     });
     setCityEntries([]);
     setShowCitySection(false);
@@ -596,11 +604,9 @@ function Exhibition() {
     setShowForm(false);
   };
 
-  // Navigate to details page
- // Navigate to basic details page first
-const goToDetails = (id, type) => {
-  navigate(`/exhibition/basic/${id}/${type}`);
-};
+  const goToDetails = (id, type) => {
+    navigate(`/exhibition/basic/${id}/${type}`);
+  };
 
   // Render table based on active tab
   const renderTable = () => {
@@ -643,7 +649,7 @@ const goToDetails = (id, type) => {
                    </tr>
                 </thead>
                 <tbody>
-                   <tr>
+                  <tr>
                     <td>
                       <img 
                         src={`${baseurl}/uploads/exhibition/${aboutExhibition.banner_image}`}
@@ -663,7 +669,7 @@ const goToDetails = (id, type) => {
                         <FaEdit />
                       </Button>
                     </td>
-                   </tr>
+                  </tr>
                 </tbody>
               </table>
             ) : (
@@ -688,26 +694,26 @@ const goToDetails = (id, type) => {
             </div>
             <table className="data-table">
               <thead>
-                 <tr>
+                <tr>
                   <th>ID</th>
                   <th>Category</th>
                   <th>Cities</th>
                   <th>Total Cities</th>
                   <th>Created At</th>
                   <th>Actions</th>
-                 </tr>
+                </tr>
               </thead>
               <tbody>
                 {domesticExhibitions.map((item) => (
                   <tr key={item.id}>
                     <td>{item.id}</td>
-                    <td><strong>{item.country_name}</strong></td>
+                    <td><strong>{item.domestic_category_name}</strong></td>
                     <td>
                       {item.cities && item.cities.length > 0 ? (
                         <div className="city-tags">
                           {item.cities.slice(0, 3).map((city, idx) => (
-                            <span key={idx} className="city-tag" title={`₹${city.price}`}>
-                              {city.city_name} (₹{city.price})
+                            <span key={idx} className="city-tag" title={`${city.state_name ? city.state_name + ', ' : ''}${city.city_name} - ₹${city.price}`}>
+                              {city.state_name ? `${city.state_name} - ` : ''}{city.city_name} (₹{city.price})
                             </span>
                           ))}
                           {item.cities.length > 3 && (
@@ -767,26 +773,26 @@ const goToDetails = (id, type) => {
             </div>
             <table className="data-table">
               <thead>
-                 <tr>
+                <tr>
                   <th>ID</th>
                   <th>Category</th>
                   <th>Cities</th>
                   <th>Total Cities</th>
                   <th>Created At</th>
                   <th>Actions</th>
-                 </tr>
+                </tr>
               </thead>
               <tbody>
                 {internationalExhibitions.map((item) => (
                   <tr key={item.id}>
                     <td>{item.id}</td>
-                    <td><strong>{item.country_name}</strong></td>
+                    <td><strong>{item.international_category_name}</strong></td>
                     <td>
                       {item.cities && item.cities.length > 0 ? (
                         <div className="city-tags">
                           {item.cities.slice(0, 3).map((city, idx) => (
-                            <span key={idx} className="city-tag" title={`₹${city.price}`}>
-                              {city.city_name} (₹{city.price})
+                            <span key={idx} className="city-tag" title={`${city.country_name ? city.country_name + ', ' : ''}${city.city_name} - ₹${city.price}`}>
+                              {city.country_name ? `${city.country_name} - ` : ''}{city.city_name} (₹{city.price})
                             </span>
                           ))}
                           {item.cities.length > 3 && (
@@ -998,23 +1004,20 @@ const goToDetails = (id, type) => {
                   </>
                 )}
 
-                {/* Domestic/International Form */}
-                {(activeTab === 'domestic' || activeTab === 'international') && (
+                {/* Domestic Form */}
+                {activeTab === 'domestic' && (
                   <>
                     <h2>
-                      {activeTab === 'domestic' 
-                        ? (domesticForm.id ? 'Edit Domestic Exhibition' : 'Add Domestic Exhibition')
-                        : (internationalForm.id ? 'Edit International Exhibition' : 'Add International Exhibition')
-                      }
+                      {domesticForm.id ? 'Edit Domestic Exhibition' : 'Add Domestic Exhibition'}
                     </h2>
-                    <form onSubmit={activeTab === 'domestic' ? handleDomesticSubmit : handleInternationalSubmit} encType="multipart/form-data">
+                    <form onSubmit={handleDomesticSubmit} encType="multipart/form-data">
                       <div className="form-group">
                         <label>Category Name *</label>
                         <input
                           type="text"
                           placeholder="e.g., Agriculture, Pharmaceutical, Furniture"
-                          value={activeTab === 'domestic' ? domesticForm.country_name : internationalForm.country_name}
-                          onChange={(e) => handleCategoryChange(e, activeTab)}
+                          value={domesticForm.domestic_category_name}
+                          onChange={(e) => handleCategoryChange(e, 'domestic')}
                           required
                         />
                       </div>
@@ -1029,14 +1032,14 @@ const goToDetails = (id, type) => {
                           {showCitySection ? 'Remove Cities Section' : '+ Add Cities with Details'}
                         </Button>
                         {showCitySection && (
-                          <p className="text-muted small">Add cities with their own images and prices (optional)</p>
+                          <p className="text-muted small">Add cities with state name, city name, image, and price (optional)</p>
                         )}
                       </div>
 
                       {showCitySection && (
                         <div className="cities-section">
                           <div className="section-header">
-                            <h4>Cities with Images and Prices</h4>
+                            <h4>Cities with State Name, Image and Price</h4>
                             <button type="button" onClick={addCityEntry} className="add-btn">
                               <FaPlus /> Add City
                             </button>
@@ -1059,6 +1062,19 @@ const goToDetails = (id, type) => {
                               
                               <div className="city-entry-body">
                                 <div className="row">
+                                  <div className="col-md-4">
+                                    <div className="form-group">
+                                      <label>State Name *</label>
+                                      <input
+                                        type="text"
+                                        placeholder="Enter state name"
+                                        value={entry.stateName}
+                                        onChange={(e) => handleCityChange(entry.id, 'stateName', e.target.value)}
+                                        required={showCitySection}
+                                      />
+                                    </div>
+                                  </div>
+                                  
                                   <div className="col-md-4">
                                     <div className="form-group">
                                       <label>City Name *</label>
@@ -1086,15 +1102,17 @@ const goToDetails = (id, type) => {
                                       />
                                     </div>
                                   </div>
-                                  
-                                  <div className="col-md-4">
+                                </div>
+                                
+                                <div className="row">
+                                  <div className="col-md-12">
                                     <div className="form-group">
                                       <label>Image {!entry.existingImage && '*'}</label>
                                       <input
                                         type="file"
                                         accept="image/*"
                                         onChange={(e) => handleCityImageChange(entry.id, e)}
-                                        required={!entry.existingImage && !domesticForm.id && !internationalForm.id && showCitySection}
+                                        required={!entry.existingImage && !domesticForm.id && showCitySection}
                                       />
                                     </div>
                                   </div>
@@ -1116,10 +1134,147 @@ const goToDetails = (id, type) => {
 
                       <div className="form-actions">
                         <button type="submit" className="submit-btn" disabled={loading}>
-                          {activeTab === 'domestic' 
-                            ? (domesticForm.id ? 'Update Exhibition' : 'Save Exhibition')
-                            : (internationalForm.id ? 'Update Exhibition' : 'Save Exhibition')
-                          }
+                          {domesticForm.id ? 'Update Exhibition' : 'Save Exhibition'}
+                        </button>
+                        <button type="button" onClick={handleCancel} className="cancel-btn" disabled={loading}>
+                          Cancel
+                        </button>
+                      </div>
+                    </form>
+                  </>
+                )}
+
+                {/* International Form */}
+                {activeTab === 'international' && (
+                  <>
+                    <h2>
+                      {internationalForm.id ? 'Edit International Exhibition' : 'Add International Exhibition'}
+                    </h2>
+                    <form onSubmit={handleInternationalSubmit} encType="multipart/form-data">
+                      <div className="form-group">
+                        <label>Category Name *</label>
+                        <input
+                          type="text"
+                          placeholder="e.g., Agriculture, Pharmaceutical, Furniture"
+                          value={internationalForm.international_category_name}
+                          onChange={(e) => handleCategoryChange(e, 'international')}
+                          required
+                        />
+                      </div>
+
+                      <div className="city-toggle-section">
+                        <Button 
+                          type="button" 
+                          variant={showCitySection ? "danger" : "primary"}
+                          onClick={toggleCitySection}
+                          className="mb-3"
+                        >
+                          {showCitySection ? 'Remove Cities Section' : '+ Add Cities with Details'}
+                        </Button>
+                        {showCitySection && (
+                          <p className="text-muted small">Add cities with country name, city name, image, and price (optional)</p>
+                        )}
+                      </div>
+
+                      {showCitySection && (
+                        <div className="cities-section">
+                          <div className="section-header">
+                            <h4>Cities with Country Name, Image and Price</h4>
+                            <button type="button" onClick={addCityEntry} className="add-btn">
+                              <FaPlus /> Add City
+                            </button>
+                          </div>
+
+                          {cityEntries.map((entry, index) => (
+                            <div key={entry.id} className="city-entry-card">
+                              <div className="city-entry-header">
+                                <h5>City {index + 1}</h5>
+                                {cityEntries.length > 1 && (
+                                  <button 
+                                    type="button" 
+                                    onClick={() => removeCityEntry(entry.id)}
+                                    className="remove-btn"
+                                  >
+                                    Remove City
+                                  </button>
+                                )}
+                              </div>
+                              
+                              <div className="city-entry-body">
+                                <div className="row">
+                                  <div className="col-md-4">
+                                    <div className="form-group">
+                                      <label>Country Name *</label>
+                                      <input
+                                        type="text"
+                                        placeholder="Enter country name"
+                                        value={entry.countryName}
+                                        onChange={(e) => handleCityChange(entry.id, 'countryName', e.target.value)}
+                                        required={showCitySection}
+                                      />
+                                    </div>
+                                  </div>
+                                  
+                                  <div className="col-md-4">
+                                    <div className="form-group">
+                                      <label>City Name *</label>
+                                      <input
+                                        type="text"
+                                        placeholder="Enter city name"
+                                        value={entry.cityName}
+                                        onChange={(e) => handleCityChange(entry.id, 'cityName', e.target.value)}
+                                        required={showCitySection}
+                                      />
+                                    </div>
+                                  </div>
+                                  
+                                  <div className="col-md-4">
+                                    <div className="form-group">
+                                      <label>Price (₹) *</label>
+                                      <input
+                                        type="number"
+                                        placeholder="Enter price"
+                                        value={entry.price}
+                                        onChange={(e) => handleCityChange(entry.id, 'price', e.target.value)}
+                                        required={showCitySection}
+                                        min="0"
+                                        step="0.01"
+                                      />
+                                    </div>
+                                  </div>
+                                </div>
+                                
+                                <div className="row">
+                                  <div className="col-md-12">
+                                    <div className="form-group">
+                                      <label>Image {!entry.existingImage && '*'}</label>
+                                      <input
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={(e) => handleCityImageChange(entry.id, e)}
+                                        required={!entry.existingImage && !internationalForm.id && showCitySection}
+                                      />
+                                    </div>
+                                  </div>
+                                </div>
+                                
+                                {(entry.imagePreview || entry.existingImage) && (
+                                  <div className="image-preview">
+                                    <img 
+                                      src={entry.imagePreview || `${baseurl}/uploads/exhibition/${entry.existingImage}`}
+                                      alt={`City ${index + 1}`}
+                                    />
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      <div className="form-actions">
+                        <button type="submit" className="submit-btn" disabled={loading}>
+                          {internationalForm.id ? 'Update Exhibition' : 'Save Exhibition'}
                         </button>
                         <button type="button" onClick={handleCancel} className="cancel-btn" disabled={loading}>
                           Cancel
@@ -1142,7 +1297,9 @@ const goToDetails = (id, type) => {
             {selectedExhibition && (
               <div className="exhibition-details">
                 <div className="detail-row">
-                  <strong>Category:</strong> {selectedExhibition.country_name}
+                  <strong>Category:</strong> {selectedExhibition.type === 'domestic' ? 
+                    selectedExhibition.domestic_category_name : 
+                    selectedExhibition.international_category_name}
                 </div>
                 <div className="detail-row">
                   <strong>Type:</strong> {selectedExhibition.type === 'domestic' ? 'Domestic' : 'International'}
@@ -1160,6 +1317,12 @@ const goToDetails = (id, type) => {
                             />
                           </div>
                           <div className="city-info">
+                            {selectedExhibition.type === 'domestic' && city.state_name && (
+                              <h6 className="text-muted">{city.state_name}</h6>
+                            )}
+                            {selectedExhibition.type === 'international' && city.country_name && (
+                              <h6 className="text-muted">{city.country_name}</h6>
+                            )}
                             <h5>{city.city_name}</h5>
                             <p className="price">₹{Number(city.price).toLocaleString()}</p>
                           </div>

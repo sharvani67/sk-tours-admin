@@ -22,8 +22,26 @@ const AddExhibitionDetails = () => {
   const navigate = useNavigate();
   const { id, type } = useParams();
   const isEditMode = !!id && id !== 'new';
+  const isInternational = type === 'international';
 
-  const TAB_LIST = [
+  // Build TAB_LIST based on exhibition type
+  const TAB_LIST = isInternational ? [
+    'basic',
+    'itineraries',
+    'departures',
+    'costs',
+    'optionalTours',
+    'emiOptions',
+    'inclusions',
+    'exclusions',
+    'transport',
+    'hotels',
+    'visa', // Visa tab for international
+    'bookingPoi',
+    'cancellation',
+    'instructions',
+    'images'
+  ] : [
     'basic',
     'itineraries',
     'departures',
@@ -142,6 +160,123 @@ const AddExhibitionDetails = () => {
   });
   const [hotelRows, setHotelRows] = useState([]);
 
+  // VISA SECTION (Only for International)
+  const [activeVisaSubTab, setActiveVisaSubTab] = useState('tourist');
+  const visaSubTabs = ['tourist', 'transit', 'business', 'form', 'photo', 'fees', 'submission'];
+  
+  // Tourist Visa
+  const [touristVisaItems, setTouristVisaItems] = useState([]);
+  const [touristVisaForm, setTouristVisaForm] = useState({ description: '' });
+  
+  // Transit Visa
+  const [transitVisaItems, setTransitVisaItems] = useState([]);
+  const [transitVisaForm, setTransitVisaForm] = useState({ description: '' });
+  
+  // Business Visa
+  const [businessVisaItems, setBusinessVisaItems] = useState([]);
+  const [businessVisaForm, setBusinessVisaForm] = useState({ description: '' });
+  
+  // Visa Form
+  const [visaFormItems, setVisaFormItems] = useState([]);
+  const [touristVisaRemarks, setTouristVisaRemarks] = useState('');
+  const [editingVisaFormIndex, setEditingVisaFormIndex] = useState(null);
+  const [visaFormEditData, setVisaFormEditData] = useState({
+    type: '',
+    download_action: '',
+    fill_action: '',
+    action1_file: null,
+    action2_file: null
+  });
+  
+  // Photo
+  const [photoItems, setPhotoItems] = useState([]);
+  const [photoForm, setPhotoForm] = useState({ description: '' });
+  const [freeFlowPhotoEntries, setFreeFlowPhotoEntries] = useState([]);
+  const [freeFlowPhotoText, setFreeFlowPhotoText] = useState('');
+  
+  // Visa Fees
+  const [visaFeesRows, setVisaFeesRows] = useState([
+    { 
+      id: 1,
+      type: 'Visa Fee', 
+      tourist: '', 
+      transit: '', 
+      business: '', 
+      tourist_charges: '',
+      transit_charges: '',
+      business_charges: ''
+    },
+    { 
+      id: 2,
+      type: 'VFS Fee', 
+      tourist: '', 
+      transit: '', 
+      business: '', 
+      tourist_charges: '',
+      transit_charges: '',
+      business_charges: ''
+    },
+    { 
+      id: 3,
+      type: 'Other Charges', 
+      tourist: '', 
+      transit: '', 
+      business: '', 
+      tourist_charges: '',
+      transit_charges: '',
+      business_charges: ''
+    }
+  ]);
+  
+  const [extendableRow, setExtendableRow] = useState({
+    type: 'Extendable as per requirement',
+    tourist: '',
+    transit: '',
+    business: '',
+    tourist_charges: '',
+    transit_charges: '',
+    business_charges: ''
+  });
+  
+  // Submission & Pick Up
+  const [submissionRows, setSubmissionRows] = useState([
+    { 
+      id: 1,
+      label: 'Passport Submission Day', 
+      tourist: '', 
+      transit: '', 
+      business: '' 
+    },
+    { 
+      id: 2,
+      label: 'Passport Submission Time', 
+      tourist: '', 
+      transit: '', 
+      business: '' 
+    },
+    { 
+      id: 3,
+      label: 'Passport pick up Days', 
+      tourist: '', 
+      transit: '', 
+      business: '' 
+    },
+    { 
+      id: 4,
+      label: 'Passport Pick Up Time', 
+      tourist: '', 
+      transit: '', 
+      business: '' 
+    },
+    { 
+      id: 5,
+      label: 'Biometric requirement', 
+      tourist: '', 
+      transit: '', 
+      business: '' 
+    }
+  ]);
+
   // BOOKING POI
   const [poiText, setPoiText] = useState('');
   const [poiAmount, setPoiAmount] = useState('');
@@ -165,26 +300,6 @@ const AddExhibitionDetails = () => {
   const [replacementFile, setReplacementFile] = useState(null);
   const [replacementPreview, setReplacementPreview] = useState(null);
 
-  // Check if we have an exhibition ID
-  if (!id || id === 'new') {
-    return (
-      <Navbar>
-        <Container>
-          <Alert variant="warning" className="mt-4">
-            <Alert.Heading>No Exhibition Selected</Alert.Heading>
-            <p>Please go back and select an exhibition first.</p>
-            <hr />
-            <div className="d-flex justify-content-end">
-              <Button onClick={() => navigate('/exhibition')} variant="primary">
-                Go Back to Exhibitions
-              </Button>
-            </div>
-          </Alert>
-        </Container>
-      </Navbar>
-    );
-  }
-
   // Calculate EMI
   const calculateEMI = (loanAmount, months, interestRate = 18) => {
     const principal = parseFloat(loanAmount);
@@ -199,188 +314,342 @@ const AddExhibitionDetails = () => {
     return Math.round(emi * 100) / 100;
   };
 
-  // Update EMI when loan amount changes
-  useEffect(() => {
-    if (emiLoanAmount && !isNaN(emiLoanAmount) && emiLoanAmount > 0) {
-      const updatedOptions = emiOptions.map(option => ({
-        ...option,
-        loan_amount: emiLoanAmount,
-        emi: calculateEMI(emiLoanAmount, option.months, emiInterestRate)
-      }));
-      setEmiOptions(updatedOptions);
+  // ========================
+  // VISA FUNCTIONS
+  // ========================
+  
+  const getFileUrl = (fileName) => {
+    if (!fileName || typeof fileName !== 'string') return null;
+    if (fileName.startsWith('http')) return fileName;
+    if (fileName.startsWith('/uploads/')) return `${baseurl}${fileName}`;
+     if (fileName.startsWith('/uploads/exhibition/visa/')) return `${baseurl}${fileName}`;
+  if (fileName.startsWith('/uploads/exhibition/')) return `${baseurl}${fileName}`;
+
+    return `${baseurl}/uploads/exhibition/visa/${fileName}`;
+  };
+  
+ const openFileInNewTab = (url) => {
+  if (url) {
+    console.log('Opening file URL:', url); // Add this for debugging
+    window.open(url, '_blank');
+  }
+};
+
+
+  const handleVisaFormFileChange = (index, action, file) => {
+    if (!file) return;
+    const updated = [...visaFormItems];
+    if (action === 'action1') {
+      updated[index].action1_file = file;
+    } else {
+      updated[index].action2_file = file;
     }
-  }, [emiLoanAmount, emiInterestRate]);
-
-  // Set default remarks for new exhibitions
-  useEffect(() => {
-    if (!isEditMode) {
-      setFormData(prev => ({
-        ...prev,
-        cost_remarks: "Please note that while the exhibition price has been indicated, it may vary based on the season. We therefore kindly request you to confirm the final price before proceeding with your booking.",
-        hotel_remarks: "Hotel categories are subject to availability. Standard, Deluxe, and Executive categories based on room types and amenities.",
-        transport_remarks: "Transport arrangements are subject to availability and may change based on the final itinerary.",
-        booking_poi_remarks: "Booking amount is non-refundable. Balance payment to be made as per the payment schedule.",
-        cancellation_remarks: "Cancellation charges apply as per the policy mentioned above. No refunds for no-shows.",
-        emi_remarks: "EMI options available with 18% interest rate. Terms and conditions apply.",
-        optional_tour_remarks: "Optional tours are subject to availability and weather conditions. Prices are per person."
-      }));
-
-      if (bookingPois.length === 0) {
-        setBookingPois([
-          { item: "Per Person Booking Amount", amount_details: "" },
-          { item: "30 Days Prior Per person cost", amount_details: "50% of the exhibition cost" },
-          { item: "21 Days Prior Per person cost", amount_details: "Balance amount to pay" }
-        ]);
-      }
-
-      if (cancelPolicies.length === 0) {
-        setCancelPolicies([
-          { cancellation_policy: "45 Days to 30 Days Cost per person", charges: "" },
-          { cancellation_policy: "30 Days to 21 Days Cost per person", charges: "50% of exhibition cost" },
-          { cancellation_policy: "21 Days till Departure date Cost per person", charges: "100% Cancellation applies" }
-        ]);
-      }
+    setVisaFormItems(updated);
+  };
+  
+  const addTouristVisa = () => {
+    const trimmed = touristVisaForm.description.trim();
+    if (!trimmed) return;
+    
+    if (editingType === 'touristVisa' && editIndex !== -1) {
+      const updated = [...touristVisaItems];
+      updated[editIndex] = { description: trimmed };
+      setTouristVisaItems(updated);
+    } else {
+      setTouristVisaItems(prev => [...prev, { description: trimmed }]);
     }
-  }, []);
-
-  // Load exhibition data for editing
-  const loadExhibitionData = async () => {
-    try {
-      setLoading(true);
-      setError('');
-      
-      // Use the correct endpoint based on type
-      const endpoint = type === 'domestic' 
-        ? `${baseurl}/api/exhibitions/domestic/${id}/details`
-        : `${baseurl}/api/exhibitions/international/${id}/details`;
-      
-      const response = await fetch(endpoint);
-      if (!response.ok) throw new Error('Failed to fetch exhibition data');
-      
-      const result = await response.json();
-      
-      // Check if the response has the expected structure
-      if (result.success && result.data) {
-        const data = result.data;
-        
-        // Set basic form data from the first tour in the tours array
-        if (data.tours && data.tours.length > 0) {
-          const tour = data.tours[0];
-          setFormData({
-            exhibition_name: data.exhibition?.country_name || '',
-            exhibition_type: type,
-            overview: tour.overview || '',
-            duration_days: tour.duration_days || '',
-            base_price_adult: tour.base_price_adult || '',
-            emi_price: tour.emi_price || '',
-            cost_remarks: tour.cost_remarks || '',
-            hotel_remarks: tour.hotel_remarks || '',
-            transport_remarks: tour.transport_remarks || '',
-            booking_poi_remarks: tour.booking_poi_remarks || '',
-            cancellation_remarks: tour.cancellation_remarks || '',
-            emi_remarks: tour.emi_remarks || '',
-            optional_tour_remarks: tour.optional_tour_remarks || ''
-          });
-        }
-
-        // Set itineraries
-        if (data.itineraries && Array.isArray(data.itineraries)) {
-          setItineraries(data.itineraries);
-        }
-
-        // Set departures
-        if (data.departures && Array.isArray(data.departures)) {
-          setDepartures(data.departures);
-        }
-
-        // Set tour costs
-        if (data.costs && Array.isArray(data.costs)) {
-          setTourCosts(data.costs);
-        }
-
-        // Set optional tours
-        if (data.optionaltours && Array.isArray(data.optionaltours)) {
-          setOptionalTours(data.optionaltours);
-        }
-
-        // Set inclusions
-        if (data.inclusions && Array.isArray(data.inclusions)) {
-          setInclusions(data.inclusions.map(inc => inc.item || inc));
-        }
-
-        // Set exclusions
-        if (data.exclusions && Array.isArray(data.exclusions)) {
-          setExclusions(data.exclusions.map(exc => exc.item || exc));
-        }
-
-        // Set transports
-        if (data.transports && Array.isArray(data.transports)) {
-          setTransports(data.transports);
-        }
-
-        // Set hotels
-        if (data.hotels && Array.isArray(data.hotels)) {
-          setHotelRows(data.hotels);
-        }
-
-        // Set booking POIs
-        if (data.bookingpoi && Array.isArray(data.bookingpoi)) {
-          setBookingPois(data.bookingpoi);
-        }
-
-        // Set cancellation policies
-        if (data.cancellationpolicies && Array.isArray(data.cancellationpolicies)) {
-          setCancelPolicies(data.cancellationpolicies);
-        }
-
-        // Set instructions
-        if (data.instructions && Array.isArray(data.instructions)) {
-          setInstructions(data.instructions.map(inst => inst.item || inst));
-        }
-
-        // Set EMI options
-        if (data.emioptions && Array.isArray(data.emioptions) && data.emioptions.length > 0) {
-          setEmiOptions(data.emioptions);
-          if (data.emioptions[0].loan_amount) {
-            setEmiLoanAmount(data.emioptions[0].loan_amount);
-          }
-        }
-
-        // Set existing images
-        try {
-          const imagesResponse = await fetch(`${baseurl}/api/exhibitions/exhibition-images/${id}`);
-          if (imagesResponse.ok) {
-            const imagesData = await imagesResponse.json();
-            const processedImages = imagesData.map(img => ({
-              ...img,
-              url: img.url.startsWith('http') ? img.url : `${baseurl}${img.url}`
-            }));
-            setExistingImages(processedImages);
-          } else {
-            setExistingImages([]);
-          }
-        } catch (imgErr) {
-          console.error('Error loading images:', imgErr);
-          setExistingImages([]);
-        }
-
-        setSuccess('Exhibition data loaded successfully');
-      } else {
-        throw new Error('Invalid data structure received from API');
-      }
-    } catch (err) {
-      console.error('Error loading exhibition data:', err);
-      setError('Failed to load exhibition data: ' + err.message);
-    } finally {
-      setLoading(false);
+    
+    setTouristVisaForm({ description: '' });
+    resetEditing();
+  };
+  
+  const editTouristVisa = (idx) => {
+    const item = touristVisaItems[idx];
+    setTouristVisaForm({ description: item.description });
+    setEditingItem(item);
+    setEditingType('touristVisa');
+    setEditIndex(idx);
+  };
+  
+  const removeTouristVisa = (idx) => {
+    if (window.confirm('Are you sure you want to remove this tourist visa item?')) {
+      setTouristVisaItems(prev => prev.filter((_, i) => i !== idx));
     }
   };
-
-  useEffect(() => {
-    if (id && id !== 'new') {
-      loadExhibitionData();
+  
+  const addTransitVisa = () => {
+    const trimmed = transitVisaForm.description.trim();
+    if (!trimmed) return;
+    
+    if (editingType === 'transitVisa' && editIndex !== -1) {
+      const updated = [...transitVisaItems];
+      updated[editIndex] = { description: trimmed };
+      setTransitVisaItems(updated);
+    } else {
+      setTransitVisaItems(prev => [...prev, { description: trimmed }]);
     }
-  }, [id]);
+    
+    setTransitVisaForm({ description: '' });
+    resetEditing();
+  };
+  
+  const editTransitVisa = (idx) => {
+    const item = transitVisaItems[idx];
+    setTransitVisaForm({ description: item.description });
+    setEditingItem(item);
+    setEditingType('transitVisa');
+    setEditIndex(idx);
+  };
+  
+  const removeTransitVisa = (idx) => {
+    if (window.confirm('Are you sure you want to remove this transit visa item?')) {
+      setTransitVisaItems(prev => prev.filter((_, i) => i !== idx));
+    }
+  };
+  
+  const addBusinessVisa = () => {
+    const trimmed = businessVisaForm.description.trim();
+    if (!trimmed) return;
+    
+    if (editingType === 'businessVisa' && editIndex !== -1) {
+      const updated = [...businessVisaItems];
+      updated[editIndex] = { description: trimmed };
+      setBusinessVisaItems(updated);
+    } else {
+      setBusinessVisaItems(prev => [...prev, { description: trimmed }]);
+    }
+    
+    setBusinessVisaForm({ description: '' });
+    resetEditing();
+  };
+  
+  const editBusinessVisa = (idx) => {
+    const item = businessVisaItems[idx];
+    setBusinessVisaForm({ description: item.description });
+    setEditingItem(item);
+    setEditingType('businessVisa');
+    setEditIndex(idx);
+  };
+  
+  const removeBusinessVisa = (idx) => {
+    if (window.confirm('Are you sure you want to remove this business visa item?')) {
+      setBusinessVisaItems(prev => prev.filter((_, i) => i !== idx));
+    }
+  };
+  
+  const addPhoto = () => {
+    const trimmed = photoForm.description.trim();
+    if (!trimmed) return;
+    
+    if (editingType === 'photo' && editIndex !== -1) {
+      const updated = [...photoItems];
+      updated[editIndex] = { description: trimmed };
+      setPhotoItems(updated);
+    } else {
+      setPhotoItems(prev => [...prev, { description: trimmed }]);
+    }
+    
+    setPhotoForm({ description: '' });
+    resetEditing();
+  };
+  
+  const editPhoto = (idx) => {
+    const item = photoItems[idx];
+    setPhotoForm({ description: item.description });
+    setEditingItem(item);
+    setEditingType('photo');
+    setEditIndex(idx);
+  };
+  
+  const removePhoto = (idx) => {
+    if (window.confirm('Are you sure you want to remove this photo item?')) {
+      setPhotoItems(prev => prev.filter((_, i) => i !== idx));
+    }
+  };
+  
+  const addFreeFlowPhotoEntry = () => {
+    const trimmed = freeFlowPhotoText.trim();
+    if (!trimmed) return;
+    
+    if (editingType === 'freeFlowPhoto' && editIndex !== -1) {
+      const updated = [...freeFlowPhotoEntries];
+      updated[editIndex] = { description: trimmed };
+      setFreeFlowPhotoEntries(updated);
+    } else {
+      setFreeFlowPhotoEntries(prev => [...prev, { description: trimmed }]);
+    }
+    
+    setFreeFlowPhotoText('');
+    resetEditing();
+  };
+  
+  const editFreeFlowPhotoEntry = (idx) => {
+    const item = freeFlowPhotoEntries[idx];
+    setFreeFlowPhotoText(item.description);
+    setEditingItem(item);
+    setEditingType('freeFlowPhoto');
+    setEditIndex(idx);
+  };
+  
+  const removeFreeFlowPhotoEntry = (idx) => {
+    if (window.confirm('Are you sure you want to remove this photo entry?')) {
+      setFreeFlowPhotoEntries(prev => prev.filter((_, i) => i !== idx));
+    }
+  };
+  
+  const addVisaFeesRow = () => {
+    const newId = visaFeesRows.length > 0 
+      ? Math.max(...visaFeesRows.map(row => row.id)) + 1 
+      : 1;
+    
+    setVisaFeesRows([
+      ...visaFeesRows,
+      { 
+        id: newId,
+        type: 'Free Flow Entry', 
+        tourist: '', 
+        transit: '', 
+        business: '', 
+        tourist_charges: '',
+        transit_charges: '',
+        business_charges: ''
+      }
+    ]);
+  };
+  
+  const removeVisaFeesRow = (id) => {
+    if (window.confirm('Are you sure you want to remove this visa fee row?')) {
+      setVisaFeesRows(visaFeesRows.filter(row => row.id !== id));
+    }
+  };
+  
+  const handleVisaFeesChange = (id, field, value) => {
+    const updated = visaFeesRows.map(row => 
+      row.id === id ? { ...row, [field]: value } : row
+    );
+    setVisaFeesRows(updated);
+  };
+  
+  const addSubmissionRow = () => {
+    const newId = submissionRows.length > 0 
+      ? Math.max(...submissionRows.map(row => row.id)) + 1 
+      : 1;
+    
+    setSubmissionRows([
+      ...submissionRows,
+      { 
+        id: newId,
+        label: 'Free Flow Entry', 
+        tourist: '', 
+        transit: '', 
+        business: '' 
+      }
+    ]);
+  };
+  
+  const removeSubmissionRow = (id) => {
+    if (window.confirm('Are you sure you want to remove this submission row?')) {
+      setSubmissionRows(submissionRows.filter(row => row.id !== id));
+    }
+  };
+  
+  const handleSubmissionLabelChange = (id, value) => {
+    const updated = submissionRows.map(row => 
+      row.id === id ? { ...row, label: value } : row
+    );
+    setSubmissionRows(updated);
+  };
+  
+  const handleSubmissionValueChange = (id, field, value) => {
+    const updated = submissionRows.map(row => 
+      row.id === id ? { ...row, [field]: value } : row
+    );
+    setSubmissionRows(updated);
+  };
+  
+  const handleTouristVisaRemarksChange = (e) => {
+    setTouristVisaRemarks(e.target.value);
+  };
+  
+  const handleTouristVisaChange = (e) => {
+    const { name, value } = e.target;
+    setTouristVisaForm(prev => ({ ...prev, [name]: value }));
+  };
+  
+  const handleTransitVisaChange = (e) => {
+    const { name, value } = e.target;
+    setTransitVisaForm(prev => ({ ...prev, [name]: value }));
+  };
+  
+  const handleBusinessVisaChange = (e) => {
+    const { name, value } = e.target;
+    setBusinessVisaForm(prev => ({ ...prev, [name]: value }));
+  };
+  
+  const handlePhotoChange = (e) => {
+    const { name, value } = e.target;
+    setPhotoForm(prev => ({ ...prev, [name]: value }));
+  };
+  
+  const handleFreeFlowPhotoChange = (e) => {
+    setFreeFlowPhotoText(e.target.value);
+  };
+  
+  const updateVisaFormItem = () => {
+    if (editingVisaFormIndex === null) return;
+    
+    const updated = [...visaFormItems];
+    updated[editingVisaFormIndex] = {
+      ...updated[editingVisaFormIndex],
+      ...visaFormEditData
+    };
+    
+    setVisaFormItems(updated);
+    resetVisaFormEdit();
+  };
+  
+  const resetVisaFormEdit = () => {
+    setEditingVisaFormIndex(null);
+    setVisaFormEditData({
+      type: '',
+      download_action: '',
+      fill_action: '',
+      action1_file: null,
+      action2_file: null
+    });
+  };
+  
+  const editVisaFormItem = (index) => {
+    const formItem = visaFormItems[index];
+    setVisaFormEditData({
+      type: formItem.type,
+      download_action: formItem.download_action,
+      fill_action: formItem.fill_action,
+      action1_file: formItem.action1_file,
+      action2_file: formItem.action2_file
+    });
+    setEditingVisaFormIndex(index);
+    setActiveVisaSubTab('form');
+  };
+  
+  const handleVisaFormEditChange = (e) => {
+    const { name, value } = e.target;
+    setVisaFormEditData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+  
+  const resetVisaEditing = () => {
+    setEditingItem(null);
+    setEditingType('');
+    setEditIndex(-1);
+    setTouristVisaForm({ description: '' });
+    setTransitVisaForm({ description: '' });
+    setBusinessVisaForm({ description: '' });
+    setPhotoForm({ description: '' });
+    setFreeFlowPhotoText('');
+  };
 
   // ========================
   // HANDLER FUNCTIONS
@@ -965,11 +1234,26 @@ const AddExhibitionDetails = () => {
     setEditingItem(null);
     setEditingType('');
     setEditIndex(-1);
+    resetVisaEditing();
   };
 
   // Navigation
   const goNext = () => {
     const currentIndex = TAB_LIST.indexOf(activeTab);
+    
+    if (activeTab === 'visa') {
+      const currentSubTabIndex = visaSubTabs.indexOf(activeVisaSubTab);
+      if (currentSubTabIndex < visaSubTabs.length - 1) {
+        setActiveVisaSubTab(visaSubTabs[currentSubTabIndex + 1]);
+        return;
+      } else {
+        if (currentIndex < TAB_LIST.length - 1) {
+          setActiveTab(TAB_LIST[currentIndex + 1]);
+        }
+        return;
+      }
+    }
+    
     if (currentIndex < TAB_LIST.length - 1) {
       setActiveTab(TAB_LIST[currentIndex + 1]);
     }
@@ -977,6 +1261,20 @@ const AddExhibitionDetails = () => {
 
   const goBack = () => {
     const currentIndex = TAB_LIST.indexOf(activeTab);
+    
+    if (activeTab === 'visa') {
+      const currentSubTabIndex = visaSubTabs.indexOf(activeVisaSubTab);
+      if (currentSubTabIndex > 0) {
+        setActiveVisaSubTab(visaSubTabs[currentSubTabIndex - 1]);
+        return;
+      } else {
+        if (currentIndex > 0) {
+          setActiveTab(TAB_LIST[currentIndex - 1]);
+        }
+        return;
+      }
+    }
+    
     if (currentIndex > 0) {
       setActiveTab(TAB_LIST[currentIndex - 1]);
     }
@@ -988,97 +1286,454 @@ const AddExhibitionDetails = () => {
 
   const isLastTab = activeTab === TAB_LIST[TAB_LIST.length - 1];
 
-  // Save Functions
-  const saveExhibitionDetails = async () => {
-    if (!formData.exhibition_name.trim()) {
-      setError('Exhibition name is required');
-      setActiveTab('basic');
-      return;
+  // ========================
+  // EFFECTS HOOKS (MOVED HERE)
+  // ========================
+  
+  // Update EMI when loan amount changes
+  useEffect(() => {
+    if (emiLoanAmount && !isNaN(emiLoanAmount) && emiLoanAmount > 0) {
+      const updatedOptions = emiOptions.map(option => ({
+        ...option,
+        loan_amount: emiLoanAmount,
+        emi: calculateEMI(emiLoanAmount, option.months, emiInterestRate)
+      }));
+      setEmiOptions(updatedOptions);
     }
+  }, [emiLoanAmount, emiInterestRate]);
 
-    try {
-      setLoading(true);
-      setError('');
-      setSuccess('');
+  // Set default remarks for new exhibitions
+  useEffect(() => {
+    if (!isEditMode) {
+      setFormData(prev => ({
+        ...prev,
+        cost_remarks: "Please note that while the exhibition price has been indicated, it may vary based on the season. We therefore kindly request you to confirm the final price before proceeding with your booking.",
+        hotel_remarks: "Hotel categories are subject to availability. Standard, Deluxe, and Executive categories based on room types and amenities.",
+        transport_remarks: "Transport arrangements are subject to availability and may change based on the final itinerary.",
+        booking_poi_remarks: "Booking amount is non-refundable. Balance payment to be made as per the payment schedule.",
+        cancellation_remarks: "Cancellation charges apply as per the policy mentioned above. No refunds for no-shows.",
+        emi_remarks: "EMI options available with 18% interest rate. Terms and conditions apply.",
+        optional_tour_remarks: "Optional tours are subject to availability and weather conditions. Prices are per person."
+      }));
 
-      const payload = {
-        exhibition_name: formData.exhibition_name,
-        duration_days: formData.duration_days,
-        overview: formData.overview,
-        base_price_adult: formData.base_price_adult,
-        emi_price: formData.emi_price,
-        cost_remarks: formData.cost_remarks,
-        hotel_remarks: formData.hotel_remarks,
-        transport_remarks: formData.transport_remarks,
-        booking_poi_remarks: formData.booking_poi_remarks,
-        cancellation_remarks: formData.cancellation_remarks,
-        emi_remarks: formData.emi_remarks,
-        optional_tour_remarks: formData.optional_tour_remarks,
-        itineraries,
-        departures,
-        tour_costs: tourCosts,
-        optional_tours: optionalTours,
-        emi_options: emiOptions,
-        emi_loan_amount: emiLoanAmount,
-        emi_interest_rate: emiInterestRate,
-        inclusions,
-        exclusions,
-        transports,
-        hotels: hotelRows,
-        booking_pois: bookingPois,
-        cancellation_policies: cancelPolicies,
-        instructions
-      };
-
-      const endpoint = type === 'domestic'
-        ? `${baseurl}/api/exhibitions/domestic/${id}/details`
-        : `${baseurl}/api/exhibitions/international/${id}/details`;
-
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.error || 'Error saving details');
+      if (bookingPois.length === 0) {
+        setBookingPois([
+          { item: "Per Person Booking Amount", amount_details: "" },
+          { item: "30 Days Prior Per person cost", amount_details: "50% of the exhibition cost" },
+          { item: "21 Days Prior Per person cost", amount_details: "Balance amount to pay" }
+        ]);
       }
 
-      if (imageFiles.length > 0) {
-        const formDataImages = new FormData();
-        imageFiles.forEach((file) => {
-          formDataImages.append('images', file);
+      if (cancelPolicies.length === 0) {
+        setCancelPolicies([
+          { cancellation_policy: "45 Days to 30 Days Cost per person", charges: "" },
+          { cancellation_policy: "30 Days to 21 Days Cost per person", charges: "50% of exhibition cost" },
+          { cancellation_policy: "21 Days till Departure date Cost per person", charges: "100% Cancellation applies" }
+        ]);
+      }
+
+      // Set default visa remarks for international
+      if (isInternational) {
+        setTouristVisaRemarks(
+          "Visa requirements are subject to change based on embassy regulations. " +
+          "Processing time may vary. It is recommended to apply at least 3-4 weeks before departure. " +
+          "All documents must be original and valid for at least 6 months from the date of return."
+        );
+      }
+    }
+  }, [isEditMode, isInternational]); // Dependencies added
+
+  // Load exhibition data for editing
+ // Load exhibition data for editing
+const loadExhibitionData = async () => {
+  try {
+    setLoading(true);
+    setError('');
+    
+    const endpoint = type === 'domestic' 
+      ? `${baseurl}/api/exhibitions/domestic/${id}/details`
+      : `${baseurl}/api/exhibitions/international/${id}/details`;
+    
+    const response = await fetch(endpoint);
+    if (!response.ok) throw new Error('Failed to fetch exhibition data');
+    
+    const result = await response.json();
+    
+    if (result.success && result.data) {
+      const data = result.data;
+      
+      // Set basic form data from the first tour in the tours array
+      if (data.tours && data.tours.length > 0) {
+        const tour = data.tours[0];
+        setFormData({
+          exhibition_name: data.exhibition?.domestic_category_name || data.exhibition?.international_category_name || '',
+          exhibition_type: type,
+          overview: tour.overview || '',
+          duration_days: tour.duration_days || '',
+          base_price_adult: tour.base_price_adult || '',
+          emi_price: tour.emi_price || '',
+          cost_remarks: tour.cost_remarks || '',
+          hotel_remarks: tour.hotel_remarks || '',
+          transport_remarks: tour.transport_remarks || '',
+          booking_poi_remarks: tour.booking_poi_remarks || '',
+          cancellation_remarks: tour.cancellation_remarks || '',
+          emi_remarks: tour.emi_remarks || '',
+          optional_tour_remarks: tour.optional_tour_remarks || ''
         });
-        
-        const uploadResponse = await fetch(`${baseurl}/api/exhibitions/exhibition-images/upload/${id}`, {
-          method: 'POST',
-          body: formDataImages
-        });
-        
-        const uploadResult = await uploadResponse.json();
-        
-        if (!uploadResponse.ok) {
-          setError('Details saved but images upload failed: ' + (uploadResult.error || 'Unknown error'));
-        } else {
-          setSuccess('Exhibition details and images saved successfully!');
+      }
+
+      // Set itineraries
+      if (data.itineraries && Array.isArray(data.itineraries)) {
+        setItineraries(data.itineraries);
+      }
+
+      // Set departures
+      if (data.departures && Array.isArray(data.departures)) {
+        setDepartures(data.departures);
+      }
+
+      // Set tour costs
+      if (data.costs && Array.isArray(data.costs)) {
+        setTourCosts(data.costs);
+      }
+
+      // Set optional tours - FIXED: Use 'optionaltours' from API response
+      if (data.optionaltours && Array.isArray(data.optionaltours)) {
+        setOptionalTours(data.optionaltours);
+      }
+
+      // Set inclusions
+      if (data.inclusions && Array.isArray(data.inclusions)) {
+        setInclusions(data.inclusions.map(inc => inc.item || inc));
+      }
+
+      // Set exclusions
+      if (data.exclusions && Array.isArray(data.exclusions)) {
+        setExclusions(data.exclusions.map(exc => exc.item || exc));
+      }
+
+      // Set transports
+      if (data.transports && Array.isArray(data.transports)) {
+        setTransports(data.transports);
+      }
+
+      // Set hotels
+      if (data.hotels && Array.isArray(data.hotels)) {
+        setHotelRows(data.hotels);
+      }
+
+      // Set booking POIs - FIXED: Use 'bookingpoi' from API response
+      if (data.bookingpoi && Array.isArray(data.bookingpoi)) {
+        setBookingPois(data.bookingpoi);
+      }
+
+      // Set cancellation policies - FIXED: Use 'cancellationpolicies' from API response
+      if (data.cancellationpolicies && Array.isArray(data.cancellationpolicies)) {
+        setCancelPolicies(data.cancellationpolicies);
+      }
+
+      // Set instructions
+      if (data.instructions && Array.isArray(data.instructions)) {
+        setInstructions(data.instructions.map(inst => inst.item || inst));
+      }
+
+      // Set EMI options - FIXED: Use 'emioptions' from API response
+      if (data.emioptions && Array.isArray(data.emioptions) && data.emioptions.length > 0) {
+        setEmiOptions(data.emioptions);
+        if (data.emioptions[0].loan_amount) {
+          setEmiLoanAmount(data.emioptions[0].loan_amount);
         }
-      } else {
-        setSuccess('Exhibition details saved successfully!');
+      }
+
+      // Load Visa Data for International
+      if (isInternational) {
+        // Visa Details
+        if (data.visa_details && Array.isArray(data.visa_details)) {
+          const touristVisaData = data.visa_details.filter(item => item.type === 'tourist');
+          setTouristVisaItems(touristVisaData.map(item => ({ description: item.description })));
+          
+          const transitVisaData = data.visa_details.filter(item => item.type === 'transit');
+          setTransitVisaItems(transitVisaData.map(item => ({ description: item.description })));
+          
+          const businessVisaData = data.visa_details.filter(item => item.type === 'business');
+          setBusinessVisaItems(businessVisaData.map(item => ({ description: item.description })));
+          
+          const photoData = data.visa_details.filter(item => item.type === 'photo');
+          setPhotoItems(photoData.map(item => ({ description: item.description })));
+        }
+        
+        // Visa Forms
+        if (data.visa_forms && Array.isArray(data.visa_forms)) {
+          const formattedForms = data.visa_forms.map(form => ({
+            type: form.visa_type,
+            download_action: form.download_action,
+            fill_action: form.fill_action,
+            action1_file: form.action1_file,
+            action2_file: form.action2_file,
+                action1_file_url: form.action1_file ? `${baseurl}/uploads/exhibition/visa/${form.action1_file}` : null,
+    action2_file_url: form.action2_file ? `${baseurl}/uploads/exhibition/visa/${form.action2_file}` : null
+          }));
+          setVisaFormItems(formattedForms);
+          
+          if (data.visa_forms.length > 0 && data.visa_forms[0].remarks) {
+            setTouristVisaRemarks(data.visa_forms[0].remarks);
+          }
+        }
+        
+        // Visa Fees
+        if (data.visa_fees && Array.isArray(data.visa_fees)) {
+          const visaFeeRows = data.visa_fees.map((fee, index) => ({
+            id: fee.fee_id || index + 1,
+            type: fee.row_type,
+            tourist: fee.tourist || '',
+            transit: fee.transit || '',
+            business: fee.business || '',
+            tourist_charges: fee.tourist_charges || '',
+            transit_charges: fee.transit_charges || '',
+            business_charges: fee.business_charges || ''
+          }));
+          setVisaFeesRows(visaFeeRows);
+        }
+        
+        // Submission Data
+        if (data.visa_submission && Array.isArray(data.visa_submission)) {
+          const submissionRowsData = data.visa_submission.map((item, index) => ({
+            id: item.submission_id || index + 1,
+            label: item.label || '',
+            tourist: item.tourist || '',
+            transit: item.transit || '',
+            business: item.business || ''
+          }));
+          setSubmissionRows(submissionRowsData);
+        }
+      }
+
+      // Set existing images
+      try {
+        const imagesResponse = await fetch(`${baseurl}/api/exhibitions/exhibition-images/${id}`);
+        if (imagesResponse.ok) {
+          const imagesData = await imagesResponse.json();
+          const processedImages = imagesData.map(img => ({
+            ...img,
+            url: img.url.startsWith('http') ? img.url : `${baseurl}${img.url}`
+          }));
+          setExistingImages(processedImages);
+        } else {
+          setExistingImages([]);
+        }
+      } catch (imgErr) {
+        console.error('Error loading images:', imgErr);
+        setExistingImages([]);
+      }
+
+      setSuccess('Exhibition data loaded successfully');
+    } else {
+      throw new Error('Invalid data structure received from API');
+    }
+  } catch (err) {
+    console.error('Error loading exhibition data:', err);
+    setError('Failed to load exhibition data: ' + err.message);
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+// Add this function to upload visa files before saving
+const uploadVisaFiles = async (visaFormItem, index, action) => {
+  const file = visaFormItem[action === 'action1' ? 'action1_file' : 'action2_file'];
+  if (!file || typeof file === 'string') return file; // Already a string (filename)
+  
+  try {
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    const response = await fetch(`${baseurl}/api/exhibitions/upload-visa-file`, {
+      method: 'POST',
+      body: formData
+    });
+    
+    const result = await response.json();
+    if (result.success) {
+      return result.fileName;
+    }
+    throw new Error('Upload failed');
+  } catch (err) {
+    console.error('Error uploading file:', err);
+    return null;
+  }
+};
+
+
+
+  useEffect(() => {
+    if (id && id !== 'new') {
+      loadExhibitionData();
+    }
+  }, [id, type, isInternational]); // Added dependencies
+
+  // Save Functions
+ const saveExhibitionDetails = async () => {
+  if (!formData.exhibition_name.trim()) {
+    setError('Exhibition name is required');
+    setActiveTab('basic');
+    return;
+  }
+
+  try {
+    setLoading(true);
+    setError('');
+    setSuccess('');
+
+    const payload = {
+      exhibition_name: formData.exhibition_name,
+      duration_days: formData.duration_days,
+      overview: formData.overview,
+      base_price_adult: formData.base_price_adult,
+      emi_price: formData.emi_price,
+      cost_remarks: formData.cost_remarks,
+      hotel_remarks: formData.hotel_remarks,
+      transport_remarks: formData.transport_remarks,
+      booking_poi_remarks: formData.booking_poi_remarks,
+      cancellation_remarks: formData.cancellation_remarks,
+      emi_remarks: formData.emi_remarks,
+      optional_tour_remarks: formData.optional_tour_remarks,
+      itineraries,
+      departures,
+      tour_costs: tourCosts,
+      optional_tours: optionalTours,
+      emi_options: emiOptions,
+      emi_loan_amount: emiLoanAmount,
+      emi_interest_rate: emiInterestRate,
+      inclusions,
+      exclusions,
+      transports,
+      hotels: hotelRows,
+      booking_pois: bookingPois,
+      cancellation_policies: cancelPolicies,
+      instructions
+    };
+
+    // Add visa data for international
+    if (isInternational) {
+      // Upload visa files first
+      const processedVisaForms = [];
+      
+      for (const form of visaFormItems) {
+        const processedForm = { ...form };
+        
+        // Upload action1_file if it's a File object
+        if (form.action1_file && typeof form.action1_file !== 'string' && form.action1_file instanceof File) {
+          try {
+            const uploadFormData = new FormData();
+            uploadFormData.append('file', form.action1_file);
+            
+            const uploadResponse = await fetch(`${baseurl}/api/exhibitions/upload-visa-file`, {
+              method: 'POST',
+              body: uploadFormData
+            });
+            
+            const uploadResult = await uploadResponse.json();
+            if (uploadResult.success) {
+              processedForm.action1_file = uploadResult.fileName;
+            } else {
+              console.error('Failed to upload action1 file');
+              processedForm.action1_file = null;
+            }
+          } catch (err) {
+            console.error('Error uploading action1 file:', err);
+            processedForm.action1_file = null;
+          }
+        }
+        
+        // Upload action2_file if it's a File object
+        if (form.action2_file && typeof form.action2_file !== 'string' && form.action2_file instanceof File) {
+          try {
+            const uploadFormData = new FormData();
+            uploadFormData.append('file', form.action2_file);
+            
+            const uploadResponse = await fetch(`${baseurl}/api/exhibitions/upload-visa-file`, {
+              method: 'POST',
+              body: uploadFormData
+            });
+            
+            const uploadResult = await uploadResponse.json();
+            if (uploadResult.success) {
+              processedForm.action2_file = uploadResult.fileName;
+            } else {
+              console.error('Failed to upload action2 file');
+              processedForm.action2_file = null;
+            }
+          } catch (err) {
+            console.error('Error uploading action2 file:', err);
+            processedForm.action2_file = null;
+          }
+        }
+        
+        processedVisaForms.push(processedForm);
       }
       
-      setTimeout(() => {
-        navigate('/exhibition');
-      }, 2000);
-      
-    } catch (err) {
-      console.error('Error submitting form:', err);
-      setError('Error submitting form: ' + err.message);
-    } finally {
-      setLoading(false);
+      payload.visa_data = {
+        tourist_visa: touristVisaItems,
+        transit_visa: transitVisaItems,
+        business_visa: businessVisaItems,
+        visa_forms: processedVisaForms,
+        photo: [...photoItems, ...freeFlowPhotoEntries],
+        visa_fees: visaFeesRows,
+        submission: submissionRows,
+        tourist_visa_remarks: touristVisaRemarks
+      };
     }
-  };
+
+    const endpoint = type === 'domestic'
+      ? `${baseurl}/api/exhibitions/domestic/${id}/details`
+      : `${baseurl}/api/exhibitions/international/${id}/details`;
+
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.error || 'Error saving details');
+    }
+
+    if (imageFiles.length > 0) {
+      const formDataImages = new FormData();
+      imageFiles.forEach((file) => {
+        formDataImages.append('images', file);
+      });
+      
+      const uploadResponse = await fetch(`${baseurl}/api/exhibitions/exhibition-images/upload/${id}`, {
+        method: 'POST',
+        body: formDataImages
+      });
+      
+      const uploadResult = await uploadResponse.json();
+      
+      if (!uploadResponse.ok) {
+        setError('Details saved but images upload failed: ' + (uploadResult.error || 'Unknown error'));
+      } else {
+        setSuccess('Exhibition details and images saved successfully!');
+      }
+    } else {
+      setSuccess('Exhibition details saved successfully!');
+    }
+    
+    setTimeout(() => {
+      navigate('/exhibition');
+    }, 2000);
+    
+  } catch (err) {
+    console.error('Error submitting form:', err);
+    setError('Error submitting form: ' + err.message);
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handleSaveClick = () => {
     if (isLastTab) {
@@ -1131,6 +1786,36 @@ const AddExhibitionDetails = () => {
           label: editingType === 'hotel' ? 'Update Hotel' : '+ Add Hotel', 
           onClick: addHotelRow 
         };
+      case 'visa':
+        if (activeVisaSubTab === 'tourist') {
+          return { 
+            label: editingType === 'touristVisa' ? 'Update Tourist Visa' : '+ Add Tourist Visa', 
+            onClick: addTouristVisa 
+          };
+        } else if (activeVisaSubTab === 'transit') {
+          return { 
+            label: editingType === 'transitVisa' ? 'Update Transit Visa' : '+ Add Transit Visa', 
+            onClick: addTransitVisa 
+          };
+        } else if (activeVisaSubTab === 'business') {
+          return { 
+            label: editingType === 'businessVisa' ? 'Update Business Visa' : '+ Add Business Visa', 
+            onClick: addBusinessVisa 
+          };
+        } else if (activeVisaSubTab === 'photo') {
+          return { 
+            label: editingType === 'photo' ? 'Update Photo' : '+ Add Photo', 
+            onClick: addPhoto 
+          };
+        } else if (activeVisaSubTab === 'form') {
+          if (editingVisaFormIndex !== null) {
+            return {
+              label: 'Update Visa Form',
+              onClick: updateVisaFormItem
+            };
+          }
+        }
+        return null;
       case 'bookingPoi':
         return { 
           label: editingType === 'poi' ? 'Update Booking Policy' : '+ Add Booking Policy', 
@@ -1153,6 +1838,26 @@ const AddExhibitionDetails = () => {
 
   const addConfig = getAddConfigForTab(activeTab);
 
+  // Check if we have an exhibition ID - MOVE THIS AFTER ALL HOOKS
+  if (!id || id === 'new') {
+    return (
+      <Navbar>
+        <Container>
+          <Alert variant="warning" className="mt-4">
+            <Alert.Heading>No Exhibition Selected</Alert.Heading>
+            <p>Please go back and select an exhibition first.</p>
+            <hr />
+            <div className="d-flex justify-content-end">
+              <Button onClick={() => navigate('/exhibition')} variant="primary">
+                Go Back to Exhibitions
+              </Button>
+            </div>
+          </Alert>
+        </Container>
+      </Navbar>
+    );
+  }
+
   if (loading && !success) {
     return (
       <Navbar>
@@ -1163,6 +1868,7 @@ const AddExhibitionDetails = () => {
       </Navbar>
     );
   }
+
 
   return (
     <Navbar>
@@ -1330,17 +2036,17 @@ const AddExhibitionDetails = () => {
                         <th>Meals</th>
                         <th>Description</th>
                         <th>Action</th>
-                      </tr>
+                       </tr>
                     </thead>
                     <tbody>
                       {itineraries.sort((a, b) => a.day - b.day).map((item, idx) => (
                         <tr key={idx}>
-                          <td>{idx + 1}</td>
-                          <td>{item.day}</td>
-                          <td>{item.title}</td>
-                          <td>{item.meals || '-'}</td>
-                          <td>{item.description || '-'}</td>
-                          <td>
+                           <td>{idx + 1}</td>
+                           <td>{item.day}</td>
+                           <td>{item.title}</td>
+                           <td>{item.meals || '-'}</td>
+                           <td>{item.description || '-'}</td>
+                           <td>
                             <div className="d-flex gap-1">
                               <Button variant="outline-warning" size="sm" onClick={() => editItinerary(idx)} title="Edit">
                                 <Pencil size={14} />
@@ -1349,8 +2055,8 @@ const AddExhibitionDetails = () => {
                                 <Trash size={14} />
                               </Button>
                             </div>
-                          </td>
-                        </tr>
+                           </td>
+                         </tr>
                       ))}
                     </tbody>
                   </Table>
@@ -1378,18 +2084,18 @@ const AddExhibitionDetails = () => {
                 {departures.length > 0 && (
                   <Table striped bordered hover size="sm">
                     <thead>
-                      <tr>
+                       <tr>
                         <th>#</th>
                         <th>Description</th>
                         <th>Action</th>
-                      </tr>
+                       </tr>
                     </thead>
                     <tbody>
                       {departures.map((dep, idx) => (
                         <tr key={idx}>
-                          <td>{idx + 1}</td>
-                          <td>{dep.description || '-'}</td>
-                          <td>
+                           <td>{idx + 1}</td>
+                           <td>{dep.description || '-'}</td>
+                           <td>
                             <div className="d-flex gap-1">
                               <Button variant="outline-warning" size="sm" onClick={() => editDeparture(idx)} title="Edit">
                                 <Pencil size={14} />
@@ -1398,8 +2104,8 @@ const AddExhibitionDetails = () => {
                                 <Trash size={14} />
                               </Button>
                             </div>
-                          </td>
-                        </tr>
+                           </td>
+                         </tr>
                       ))}
                     </tbody>
                   </Table>
@@ -1491,7 +2197,7 @@ const AddExhibitionDetails = () => {
                 {tourCosts.length > 0 && (
                   <Table striped bordered hover size="sm" className="mt-3">
                     <thead>
-                      <tr>
+                       <tr>
                         <th>#</th>
                         <th>Pax</th>
                         <th>Standard</th>
@@ -1500,19 +2206,19 @@ const AddExhibitionDetails = () => {
                         <th>Chd Bed</th>
                         <th>Chd NoBed</th>
                         <th>Action</th>
-                      </tr>
+                       </tr>
                     </thead>
                     <tbody>
                       {tourCosts.map((c, idx) => (
                         <tr key={idx}>
-                          <td>{idx + 1}</td>
-                          <td>{c.pax}</td>
-                          <td>{c.standard_hotel || 'NA'}</td>
-                          <td>{c.deluxe_hotel || 'NA'}</td>
-                          <td>{c.executive_hotel || 'NA'}</td>
-                          <td>{c.child_with_bed || 'NA'}</td>
-                          <td>{c.child_no_bed || 'NA'}</td>
-                          <td>
+                           <td>{idx + 1}</td>
+                           <td>{c.pax}</td>
+                           <td>{c.standard_hotel || 'NA'}</td>
+                           <td>{c.deluxe_hotel || 'NA'}</td>
+                           <td>{c.executive_hotel || 'NA'}</td>
+                           <td>{c.child_with_bed || 'NA'}</td>
+                           <td>{c.child_no_bed || 'NA'}</td>
+                           <td>
                             <div className="d-flex gap-1">
                               <Button variant="outline-warning" size="sm" onClick={() => editCostRow(idx)} title="Edit">
                                 <Pencil size={14} />
@@ -1521,8 +2227,8 @@ const AddExhibitionDetails = () => {
                                 <Trash size={14} />
                               </Button>
                             </div>
-                          </td>
-                        </tr>
+                           </td>
+                         </tr>
                       ))}
                     </tbody>
                   </Table>
@@ -1585,22 +2291,22 @@ const AddExhibitionDetails = () => {
                 {optionalTours.length > 0 && (
                   <Table striped bordered hover size="sm" className="mt-3">
                     <thead>
-                      <tr>
+                        <tr>
                         <th>#</th>
                         <th>Tour Name</th>
                         <th>Adult Price</th>
                         <th>Child Price</th>
                         <th>Action</th>
-                      </tr>
+                        </tr>
                     </thead>
                     <tbody>
                       {optionalTours.map((tour, idx) => (
                         <tr key={idx}>
-                          <td>{idx + 1}</td>
-                          <td>{tour.tour_name}</td>
-                          <td>{tour.adult_price || 'NA'}</td>
-                          <td>{tour.child_price || 'NA'}</td>
-                          <td>
+                            <td>{idx + 1}</td>
+                            <td>{tour.tour_name}</td>
+                            <td>{tour.adult_price || 'NA'}</td>
+                            <td>{tour.child_price || 'NA'}</td>
+                            <td>
                             <div className="d-flex gap-1">
                               <Button variant="outline-warning" size="sm" onClick={() => editOptionalTourRow(idx)} title="Edit">
                                 <Pencil size={14} />
@@ -1609,8 +2315,8 @@ const AddExhibitionDetails = () => {
                                 <Trash size={14} />
                               </Button>
                             </div>
-                          </td>
-                        </tr>
+                            </td>
+                          </tr>
                       ))}
                     </tbody>
                   </Table>
@@ -2005,7 +2711,616 @@ const AddExhibitionDetails = () => {
                 )}
               </Tab>
 
-              {/* Tab 11: Booking POI */}
+              {/* Tab 11: Visa (Only for International) */}
+              {isInternational && (
+                <Tab eventKey="visa" title="Visa">
+                  <Tabs
+                    activeKey={activeVisaSubTab}
+                    onSelect={(k) => setActiveVisaSubTab(k)}
+                    className="mb-4"
+                  >
+                    {/* Subtab 1: Tourist Visa */}
+                    <Tab eventKey="tourist" title="Tourist Visa">
+                      <Form.Group className="mb-3">
+                        <Form.Label>Tourist Visa Entry</Form.Label>
+                        <Form.Control
+                          as="textarea"
+                          rows={4}
+                          name="description"
+                          value={touristVisaForm.description}
+                          onChange={handleTouristVisaChange}
+                          placeholder="Enter tourist visa details"
+                        />
+                      </Form.Group>
+
+                      {touristVisaItems.length > 0 && (
+                        <Table striped bordered hover size="sm" className="mt-3">
+                          <thead>
+                            <tr>
+                              <th>#</th>
+                              <th>Description</th>
+                              <th>Action</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {touristVisaItems.map((item, idx) => (
+                              <tr key={idx}>
+                                <td>{idx + 1}</td>
+                                <td>{item.description || '-'}</td>
+                                <td>
+                                  <div className="d-flex gap-1">
+                                    <Button
+                                      variant="outline-warning"
+                                      size="sm"
+                                      onClick={() => editTouristVisa(idx)}
+                                      title="Edit"
+                                    >
+                                      <Pencil size={14} />
+                                    </Button>
+                                    <Button
+                                      variant="outline-danger"
+                                      size="sm"
+                                      onClick={() => removeTouristVisa(idx)}
+                                      title="Remove"
+                                    >
+                                      <Trash size={14} />
+                                    </Button>
+                                  </div>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </Table>
+                      )}
+                    </Tab>
+
+                    {/* Subtab 2: Transit Visa */}
+                    <Tab eventKey="transit" title="Transit Visa">
+                      <Form.Group className="mb-3">
+                        <Form.Label>Transit Visa Entry</Form.Label>
+                        <Form.Control
+                          as="textarea"
+                          rows={4}
+                          name="description"
+                          value={transitVisaForm.description}
+                          onChange={handleTransitVisaChange}
+                          placeholder="Enter transit visa details"
+                        />
+                      </Form.Group>
+
+                      {transitVisaItems.length > 0 && (
+                        <Table striped bordered hover size="sm" className="mt-3">
+                          <thead>
+                            <tr>
+                              <th>#</th>
+                              <th>Description</th>
+                              <th>Action</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {transitVisaItems.map((item, idx) => (
+                              <tr key={idx}>
+                                <td>{idx + 1}</td>
+                                <td>{item.description || '-'}</td>
+                                <td>
+                                  <div className="d-flex gap-1">
+                                    <Button
+                                      variant="outline-warning"
+                                      size="sm"
+                                      onClick={() => editTransitVisa(idx)}
+                                      title="Edit"
+                                    >
+                                      <Pencil size={14} />
+                                    </Button>
+                                    <Button
+                                      variant="outline-danger"
+                                      size="sm"
+                                      onClick={() => removeTransitVisa(idx)}
+                                      title="Remove"
+                                    >
+                                      <Trash size={14} />
+                                    </Button>
+                                  </div>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </Table>
+                      )}
+                    </Tab>
+
+                    {/* Subtab 3: Business Visa */}
+                    <Tab eventKey="business" title="Business Visa">
+                      <Form.Group className="mb-3">
+                        <Form.Label>Business Visa Entry</Form.Label>
+                        <Form.Control
+                          as="textarea"
+                          rows={4}
+                          name="description"
+                          value={businessVisaForm.description}
+                          onChange={handleBusinessVisaChange}
+                          placeholder="Enter business visa details"
+                        />
+                      </Form.Group>
+
+                      {businessVisaItems.length > 0 && (
+                        <Table striped bordered hover size="sm" className="mt-3">
+                          <thead>
+                            <tr>
+                              <th>#</th>
+                              <th>Description</th>
+                              <th>Action</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {businessVisaItems.map((item, idx) => (
+                              <tr key={idx}>
+                                <td>{idx + 1}</td>
+                                <td>{item.description || '-'}</td>
+                                <td>
+                                  <div className="d-flex gap-1">
+                                    <Button
+                                      variant="outline-warning"
+                                      size="sm"
+                                      onClick={() => editBusinessVisa(idx)}
+                                      title="Edit"
+                                    >
+                                      <Pencil size={14} />
+                                    </Button>
+                                    <Button
+                                      variant="outline-danger"
+                                      size="sm"
+                                      onClick={() => removeBusinessVisa(idx)}
+                                      title="Remove"
+                                    >
+                                      <Trash size={14} />
+                                    </Button>
+                                  </div>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </Table>
+                      )}
+                    </Tab>
+
+                    {/* Subtab 4: Visa Form */}
+                    <Tab eventKey="form" title="Visa Form">
+                      <div className="mb-3">
+                        <Button 
+                          variant="outline-primary" 
+                          size="sm" 
+                          onClick={() => {
+                            const newVisaForm = {
+                              type: 'New Visa Type',
+                              download_action: 'Download',
+                              fill_action: 'Fill Manually',
+                              action1_file: null,
+                              action2_file: null
+                            };
+                            setVisaFormItems([...visaFormItems, newVisaForm]);
+                          }}
+                        >
+                          + Add New Visa Form
+                        </Button>
+                      </div>
+
+                      {visaFormItems.length === 0 ? (
+                        <div className="text-center py-4">
+                          <p className="text-muted">No visa forms added yet. Click "Add New Visa Form" to get started.</p>
+                        </div>
+                      ) : (
+                        <Table striped bordered hover size="sm">
+                          <thead>
+                            <tr>
+                              <th width="20%">Visa Type</th>
+                              <th width="35%">Upload PDF</th>
+                              <th width="35%">Upload Word</th>
+                              <th width="10%">Actions</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {visaFormItems.map((item, idx) => {
+                              const pdfFile = item.action1_file;
+                              const wordFile = item.action2_file;
+                              const pdfUrl = getFileUrl(pdfFile);
+                              const wordUrl = getFileUrl(wordFile);
+                              
+                              return (
+                                <tr key={idx}>
+                                  <td>
+                                    <Form.Control
+                                      type="text"
+                                      value={item.type}
+                                      onChange={(e) => {
+                                        const updated = [...visaFormItems];
+                                        updated[idx].type = e.target.value;
+                                        setVisaFormItems(updated);
+                                      }}
+                                      placeholder="Enter visa type"
+                                      size="sm"
+                                    />
+                                  </td>
+                                  <td>
+                                    <div className="d-flex flex-column gap-2">
+                                      <div>
+                                        <Button 
+                                          variant="outline-primary" 
+                                          size="sm"
+                                          onClick={() => document.getElementById(`pdf-upload-${idx}`).click()}
+                                        >
+                                          {pdfFile ? 'Change PDF' : 'Upload PDF'}
+                                        </Button>
+                                        <Form.Control
+                                          type="file"
+                                          id={`pdf-upload-${idx}`}
+                                          accept=".pdf"
+                                          className="d-none"
+                                          onChange={(e) => handleVisaFormFileChange(idx, 'action1', e.target.files[0])}
+                                        />
+                                      </div>
+                                      
+                                      {pdfFile && (
+                                        <div className="d-flex align-items-center justify-content-between bg-light p-2 rounded">
+                                          <div className="flex-grow-1">
+                                            <small className="text-success d-block">
+                                              <strong>✓ Uploaded:</strong>
+                                            </small>
+                                            <small className="text-muted d-block">
+                                              {typeof pdfFile === 'string' ? pdfFile : pdfFile.name}
+                                            </small>
+                                          </div>
+                                          
+                                          {pdfUrl && (
+                                            <div className="ms-2">
+                                              <Button
+                                                variant="outline-info"
+                                                size="sm"
+                                                onClick={() => openFileInNewTab(pdfUrl)}
+                                                title="View PDF"
+                                                className="d-flex align-items-center"
+                                              >
+                                                👁️ View
+                                              </Button>
+                                            </div>
+                                          )}
+                                        </div>
+                                      )}
+                                    </div>
+                                  </td>
+                                  
+                                  <td>
+                                    <div className="d-flex flex-column gap-2">
+                                      <div>
+                                        <Button 
+                                          variant="outline-secondary" 
+                                          size="sm"
+                                          onClick={() => document.getElementById(`word-upload-${idx}`).click()}
+                                        >
+                                          {wordFile ? 'Change Word' : 'Upload Word'}
+                                        </Button>
+                                        <Form.Control
+                                          type="file"
+                                          id={`word-upload-${idx}`}
+                                          accept=".doc,.docx"
+                                          className="d-none"
+                                          onChange={(e) => handleVisaFormFileChange(idx, 'action2', e.target.files[0])}
+                                        />
+                                      </div>
+                                      
+                                      {wordFile && (
+                                        <div className="d-flex align-items-center justify-content-between bg-light p-2 rounded">
+                                          <div className="flex-grow-1">
+                                            <small className="text-success d-block">
+                                              <strong>✓ Uploaded:</strong>
+                                            </small>
+                                            <small className="text-muted d-block">
+                                              {typeof wordFile === 'string' ? wordFile : wordFile.name}
+                                            </small>
+                                          </div>
+                                          
+                                          {wordUrl && (
+                                            <div className="ms-2">
+                                              <Button
+                                                variant="outline-info"
+                                                size="sm"
+                                                onClick={() => openFileInNewTab(wordUrl)}
+                                                title="View Document"
+                                                className="d-flex align-items-center"
+                                              >
+                                                👁️ View
+                                              </Button>
+                                            </div>
+                                          )}
+                                        </div>
+                                      )}
+                                    </div>
+                                  </td>
+                                  <td>
+                                    <div className="d-flex flex-column gap-1">
+                                      <Button
+                                        variant="outline-danger"
+                                        size="sm"
+                                        onClick={() => {
+                                          const newItems = [...visaFormItems];
+                                          newItems.splice(idx, 1);
+                                          setVisaFormItems(newItems);
+                                        }}
+                                        title="Remove"
+                                      >
+                                        <Trash size={14} />
+                                      </Button>
+                                    </div>
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </Table>
+                      )}
+
+                      <Card className="mt-3">
+                        <Card.Body>
+                          <Form.Group>
+                            <Form.Label>Tourist Visa Remarks</Form.Label>
+                            <Form.Control
+                              as="textarea"
+                              rows={4}
+                              value={touristVisaRemarks}
+                              onChange={handleTouristVisaRemarksChange}
+                              placeholder="Enter remarks about visa forms..."
+                            />
+                          </Form.Group>
+                        </Card.Body>
+                      </Card>
+                    </Tab>
+
+                    {/* Subtab 5: Photo */}
+                    <Tab eventKey="photo" title="Photo">
+                      <Card className="mb-4">
+                        <Card.Body>
+                          <Form.Group className="mb-3">
+                            <Form.Label>
+                              {editingType === 'photo' ? 'Edit Photo Description' : 'Add Photo Description'}
+                            </Form.Label>
+                            <div className="d-flex gap-2">
+                              <Form.Control
+                                as="textarea"
+                                rows={2}
+                                name="description"
+                                value={photoForm.description}
+                                onChange={handlePhotoChange}
+                                placeholder="Type photo requirement description"
+                              />
+                            </div>
+                          </Form.Group>
+                        </Card.Body>
+                      </Card>
+
+                      {photoItems.length > 0 && (
+                        <Card>
+                          <Card.Body>
+                            <Table striped bordered hover size="sm">
+                              <thead>
+                                <tr>
+                                  <th>#</th>
+                                  <th>Description</th>
+                                  <th>Action</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {photoItems.map((item, idx) => (
+                                  <tr key={idx}>
+                                    <td>{idx + 1}</td>
+                                    <td>{item.description || '-'}</td>
+                                    <td>
+                                      <div className="d-flex gap-1">
+                                        <Button
+                                          variant="outline-warning"
+                                          size="sm"
+                                          onClick={() => editPhoto(idx)}
+                                          title="Edit"
+                                        >
+                                          <Pencil size={14} />
+                                        </Button>
+                                        <Button
+                                          variant="outline-danger"
+                                          size="sm"
+                                          onClick={() => removePhoto(idx)}
+                                          title="Remove"
+                                        >
+                                          <Trash size={14} />
+                                        </Button>
+                                      </div>
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </Table>
+                          </Card.Body>
+                        </Card>
+                      )}
+                    </Tab>
+
+                    {/* Subtab 6: Visa Fees */}
+                    <Tab eventKey="fees" title="Visa Fees">
+                      <div className="mb-3">
+                        <Button 
+                          variant="outline-success" 
+                          size="sm" 
+                          onClick={addVisaFeesRow}
+                        >
+                          + Add Free Flow Entry
+                        </Button>
+                      </div>
+                      
+                      <Table striped bordered hover size="sm">
+                        <thead>
+                          <tr>
+                            <th>Tourist Visa</th>
+                            <th>Tourist Visa Charges</th>
+                            <th>Transit Visa</th>
+                            <th>Transit Visa Charges</th>
+                            <th>Business Visa</th>
+                            <th>Business Visa Charges</th>
+                            <th>Action</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {visaFeesRows.map((row) => (
+                            <tr key={row.id}>
+                              <td>
+                                <Form.Control
+                                  type="text"
+                                  value={row.tourist}
+                                  onChange={(e) => handleVisaFeesChange(row.id, 'tourist', e.target.value)}
+                                  placeholder="Free flow entry"
+                                  size="sm"
+                                />
+                              </td>
+                              <td>
+                                <Form.Control
+                                  type="text"
+                                  value={row.tourist_charges}
+                                  onChange={(e) => handleVisaFeesChange(row.id, 'tourist_charges', e.target.value)}
+                                  placeholder="Charges for Tourist"
+                                  size="sm"
+                                />
+                              </td>
+                              <td>
+                                <Form.Control
+                                  type="text"
+                                  value={row.transit}
+                                  onChange={(e) => handleVisaFeesChange(row.id, 'transit', e.target.value)}
+                                  placeholder="Free flow entry"
+                                  size="sm"
+                                />
+                              </td>
+                              <td>
+                                <Form.Control
+                                  type="text"
+                                  value={row.transit_charges}
+                                  onChange={(e) => handleVisaFeesChange(row.id, 'transit_charges', e.target.value)}
+                                  placeholder="Charges for Transit"
+                                  size="sm"
+                                />
+                              </td>
+                              <td>
+                                <Form.Control
+                                  type="text"
+                                  value={row.business}
+                                  onChange={(e) => handleVisaFeesChange(row.id, 'business', e.target.value)}
+                                  placeholder="Free flow entry"
+                                  size="sm"
+                                />
+                              </td>
+                              <td>
+                                <Form.Control
+                                  type="text"
+                                  value={row.business_charges}
+                                  onChange={(e) => handleVisaFeesChange(row.id, 'business_charges', e.target.value)}
+                                  placeholder="Charges for Business"
+                                  size="sm"
+                                />
+                              </td>
+                              <td>
+                                <Button
+                                  variant="outline-danger"
+                                  size="sm"
+                                  onClick={() => removeVisaFeesRow(row.id)}
+                                  title="Remove"
+                                  disabled={row.id <= 3}
+                                >
+                                  <Trash size={14} />
+                                </Button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </Table>
+                    </Tab>
+
+                    {/* Subtab 7: Submission & Pick Up */}
+                    <Tab eventKey="submission" title="Submission & Pick Up">
+                      <div className="mb-3">
+                        <Button 
+                          variant="outline-success" 
+                          size="sm" 
+                          onClick={addSubmissionRow}
+                        >
+                          + Add Free Flow Entry
+                        </Button>
+                      </div>
+                      
+                      <Table striped bordered hover size="sm">
+                        <thead>
+                          <tr>
+                            <th width="25%">Item</th>
+                            <th width="25%">Tourist Visa</th>
+                            <th width="25%">Transit Visa</th>
+                            <th width="25%">Business Visa</th>
+                            <th width="5%">Action</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {submissionRows.map((row) => (
+                            <tr key={row.id}>
+                              <td>
+                                <Form.Control
+                                  type="text"
+                                  value={row.label}
+                                  onChange={(e) => handleSubmissionLabelChange(row.id, e.target.value)}
+                                  placeholder="Enter item label"
+                                  size="sm"
+                                />
+                              </td>
+                              <td>
+                                <Form.Control
+                                  type="text"
+                                  value={row.tourist}
+                                  onChange={(e) => handleSubmissionValueChange(row.id, 'tourist', e.target.value)}
+                                  placeholder="Free flow alphanumeric"
+                                  size="sm"
+                                />
+                              </td>
+                              <td>
+                                <Form.Control
+                                  type="text"
+                                  value={row.transit}
+                                  onChange={(e) => handleSubmissionValueChange(row.id, 'transit', e.target.value)}
+                                  placeholder="Free flow alphanumeric"
+                                  size="sm"
+                                />
+                              </td>
+                              <td>
+                                <Form.Control
+                                  type="text"
+                                  value={row.business}
+                                  onChange={(e) => handleSubmissionValueChange(row.id, 'business', e.target.value)}
+                                  placeholder="Free flow alphanumeric"
+                                  size="sm"
+                                />
+                              </td>
+                              <td>
+                                <Button
+                                  variant="outline-danger"
+                                  size="sm"
+                                  onClick={() => removeSubmissionRow(row.id)}
+                                  title="Remove"
+                                >
+                                  <Trash size={14} />
+                                </Button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </Table>
+                    </Tab>
+                  </Tabs>
+                </Tab>
+              )}
+
+              {/* Tab 12: Booking POI */}
               <Tab eventKey="bookingPoi" title="Booking POI">
                 <Form.Group className="mb-3">
                   <Row>
@@ -2074,7 +3389,7 @@ const AddExhibitionDetails = () => {
                 )}
               </Tab>
 
-              {/* Tab 12: Cancellation Policy */}
+              {/* Tab 13: Cancellation Policy */}
               <Tab eventKey="cancellation" title="Cancellation Policy">
                 <Row>
                   <Col md={8}>

@@ -18,7 +18,8 @@ const ExhibitionBasicDetails = () => {
   // Basic form data
   const [formData, setFormData] = useState({
     id: id || null,
-    country_name: '',
+    domestic_category_name: '',
+    international_category_name: '',
     cities: []
   });
   
@@ -46,25 +47,44 @@ const ExhibitionBasicDetails = () => {
       
       const data = await response.json();
       
-      setFormData({
-        id: data.id,
-        country_name: data.country_name
-      });
-      
-      if (data.cities && data.cities.length > 0) {
-        const entries = data.cities.map(city => ({
-          id: city.id,
-          cityName: city.city_name,
-          price: city.price,
-          image: null,
-          imagePreview: city.image ? `${baseurl}/uploads/exhibition/${city.image}` : '',
-          existingImage: city.image || ''
-        }));
-        setCityEntries(entries);
-        setShowCitySection(true);
+      if (type === 'domestic') {
+        setFormData({
+          id: data.id,
+          domestic_category_name: data.domestic_category_name
+        });
+        
+        if (data.cities && data.cities.length > 0) {
+          const entries = data.cities.map(city => ({
+            id: city.id,
+            stateName: city.state_name || '',
+            cityName: city.city_name,
+            price: city.price,
+            image: null,
+            imagePreview: city.image ? `${baseurl}/uploads/exhibition/${city.image}` : '',
+            existingImage: city.image || ''
+          }));
+          setCityEntries(entries);
+          setShowCitySection(true);
+        }
       } else {
-        setCityEntries([]);
-        setShowCitySection(false);
+        setFormData({
+          id: data.id,
+          international_category_name: data.international_category_name
+        });
+        
+        if (data.cities && data.cities.length > 0) {
+          const entries = data.cities.map(city => ({
+            id: city.id,
+            countryName: city.country_name || '',
+            cityName: city.city_name,
+            price: city.price,
+            image: null,
+            imagePreview: city.image ? `${baseurl}/uploads/exhibition/${city.image}` : '',
+            existingImage: city.image || ''
+          }));
+          setCityEntries(entries);
+          setShowCitySection(true);
+        }
       }
       
       setSuccess('Exhibition data loaded successfully');
@@ -78,10 +98,17 @@ const ExhibitionBasicDetails = () => {
   
   // City handlers
   const addCityEntry = () => {
-    setCityEntries([
-      ...cityEntries,
-      { id: Date.now(), cityName: '', price: '', image: null, imagePreview: '', existingImage: '' }
-    ]);
+    if (type === 'domestic') {
+      setCityEntries([
+        ...cityEntries,
+        { id: Date.now(), stateName: '', cityName: '', price: '', image: null, imagePreview: '', existingImage: '' }
+      ]);
+    } else {
+      setCityEntries([
+        ...cityEntries,
+        { id: Date.now(), countryName: '', cityName: '', price: '', image: null, imagePreview: '', existingImage: '' }
+      ]);
+    }
     setShowCitySection(true);
   };
   
@@ -119,7 +146,12 @@ const ExhibitionBasicDetails = () => {
   };
   
   const handleCategoryChange = (e) => {
-    setFormData({ ...formData, country_name: e.target.value });
+    const { value } = e.target;
+    if (type === 'domestic') {
+      setFormData({ ...formData, domestic_category_name: value });
+    } else {
+      setFormData({ ...formData, international_category_name: value });
+    }
   };
   
   const handleSubmit = async (e) => {
@@ -127,14 +159,25 @@ const ExhibitionBasicDetails = () => {
     setLoading(true);
     setError('');
     
-    if (!formData.country_name.trim()) {
+    if (type === 'domestic' && !formData.domestic_category_name.trim()) {
+      setError('Please enter category name');
+      setLoading(false);
+      return;
+    }
+    
+    if (type === 'international' && !formData.international_category_name.trim()) {
       setError('Please enter category name');
       setLoading(false);
       return;
     }
     
     const formDataToSend = new FormData();
-    formDataToSend.append('country_name', formData.country_name.trim());
+    
+    if (type === 'domestic') {
+      formDataToSend.append('domestic_category_name', formData.domestic_category_name.trim());
+    } else {
+      formDataToSend.append('international_category_name', formData.international_category_name.trim());
+    }
     
     if (showCitySection && cityEntries.length > 0) {
       const validEntries = cityEntries.filter(entry => 
@@ -147,15 +190,31 @@ const ExhibitionBasicDetails = () => {
         return;
       }
       
-      const cityNames = validEntries.map(entry => entry.cityName.trim());
-      const prices = validEntries.map(entry => entry.price);
-      const existingImages = validEntries.map(entry => entry.existingImage || '').filter(img => img !== '');
-      const existingCityIds = validEntries.map(entry => entry.id).filter(id => typeof id === 'number');
-      
-      formDataToSend.append('cityNames', JSON.stringify(cityNames));
-      formDataToSend.append('prices', JSON.stringify(prices));
-      formDataToSend.append('existingImages', JSON.stringify(existingImages));
-      formDataToSend.append('existingCityIds', JSON.stringify(existingCityIds));
+      if (type === 'domestic') {
+        const stateNames = validEntries.map(entry => entry.stateName.trim());
+        const cityNames = validEntries.map(entry => entry.cityName.trim());
+        const prices = validEntries.map(entry => entry.price);
+        const existingImages = validEntries.map(entry => entry.existingImage || '').filter(img => img !== '');
+        const existingCityIds = validEntries.map(entry => entry.id).filter(id => typeof id === 'number');
+        
+        formDataToSend.append('stateNames', JSON.stringify(stateNames));
+        formDataToSend.append('cityNames', JSON.stringify(cityNames));
+        formDataToSend.append('prices', JSON.stringify(prices));
+        formDataToSend.append('existingImages', JSON.stringify(existingImages));
+        formDataToSend.append('existingCityIds', JSON.stringify(existingCityIds));
+      } else {
+        const countryNames = validEntries.map(entry => entry.countryName.trim());
+        const cityNames = validEntries.map(entry => entry.cityName.trim());
+        const prices = validEntries.map(entry => entry.price);
+        const existingImages = validEntries.map(entry => entry.existingImage || '').filter(img => img !== '');
+        const existingCityIds = validEntries.map(entry => entry.id).filter(id => typeof id === 'number');
+        
+        formDataToSend.append('countryNames', JSON.stringify(countryNames));
+        formDataToSend.append('cityNames', JSON.stringify(cityNames));
+        formDataToSend.append('prices', JSON.stringify(prices));
+        formDataToSend.append('existingImages', JSON.stringify(existingImages));
+        formDataToSend.append('existingCityIds', JSON.stringify(existingCityIds));
+      }
       
       validEntries.forEach(entry => {
         if (entry.image) {
@@ -169,16 +228,13 @@ const ExhibitionBasicDetails = () => {
     
     try {
       let response;
-      let savedId = formData.id;
       
       if (isEditMode && formData.id) {
-        // Update existing exhibition
         response = await fetch(`${baseurl}/api/exhibitions/${type}/${formData.id}`, {
           method: 'PUT',
           body: formDataToSend
         });
       } else {
-        // Create new exhibition
         response = await fetch(`${baseurl}/api/exhibitions/${type}`, {
           method: 'POST',
           body: formDataToSend
@@ -190,7 +246,6 @@ const ExhibitionBasicDetails = () => {
       if (response.ok) {
         setSuccess(isEditMode ? 'Exhibition updated successfully!' : 'Exhibition added successfully!');
         
-        // Navigate to the full details form
         setTimeout(() => {
           const exhibitionId = result.id || formData.id;
           navigate(`/exhibition/details/${exhibitionId}/${type}`);
@@ -239,7 +294,7 @@ const ExhibitionBasicDetails = () => {
                 <Form.Control
                   type="text"
                   placeholder="e.g., Agriculture, Pharmaceutical, Furniture"
-                  value={formData.country_name}
+                  value={type === 'domestic' ? formData.domestic_category_name : formData.international_category_name}
                   onChange={handleCategoryChange}
                   required
                 />
@@ -254,7 +309,11 @@ const ExhibitionBasicDetails = () => {
                   {showCitySection ? 'Remove Cities Section' : '+ Add Cities with Details'}
                 </Button>
                 {showCitySection && (
-                  <p className="text-muted small mt-2">Add cities with their own images and prices (optional)</p>
+                  <p className="text-muted small mt-2">
+                    {type === 'domestic' 
+                      ? 'Add cities with state name, city name, image, and price (optional)'
+                      : 'Add cities with country name, city name, image, and price (optional)'}
+                  </p>
                 )}
               </div>
               
@@ -285,7 +344,37 @@ const ExhibitionBasicDetails = () => {
                         </div>
                         
                         <Row>
-                          <Col md={4}>
+                          {type === 'domestic' && (
+                            <Col md={4}>
+                              <Form.Group className="mb-3">
+                                <Form.Label>State Name *</Form.Label>
+                                <Form.Control
+                                  type="text"
+                                  placeholder="Enter state name"
+                                  value={entry.stateName}
+                                  onChange={(e) => handleCityChange(entry.id, 'stateName', e.target.value)}
+                                  required={showCitySection}
+                                />
+                              </Form.Group>
+                            </Col>
+                          )}
+                          
+                          {type === 'international' && (
+                            <Col md={4}>
+                              <Form.Group className="mb-3">
+                                <Form.Label>Country Name *</Form.Label>
+                                <Form.Control
+                                  type="text"
+                                  placeholder="Enter country name"
+                                  value={entry.countryName}
+                                  onChange={(e) => handleCityChange(entry.id, 'countryName', e.target.value)}
+                                  required={showCitySection}
+                                />
+                              </Form.Group>
+                            </Col>
+                          )}
+                          
+                          <Col md={type === 'domestic' ? 4 : 4}>
                             <Form.Group className="mb-3">
                               <Form.Label>City Name *</Form.Label>
                               <Form.Control
@@ -298,7 +387,7 @@ const ExhibitionBasicDetails = () => {
                             </Form.Group>
                           </Col>
                           
-                          <Col md={4}>
+                          <Col md={type === 'domestic' ? 4 : 4}>
                             <Form.Group className="mb-3">
                               <Form.Label>Price (₹) *</Form.Label>
                               <Form.Control
@@ -312,19 +401,17 @@ const ExhibitionBasicDetails = () => {
                               />
                             </Form.Group>
                           </Col>
-                          
-                          <Col md={4}>
-                            <Form.Group className="mb-3">
-                              <Form.Label>Image {!entry.existingImage && '*'}</Form.Label>
-                              <Form.Control
-                                type="file"
-                                accept="image/*"
-                                onChange={(e) => handleCityImageChange(entry.id, e)}
-                                required={!entry.existingImage && !isEditMode && showCitySection}
-                              />
-                            </Form.Group>
-                          </Col>
                         </Row>
+                        
+                        <Form.Group className="mb-3">
+                          <Form.Label>Image {!entry.existingImage && '*'}</Form.Label>
+                          <Form.Control
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => handleCityImageChange(entry.id, e)}
+                            required={!entry.existingImage && !isEditMode && showCitySection}
+                          />
+                        </Form.Group>
                         
                         {(entry.imagePreview || entry.existingImage) && (
                           <div className="mt-2">
