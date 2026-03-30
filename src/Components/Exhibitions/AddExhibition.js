@@ -1940,7 +1940,6 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
                           name="emi_price"
                           value={formData.emi_price}
                           onChange={handleBasicChange}
-                          placeholder="Optional EMI price"
                         />
                       </Col>
                     </Row>
