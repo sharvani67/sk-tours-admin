@@ -24,19 +24,18 @@ const AddExhibitionDetails = () => {
   const isEditMode = !!id && id !== 'new';
   const isInternational = type === 'international';
 
-  // Build TAB_LIST based on exhibition type
+  // Build TAB_LIST based on exhibition type (removed costs tab)
   const TAB_LIST = isInternational ? [
     'basic',
     'itineraries',
     'departures',
-    'costs',
     'optionalTours',
     'emiOptions',
     'inclusions',
     'exclusions',
     'transport',
     'hotels',
-    'visa', // Visa tab for international
+    'visa',
     'bookingPoi',
     'cancellation',
     'instructions',
@@ -45,7 +44,6 @@ const AddExhibitionDetails = () => {
     'basic',
     'itineraries',
     'departures',
-    'costs',
     'optionalTours',
     'emiOptions',
     'inclusions',
@@ -63,7 +61,6 @@ const AddExhibitionDetails = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   
-  // Modal state for editing items
   const [editingItem, setEditingItem] = useState(null);
   const [editingType, setEditingType] = useState('');
   const [editIndex, setEditIndex] = useState(-1);
@@ -100,21 +97,22 @@ const AddExhibitionDetails = () => {
 
   // DEPARTURES
   const [departureForm, setDepartureForm] = useState({
-    description: ''
+    start_date: '',
+    end_date: '',
+    status: 'Available',
+    description: '',
+    standard_twin: '',
+    standard_triple: '',
+    standard_single: '',
+    deluxe_twin: '',
+    deluxe_triple: '',
+    deluxe_single: '',
+    luxury_twin: '',
+    luxury_triple: '',
+    luxury_single: ''
   });
   const [departures, setDepartures] = useState([]);
-
-  // TOUR COSTS
-  const [tourCostItem, setTourCostItem] = useState({
-    pax: '',
-    standard_hotel: '',
-    deluxe_hotel: '',
-    executive_hotel: '',
-    child_with_bed: '',
-    child_no_bed: '',
-    remarks: ''
-  });
-  const [tourCosts, setTourCosts] = useState([]);
+  const [editingDepartureIndex, setEditingDepartureIndex] = useState(-1);
 
   // OPTIONAL TOURS
   const [optionalTourItem, setOptionalTourItem] = useState({
@@ -123,6 +121,7 @@ const AddExhibitionDetails = () => {
     child_price: ''
   });
   const [optionalTours, setOptionalTours] = useState([]);
+  const [editingOptionalTourIndex, setEditingOptionalTourIndex] = useState(-1);
 
   // EMI OPTIONS
   const [emiOptions, setEmiOptions] = useState([
@@ -140,14 +139,18 @@ const AddExhibitionDetails = () => {
   // INCLUSIONS & EXCLUSIONS
   const [inclusionText, setInclusionText] = useState('');
   const [inclusions, setInclusions] = useState([]);
+  const [editingInclusionIndex, setEditingInclusionIndex] = useState(-1);
+  
   const [exclusionText, setExclusionText] = useState('');
   const [exclusions, setExclusions] = useState([]);
+  const [editingExclusionIndex, setEditingExclusionIndex] = useState(-1);
 
   // TRANSPORT
   const [transportItem, setTransportItem] = useState({
     description: ''
   });
   const [transports, setTransports] = useState([]);
+  const [editingTransportIndex, setEditingTransportIndex] = useState(-1);
 
   // HOTELS
   const [hotelItem, setHotelItem] = useState({
@@ -159,24 +162,24 @@ const AddExhibitionDetails = () => {
     remarks: ''
   });
   const [hotelRows, setHotelRows] = useState([]);
+  const [editingHotelIndex, setEditingHotelIndex] = useState(-1);
 
-  // VISA SECTION (Only for International)
+  // VISA SECTION
   const [activeVisaSubTab, setActiveVisaSubTab] = useState('tourist');
-  const visaSubTabs = ['tourist', 'transit', 'business', 'form', 'photo', 'fees', 'submission'];
+  const visaSubTabs = ['tourist', 'transit', 'business', 'form', 'currency', 'fees', 'submission'];
   
-  // Tourist Visa
   const [touristVisaItems, setTouristVisaItems] = useState([]);
   const [touristVisaForm, setTouristVisaForm] = useState({ description: '' });
+  const [editingTouristVisaIndex, setEditingTouristVisaIndex] = useState(-1);
   
-  // Transit Visa
   const [transitVisaItems, setTransitVisaItems] = useState([]);
   const [transitVisaForm, setTransitVisaForm] = useState({ description: '' });
+  const [editingTransitVisaIndex, setEditingTransitVisaIndex] = useState(-1);
   
-  // Business Visa
   const [businessVisaItems, setBusinessVisaItems] = useState([]);
   const [businessVisaForm, setBusinessVisaForm] = useState({ description: '' });
+  const [editingBusinessVisaIndex, setEditingBusinessVisaIndex] = useState(-1);
   
-  // Visa Form
   const [visaFormItems, setVisaFormItems] = useState([]);
   const [touristVisaRemarks, setTouristVisaRemarks] = useState('');
   const [editingVisaFormIndex, setEditingVisaFormIndex] = useState(null);
@@ -188,11 +191,20 @@ const AddExhibitionDetails = () => {
     action2_file: null
   });
   
-  // Photo
-  const [photoItems, setPhotoItems] = useState([]);
-  const [photoForm, setPhotoForm] = useState({ description: '' });
-  const [freeFlowPhotoEntries, setFreeFlowPhotoEntries] = useState([]);
-  const [freeFlowPhotoText, setFreeFlowPhotoText] = useState('');
+  // Currency Section - Updated with two separate currency conversion fields
+  const [currencyItems, setCurrencyItems] = useState([]);
+  const [currencyForm, setCurrencyForm] = useState({
+    local_currency: '',
+    currency_conversion_1: '',
+    currency_conversion_2: '',
+    city_name: '',
+    local_time: ''
+  });
+  const [editingCurrencyIndex, setEditingCurrencyIndex] = useState(-1);
+  const [freeFlowCurrencyEntries, setFreeFlowCurrencyEntries] = useState([]);
+  const [freeFlowCurrencyText, setFreeFlowCurrencyText] = useState('');
+  const [editingFreeFlowCurrencyIndex, setEditingFreeFlowCurrencyIndex] = useState(-1);
+  const indianTime = "08:03 AM";
   
   // Visa Fees
   const [visaFeesRows, setVisaFeesRows] = useState([
@@ -228,17 +240,6 @@ const AddExhibitionDetails = () => {
     }
   ]);
   
-  const [extendableRow, setExtendableRow] = useState({
-    type: 'Extendable as per requirement',
-    tourist: '',
-    transit: '',
-    business: '',
-    tourist_charges: '',
-    transit_charges: '',
-    business_charges: ''
-  });
-  
-  // Submission & Pick Up
   const [submissionRows, setSubmissionRows] = useState([
     { 
       id: 1,
@@ -281,6 +282,7 @@ const AddExhibitionDetails = () => {
   const [poiText, setPoiText] = useState('');
   const [poiAmount, setPoiAmount] = useState('');
   const [bookingPois, setBookingPois] = useState([]);
+  const [editingPoiIndex, setEditingPoiIndex] = useState(-1);
 
   // CANCELLATION
   const [cancelItem, setCancelItem] = useState({
@@ -288,10 +290,12 @@ const AddExhibitionDetails = () => {
     charges: ''
   });
   const [cancelPolicies, setCancelPolicies] = useState([]);
+  const [editingCancelIndex, setEditingCancelIndex] = useState(-1);
 
   // INSTRUCTIONS
   const [instructionText, setInstructionText] = useState('');
   const [instructions, setInstructions] = useState([]);
+  const [editingInstructionIndex, setEditingInstructionIndex] = useState(-1);
 
   // IMAGES
   const [imageFiles, setImageFiles] = useState([]);
@@ -300,7 +304,6 @@ const AddExhibitionDetails = () => {
   const [replacementFile, setReplacementFile] = useState(null);
   const [replacementPreview, setReplacementPreview] = useState(null);
 
-  // Calculate EMI
   const calculateEMI = (loanAmount, months, interestRate = 18) => {
     const principal = parseFloat(loanAmount);
     const monthlyRate = (interestRate / 100) / 12;
@@ -314,27 +317,18 @@ const AddExhibitionDetails = () => {
     return Math.round(emi * 100) / 100;
   };
 
-  // ========================
-  // VISA FUNCTIONS
-  // ========================
-  
   const getFileUrl = (fileName) => {
     if (!fileName || typeof fileName !== 'string') return null;
     if (fileName.startsWith('http')) return fileName;
     if (fileName.startsWith('/uploads/')) return `${baseurl}${fileName}`;
-     if (fileName.startsWith('/uploads/exhibition/visa/')) return `${baseurl}${fileName}`;
-  if (fileName.startsWith('/uploads/exhibition/')) return `${baseurl}${fileName}`;
-
     return `${baseurl}/uploads/exhibition/visa/${fileName}`;
   };
   
- const openFileInNewTab = (url) => {
-  if (url) {
-    console.log('Opening file URL:', url); // Add this for debugging
-    window.open(url, '_blank');
-  }
-};
-
+  const openFileInNewTab = (url) => {
+    if (url) {
+      window.open(url, '_blank');
+    }
+  };
 
   const handleVisaFormFileChange = (index, action, file) => {
     if (!file) return;
@@ -351,29 +345,31 @@ const AddExhibitionDetails = () => {
     const trimmed = touristVisaForm.description.trim();
     if (!trimmed) return;
     
-    if (editingType === 'touristVisa' && editIndex !== -1) {
+    if (editingTouristVisaIndex !== -1) {
       const updated = [...touristVisaItems];
-      updated[editIndex] = { description: trimmed };
+      updated[editingTouristVisaIndex] = { description: trimmed };
       setTouristVisaItems(updated);
+      setEditingTouristVisaIndex(-1);
     } else {
       setTouristVisaItems(prev => [...prev, { description: trimmed }]);
     }
     
     setTouristVisaForm({ description: '' });
-    resetEditing();
   };
   
   const editTouristVisa = (idx) => {
     const item = touristVisaItems[idx];
     setTouristVisaForm({ description: item.description });
-    setEditingItem(item);
-    setEditingType('touristVisa');
-    setEditIndex(idx);
+    setEditingTouristVisaIndex(idx);
   };
   
   const removeTouristVisa = (idx) => {
     if (window.confirm('Are you sure you want to remove this tourist visa item?')) {
       setTouristVisaItems(prev => prev.filter((_, i) => i !== idx));
+      if (editingTouristVisaIndex === idx) {
+        setEditingTouristVisaIndex(-1);
+        setTouristVisaForm({ description: '' });
+      }
     }
   };
   
@@ -381,29 +377,31 @@ const AddExhibitionDetails = () => {
     const trimmed = transitVisaForm.description.trim();
     if (!trimmed) return;
     
-    if (editingType === 'transitVisa' && editIndex !== -1) {
+    if (editingTransitVisaIndex !== -1) {
       const updated = [...transitVisaItems];
-      updated[editIndex] = { description: trimmed };
+      updated[editingTransitVisaIndex] = { description: trimmed };
       setTransitVisaItems(updated);
+      setEditingTransitVisaIndex(-1);
     } else {
       setTransitVisaItems(prev => [...prev, { description: trimmed }]);
     }
     
     setTransitVisaForm({ description: '' });
-    resetEditing();
   };
   
   const editTransitVisa = (idx) => {
     const item = transitVisaItems[idx];
     setTransitVisaForm({ description: item.description });
-    setEditingItem(item);
-    setEditingType('transitVisa');
-    setEditIndex(idx);
+    setEditingTransitVisaIndex(idx);
   };
   
   const removeTransitVisa = (idx) => {
     if (window.confirm('Are you sure you want to remove this transit visa item?')) {
       setTransitVisaItems(prev => prev.filter((_, i) => i !== idx));
+      if (editingTransitVisaIndex === idx) {
+        setEditingTransitVisaIndex(-1);
+        setTransitVisaForm({ description: '' });
+      }
     }
   };
   
@@ -411,89 +409,127 @@ const AddExhibitionDetails = () => {
     const trimmed = businessVisaForm.description.trim();
     if (!trimmed) return;
     
-    if (editingType === 'businessVisa' && editIndex !== -1) {
+    if (editingBusinessVisaIndex !== -1) {
       const updated = [...businessVisaItems];
-      updated[editIndex] = { description: trimmed };
+      updated[editingBusinessVisaIndex] = { description: trimmed };
       setBusinessVisaItems(updated);
+      setEditingBusinessVisaIndex(-1);
     } else {
       setBusinessVisaItems(prev => [...prev, { description: trimmed }]);
     }
     
     setBusinessVisaForm({ description: '' });
-    resetEditing();
   };
   
   const editBusinessVisa = (idx) => {
     const item = businessVisaItems[idx];
     setBusinessVisaForm({ description: item.description });
-    setEditingItem(item);
-    setEditingType('businessVisa');
-    setEditIndex(idx);
+    setEditingBusinessVisaIndex(idx);
   };
   
   const removeBusinessVisa = (idx) => {
     if (window.confirm('Are you sure you want to remove this business visa item?')) {
       setBusinessVisaItems(prev => prev.filter((_, i) => i !== idx));
+      if (editingBusinessVisaIndex === idx) {
+        setEditingBusinessVisaIndex(-1);
+        setBusinessVisaForm({ description: '' });
+      }
     }
   };
   
-  const addPhoto = () => {
-    const trimmed = photoForm.description.trim();
+  const addCurrency = () => {
+    const trimmedLocalCurrency = currencyForm.local_currency.trim();
+    const trimmedCurrencyConversion1 = currencyForm.currency_conversion_1.trim();
+    const trimmedCurrencyConversion2 = currencyForm.currency_conversion_2.trim();
+    const trimmedCityName = currencyForm.city_name.trim();
+    const trimmedLocalTime = currencyForm.local_time.trim();
+    
+    if (!trimmedLocalCurrency && !trimmedCurrencyConversion1 && !trimmedCurrencyConversion2 && !trimmedCityName && !trimmedLocalTime) return;
+    
+    const newCurrencyEntry = {
+      local_currency: trimmedLocalCurrency,
+      currency_conversion_1: trimmedCurrencyConversion1,
+      currency_conversion_2: trimmedCurrencyConversion2,
+      city_name: trimmedCityName,
+      local_time: trimmedLocalTime,
+      india_time: indianTime
+    };
+    
+    if (editingCurrencyIndex !== -1) {
+      const updated = [...currencyItems];
+      updated[editingCurrencyIndex] = newCurrencyEntry;
+      setCurrencyItems(updated);
+      setEditingCurrencyIndex(-1);
+    } else {
+      setCurrencyItems(prev => [...prev, newCurrencyEntry]);
+    }
+    
+    setCurrencyForm({
+      local_currency: '',
+      currency_conversion_1: '',
+      currency_conversion_2: '',
+      city_name: '',
+      local_time: ''
+    });
+  };
+  
+  const editCurrency = (idx) => {
+    const item = currencyItems[idx];
+    setCurrencyForm({
+      local_currency: item.local_currency,
+      currency_conversion_1: item.currency_conversion_1 || '',
+      currency_conversion_2: item.currency_conversion_2 || '',
+      city_name: item.city_name,
+      local_time: item.local_time
+    });
+    setEditingCurrencyIndex(idx);
+  };
+  
+  const removeCurrency = (idx) => {
+    if (window.confirm('Are you sure you want to remove this currency entry?')) {
+      setCurrencyItems(prev => prev.filter((_, i) => i !== idx));
+      if (editingCurrencyIndex === idx) {
+        setEditingCurrencyIndex(-1);
+        setCurrencyForm({
+          local_currency: '',
+          currency_conversion_1: '',
+          currency_conversion_2: '',
+          city_name: '',
+          local_time: ''
+        });
+      }
+    }
+  };
+  
+  const addFreeFlowCurrencyEntry = () => {
+    const trimmed = freeFlowCurrencyText.trim();
     if (!trimmed) return;
     
-    if (editingType === 'photo' && editIndex !== -1) {
-      const updated = [...photoItems];
-      updated[editIndex] = { description: trimmed };
-      setPhotoItems(updated);
+    if (editingFreeFlowCurrencyIndex !== -1) {
+      const updated = [...freeFlowCurrencyEntries];
+      updated[editingFreeFlowCurrencyIndex] = { description: trimmed };
+      setFreeFlowCurrencyEntries(updated);
+      setEditingFreeFlowCurrencyIndex(-1);
     } else {
-      setPhotoItems(prev => [...prev, { description: trimmed }]);
+      setFreeFlowCurrencyEntries(prev => [...prev, { description: trimmed }]);
     }
     
-    setPhotoForm({ description: '' });
-    resetEditing();
+    setFreeFlowCurrencyText('');
   };
   
-  const editPhoto = (idx) => {
-    const item = photoItems[idx];
-    setPhotoForm({ description: item.description });
-    setEditingItem(item);
-    setEditingType('photo');
-    setEditIndex(idx);
+  const editFreeFlowCurrencyEntry = (idx) => {
+    const item = freeFlowCurrencyEntries[idx];
+    setFreeFlowCurrencyText(item.description);
+    setEditingFreeFlowCurrencyIndex(idx);
   };
   
-  const removePhoto = (idx) => {
-    if (window.confirm('Are you sure you want to remove this photo item?')) {
-      setPhotoItems(prev => prev.filter((_, i) => i !== idx));
-    }
-  };
-  
-  const addFreeFlowPhotoEntry = () => {
-    const trimmed = freeFlowPhotoText.trim();
-    if (!trimmed) return;
-    
-    if (editingType === 'freeFlowPhoto' && editIndex !== -1) {
-      const updated = [...freeFlowPhotoEntries];
-      updated[editIndex] = { description: trimmed };
-      setFreeFlowPhotoEntries(updated);
-    } else {
-      setFreeFlowPhotoEntries(prev => [...prev, { description: trimmed }]);
-    }
-    
-    setFreeFlowPhotoText('');
-    resetEditing();
-  };
-  
-  const editFreeFlowPhotoEntry = (idx) => {
-    const item = freeFlowPhotoEntries[idx];
-    setFreeFlowPhotoText(item.description);
-    setEditingItem(item);
-    setEditingType('freeFlowPhoto');
-    setEditIndex(idx);
-  };
-  
-  const removeFreeFlowPhotoEntry = (idx) => {
-    if (window.confirm('Are you sure you want to remove this photo entry?')) {
-      setFreeFlowPhotoEntries(prev => prev.filter((_, i) => i !== idx));
+  const removeFreeFlowCurrencyEntry = (idx) => {
+    if (window.confirm('Are you sure you want to remove this currency entry?')) {
+      setFreeFlowCurrencyEntries(prev => prev.filter((_, i) => i !== idx));
+      if (editingFreeFlowCurrencyIndex === idx) {
+        setEditingFreeFlowCurrencyIndex(-1);
+        setFreeFlowCurrencyText('');
+      }
     }
   };
   
@@ -586,13 +622,13 @@ const AddExhibitionDetails = () => {
     setBusinessVisaForm(prev => ({ ...prev, [name]: value }));
   };
   
-  const handlePhotoChange = (e) => {
+  const handleCurrencyChange = (e) => {
     const { name, value } = e.target;
-    setPhotoForm(prev => ({ ...prev, [name]: value }));
+    setCurrencyForm(prev => ({ ...prev, [name]: value }));
   };
   
-  const handleFreeFlowPhotoChange = (e) => {
-    setFreeFlowPhotoText(e.target.value);
+  const handleFreeFlowCurrencyChange = (e) => {
+    setFreeFlowCurrencyText(e.target.value);
   };
   
   const updateVisaFormItem = () => {
@@ -639,22 +675,8 @@ const AddExhibitionDetails = () => {
       [name]: value
     }));
   };
-  
-  const resetVisaEditing = () => {
-    setEditingItem(null);
-    setEditingType('');
-    setEditIndex(-1);
-    setTouristVisaForm({ description: '' });
-    setTransitVisaForm({ description: '' });
-    setBusinessVisaForm({ description: '' });
-    setPhotoForm({ description: '' });
-    setFreeFlowPhotoText('');
-  };
 
-  // ========================
   // HANDLER FUNCTIONS
-  // ========================
-
   const handleBasicChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
@@ -664,7 +686,6 @@ const AddExhibitionDetails = () => {
     setEmiLoanAmount(value);
   };
 
-  // Itinerary Functions
   const addItineraryDay = () => {
     const { day, title, description, meals } = itineraryItem;
     if (!day || !title.trim()) return;
@@ -686,6 +707,8 @@ const AddExhibitionDetails = () => {
       const updated = [...itineraries];
       updated[editIndex] = newItem;
       setItineraries(updated);
+      setEditingType('');
+      setEditIndex(-1);
     } else {
       setItineraries(prev => [...prev, newItem]);
     }
@@ -696,7 +719,6 @@ const AddExhibitionDetails = () => {
       description: '',
       meals: { breakfast: false, lunch: false, dinner: false }
     });
-    resetEditing();
   };
 
   const editItinerary = (idx) => {
@@ -712,7 +734,6 @@ const AddExhibitionDetails = () => {
         dinner: mealsArray.includes('Dinner')
       }
     });
-    setEditingItem(item);
     setEditingType('itinerary');
     setEditIndex(idx);
   };
@@ -720,6 +741,16 @@ const AddExhibitionDetails = () => {
   const handleRemoveItinerary = (idx) => {
     if (window.confirm('Are you sure you want to remove this itinerary?')) {
       setItineraries(prev => prev.filter((_, i) => i !== idx));
+      if (editingType === 'itinerary' && editIndex === idx) {
+        setEditingType('');
+        setEditIndex(-1);
+        setItineraryItem({
+          day: '',
+          title: '',
+          description: '',
+          meals: { breakfast: false, lunch: false, dinner: false }
+        });
+      }
     }
   };
 
@@ -742,98 +773,127 @@ const AddExhibitionDetails = () => {
     }));
   };
 
-  // Departure Functions
+  const handleDepartureChange = (e) => {
+    const { name, value } = e.target;
+    const numericFields = [
+      'standard_twin', 'standard_triple', 'standard_single',
+      'deluxe_twin', 'deluxe_triple', 'deluxe_single',
+      'luxury_twin', 'luxury_triple', 'luxury_single'
+    ];
+
+    setDepartureForm(prev => ({
+      ...prev,
+      [name]: numericFields.includes(name)
+        ? value === '' ? '' : Number(value)
+        : value
+    }));
+  };
+
   const addDeparture = () => {
-    if (!departureForm.description.trim()) return;
-    
-    const newItem = { description: departureForm.description.trim() };
-    
-    if (editingType === 'departure' && editIndex !== -1) {
-      const updated = [...departures];
-      updated[editIndex] = newItem;
-      setDepartures(updated);
-    } else {
-      setDepartures(prev => [...prev, newItem]);
+    if (!departureForm.start_date || !departureForm.end_date) {
+      setError('Please enter both start and end dates');
+      return;
     }
 
-    setDepartureForm({ description: '' });
-    resetEditing();
+    const departureData = {
+      ...departureForm,
+      start_date: departureForm.start_date,
+      end_date: departureForm.end_date,
+      status: departureForm.status || 'Available',
+      description: departureForm.description || '',
+      standard_twin: departureForm.standard_twin ? Number(departureForm.standard_twin) : null,
+      standard_triple: departureForm.standard_triple ? Number(departureForm.standard_triple) : null,
+      standard_single: departureForm.standard_single ? Number(departureForm.standard_single) : null,
+      deluxe_twin: departureForm.deluxe_twin ? Number(departureForm.deluxe_twin) : null,
+      deluxe_triple: departureForm.deluxe_triple ? Number(departureForm.deluxe_triple) : null,
+      deluxe_single: departureForm.deluxe_single ? Number(departureForm.deluxe_single) : null,
+      luxury_twin: departureForm.luxury_twin ? Number(departureForm.luxury_twin) : null,
+      luxury_triple: departureForm.luxury_triple ? Number(departureForm.luxury_triple) : null,
+      luxury_single: departureForm.luxury_single ? Number(departureForm.luxury_single) : null
+    };
+
+    if (editingDepartureIndex !== -1) {
+      const updatedDepartures = [...departures];
+      updatedDepartures[editingDepartureIndex] = departureData;
+      setDepartures(updatedDepartures);
+      setEditingDepartureIndex(-1);
+      setSuccess('Departure updated successfully');
+    } else {
+      setDepartures(prev => [...prev, departureData]);
+      setSuccess('Departure added successfully');
+    }
+
+    setDepartureForm({
+      start_date: '',
+      end_date: '',
+      status: 'Available',
+      description: '',
+      standard_twin: '',
+      standard_triple: '',
+      standard_single: '',
+      deluxe_twin: '',
+      deluxe_triple: '',
+      deluxe_single: '',
+      luxury_twin: '',
+      luxury_triple: '',
+      luxury_single: ''
+    });
   };
 
   const editDeparture = (idx) => {
     const departure = departures[idx];
-    setDepartureForm({ description: departure.description || '' });
-    setEditingItem(departure);
-    setEditingType('departure');
-    setEditIndex(idx);
+    setDepartureForm({
+      start_date: departure.start_date || '',
+      end_date: departure.end_date || '',
+      status: departure.status || 'Available',
+      description: departure.description || '',
+      standard_twin: departure.standard_twin || '',
+      standard_triple: departure.standard_triple || '',
+      standard_single: departure.standard_single || '',
+      deluxe_twin: departure.deluxe_twin || '',
+      deluxe_triple: departure.deluxe_triple || '',
+      deluxe_single: departure.deluxe_single || '',
+      luxury_twin: departure.luxury_twin || '',
+      luxury_triple: departure.luxury_triple || '',
+      luxury_single: departure.luxury_single || ''
+    });
+    setEditingDepartureIndex(idx);
   };
 
   const handleRemoveDeparture = (idx) => {
     if (window.confirm('Are you sure you want to remove this departure?')) {
       setDepartures(prev => prev.filter((_, i) => i !== idx));
+      if (editingDepartureIndex === idx) {
+        setEditingDepartureIndex(-1);
+        setDepartureForm({
+          start_date: '',
+          end_date: '',
+          status: 'Available',
+          description: '',
+          standard_twin: '',
+          standard_triple: '',
+          standard_single: '',
+          deluxe_twin: '',
+          deluxe_triple: '',
+          deluxe_single: '',
+          luxury_twin: '',
+          luxury_triple: '',
+          luxury_single: ''
+        });
+      }
     }
   };
 
-  const handleDepartureChange = (e) => {
-    const { name, value } = e.target;
-    setDepartureForm(prev => ({ ...prev, [name]: value }));
-  };
-
-  // Tour Cost Functions
-  const addCostRow = () => {
-    if (!tourCostItem.pax) return;
-    
-    const newItem = { ...tourCostItem };
-    
-    if (editingType === 'cost' && editIndex !== -1) {
-      const updated = [...tourCosts];
-      updated[editIndex] = newItem;
-      setTourCosts(updated);
-    } else {
-      setTourCosts(prev => [...prev, newItem]);
-    }
-
-    setTourCostItem({
-      pax: '',
-      standard_hotel: '',
-      deluxe_hotel: '',
-      executive_hotel: '',
-      child_with_bed: '',
-      child_no_bed: '',
-      remarks: ''
-    });
-    resetEditing();
-  };
-
-  const editCostRow = (idx) => {
-    const item = tourCosts[idx];
-    setTourCostItem(item);
-    setEditingItem(item);
-    setEditingType('cost');
-    setEditIndex(idx);
-  };
-
-  const removeCostRow = (idx) => {
-    if (window.confirm('Are you sure you want to remove this cost row?')) {
-      setTourCosts(prev => prev.filter((_, i) => i !== idx));
-    }
-  };
-
-  const handleCostChange = (e) => {
-    const { name, value } = e.target;
-    setTourCostItem(prev => ({ ...prev, [name]: value }));
-  };
-
-  // Optional Tour Functions
   const addOptionalTourRow = () => {
     if (!optionalTourItem.tour_name.trim()) return;
 
     const processedItem = { ...optionalTourItem };
 
-    if (editingType === 'optionalTour' && editIndex !== -1) {
+    if (editingOptionalTourIndex !== -1) {
       const updated = [...optionalTours];
-      updated[editIndex] = processedItem;
+      updated[editingOptionalTourIndex] = processedItem;
       setOptionalTours(updated);
+      setEditingOptionalTourIndex(-1);
     } else {
       setOptionalTours(prev => [...prev, processedItem]);
     }
@@ -843,20 +903,25 @@ const AddExhibitionDetails = () => {
       adult_price: '',
       child_price: ''
     });
-    resetEditing();
   };
 
   const editOptionalTourRow = (idx) => {
     const item = optionalTours[idx];
     setOptionalTourItem(item);
-    setEditingItem(item);
-    setEditingType('optionalTour');
-    setEditIndex(idx);
+    setEditingOptionalTourIndex(idx);
   };
 
   const removeOptionalTourRow = (idx) => {
     if (window.confirm('Are you sure you want to remove this optional tour?')) {
       setOptionalTours(prev => prev.filter((_, i) => i !== idx));
+      if (editingOptionalTourIndex === idx) {
+        setEditingOptionalTourIndex(-1);
+        setOptionalTourItem({
+          tour_name: '',
+          adult_price: '',
+          child_price: ''
+        });
+      }
     }
   };
 
@@ -865,95 +930,98 @@ const AddExhibitionDetails = () => {
     setOptionalTourItem(prev => ({ ...prev, [name]: value }));
   };
 
-  // Inclusion Functions
   const handleAddInclusion = () => {
     const trimmed = inclusionText.trim();
     if (!trimmed) return;
     
-    if (editingType === 'inclusion' && editIndex !== -1) {
+    if (editingInclusionIndex !== -1) {
       const updated = [...inclusions];
-      updated[editIndex] = trimmed;
+      updated[editingInclusionIndex] = trimmed;
       setInclusions(updated);
+      setEditingInclusionIndex(-1);
     } else {
       setInclusions(prev => [...prev, trimmed]);
     }
     
     setInclusionText('');
-    resetEditing();
   };
 
   const editInclusion = (idx) => {
     const inclusion = inclusions[idx];
     setInclusionText(inclusion);
-    setEditingItem(inclusion);
-    setEditingType('inclusion');
-    setEditIndex(idx);
+    setEditingInclusionIndex(idx);
   };
 
   const handleRemoveInclusion = (idx) => {
     if (window.confirm('Are you sure you want to remove this inclusion?')) {
       setInclusions(prev => prev.filter((_, i) => i !== idx));
+      if (editingInclusionIndex === idx) {
+        setEditingInclusionIndex(-1);
+        setInclusionText('');
+      }
     }
   };
 
-  // Exclusion Functions
   const handleAddExclusion = () => {
     const trimmed = exclusionText.trim();
     if (!trimmed) return;
     
-    if (editingType === 'exclusion' && editIndex !== -1) {
+    if (editingExclusionIndex !== -1) {
       const updated = [...exclusions];
-      updated[editIndex] = trimmed;
+      updated[editingExclusionIndex] = trimmed;
       setExclusions(updated);
+      setEditingExclusionIndex(-1);
     } else {
       setExclusions(prev => [...prev, trimmed]);
     }
     
     setExclusionText('');
-    resetEditing();
   };
 
   const editExclusion = (idx) => {
     const exclusion = exclusions[idx];
     setExclusionText(exclusion);
-    setEditingItem(exclusion);
-    setEditingType('exclusion');
-    setEditIndex(idx);
+    setEditingExclusionIndex(idx);
   };
 
   const handleRemoveExclusion = (idx) => {
     if (window.confirm('Are you sure you want to remove this exclusion?')) {
       setExclusions(prev => prev.filter((_, i) => i !== idx));
+      if (editingExclusionIndex === idx) {
+        setEditingExclusionIndex(-1);
+        setExclusionText('');
+      }
     }
   };
 
-  // Transport Functions
   const addTransportRow = () => {
     if (!transportItem.description.trim()) return;
     
-    if (editingType === 'transport' && editIndex !== -1) {
+    if (editingTransportIndex !== -1) {
       const updated = [...transports];
-      updated[editIndex] = { description: transportItem.description.trim() };
+      updated[editingTransportIndex] = { description: transportItem.description.trim() };
       setTransports(updated);
+      setEditingTransportIndex(-1);
     } else {
       setTransports(prev => [...prev, { description: transportItem.description.trim() }]);
     }
 
     setTransportItem({ description: '' });
-    resetEditing();
   };
 
   const editTransportRow = (idx) => {
     const item = transports[idx];
     setTransportItem({ description: item.description || '' });
-    setEditingItem(item);
-    setEditingType('transport');
-    setEditIndex(idx);
+    setEditingTransportIndex(idx);
   };
 
   const removeTransportRow = (idx) => {
     if (window.confirm('Are you sure you want to remove this transport?')) {
       setTransports(prev => prev.filter((_, i) => i !== idx));
+      if (editingTransportIndex === idx) {
+        setEditingTransportIndex(-1);
+        setTransportItem({ description: '' });
+      }
     }
   };
 
@@ -962,14 +1030,14 @@ const AddExhibitionDetails = () => {
     setTransportItem(prev => ({ ...prev, [name]: value }));
   };
 
-  // Hotel Functions
   const addHotelRow = () => {
     if (!hotelItem.city.trim()) return;
     
-    if (editingType === 'hotel' && editIndex !== -1) {
+    if (editingHotelIndex !== -1) {
       const updated = [...hotelRows];
-      updated[editIndex] = { ...hotelItem };
+      updated[editingHotelIndex] = { ...hotelItem };
       setHotelRows(updated);
+      setEditingHotelIndex(-1);
     } else {
       setHotelRows(prev => [...prev, { ...hotelItem }]);
     }
@@ -982,20 +1050,28 @@ const AddExhibitionDetails = () => {
       executive_hotel_name: '',
       remarks: ''
     });
-    resetEditing();
   };
 
   const editHotelRow = (idx) => {
     const item = hotelRows[idx];
     setHotelItem(item);
-    setEditingItem(item);
-    setEditingType('hotel');
-    setEditIndex(idx);
+    setEditingHotelIndex(idx);
   };
 
   const removeHotelRow = (idx) => {
     if (window.confirm('Are you sure you want to remove this hotel?')) {
       setHotelRows(prev => prev.filter((_, i) => i !== idx));
+      if (editingHotelIndex === idx) {
+        setEditingHotelIndex(-1);
+        setHotelItem({
+          city: '',
+          nights: '',
+          standard_hotel_name: '',
+          deluxe_hotel_name: '',
+          executive_hotel_name: '',
+          remarks: ''
+        });
+      }
     }
   };
 
@@ -1004,68 +1080,71 @@ const AddExhibitionDetails = () => {
     setHotelItem(prev => ({ ...prev, [name]: value }));
   };
 
-  // Booking POI Functions
   const addPoi = () => {
     const txt = poiText.trim();
     if (!txt) return;
     
     const newPoi = { item: poiText, amount_details: poiAmount };
     
-    if (editingType === 'poi' && editIndex !== -1) {
+    if (editingPoiIndex !== -1) {
       const updated = [...bookingPois];
-      updated[editIndex] = newPoi;
+      updated[editingPoiIndex] = newPoi;
       setBookingPois(updated);
+      setEditingPoiIndex(-1);
     } else {
       setBookingPois([...bookingPois, newPoi]);
     }
     
     setPoiText('');
     setPoiAmount('');
-    resetEditing();
   };
 
   const editPoi = (idx) => {
     const poi = bookingPois[idx];
     setPoiText(poi.item);
     setPoiAmount(poi.amount_details || '');
-    setEditingItem(poi);
-    setEditingType('poi');
-    setEditIndex(idx);
+    setEditingPoiIndex(idx);
   };
 
   const removePoi = (idx) => {
     if (window.confirm('Are you sure you want to remove this booking policy?')) {
       setBookingPois(prev => prev.filter((_, i) => i !== idx));
+      if (editingPoiIndex === idx) {
+        setEditingPoiIndex(-1);
+        setPoiText('');
+        setPoiAmount('');
+      }
     }
   };
 
-  // Cancellation Functions
   const addCancelRow = () => {
     if (!cancelItem.cancellation_policy.trim()) return;
     
-    if (editingType === 'cancellation' && editIndex !== -1) {
+    if (editingCancelIndex !== -1) {
       const updated = [...cancelPolicies];
-      updated[editIndex] = { ...cancelItem };
+      updated[editingCancelIndex] = { ...cancelItem };
       setCancelPolicies(updated);
+      setEditingCancelIndex(-1);
     } else {
       setCancelPolicies(prev => [...prev, { ...cancelItem }]);
     }
     
     setCancelItem({ cancellation_policy: '', charges: '' });
-    resetEditing();
   };
 
   const editCancelRow = (idx) => {
     const policy = cancelPolicies[idx];
     setCancelItem(policy);
-    setEditingItem(policy);
-    setEditingType('cancellation');
-    setEditIndex(idx);
+    setEditingCancelIndex(idx);
   };
 
   const removeCancelRow = (idx) => {
     if (window.confirm('Are you sure you want to remove this cancellation policy?')) {
       setCancelPolicies(prev => prev.filter((_, i) => i !== idx));
+      if (editingCancelIndex === idx) {
+        setEditingCancelIndex(-1);
+        setCancelItem({ cancellation_policy: '', charges: '' });
+      }
     }
   };
 
@@ -1074,38 +1153,38 @@ const AddExhibitionDetails = () => {
     setCancelItem(prev => ({ ...prev, [name]: value }));
   };
 
-  // Instruction Functions
   const addInstruction = () => {
     const txt = instructionText.trim();
     if (!txt) return;
     
-    if (editingType === 'instruction' && editIndex !== -1) {
+    if (editingInstructionIndex !== -1) {
       const updated = [...instructions];
-      updated[editIndex] = txt;
+      updated[editingInstructionIndex] = txt;
       setInstructions(updated);
+      setEditingInstructionIndex(-1);
     } else {
       setInstructions(prev => [...prev, txt]);
     }
     
     setInstructionText('');
-    resetEditing();
   };
 
   const editInstruction = (idx) => {
     const instruction = instructions[idx];
     setInstructionText(instruction);
-    setEditingItem(instruction);
-    setEditingType('instruction');
-    setEditIndex(idx);
+    setEditingInstructionIndex(idx);
   };
 
   const removeInstruction = (idx) => {
     if (window.confirm('Are you sure you want to remove this instruction?')) {
       setInstructions(prev => prev.filter((_, i) => i !== idx));
+      if (editingInstructionIndex === idx) {
+        setEditingInstructionIndex(-1);
+        setInstructionText('');
+      }
     }
   };
 
-  // Image Functions
   const handleImageChange = (e) => {
     const files = e.target.files ? Array.from(e.target.files) : [];
     setImageFiles(files);
@@ -1229,15 +1308,6 @@ const AddExhibitionDetails = () => {
     }
   };
 
-  // Reset editing context
-  const resetEditing = () => {
-    setEditingItem(null);
-    setEditingType('');
-    setEditIndex(-1);
-    resetVisaEditing();
-  };
-
-  // Navigation
   const goNext = () => {
     const currentIndex = TAB_LIST.indexOf(activeTab);
     
@@ -1286,11 +1356,6 @@ const AddExhibitionDetails = () => {
 
   const isLastTab = activeTab === TAB_LIST[TAB_LIST.length - 1];
 
-  // ========================
-  // EFFECTS HOOKS (MOVED HERE)
-  // ========================
-  
-  // Update EMI when loan amount changes
   useEffect(() => {
     if (emiLoanAmount && !isNaN(emiLoanAmount) && emiLoanAmount > 0) {
       const updatedOptions = emiOptions.map(option => ({
@@ -1302,7 +1367,6 @@ const AddExhibitionDetails = () => {
     }
   }, [emiLoanAmount, emiInterestRate]);
 
-  // Set default remarks for new exhibitions
   useEffect(() => {
     if (!isEditMode) {
       setFormData(prev => ({
@@ -1332,20 +1396,52 @@ const AddExhibitionDetails = () => {
         ]);
       }
 
-      // Set default visa remarks for international
       if (isInternational) {
         setTouristVisaRemarks(
           "Visa requirements are subject to change based on embassy regulations. " +
           "Processing time may vary. It is recommended to apply at least 3-4 weeks before departure. " +
           "All documents must be original and valid for at least 6 months from the date of return."
         );
+        
+        setCurrencyItems([
+          {
+            local_currency: "GBP",
+            currency_conversion_1: "1 GBP = ₹105.50",
+            currency_conversion_2: "1 GBP = $1.27",
+            city_name: "London",
+            local_time: "03:33 PM",
+            india_time: indianTime
+          },
+          {
+            local_currency: "USD",
+            currency_conversion_1: "1 USD = ₹83.25",
+            currency_conversion_2: "1 USD = €0.92",
+            city_name: "New York",
+            local_time: "10:03 AM",
+            india_time: indianTime
+          },
+          {
+            local_currency: "AED",
+            currency_conversion_1: "1 AED = ₹22.65",
+            currency_conversion_2: "1 AED = $0.27",
+            city_name: "Dubai",
+            local_time: "06:03 PM",
+            india_time: indianTime
+          },
+          {
+            local_currency: "JPY",
+            currency_conversion_1: "1 JPY = ₹0.55",
+            currency_conversion_2: "1 JPY = $0.0066",
+            city_name: "Tokyo",
+            local_time: "11:03 PM",
+            india_time: indianTime
+          }
+        ]);
       }
     }
-  }, [isEditMode, isInternational]); // Dependencies added
+  }, [isEditMode, isInternational]);
 
-  // Load exhibition data for editing
- // Load exhibition data for editing
-const loadExhibitionData = async () => {
+ const loadExhibitionData = async () => {
   try {
     setLoading(true);
     setError('');
@@ -1362,7 +1458,6 @@ const loadExhibitionData = async () => {
     if (result.success && result.data) {
       const data = result.data;
       
-      // Set basic form data from the first tour in the tours array
       if (data.tours && data.tours.length > 0) {
         const tour = data.tours[0];
         setFormData({
@@ -1382,62 +1477,61 @@ const loadExhibitionData = async () => {
         });
       }
 
-      // Set itineraries
       if (data.itineraries && Array.isArray(data.itineraries)) {
         setItineraries(data.itineraries);
       }
 
-      // Set departures
       if (data.departures && Array.isArray(data.departures)) {
-        setDepartures(data.departures);
+        const formattedDepartures = data.departures.map(dept => ({
+          start_date: dept.start_date ? dept.start_date.split('T')[0] : '',
+          end_date: dept.end_date ? dept.end_date.split('T')[0] : '',
+          status: dept.status || 'Available',
+          description: dept.description || '',
+          standard_twin: dept.standard_twin || '',
+          standard_triple: dept.standard_triple || '',
+          standard_single: dept.standard_single || '',
+          deluxe_twin: dept.deluxe_twin || '',
+          deluxe_triple: dept.deluxe_triple || '',
+          deluxe_single: dept.deluxe_single || '',
+          luxury_twin: dept.luxury_twin || '',
+          luxury_triple: dept.luxury_triple || '',
+          luxury_single: dept.luxury_single || ''
+        }));
+        setDepartures(formattedDepartures);
       }
 
-      // Set tour costs
-      if (data.costs && Array.isArray(data.costs)) {
-        setTourCosts(data.costs);
-      }
-
-      // Set optional tours - FIXED: Use 'optionaltours' from API response
       if (data.optionaltours && Array.isArray(data.optionaltours)) {
         setOptionalTours(data.optionaltours);
       }
 
-      // Set inclusions
       if (data.inclusions && Array.isArray(data.inclusions)) {
         setInclusions(data.inclusions.map(inc => inc.item || inc));
       }
 
-      // Set exclusions
       if (data.exclusions && Array.isArray(data.exclusions)) {
         setExclusions(data.exclusions.map(exc => exc.item || exc));
       }
 
-      // Set transports
       if (data.transports && Array.isArray(data.transports)) {
         setTransports(data.transports);
       }
 
-      // Set hotels
       if (data.hotels && Array.isArray(data.hotels)) {
         setHotelRows(data.hotels);
       }
 
-      // Set booking POIs - FIXED: Use 'bookingpoi' from API response
       if (data.bookingpoi && Array.isArray(data.bookingpoi)) {
         setBookingPois(data.bookingpoi);
       }
 
-      // Set cancellation policies - FIXED: Use 'cancellationpolicies' from API response
       if (data.cancellationpolicies && Array.isArray(data.cancellationpolicies)) {
         setCancelPolicies(data.cancellationpolicies);
       }
 
-      // Set instructions
       if (data.instructions && Array.isArray(data.instructions)) {
         setInstructions(data.instructions.map(inst => inst.item || inst));
       }
 
-      // Set EMI options - FIXED: Use 'emioptions' from API response
       if (data.emioptions && Array.isArray(data.emioptions) && data.emioptions.length > 0) {
         setEmiOptions(data.emioptions);
         if (data.emioptions[0].loan_amount) {
@@ -1445,9 +1539,8 @@ const loadExhibitionData = async () => {
         }
       }
 
-      // Load Visa Data for International
       if (isInternational) {
-        // Visa Details
+        // Load visa details (tourist, transit, business)
         if (data.visa_details && Array.isArray(data.visa_details)) {
           const touristVisaData = data.visa_details.filter(item => item.type === 'tourist');
           setTouristVisaItems(touristVisaData.map(item => ({ description: item.description })));
@@ -1457,12 +1550,32 @@ const loadExhibitionData = async () => {
           
           const businessVisaData = data.visa_details.filter(item => item.type === 'business');
           setBusinessVisaItems(businessVisaData.map(item => ({ description: item.description })));
-          
-          const photoData = data.visa_details.filter(item => item.type === 'photo');
-          setPhotoItems(photoData.map(item => ({ description: item.description })));
         }
         
-        // Visa Forms
+        // Load currency data from visa_currency (NOT from visa_details)
+        // FIXED: Load from structured_currency and free_flow_currency
+        if (data.structured_currency && Array.isArray(data.structured_currency)) {
+          setCurrencyItems(data.structured_currency.map(item => ({ 
+            local_currency: item.local_currency || '',
+            currency_conversion_1: item.currency_conversion_1 || '',
+            currency_conversion_2: item.currency_conversion_2 || '',
+            city_name: item.city_name || '',
+            local_time: item.local_time || '',
+            india_time: item.india_time || indianTime
+          })));
+        } else {
+          setCurrencyItems([]);
+        }
+        
+        if (data.free_flow_currency && Array.isArray(data.free_flow_currency)) {
+          setFreeFlowCurrencyEntries(data.free_flow_currency.map(item => ({ 
+            description: item.description || ''
+          })));
+        } else {
+          setFreeFlowCurrencyEntries([]);
+        }
+        
+        // Load visa forms
         if (data.visa_forms && Array.isArray(data.visa_forms)) {
           const formattedForms = data.visa_forms.map(form => ({
             type: form.visa_type,
@@ -1470,8 +1583,8 @@ const loadExhibitionData = async () => {
             fill_action: form.fill_action,
             action1_file: form.action1_file,
             action2_file: form.action2_file,
-                action1_file_url: form.action1_file ? `${baseurl}/uploads/exhibition/visa/${form.action1_file}` : null,
-    action2_file_url: form.action2_file ? `${baseurl}/uploads/exhibition/visa/${form.action2_file}` : null
+            action1_file_url: form.action1_file ? `${baseurl}/uploads/exhibition/visa/${form.action1_file}` : null,
+            action2_file_url: form.action2_file ? `${baseurl}/uploads/exhibition/visa/${form.action2_file}` : null
           }));
           setVisaFormItems(formattedForms);
           
@@ -1480,7 +1593,7 @@ const loadExhibitionData = async () => {
           }
         }
         
-        // Visa Fees
+        // Load visa fees
         if (data.visa_fees && Array.isArray(data.visa_fees)) {
           const visaFeeRows = data.visa_fees.map((fee, index) => ({
             id: fee.fee_id || index + 1,
@@ -1495,7 +1608,7 @@ const loadExhibitionData = async () => {
           setVisaFeesRows(visaFeeRows);
         }
         
-        // Submission Data
+        // Load visa submission
         if (data.visa_submission && Array.isArray(data.visa_submission)) {
           const submissionRowsData = data.visa_submission.map((item, index) => ({
             id: item.submission_id || index + 1,
@@ -1508,7 +1621,6 @@ const loadExhibitionData = async () => {
         }
       }
 
-      // Set existing images
       try {
         const imagesResponse = await fetch(`${baseurl}/api/exhibitions/exhibition-images/${id}`);
         if (imagesResponse.ok) {
@@ -1538,202 +1650,168 @@ const loadExhibitionData = async () => {
   }
 };
 
-
-// Add this function to upload visa files before saving
-const uploadVisaFiles = async (visaFormItem, index, action) => {
-  const file = visaFormItem[action === 'action1' ? 'action1_file' : 'action2_file'];
-  if (!file || typeof file === 'string') return file; // Already a string (filename)
-  
-  try {
-    const formData = new FormData();
-    formData.append('file', file);
-    
-    const response = await fetch(`${baseurl}/api/exhibitions/upload-visa-file`, {
-      method: 'POST',
-      body: formData
-    });
-    
-    const result = await response.json();
-    if (result.success) {
-      return result.fileName;
-    }
-    throw new Error('Upload failed');
-  } catch (err) {
-    console.error('Error uploading file:', err);
-    return null;
-  }
-};
-
-
-
   useEffect(() => {
     if (id && id !== 'new') {
       loadExhibitionData();
     }
-  }, [id, type, isInternational]); // Added dependencies
+  }, [id, type, isInternational]);
 
-  // Save Functions
- const saveExhibitionDetails = async () => {
-  if (!formData.exhibition_name.trim()) {
-    setError('Exhibition name is required');
-    setActiveTab('basic');
-    return;
-  }
+  const saveExhibitionDetails = async () => {
+    if (!formData.exhibition_name.trim()) {
+      setError('Exhibition name is required');
+      setActiveTab('basic');
+      return;
+    }
 
-  try {
-    setLoading(true);
-    setError('');
-    setSuccess('');
+    try {
+      setLoading(true);
+      setError('');
+      setSuccess('');
 
-    const payload = {
-      exhibition_name: formData.exhibition_name,
-      duration_days: formData.duration_days,
-      overview: formData.overview,
-      base_price_adult: formData.base_price_adult,
-      emi_price: formData.emi_price,
-      cost_remarks: formData.cost_remarks,
-      hotel_remarks: formData.hotel_remarks,
-      transport_remarks: formData.transport_remarks,
-      booking_poi_remarks: formData.booking_poi_remarks,
-      cancellation_remarks: formData.cancellation_remarks,
-      emi_remarks: formData.emi_remarks,
-      optional_tour_remarks: formData.optional_tour_remarks,
-      itineraries,
-      departures,
-      tour_costs: tourCosts,
-      optional_tours: optionalTours,
-      emi_options: emiOptions,
-      emi_loan_amount: emiLoanAmount,
-      emi_interest_rate: emiInterestRate,
-      inclusions,
-      exclusions,
-      transports,
-      hotels: hotelRows,
-      booking_pois: bookingPois,
-      cancellation_policies: cancelPolicies,
-      instructions
-    };
+      const payload = {
+        exhibition_name: formData.exhibition_name,
+        duration_days: formData.duration_days,
+        overview: formData.overview,
+        base_price_adult: formData.base_price_adult,
+        emi_price: formData.emi_price,
+        cost_remarks: formData.cost_remarks,
+        hotel_remarks: formData.hotel_remarks,
+        transport_remarks: formData.transport_remarks,
+        booking_poi_remarks: formData.booking_poi_remarks,
+        cancellation_remarks: formData.cancellation_remarks,
+        emi_remarks: formData.emi_remarks,
+        optional_tour_remarks: formData.optional_tour_remarks,
+        itineraries,
+        departures,
+        optional_tours: optionalTours,
+        emi_options: emiOptions,
+        emi_loan_amount: emiLoanAmount,
+        emi_interest_rate: emiInterestRate,
+        inclusions,
+        exclusions,
+        transports,
+        hotels: hotelRows,
+        booking_pois: bookingPois,
+        cancellation_policies: cancelPolicies,
+        instructions
+      };
 
-    // Add visa data for international
-    if (isInternational) {
-      // Upload visa files first
-      const processedVisaForms = [];
-      
-      for (const form of visaFormItems) {
-        const processedForm = { ...form };
+      if (isInternational) {
+        const processedVisaForms = [];
         
-        // Upload action1_file if it's a File object
-        if (form.action1_file && typeof form.action1_file !== 'string' && form.action1_file instanceof File) {
-          try {
-            const uploadFormData = new FormData();
-            uploadFormData.append('file', form.action1_file);
-            
-            const uploadResponse = await fetch(`${baseurl}/api/exhibitions/upload-visa-file`, {
-              method: 'POST',
-              body: uploadFormData
-            });
-            
-            const uploadResult = await uploadResponse.json();
-            if (uploadResult.success) {
-              processedForm.action1_file = uploadResult.fileName;
-            } else {
-              console.error('Failed to upload action1 file');
+        for (const form of visaFormItems) {
+          const processedForm = { ...form };
+          
+          if (form.action1_file && typeof form.action1_file !== 'string' && form.action1_file instanceof File) {
+            try {
+              const uploadFormData = new FormData();
+              uploadFormData.append('file', form.action1_file);
+              
+              const uploadResponse = await fetch(`${baseurl}/api/exhibitions/upload-visa-file`, {
+                method: 'POST',
+                body: uploadFormData
+              });
+              
+              const uploadResult = await uploadResponse.json();
+              if (uploadResult.success) {
+                processedForm.action1_file = uploadResult.fileName;
+              } else {
+                console.error('Failed to upload action1 file');
+                processedForm.action1_file = null;
+              }
+            } catch (err) {
+              console.error('Error uploading action1 file:', err);
               processedForm.action1_file = null;
             }
-          } catch (err) {
-            console.error('Error uploading action1 file:', err);
-            processedForm.action1_file = null;
           }
-        }
-        
-        // Upload action2_file if it's a File object
-        if (form.action2_file && typeof form.action2_file !== 'string' && form.action2_file instanceof File) {
-          try {
-            const uploadFormData = new FormData();
-            uploadFormData.append('file', form.action2_file);
-            
-            const uploadResponse = await fetch(`${baseurl}/api/exhibitions/upload-visa-file`, {
-              method: 'POST',
-              body: uploadFormData
-            });
-            
-            const uploadResult = await uploadResponse.json();
-            if (uploadResult.success) {
-              processedForm.action2_file = uploadResult.fileName;
-            } else {
-              console.error('Failed to upload action2 file');
+          
+          if (form.action2_file && typeof form.action2_file !== 'string' && form.action2_file instanceof File) {
+            try {
+              const uploadFormData = new FormData();
+              uploadFormData.append('file', form.action2_file);
+              
+              const uploadResponse = await fetch(`${baseurl}/api/exhibitions/upload-visa-file`, {
+                method: 'POST',
+                body: uploadFormData
+              });
+              
+              const uploadResult = await uploadResponse.json();
+              if (uploadResult.success) {
+                processedForm.action2_file = uploadResult.fileName;
+              } else {
+                console.error('Failed to upload action2 file');
+                processedForm.action2_file = null;
+              }
+            } catch (err) {
+              console.error('Error uploading action2 file:', err);
               processedForm.action2_file = null;
             }
-          } catch (err) {
-            console.error('Error uploading action2 file:', err);
-            processedForm.action2_file = null;
           }
+          
+          processedVisaForms.push(processedForm);
         }
         
-        processedVisaForms.push(processedForm);
+        payload.visa_data = {
+          tourist_visa: touristVisaItems,
+          transit_visa: transitVisaItems,
+          business_visa: businessVisaItems,
+          visa_forms: processedVisaForms,
+          currency: [...currencyItems, ...freeFlowCurrencyEntries],
+          visa_fees: visaFeesRows,
+          submission: submissionRows,
+          tourist_visa_remarks: touristVisaRemarks
+        };
       }
-      
-      payload.visa_data = {
-        tourist_visa: touristVisaItems,
-        transit_visa: transitVisaItems,
-        business_visa: businessVisaItems,
-        visa_forms: processedVisaForms,
-        photo: [...photoItems, ...freeFlowPhotoEntries],
-        visa_fees: visaFeesRows,
-        submission: submissionRows,
-        tourist_visa_remarks: touristVisaRemarks
-      };
-    }
 
-    const endpoint = type === 'domestic'
-      ? `${baseurl}/api/exhibitions/domestic/${id}/details`
-      : `${baseurl}/api/exhibitions/international/${id}/details`;
+      const endpoint = type === 'domestic'
+        ? `${baseurl}/api/exhibitions/domestic/${id}/details`
+        : `${baseurl}/api/exhibitions/international/${id}/details`;
 
-    const response = await fetch(endpoint, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
-
-    const result = await response.json();
-
-    if (!response.ok) {
-      throw new Error(result.error || 'Error saving details');
-    }
-
-    if (imageFiles.length > 0) {
-      const formDataImages = new FormData();
-      imageFiles.forEach((file) => {
-        formDataImages.append('images', file);
-      });
-      
-      const uploadResponse = await fetch(`${baseurl}/api/exhibitions/exhibition-images/upload/${id}`, {
+      const response = await fetch(endpoint, {
         method: 'POST',
-        body: formDataImages
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
       });
-      
-      const uploadResult = await uploadResponse.json();
-      
-      if (!uploadResponse.ok) {
-        setError('Details saved but images upload failed: ' + (uploadResult.error || 'Unknown error'));
-      } else {
-        setSuccess('Exhibition details and images saved successfully!');
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Error saving details');
       }
-    } else {
-      setSuccess('Exhibition details saved successfully!');
+
+      if (imageFiles.length > 0) {
+        const formDataImages = new FormData();
+        imageFiles.forEach((file) => {
+          formDataImages.append('images', file);
+        });
+        
+        const uploadResponse = await fetch(`${baseurl}/api/exhibitions/exhibition-images/upload/${id}`, {
+          method: 'POST',
+          body: formDataImages
+        });
+        
+        const uploadResult = await uploadResponse.json();
+        
+        if (!uploadResponse.ok) {
+          setError('Details saved but images upload failed: ' + (uploadResult.error || 'Unknown error'));
+        } else {
+          setSuccess('Exhibition details and images saved successfully!');
+        }
+      } else {
+        setSuccess('Exhibition details saved successfully!');
+      }
+      
+      setTimeout(() => {
+        navigate('/exhibition');
+      }, 2000);
+      
+    } catch (err) {
+      console.error('Error submitting form:', err);
+      setError('Error submitting form: ' + err.message);
+    } finally {
+      setLoading(false);
     }
-    
-    setTimeout(() => {
-      navigate('/exhibition');
-    }, 2000);
-    
-  } catch (err) {
-    console.error('Error submitting form:', err);
-    setError('Error submitting form: ' + err.message);
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   const handleSaveClick = () => {
     if (isLastTab) {
@@ -1743,7 +1821,6 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
     }
   };
 
-  // Get Add Button Config
   const getAddConfigForTab = (tabKey) => {
     switch (tabKey) {
       case 'itineraries':
@@ -1753,59 +1830,54 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
         };
       case 'departures':
         return { 
-          label: editingType === 'departure' ? 'Update Departure' : '+ Add Departure', 
+          label: editingDepartureIndex !== -1 ? 'Update Departure' : '+ Add Departure', 
           onClick: addDeparture 
-        };
-      case 'costs':
-        return { 
-          label: editingType === 'cost' ? 'Update Cost Row' : '+ Add Cost Row', 
-          onClick: addCostRow 
         };
       case 'optionalTours':
         return { 
-          label: editingType === 'optionalTour' ? 'Update Optional Tour' : '+ Add Optional Tour', 
+          label: editingOptionalTourIndex !== -1 ? 'Update Optional Tour' : '+ Add Optional Tour', 
           onClick: addOptionalTourRow 
         };
       case 'inclusions':
         return { 
-          label: editingType === 'inclusion' ? 'Update Inclusion' : '+ Add Inclusion', 
+          label: editingInclusionIndex !== -1 ? 'Update Inclusion' : '+ Add Inclusion', 
           onClick: handleAddInclusion 
         };
       case 'exclusions':
         return { 
-          label: editingType === 'exclusion' ? 'Update Exclusion' : '+ Add Exclusion', 
+          label: editingExclusionIndex !== -1 ? 'Update Exclusion' : '+ Add Exclusion', 
           onClick: handleAddExclusion 
         };
       case 'transport':
         return { 
-          label: editingType === 'transport' ? 'Update Transport' : '+ Add Transport', 
+          label: editingTransportIndex !== -1 ? 'Update Transport' : '+ Add Transport', 
           onClick: addTransportRow 
         };
       case 'hotels':
         return { 
-          label: editingType === 'hotel' ? 'Update Hotel' : '+ Add Hotel', 
+          label: editingHotelIndex !== -1 ? 'Update Hotel' : '+ Add Hotel', 
           onClick: addHotelRow 
         };
       case 'visa':
         if (activeVisaSubTab === 'tourist') {
           return { 
-            label: editingType === 'touristVisa' ? 'Update Tourist Visa' : '+ Add Tourist Visa', 
+            label: editingTouristVisaIndex !== -1 ? 'Update Tourist Visa' : '+ Add Tourist Visa', 
             onClick: addTouristVisa 
           };
         } else if (activeVisaSubTab === 'transit') {
           return { 
-            label: editingType === 'transitVisa' ? 'Update Transit Visa' : '+ Add Transit Visa', 
+            label: editingTransitVisaIndex !== -1 ? 'Update Transit Visa' : '+ Add Transit Visa', 
             onClick: addTransitVisa 
           };
         } else if (activeVisaSubTab === 'business') {
           return { 
-            label: editingType === 'businessVisa' ? 'Update Business Visa' : '+ Add Business Visa', 
+            label: editingBusinessVisaIndex !== -1 ? 'Update Business Visa' : '+ Add Business Visa', 
             onClick: addBusinessVisa 
           };
-        } else if (activeVisaSubTab === 'photo') {
+        } else if (activeVisaSubTab === 'currency') {
           return { 
-            label: editingType === 'photo' ? 'Update Photo' : '+ Add Photo', 
-            onClick: addPhoto 
+            label: editingCurrencyIndex !== -1 ? 'Update Currency Entry' : '+ Add Currency Entry', 
+            onClick: addCurrency 
           };
         } else if (activeVisaSubTab === 'form') {
           if (editingVisaFormIndex !== null) {
@@ -1818,17 +1890,17 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
         return null;
       case 'bookingPoi':
         return { 
-          label: editingType === 'poi' ? 'Update Booking Policy' : '+ Add Booking Policy', 
+          label: editingPoiIndex !== -1 ? 'Update Booking Policy' : '+ Add Booking Policy', 
           onClick: addPoi 
         };
       case 'cancellation':
         return { 
-          label: editingType === 'cancellation' ? 'Update Cancellation Policy' : '+ Add Cancellation Policy', 
+          label: editingCancelIndex !== -1 ? 'Update Cancellation Policy' : '+ Add Cancellation Policy', 
           onClick: addCancelRow 
         };
       case 'instructions':
         return { 
-          label: editingType === 'instruction' ? 'Update Instruction' : '+ Add Instruction', 
+          label: editingInstructionIndex !== -1 ? 'Update Instruction' : '+ Add Instruction', 
           onClick: addInstruction 
         };
       default:
@@ -1838,7 +1910,6 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
 
   const addConfig = getAddConfigForTab(activeTab);
 
-  // Check if we have an exhibition ID - MOVE THIS AFTER ALL HOOKS
   if (!id || id === 'new') {
     return (
       <Navbar>
@@ -1869,7 +1940,6 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
     );
   }
 
-
   return (
     <Navbar>
       <Container>
@@ -1878,7 +1948,6 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
         {error && <Alert variant="danger">{error}</Alert>}
         {success && <Alert variant="success">{success}</Alert>}
 
-        {/* Action Buttons */}
         <div className="d-flex justify-content-end gap-2 mt-4 mb-4">
           <Button variant="secondary" onClick={handleCancel} disabled={loading}>
             Cancel
@@ -1899,7 +1968,6 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
         <Card className="content-card">
           <Card.Body>
             <Tabs activeKey={activeTab} onSelect={(k) => setActiveTab(k)} className="mb-4">
-              {/* Tab 1: Basic Details */}
               <Tab eventKey="basic" title="Basic Details">
                 <Row>
                   <Col md={6}>
@@ -1913,7 +1981,6 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
                       />
                     </Form.Group>
 
-                    {/* Aligned fields in a single row for admin itinerary tab */}
                     <Row className="g-3 mb-3">
                       <Col md={4}>
                         <Form.Label>Duration Days *</Form.Label>
@@ -2036,17 +2103,17 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
                         <th>Meals</th>
                         <th>Description</th>
                         <th>Action</th>
-                       </tr>
+                      </tr>
                     </thead>
                     <tbody>
                       {itineraries.sort((a, b) => a.day - b.day).map((item, idx) => (
                         <tr key={idx}>
-                           <td>{idx + 1}</td>
-                           <td>{item.day}</td>
-                           <td>{item.title}</td>
-                           <td>{item.meals || '-'}</td>
-                           <td>{item.description || '-'}</td>
-                           <td>
+                          <td>{idx + 1}</td>
+                          <td>{item.day}</td>
+                          <td>{item.title}</td>
+                          <td>{item.meals || '-'}</td>
+                          <td>{item.description || '-'}</td>
+                          <td>
                             <div className="d-flex gap-1">
                               <Button variant="outline-warning" size="sm" onClick={() => editItinerary(idx)} title="Edit">
                                 <Pencil size={14} />
@@ -2055,135 +2122,207 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
                                 <Trash size={14} />
                               </Button>
                             </div>
-                            </td>
-                          </tr>
+                          </td>
+                        </tr>
                       ))}
                     </tbody>
                   </Table>
+                )}
+                {editingType === 'itinerary' && (
+                  <Button variant="outline-secondary" size="sm" onClick={() => {
+                    setEditingType('');
+                    setEditIndex(-1);
+                    setItineraryItem({
+                      day: '',
+                      title: '',
+                      description: '',
+                      meals: { breakfast: false, lunch: false, dinner: false }
+                    });
+                  }}>
+                    Cancel Edit
+                  </Button>
                 )}
               </Tab>
 
               {/* Tab 3: Departures */}
               <Tab eventKey="departures" title="Departures">
-                <Row>
-                  <Col md={12}>
-                    <Form.Group className="mb-3">
-                      <Form.Label>Departures Description</Form.Label>
-                      <Form.Control
-                        as="textarea"
-                        rows={4}
-                        name="description"
-                        value={departureForm.description}
-                        onChange={handleDepartureChange}
-                        placeholder="Enter departure details..."
-                      />
-                    </Form.Group>
-                  </Col>
-                </Row>
+                <div>
+                  <Row className="mb-4">
+                    <h5>Add Departure with Costs</h5>
+                    <Col md={3}>
+                      <Form.Group className="mb-3">
+                        <Form.Label>Start Date *</Form.Label>
+                        <Form.Control
+                          type="date"
+                          name="start_date"
+                          value={departureForm.start_date}
+                          onChange={handleDepartureChange}
+                        />
+                      </Form.Group>
+                    </Col>
+                    <Col md={3}>
+                      <Form.Group className="mb-3">
+                        <Form.Label>End Date *</Form.Label>
+                        <Form.Control
+                          type="date"
+                          name="end_date"
+                          value={departureForm.end_date}
+                          onChange={handleDepartureChange}
+                        />
+                      </Form.Group>
+                    </Col>
+                    <Col md={3}>
+                      <Form.Group className="mb-3">
+                        <Form.Label>Status *</Form.Label>
+                        <Form.Select
+                          name="status"
+                          value={departureForm.status}
+                          onChange={handleDepartureChange}
+                        >
+                          <option value="Available">Available</option>
+                          <option value="Few Seats">Few Seats</option>
+                          <option value="Sold Out">Sold Out</option>
+                          <option value="Fast Filling">Fast Filling</option>
+                        </Form.Select>
+                      </Form.Group>
+                    </Col>
+                    <Col md={12}>
+                      <Form.Group className="mb-3">
+                        <Form.Label>Description</Form.Label>
+                        <Form.Control
+                          as="textarea"
+                          rows={2}
+                          name="description"
+                          value={departureForm.description}
+                          onChange={handleDepartureChange}
+                          placeholder="Enter departure description..."
+                        />
+                      </Form.Group>
+                    </Col>
+                  </Row>
 
-                {departures.length > 0 && (
-                  <Table striped bordered hover size="sm">
-                    <thead>
-                        <tr>
-                        <th>#</th>
-                        <th>Description</th>
-                        <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                      {departures.map((dep, idx) => (
-                        <tr key={idx}>
-                           <td>{idx + 1}</td>
-                           <td>{dep.description || '-'}</td>
-                           <td>
-                            <div className="d-flex gap-1">
-                              <Button variant="outline-warning" size="sm" onClick={() => editDeparture(idx)} title="Edit">
-                                <Pencil size={14} />
-                              </Button>
-                              <Button variant="outline-danger" size="sm" onClick={() => handleRemoveDeparture(idx)} title="Remove">
-                                <Trash size={14} />
-                              </Button>
-                            </div>
-                            </td>
-                          </tr>
-                      ))}
-                    </tbody>
-                  </Table>
-                )}
-              </Tab>
+                  <Row className="mb-4">
+                    <h6>Standard Hotel Prices</h6>
+                    <Col md={4}>
+                      <Form.Group>
+                        <Form.Label>Twin Sharing</Form.Label>
+                        <Form.Control
+                          type="number"
+                          name="standard_twin"
+                          value={departureForm.standard_twin || ''}
+                          onChange={handleDepartureChange}
+                          placeholder="₹"
+                        />
+                      </Form.Group>
+                    </Col>
+                    <Col md={4}>
+                      <Form.Group>
+                        <Form.Label>Triple Sharing</Form.Label>
+                        <Form.Control
+                          type="number"
+                          name="standard_triple"
+                          value={departureForm.standard_triple || ''}
+                          onChange={handleDepartureChange}
+                          placeholder="₹"
+                        />
+                      </Form.Group>
+                    </Col>
+                    <Col md={4}>
+                      <Form.Group>
+                        <Form.Label>Single</Form.Label>
+                        <Form.Control
+                          type="number"
+                          name="standard_single"
+                          value={departureForm.standard_single || ''}
+                          onChange={handleDepartureChange}
+                          placeholder="₹"
+                        />
+                      </Form.Group>
+                    </Col>
+                  </Row>
 
-              {/* Tab 4: Tour Costs */}
-              <Tab eventKey="costs" title="Tour Costs">
-                <Row className="align-items-end">
-                  <Col md={2}>
-                    <Form.Group>
-                      <Form.Label>Pax *</Form.Label>
-                      <Form.Control
-                        type="text"
-                        name="pax"
-                        value={tourCostItem.pax}
-                        onChange={handleCostChange}
-                      />
-                    </Form.Group>
-                  </Col>
-                  <Col md={2}>
-                    <Form.Group>
-                      <Form.Label>Standard Hotel</Form.Label>
-                      <Form.Control
-                        type="text"
-                        name="standard_hotel"
-                        value={tourCostItem.standard_hotel}
-                        onChange={handleCostChange}
-                      />
-                    </Form.Group>
-                  </Col>
-                  <Col md={2}>
-                    <Form.Group>
-                      <Form.Label>Deluxe Hotel</Form.Label>
-                      <Form.Control
-                        type="text"
-                        name="deluxe_hotel"
-                        value={tourCostItem.deluxe_hotel}
-                        onChange={handleCostChange}
-                      />
-                    </Form.Group>
-                  </Col>
-                  <Col md={2}>
-                    <Form.Group>
-                      <Form.Label>Executive Hotel</Form.Label>
-                      <Form.Control
-                        type="text"
-                        name="executive_hotel"
-                        value={tourCostItem.executive_hotel}
-                        onChange={handleCostChange}
-                      />
-                    </Form.Group>
-                  </Col>
-                  <Col md={2}>
-                    <Form.Group>
-                      <Form.Label>Child With Bed</Form.Label>
-                      <Form.Control
-                        type="text"
-                        name="child_with_bed"
-                        value={tourCostItem.child_with_bed}
-                        onChange={handleCostChange}
-                      />
-                    </Form.Group>
-                  </Col>
-                  <Col md={2}>
-                    <Form.Group>
-                      <Form.Label>Child No Bed</Form.Label>
-                      <Form.Control
-                        type="text"
-                        name="child_no_bed"
-                        value={tourCostItem.child_no_bed}
-                        onChange={handleCostChange}
-                      />
-                    </Form.Group>
-                  </Col>
-                </Row>
+                  <Row className="mb-4">
+                    <h6>Deluxe Hotel Prices</h6>
+                    <Col md={4}>
+                      <Form.Group>
+                        <Form.Label>Twin Sharing</Form.Label>
+                        <Form.Control
+                          type="number"
+                          name="deluxe_twin"
+                          value={departureForm.deluxe_twin || ''}
+                          onChange={handleDepartureChange}
+                          placeholder="₹"
+                        />
+                      </Form.Group>
+                    </Col>
+                    <Col md={4}>
+                      <Form.Group>
+                        <Form.Label>Triple Sharing</Form.Label>
+                        <Form.Control
+                          type="number"
+                          name="deluxe_triple"
+                          value={departureForm.deluxe_triple || ''}
+                          onChange={handleDepartureChange}
+                          placeholder="₹"
+                        />
+                      </Form.Group>
+                    </Col>
+                    <Col md={4}>
+                      <Form.Group>
+                        <Form.Label>Single</Form.Label>
+                        <Form.Control
+                          type="number"
+                          name="deluxe_single"
+                          value={departureForm.deluxe_single || ''}
+                          onChange={handleDepartureChange}
+                          placeholder="₹"
+                        />
+                      </Form.Group>
+                    </Col>
+                  </Row>
 
-                <Form.Group className="mt-3">
+                  <Row className="mb-4">
+                    <h6>Luxury Hotel Prices</h6>
+                    <Col md={4}>
+                      <Form.Group>
+                        <Form.Label>Twin Sharing</Form.Label>
+                        <Form.Control
+                          type="number"
+                          name="luxury_twin"
+                          value={departureForm.luxury_twin || ''}
+                          onChange={handleDepartureChange}
+                          placeholder="₹"
+                        />
+                      </Form.Group>
+                    </Col>
+                    <Col md={4}>
+                      <Form.Group>
+                        <Form.Label>Triple Sharing</Form.Label>
+                        <Form.Control
+                          type="number"
+                          name="luxury_triple"
+                          value={departureForm.luxury_triple || ''}
+                          onChange={handleDepartureChange}
+                          placeholder="₹"
+                        />
+                      </Form.Group>
+                    </Col>
+                    <Col md={4}>
+                      <Form.Group>
+                        <Form.Label>Single</Form.Label>
+                        <Form.Control
+                          type="number"
+                          name="luxury_single"
+                          value={departureForm.luxury_single || ''}
+                          onChange={handleDepartureChange}
+                          placeholder="₹"
+                        />
+                      </Form.Group>
+                    </Col>
+                  </Row>
+                </div>
+
+                <Form.Group className="mt-4">
                   <Form.Label>Cost Remarks</Form.Label>
                   <Form.Control
                     as="textarea"
@@ -2191,51 +2330,92 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
                     name="cost_remarks"
                     value={formData.cost_remarks}
                     onChange={handleBasicChange}
+                    placeholder="Enter cost remarks here..."
                   />
                 </Form.Group>
 
-                {tourCosts.length > 0 && (
-                  <Table striped bordered hover size="sm" className="mt-3">
-                    <thead>
+                {departures.length > 0 && (
+                  <div className="mt-4">
+                    <h5>Added Departures</h5>
+                    <Table striped bordered hover size="sm">
+                      <thead>
                         <tr>
-                        <th>#</th>
-                        <th>Pax</th>
-                        <th>Standard</th>
-                        <th>Deluxe</th>
-                        <th>Executive</th>
-                        <th>Chd Bed</th>
-                        <th>Chd NoBed</th>
-                        <th>Action</th>
+                          <th>#</th>
+                          <th>Start Date</th>
+                          <th>End Date</th>
+                          <th>Status</th>
+                          <th>Standard Twin</th>
+                          <th>Deluxe Twin</th>
+                          <th>Luxury Twin</th>
+                          <th>Action</th>
                         </tr>
-                    </thead>
-                    <tbody>
-                      {tourCosts.map((c, idx) => (
-                        <tr key={idx}>
+                      </thead>
+                      <tbody>
+                        {departures.map((dep, idx) => (
+                          <tr key={idx}>
                             <td>{idx + 1}</td>
-                            <td>{c.pax}</td>
-                            <td>{c.standard_hotel || 'NA'}</td>
-                            <td>{c.deluxe_hotel || 'NA'}</td>
-                            <td>{c.executive_hotel || 'NA'}</td>
-                            <td>{c.child_with_bed || 'NA'}</td>
-                            <td>{c.child_no_bed || 'NA'}</td>
+                            <td>{dep.start_date || '-'}</td>
+                            <td>{dep.end_date || '-'}</td>
+                            <td>{dep.status || '-'}</td>
+                            <td>{dep.standard_twin ? `₹${dep.standard_twin.toLocaleString()}` : '-'}</td>
+                            <td>{dep.deluxe_twin ? `₹${dep.deluxe_twin.toLocaleString()}` : '-'}</td>
+                            <td>{dep.luxury_twin ? `₹${dep.luxury_twin.toLocaleString()}` : '-'}</td>
                             <td>
-                            <div className="d-flex gap-1">
-                              <Button variant="outline-warning" size="sm" onClick={() => editCostRow(idx)} title="Edit">
-                                <Pencil size={14} />
-                              </Button>
-                              <Button variant="outline-danger" size="sm" onClick={() => removeCostRow(idx)} title="Remove">
-                                <Trash size={14} />
-                              </Button>
-                            </div>
+                              <div className="d-flex gap-1">
+                                <Button
+                                  variant="outline-warning"
+                                  size="sm"
+                                  onClick={() => editDeparture(idx)}
+                                  title="Edit"
+                                >
+                                  <Pencil size={14} />
+                                </Button>
+                                <Button
+                                  variant="outline-danger"
+                                  size="sm"
+                                  onClick={() => handleRemoveDeparture(idx)}
+                                  title="Remove"
+                                >
+                                  <Trash size={14} />
+                                </Button>
+                              </div>
                             </td>
                           </tr>
-                      ))}
-                    </tbody>
-                  </Table>
+                        ))}
+                      </tbody>
+                    </Table>
+                  </div>
+                )}
+
+                {editingDepartureIndex !== -1 && (
+                  <Button
+                    variant="outline-secondary"
+                    onClick={() => {
+                      setEditingDepartureIndex(-1);
+                      setDepartureForm({
+                        start_date: '',
+                        end_date: '',
+                        status: 'Available',
+                        description: '',
+                        standard_twin: '',
+                        standard_triple: '',
+                        standard_single: '',
+                        deluxe_twin: '',
+                        deluxe_triple: '',
+                        deluxe_single: '',
+                        luxury_twin: '',
+                        luxury_triple: '',
+                        luxury_single: ''
+                      });
+                    }}
+                    className="ms-2"
+                  >
+                    Cancel Edit
+                  </Button>
                 )}
               </Tab>
 
-              {/* Tab 5: Optional Tours */}
+              {/* Tab 4: Optional Tours */}
               <Tab eventKey="optionalTours" title="Optional Tours">
                 <Row className="align-items-end">
                   <Col md={4}>
@@ -2291,22 +2471,22 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
                 {optionalTours.length > 0 && (
                   <Table striped bordered hover size="sm" className="mt-3">
                     <thead>
-                        <tr>
+                      <tr>
                         <th>#</th>
                         <th>Tour Name</th>
                         <th>Adult Price</th>
                         <th>Child Price</th>
                         <th>Action</th>
-                        </tr>
+                      </tr>
                     </thead>
                     <tbody>
                       {optionalTours.map((tour, idx) => (
                         <tr key={idx}>
-                            <td>{idx + 1}</td>
-                            <td>{tour.tour_name}</td>
-                            <td>{tour.adult_price || 'NA'}</td>
-                            <td>{tour.child_price || 'NA'}</td>
-                            <td>
+                          <td>{idx + 1}</td>
+                          <td>{tour.tour_name}</td>
+                          <td>{tour.adult_price || 'NA'}</td>
+                          <td>{tour.child_price || 'NA'}</td>
+                          <td>
                             <div className="d-flex gap-1">
                               <Button variant="outline-warning" size="sm" onClick={() => editOptionalTourRow(idx)} title="Edit">
                                 <Pencil size={14} />
@@ -2315,15 +2495,27 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
                                 <Trash size={14} />
                               </Button>
                             </div>
-                            </td>
-                          </tr>
+                          </td>
+                        </tr>
                       ))}
                     </tbody>
                   </Table>
                 )}
+                {editingOptionalTourIndex !== -1 && (
+                  <Button variant="outline-secondary" size="sm" onClick={() => {
+                    setEditingOptionalTourIndex(-1);
+                    setOptionalTourItem({
+                      tour_name: '',
+                      adult_price: '',
+                      child_price: ''
+                    });
+                  }}>
+                    Cancel Edit
+                  </Button>
+                )}
               </Tab>
 
-              {/* Tab 6: EMI Options */}
+              {/* Tab 5: EMI Options */}
               <Tab eventKey="emiOptions" title="EMI Options">
                 <Card className="mb-4">
                   <Card.Body>
@@ -2373,13 +2565,13 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
 
                 <Table striped bordered hover responsive className="align-middle">
                   <thead className="table-dark">
-                     <tr>
+                    <tr>
                       <th width="5%">#</th>
                       <th width="30%">Particulars</th>
                       <th width="25%">Loan Amount</th>
                       <th width="15%">Months</th>
                       <th width="25%">EMI (Calculated)</th>
-                     </tr>
+                    </tr>
                   </thead>
                   <tbody>
                     {emiOptions.map((option, index) => (
@@ -2430,7 +2622,7 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
                             />
                           </InputGroup>
                         </td>
-                       </tr>
+                      </tr>
                     ))}
                   </tbody>
                 </Table>
@@ -2448,7 +2640,7 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
                 </Form.Group>
               </Tab>
 
-              {/* Tab 7: Inclusions */}
+              {/* Tab 6: Inclusions */}
               <Tab eventKey="inclusions" title="Inclusions">
                 <Form.Group className="mb-3">
                   <Form.Label>Add Inclusion</Form.Label>
@@ -2464,11 +2656,11 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
                 {inclusions.length > 0 && (
                   <Table striped bordered hover size="sm">
                     <thead>
-                       <tr>
+                      <tr>
                         <th>#</th>
                         <th>Inclusion</th>
                         <th>Action</th>
-                       </tr>
+                      </tr>
                     </thead>
                     <tbody>
                       {inclusions.map((item, idx) => (
@@ -2485,14 +2677,22 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
                               </Button>
                             </div>
                           </td>
-                         </tr>
+                        </tr>
                       ))}
                     </tbody>
                   </Table>
                 )}
+                {editingInclusionIndex !== -1 && (
+                  <Button variant="outline-secondary" size="sm" onClick={() => {
+                    setEditingInclusionIndex(-1);
+                    setInclusionText('');
+                  }}>
+                    Cancel Edit
+                  </Button>
+                )}
               </Tab>
 
-              {/* Tab 8: Exclusions */}
+              {/* Tab 7: Exclusions */}
               <Tab eventKey="exclusions" title="Exclusions">
                 <Form.Group className="mb-3">
                   <Form.Label>Add Exclusion</Form.Label>
@@ -2508,11 +2708,11 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
                 {exclusions.length > 0 && (
                   <Table striped bordered hover size="sm">
                     <thead>
-                       <tr>
+                      <tr>
                         <th>#</th>
                         <th>Exclusion</th>
                         <th>Action</th>
-                       </tr>
+                      </tr>
                     </thead>
                     <tbody>
                       {exclusions.map((item, idx) => (
@@ -2529,14 +2729,22 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
                               </Button>
                             </div>
                           </td>
-                         </tr>
+                        </tr>
                       ))}
                     </tbody>
                   </Table>
                 )}
+                {editingExclusionIndex !== -1 && (
+                  <Button variant="outline-secondary" size="sm" onClick={() => {
+                    setEditingExclusionIndex(-1);
+                    setExclusionText('');
+                  }}>
+                    Cancel Edit
+                  </Button>
+                )}
               </Tab>
 
-              {/* Tab 9: Transport */}
+              {/* Tab 8: Transport */}
               <Tab eventKey="transport" title="Transport">
                 <Row className="mt-3">
                   <Col md={12}>
@@ -2569,11 +2777,11 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
                 {transports.length > 0 && (
                   <Table striped bordered hover size="sm" className="mt-3">
                     <thead>
-                       <tr>
+                      <tr>
                         <th>#</th>
                         <th>Description</th>
                         <th>Action</th>
-                       </tr>
+                      </tr>
                     </thead>
                     <tbody>
                       {transports.map((t, idx) => (
@@ -2590,14 +2798,22 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
                               </Button>
                             </div>
                           </td>
-                         </tr>
+                        </tr>
                       ))}
                     </tbody>
                   </Table>
                 )}
+                {editingTransportIndex !== -1 && (
+                  <Button variant="outline-secondary" size="sm" onClick={() => {
+                    setEditingTransportIndex(-1);
+                    setTransportItem({ description: '' });
+                  }}>
+                    Cancel Edit
+                  </Button>
+                )}
               </Tab>
 
-              {/* Tab 10: Hotels */}
+              {/* Tab 9: Hotels */}
               <Tab eventKey="hotels" title="Hotels">
                 <Row className="align-items-end">
                   <Col md={6}>
@@ -2675,7 +2891,7 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
                 {hotelRows.length > 0 && (
                   <Table striped bordered hover size="sm" className="mt-3">
                     <thead>
-                       <tr>
+                      <tr>
                         <th>#</th>
                         <th>City</th>
                         <th>Nights</th>
@@ -2683,7 +2899,7 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
                         <th>Deluxe Hotel</th>
                         <th>Executive Hotel</th>
                         <th>Action</th>
-                       </tr>
+                      </tr>
                     </thead>
                     <tbody>
                       {hotelRows.map((h, idx) => (
@@ -2704,14 +2920,29 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
                               </Button>
                             </div>
                           </td>
-                         </tr>
+                        </tr>
                       ))}
                     </tbody>
                   </Table>
                 )}
+                {editingHotelIndex !== -1 && (
+                  <Button variant="outline-secondary" size="sm" onClick={() => {
+                    setEditingHotelIndex(-1);
+                    setHotelItem({
+                      city: '',
+                      nights: '',
+                      standard_hotel_name: '',
+                      deluxe_hotel_name: '',
+                      executive_hotel_name: '',
+                      remarks: ''
+                    });
+                  }}>
+                    Cancel Edit
+                  </Button>
+                )}
               </Tab>
 
-              {/* Tab 11: Visa (Only for International) */}
+              {/* Visa Tab */}
               {isInternational && (
                 <Tab eventKey="visa" title="Visa">
                   <Tabs
@@ -2719,7 +2950,6 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
                     onSelect={(k) => setActiveVisaSubTab(k)}
                     className="mb-4"
                   >
-                    {/* Subtab 1: Tourist Visa */}
                     <Tab eventKey="tourist" title="Tourist Visa">
                       <Form.Group className="mb-3">
                         <Form.Label>Tourist Visa Entry</Form.Label>
@@ -2736,11 +2966,11 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
                       {touristVisaItems.length > 0 && (
                         <Table striped bordered hover size="sm" className="mt-3">
                           <thead>
-                             <tr>
+                            <tr>
                               <th>#</th>
                               <th>Description</th>
                               <th>Action</th>
-                             </tr>
+                            </tr>
                           </thead>
                           <tbody>
                             {touristVisaItems.map((item, idx) => (
@@ -2767,14 +2997,21 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
                                     </Button>
                                   </div>
                                 </td>
-                               </tr>
+                              </tr>
                             ))}
                           </tbody>
                         </Table>
                       )}
+                      {editingTouristVisaIndex !== -1 && (
+                        <Button variant="outline-secondary" size="sm" onClick={() => {
+                          setEditingTouristVisaIndex(-1);
+                          setTouristVisaForm({ description: '' });
+                        }}>
+                          Cancel Edit
+                        </Button>
+                      )}
                     </Tab>
 
-                    {/* Subtab 2: Transit Visa */}
                     <Tab eventKey="transit" title="Transit Visa">
                       <Form.Group className="mb-3">
                         <Form.Label>Transit Visa Entry</Form.Label>
@@ -2791,11 +3028,11 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
                       {transitVisaItems.length > 0 && (
                         <Table striped bordered hover size="sm" className="mt-3">
                           <thead>
-                             <tr>
+                            <tr>
                               <th>#</th>
                               <th>Description</th>
                               <th>Action</th>
-                             </tr>
+                            </tr>
                           </thead>
                           <tbody>
                             {transitVisaItems.map((item, idx) => (
@@ -2822,14 +3059,21 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
                                     </Button>
                                   </div>
                                 </td>
-                               </tr>
+                              </tr>
                             ))}
                           </tbody>
                         </Table>
                       )}
+                      {editingTransitVisaIndex !== -1 && (
+                        <Button variant="outline-secondary" size="sm" onClick={() => {
+                          setEditingTransitVisaIndex(-1);
+                          setTransitVisaForm({ description: '' });
+                        }}>
+                          Cancel Edit
+                        </Button>
+                      )}
                     </Tab>
 
-                    {/* Subtab 3: Business Visa */}
                     <Tab eventKey="business" title="Business Visa">
                       <Form.Group className="mb-3">
                         <Form.Label>Business Visa Entry</Form.Label>
@@ -2846,11 +3090,11 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
                       {businessVisaItems.length > 0 && (
                         <Table striped bordered hover size="sm" className="mt-3">
                           <thead>
-                             <tr>
+                            <tr>
                               <th>#</th>
                               <th>Description</th>
                               <th>Action</th>
-                             </tr>
+                            </tr>
                           </thead>
                           <tbody>
                             {businessVisaItems.map((item, idx) => (
@@ -2877,14 +3121,21 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
                                     </Button>
                                   </div>
                                 </td>
-                               </tr>
+                              </tr>
                             ))}
                           </tbody>
                         </Table>
                       )}
+                      {editingBusinessVisaIndex !== -1 && (
+                        <Button variant="outline-secondary" size="sm" onClick={() => {
+                          setEditingBusinessVisaIndex(-1);
+                          setBusinessVisaForm({ description: '' });
+                        }}>
+                          Cancel Edit
+                        </Button>
+                      )}
                     </Tab>
 
-                    {/* Subtab 4: Visa Form */}
                     <Tab eventKey="form" title="Visa Form">
                       <div className="mb-3">
                         <Button 
@@ -2912,12 +3163,12 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
                       ) : (
                         <Table striped bordered hover size="sm">
                           <thead>
-                             <tr>
+                            <tr>
                               <th width="20%">Visa Type</th>
                               <th width="35%">Upload PDF</th>
                               <th width="35%">Upload Word</th>
                               <th width="10%">Actions</th>
-                             </tr>
+                            </tr>
                           </thead>
                           <tbody>
                             {visaFormItems.map((item, idx) => {
@@ -2988,7 +3239,6 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
                                       )}
                                     </div>
                                   </td>
-                                  
                                   <td>
                                     <div className="d-flex flex-column gap-2">
                                       <div>
@@ -3007,7 +3257,7 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
                                           onChange={(e) => handleVisaFormFileChange(idx, 'action2', e.target.files[0])}
                                         />
                                       </div>
-                                      
+                                       
                                       {wordFile && (
                                         <div className="d-flex align-items-center justify-content-between bg-light p-2 rounded">
                                           <div className="flex-grow-1">
@@ -3018,7 +3268,7 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
                                               {typeof wordFile === 'string' ? wordFile : wordFile.name}
                                             </small>
                                           </div>
-                                          
+                                           
                                           {wordUrl && (
                                             <div className="ms-2">
                                               <Button
@@ -3035,8 +3285,8 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
                                         </div>
                                       )}
                                     </div>
-                                  </td>
-                                  <td>
+                                   </td>
+                                   <td>
                                     <div className="d-flex flex-column gap-1">
                                       <Button
                                         variant="outline-danger"
@@ -3051,14 +3301,14 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
                                         <Trash size={14} />
                                       </Button>
                                     </div>
-                                  </td>
+                                   </td>
                                  </tr>
                               );
                             })}
                           </tbody>
                         </Table>
                       )}
-
+ 
                       <Card className="mt-3">
                         <Card.Body>
                           <Form.Group>
@@ -3074,51 +3324,106 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
                         </Card.Body>
                       </Card>
                     </Tab>
-
-                    {/* Subtab 5: Photo */}
-                    <Tab eventKey="photo" title="Photo">
+ 
+                    {/* Currency Tab */}
+                    <Tab eventKey="currency" title="Currency">
                       <Card className="mb-4">
                         <Card.Body>
                           <Form.Group className="mb-3">
                             <Form.Label>
-                              {editingType === 'photo' ? 'Edit Photo Description' : 'Add Photo Description'}
+                              {editingCurrencyIndex !== -1 ? 'Edit Currency Entry' : 'Add Currency Entry'}
                             </Form.Label>
-                            <div className="d-flex gap-2">
-                              <Form.Control
-                                as="textarea"
-                                rows={2}
-                                name="description"
-                                value={photoForm.description}
-                                onChange={handlePhotoChange}
-                                placeholder="Type photo requirement description"
-                              />
-                            </div>
+                            <Row>
+                              <Col md={5}>
+                                <Form.Control
+                                  type="text"
+                                  name="local_currency"
+                                  value={currencyForm.local_currency}
+                                  onChange={handleCurrencyChange}
+                                  placeholder="Local Currency (e.g., GBP)"
+                                  className="mb-2"
+                                />
+                              </Col>
+                              <Col md={3}>
+                                <Form.Control
+                                  type="text"
+                                  name="currency_conversion_1"
+                                  value={currencyForm.currency_conversion_1}
+                                  onChange={handleCurrencyChange}
+                                  placeholder="Currency Conversion 1"
+                                  className="mb-2"
+                                />
+                              </Col>
+                              <Col md={3}>
+                                <Form.Control
+                                  type="text"
+                                  name="currency_conversion_2"
+                                  value={currencyForm.currency_conversion_2}
+                                  onChange={handleCurrencyChange}
+                                  placeholder="Currency Conversion 2"
+                                  className="mb-2"
+                                />
+                              </Col>
+                              <Col md={3}>
+                                <Form.Control
+                                  type="text"
+                                  name="city_name"
+                                  value={currencyForm.city_name}
+                                  onChange={handleCurrencyChange}
+                                  placeholder="City Name"
+                                  className="mb-2"
+                                />
+                              </Col>
+                              <Col md={3}>
+                                <Form.Control
+                                  type="text"
+                                  name="local_time"
+                                  value={currencyForm.local_time}
+                                  onChange={handleCurrencyChange}
+                                  placeholder="Local Time"
+                                  className="mb-2"
+                                />
+                              </Col>
+                            </Row>
+                            <Form.Text className="text-muted">
+                              Indian Time will be automatically set to {indianTime}
+                            </Form.Text>
                           </Form.Group>
                         </Card.Body>
                       </Card>
-
-                      {photoItems.length > 0 && (
+ 
+                      {currencyItems.length > 0 && (
                         <Card>
                           <Card.Body>
                             <Table striped bordered hover size="sm">
                               <thead>
-                                 <tr>
+                                <tr>
                                   <th>#</th>
-                                  <th>Description</th>
+                                  <th>Local Currency</th>
+                                  <th>Currency Conversion 1</th>
+                                  <th>Currency Conversion 2</th>
+                                  <th>City Name</th>
+                                  <th>India Time</th>
+                                  <th>Local Time</th>
                                   <th>Action</th>
                                  </tr>
                               </thead>
                               <tbody>
-                                {photoItems.map((item, idx) => (
+                                {currencyItems.map((item, idx) => (
                                   <tr key={idx}>
                                     <td>{idx + 1}</td>
-                                    <td>{item.description || '-'}</td>
+                                    <td>{item.local_currency || '-'}</td>
+                                    <td>{item.currency_conversion_1 || '-'}</td>
+                                    <td>{item.currency_conversion_2 || '-'}</td>
+                                    <td>{item.city_name || '-'}</td>
+                                    <td>{item.india_time || indianTime}</td>
+                                    <td>{item.local_time || '-'}</td>
                                     <td>
                                       <div className="d-flex gap-1">
                                         <Button
                                           variant="outline-warning"
                                           size="sm"
-                                          onClick={() => editPhoto(idx)}
+                                          onClick={() => editCurrency(idx)}
                                           title="Edit"
                                         >
                                           <Pencil size={14} />
@@ -3126,23 +3431,104 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
                                         <Button
                                           variant="outline-danger"
                                           size="sm"
-                                          onClick={() => removePhoto(idx)}
+                                          onClick={() => removeCurrency(idx)}
                                           title="Remove"
                                         >
                                           <Trash size={14} />
                                         </Button>
                                       </div>
                                     </td>
-                                   </tr>
+                                  </tr>
                                 ))}
                               </tbody>
                             </Table>
                           </Card.Body>
                         </Card>
                       )}
+                      {editingCurrencyIndex !== -1 && (
+                        <Button variant="outline-secondary" size="sm" className="mt-2" onClick={() => {
+                          setEditingCurrencyIndex(-1);
+                          setCurrencyForm({
+                            local_currency: '',
+                            currency_conversion_1: '',
+                            currency_conversion_2: '',
+                            city_name: '',
+                            local_time: ''
+                          });
+                        }}>
+                          Cancel Edit
+                        </Button>
+                      )}
+ 
+                      {/* <Card className="mt-4">
+                        <Card.Header>Free Flow Currency Entries</Card.Header>
+                        <Card.Body>
+                          <div className="d-flex gap-2 mb-3">
+                            <Form.Control
+                              type="text"
+                              value={freeFlowCurrencyText}
+                              onChange={handleFreeFlowCurrencyChange}
+                              placeholder="Enter free flow currency entry..."
+                            />
+                            <Button 
+                              variant="primary" 
+                              onClick={addFreeFlowCurrencyEntry}
+                            >
+                              {editingFreeFlowCurrencyIndex !== -1 ? 'Update' : 'Add'}
+                            </Button>
+                          </div>
+                           
+                          {freeFlowCurrencyEntries.length > 0 && (
+                            <Table striped bordered hover size="sm">
+                              <thead>
+                                <tr>
+                                  <th>#</th>
+                                  <th>Description</th>
+                                  <th>Action</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {freeFlowCurrencyEntries.map((item, idx) => (
+                                  <tr key={idx}>
+                                    <td>{idx + 1}</td>
+                                    <td>{item.description}</td>
+                                    <td>
+                                      <div className="d-flex gap-1">
+                                        <Button
+                                          variant="outline-warning"
+                                          size="sm"
+                                          onClick={() => editFreeFlowCurrencyEntry(idx)}
+                                          title="Edit"
+                                        >
+                                          <Pencil size={14} />
+                                        </Button>
+                                        <Button
+                                          variant="outline-danger"
+                                          size="sm"
+                                          onClick={() => removeFreeFlowCurrencyEntry(idx)}
+                                          title="Remove"
+                                        >
+                                          <Trash size={14} />
+                                        </Button>
+                                      </div>
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </Table>
+                          )}
+                          {editingFreeFlowCurrencyIndex !== -1 && (
+                            <Button variant="outline-secondary" size="sm" onClick={() => {
+                              setEditingFreeFlowCurrencyIndex(-1);
+                              setFreeFlowCurrencyText('');
+                            }}>
+                              Cancel Edit
+                            </Button>
+                          )}
+                        </Card.Body>
+                      </Card> */}
                     </Tab>
-
-                    {/* Subtab 6: Visa Fees */}
+ 
                     <Tab eventKey="fees" title="Visa Fees">
                       <div className="mb-3">
                         <Button 
@@ -3153,10 +3539,10 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
                           + Add Free Flow Entry
                         </Button>
                       </div>
-                      
+                       
                       <Table striped bordered hover size="sm">
                         <thead>
-                           <tr>
+                          <tr>
                             <th>Tourist Visa</th>
                             <th>Tourist Visa Charges</th>
                             <th>Transit Visa</th>
@@ -3164,7 +3550,7 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
                             <th>Business Visa</th>
                             <th>Business Visa Charges</th>
                             <th>Action</th>
-                           </tr>
+                          </tr>
                         </thead>
                         <tbody>
                           {visaFeesRows.map((row) => (
@@ -3234,13 +3620,12 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
                                   <Trash size={14} />
                                 </Button>
                               </td>
-                             </tr>
+                            </tr>
                           ))}
                         </tbody>
                       </Table>
                     </Tab>
-
-                    {/* Subtab 7: Submission & Pick Up */}
+ 
                     <Tab eventKey="submission" title="Submission & Pick Up">
                       <div className="mb-3">
                         <Button 
@@ -3251,16 +3636,16 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
                           + Add Free Flow Entry
                         </Button>
                       </div>
-                      
+                       
                       <Table striped bordered hover size="sm">
                         <thead>
-                           <tr>
+                          <tr>
                             <th width="25%">Item</th>
                             <th width="25%">Tourist Visa</th>
                             <th width="25%">Transit Visa</th>
                             <th width="25%">Business Visa</th>
                             <th width="5%">Action</th>
-                           </tr>
+                          </tr>
                         </thead>
                         <tbody>
                           {submissionRows.map((row) => (
@@ -3311,7 +3696,7 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
                                   <Trash size={14} />
                                 </Button>
                               </td>
-                             </tr>
+                            </tr>
                           ))}
                         </tbody>
                       </Table>
@@ -3319,8 +3704,8 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
                   </Tabs>
                 </Tab>
               )}
-
-              {/* Tab 12: Booking POI */}
+ 
+              {/* Booking POI Tab */}
               <Tab eventKey="bookingPoi" title="Booking POI">
                 <Form.Group className="mb-3">
                   <Row>
@@ -3355,24 +3740,24 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
                     />
                   </Form.Group>
                 </Form.Group>
-
+ 
                 {bookingPois.length > 0 && (
                   <Table striped bordered hover size="sm">
                     <thead>
-                        <tr>
-                          <th>#</th>
-                          <th>Item</th>
-                          <th>Amount Details</th>
-                          <th>Action</th>
-                        </tr>
+                      <tr>
+                        <th>#</th>
+                        <th>Item</th>
+                        <th>Amount Details</th>
+                        <th>Action</th>
+                       </tr>
                     </thead>
                     <tbody>
                       {bookingPois.map((p, idx) => (
                         <tr key={idx}>
-                          <td>{idx + 1}</td>
+                           <td>{idx + 1}</td>
                           <td style={{ whiteSpace: 'pre-line' }}>{p.item}</td>
-                          <td>{p.amount_details}</td>
-                          <td>
+                           <td>{p.amount_details}</td>
+                           <td>
                             <div className="d-flex gap-1">
                               <Button variant="outline-warning" size="sm" onClick={() => editPoi(idx)} title="Edit">
                                 <Pencil size={14} />
@@ -3381,15 +3766,24 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
                                 <Trash size={14} />
                               </Button>
                             </div>
-                          </td>
-                        </tr>
+                           </td>
+                         </tr>
                       ))}
                     </tbody>
                   </Table>
                 )}
+                {editingPoiIndex !== -1 && (
+                  <Button variant="outline-secondary" size="sm" onClick={() => {
+                    setEditingPoiIndex(-1);
+                    setPoiText('');
+                    setPoiAmount('');
+                  }}>
+                    Cancel Edit
+                  </Button>
+                )}
               </Tab>
-
-              {/* Tab 13: Cancellation Policy */}
+ 
+              {/* Cancellation Policy Tab */}
               <Tab eventKey="cancellation" title="Cancellation Policy">
                 <Row>
                   <Col md={8}>
@@ -3415,7 +3809,7 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
                     />
                   </Col>
                 </Row>
-
+ 
                 <Form.Group className="mt-3">
                   <Form.Label>Cancellation Remarks</Form.Label>
                   <Form.Control
@@ -3426,7 +3820,7 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
                     onChange={handleBasicChange}
                   />
                 </Form.Group>
-
+ 
                 {cancelPolicies.length > 0 && (
                   <Table striped bordered hover className="mt-3" size="sm">
                     <thead>
@@ -3435,19 +3829,19 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
                         <th>Cancellation Policy</th>
                         <th>Charges</th>
                         <th>Action</th>
-                      </tr>
+                       </tr>
                     </thead>
                     <tbody>
                       {cancelPolicies.map((c, idx) => (
                         <tr key={idx}>
-                          <td>{idx + 1}</td>
+                           <td>{idx + 1}</td>
                           <td style={{ whiteSpace: 'pre-line', maxWidth: '400px' }}>
                             <div style={{ maxHeight: '100px', overflowY: 'auto' }}>
                               {c.cancellation_policy}
                             </div>
-                          </td>
-                          <td>{c.charges || "-"}</td>
-                          <td>
+                           </td>
+                           <td>{c.charges || "-"}</td>
+                           <td>
                             <div className="d-flex gap-1">
                               <Button variant="outline-warning" size="sm" onClick={() => editCancelRow(idx)} title="Edit">
                                 <Pencil size={14} />
@@ -3456,15 +3850,23 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
                                 <Trash size={14} />
                               </Button>
                             </div>
-                          </td>
-                        </tr>
+                           </td>
+                         </tr>
                       ))}
                     </tbody>
                   </Table>
                 )}
+                {editingCancelIndex !== -1 && (
+                  <Button variant="outline-secondary" size="sm" onClick={() => {
+                    setEditingCancelIndex(-1);
+                    setCancelItem({ cancellation_policy: '', charges: '' });
+                  }}>
+                    Cancel Edit
+                  </Button>
+                )}
               </Tab>
-
-              {/* Tab 14: Instructions */}
+ 
+              {/* Instructions Tab */}
               <Tab eventKey="instructions" title="Instructions">
                 <Form.Group className="mb-3">
                   <Form.Label>Add Instruction</Form.Label>
@@ -3476,7 +3878,7 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
                     placeholder="Type instruction"
                   />
                 </Form.Group>
-
+ 
                 {instructions.length > 0 && (
                   <Table striped bordered hover size="sm">
                     <thead>
@@ -3484,14 +3886,14 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
                         <th>#</th>
                         <th>Instruction</th>
                         <th>Action</th>
-                      </tr>
+                       </tr>
                     </thead>
                     <tbody>
                       {instructions.map((item, idx) => (
                         <tr key={idx}>
-                          <td>{idx + 1}</td>
-                          <td>{item}</td>
-                          <td>
+                           <td>{idx + 1}</td>
+                           <td>{item}</td>
+                           <td>
                             <div className="d-flex gap-1">
                               <Button variant="outline-warning" size="sm" onClick={() => editInstruction(idx)} title="Edit">
                                 <Pencil size={14} />
@@ -3500,15 +3902,23 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
                                 <Trash size={14} />
                               </Button>
                             </div>
-                          </td>
-                        </tr>
+                           </td>
+                         </tr>
                       ))}
                     </tbody>
                   </Table>
                 )}
+                {editingInstructionIndex !== -1 && (
+                  <Button variant="outline-secondary" size="sm" onClick={() => {
+                    setEditingInstructionIndex(-1);
+                    setInstructionText('');
+                  }}>
+                    Cancel Edit
+                  </Button>
+                )}
               </Tab>
-
-              {/* Tab 15: Images */}
+ 
+              {/* Images Tab */}
               <Tab eventKey="images" title="Images">
                 <Card className="mb-4">
                   <Card.Header>Add New Images</Card.Header>
@@ -3525,7 +3935,7 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
                         You can select multiple images (JPEG, PNG, WebP). Max 5MB per image.
                       </Form.Text>
                     </Form.Group>
-                    
+                     
                     {imageFiles.length > 0 && (
                       <div className="mt-3">
                         <p className="mb-2">
@@ -3556,7 +3966,7 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
                     )}
                   </Card.Body>
                 </Card>
-
+ 
                 <Card>
                   <Card.Header>Existing Images</Card.Header>
                   <Card.Body>
@@ -3586,13 +3996,13 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
                                       e.target.src = `${baseurl}/uploads/exhibition/default-image.jpg`;
                                     }}
                                   />
-                                  
+                                   
                                   {image.is_cover === 1 && (
                                     <div className="position-absolute top-0 start-0 bg-warning text-dark px-2 py-1 rounded-end">
                                       <strong>★ Cover</strong>
                                     </div>
                                   )}
-                                  
+                                   
                                   {editingImageId === image.image_id ? (
                                     <div className="mt-3 border p-3 rounded">
                                       <Form.Group>
@@ -3604,7 +4014,7 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
                                           accept="image/jpeg,image/jpg,image/png,image/webp"
                                         />
                                       </Form.Group>
-                                      
+                                       
                                       {replacementPreview && (
                                         <div className="mt-2">
                                           <p><strong>New preview:</strong></p>
@@ -3620,7 +4030,7 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
                                           />
                                         </div>
                                       )}
-                                      
+                                       
                                       <div className="d-flex gap-2 mt-3">
                                         <Button
                                           variant="success"
@@ -3654,7 +4064,7 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
                                             ★ Set Cover
                                           </Button>
                                         )}
-                                        
+                                         
                                         <Button
                                           variant="outline-primary"
                                           size="sm"
@@ -3664,7 +4074,7 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
                                         >
                                           <Pencil size={14} /> Replace
                                         </Button>
-                                        
+                                         
                                         <Button
                                           variant="outline-danger"
                                           size="sm"
@@ -3689,7 +4099,7 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
                         ))}
                       </Row>
                     )}
-                    
+                     
                     {existingImages.length > 0 && (
                       <div className="mt-3 text-center">
                         <p className="text-muted">
@@ -3708,5 +4118,5 @@ const uploadVisaFiles = async (visaFormItem, index, action) => {
     </Navbar>
   );
 };
-
+ 
 export default AddExhibitionDetails;
