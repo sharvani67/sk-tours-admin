@@ -204,7 +204,7 @@ const AddExhibitionDetails = () => {
   const [freeFlowCurrencyEntries, setFreeFlowCurrencyEntries] = useState([]);
   const [freeFlowCurrencyText, setFreeFlowCurrencyText] = useState('');
   const [editingFreeFlowCurrencyIndex, setEditingFreeFlowCurrencyIndex] = useState(-1);
-  const indianTime = "08:03 AM";
+  const indianTime = "08:00 AM";
   
   // Visa Fees
   const [visaFeesRows, setVisaFeesRows] = useState([
