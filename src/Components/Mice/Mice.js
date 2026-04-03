@@ -1,3 +1,4 @@
+// Mice.js
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Button, Spinner, Alert } from 'react-bootstrap';
 import Navbar from '../../Shared/Navbar/Navbar';
@@ -8,7 +9,8 @@ import { useNavigate } from 'react-router-dom';
 // Import tab components
 import MiceMainTab from './MiceMainTab';
 import FreeFlowTab from './MiceFreeFlowTab';
-import PackagesTab from './MicePackages';
+import DomesticMiceTab from './DomesticMiceTab';
+import InternationalMiceTab from './InternationalMiceTab';
 import ClientsTab from './MiceClientTab';
 import VenuesTab from './MiceVenuesTab';
 import GalleryTab from './MiceGalleryTab';
@@ -18,7 +20,8 @@ import MicEnquiryForm from './MicEnquiryForm';
 // Import form components
 import MiceMainForm from './MiceMainForm';
 import FreeFlowForm from './MiceFreeFlowForm';
-import PackagesForm from './MicePackagesForm';
+import DomesticMiceForm from './DomesticMiceForm';
+import InternationalMiceForm from './InternationalMiceForm';
 import ClientsForm from './MiceClientsForm';
 import VenuesForm from './MiceVenueForm';
 import GalleryForm from './MiceGalleryForm';
@@ -35,8 +38,10 @@ const getImageUrl = (type, filename) => {
       return `${basePath}/main/${filename}`;
     case 'freeflow':
       return `${basePath}/freeflow/${filename}`;
-    case 'packages':
-      return `${basePath}/packages/${filename}`;
+    case 'domestic':
+      return `${basePath}/domestic/${filename}`;
+    case 'international':
+      return `${basePath}/international/${filename}`;
     case 'clients':
       return `${basePath}/clients/${filename}`;
     case 'venues':
@@ -61,7 +66,8 @@ function Mice() {
   // State for data
   const [miceMain, setMiceMain] = useState(null);
   const [miceFreeFlow, setMiceFreeFlow] = useState(null);
-  const [samplePackages, setSamplePackages] = useState([]);
+  const [domesticMice, setDomesticMice] = useState([]);
+  const [internationalMice, setInternationalMice] = useState([]);
   const [ourClients, setOurClients] = useState([]);
   const [venues, setVenues] = useState([]);
   const [miceGallery, setMiceGallery] = useState([]);
@@ -84,12 +90,16 @@ function Mice() {
     imagePreview: ''
   });
 
-  const [packageForm, setPackageForm] = useState({
+  const [domesticForm, setDomesticForm] = useState({
     id: null,
-    days: '',
-    price: '',
-    images: [],
-    imagePreviews: []
+    domestic_mice_name: '',
+    cities: []
+  });
+
+  const [internationalForm, setInternationalForm] = useState({
+    id: null,
+    international_mice_name: '',
+    cities: []
   });
 
   const [clientsForm, setClientsForm] = useState({
@@ -142,14 +152,26 @@ function Mice() {
         console.error('Error fetching freeflow:', err);
       }
 
+      // Fetch Domestic Mice
       try {
-        const packagesResponse = await fetch(`${baseurl}/api/mice/packages`);
-        if (packagesResponse.ok) {
-          const packagesData = await packagesResponse.json();
-          setSamplePackages(packagesData);
+        const domesticResponse = await fetch(`${baseurl}/api/mice/domestic`);
+        if (domesticResponse.ok) {
+          const domesticData = await domesticResponse.json();
+          setDomesticMice(domesticData);
         }
       } catch (err) {
-        console.error('Error fetching packages:', err);
+        console.error('Error fetching domestic mice:', err);
+      }
+
+      // Fetch International Mice
+      try {
+        const internationalResponse = await fetch(`${baseurl}/api/mice/international`);
+        if (internationalResponse.ok) {
+          const internationalData = await internationalResponse.json();
+          setInternationalMice(internationalData);
+        }
+      } catch (err) {
+        console.error('Error fetching international mice:', err);
       }
 
       try {
@@ -199,30 +221,97 @@ function Mice() {
     }
   };
 
-  const fetchPackage = async (id) => {
-    try {
-      const response = await fetch(`${baseurl}/api/mice/packages/${id}`);
-      if (response.ok) {
-        const data = await response.json();
-        setPackageForm({
-          id: data.id,
-          days: data.days,
-          price: data.price,
-          images: [],
-          imagePreviews: data.images.map(img => getImageUrl('packages', img.image_path))
-        });
-        setActiveTab('packages');
-        setShowForm(true);
-        setError('');
-      } else {
-        const errorData = await response.json();
-        setError(errorData.error || 'Error fetching package');
+const fetchDomesticMice = async (id) => {
+  setLoading(true);
+  setError('');
+  try {
+    const response = await fetch(`${baseurl}/api/mice/domestic/${id}`);
+    if (response.ok) {
+      const data = await response.json();
+      
+      // Set the domestic form with the data for editing
+      setDomesticForm({
+        id: data.id,
+        domestic_mice_name: data.city_name || ''
+      });
+      
+      // Populate city entries for the basic form
+      if (data) {
+        const entries = [{
+          id: data.id || Date.now(),
+          stateName: data.state_name || '',
+          cityName: data.city_name || '',
+          price: data.price || '',
+          image: null,
+          imagePreview: data.image ? `${baseurl}/uploads/mice/domestic/${data.image}` : '',
+          existingImage: data.image || ''
+        }];
+        setCityEntries(entries);
+        setShowCitySection(true);
       }
-    } catch (err) {
-      console.error('Error fetching package:', err);
-      setError('Error fetching package data. Please try again.');
+      
+      // Show the basic form first (not the details page)
+      setActiveTab('domestic');
+      setShowForm(true);
+      setSuccessMessage(''); // Clear any previous messages
+    } else {
+      setError('Failed to fetch domestic mice data');
     }
-  };
+  } catch (err) {
+    console.error('Error fetching domestic mice:', err);
+    setError('Error fetching domestic mice data');
+  } finally {
+    setLoading(false);
+  }
+};
+
+const fetchInternationalMice = async (id) => {
+  setLoading(true);
+  setError('');
+  try {
+    const response = await fetch(`${baseurl}/api/mice/international/${id}`);
+    if (response.ok) {
+      const data = await response.json();
+      
+      // Set the international form with the data for editing
+      setInternationalForm({
+        id: data.id,
+        international_mice_name: data.city_name || ''
+      });
+      
+      // Populate city entries for the basic form
+      if (data) {
+        const entries = [{
+          id: data.id || Date.now(),
+          countryName: data.country_name || '',
+          cityName: data.city_name || '',
+          price: data.price || '',
+          image: null,
+          imagePreview: data.image ? `${baseurl}/uploads/mice/international/${data.image}` : '',
+          existingImage: data.image || ''
+        }];
+        setCityEntries(entries);
+        setShowCitySection(true);
+      }
+      
+      // Show the basic form first (not the details page)
+      setActiveTab('international');
+      setShowForm(true);
+      setSuccessMessage(''); // Clear any previous messages
+    } else {
+      setError('Failed to fetch international mice data');
+    }
+  } catch (err) {
+    console.error('Error fetching international mice:', err);
+    setError('Error fetching international mice data');
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+  const [cityEntries, setCityEntries] = useState([]);
+  const [showCitySection, setShowCitySection] = useState(false);
 
   const fetchFreeFlow = async () => {
     try {
@@ -253,29 +342,57 @@ function Mice() {
     navigate(`/micenquiryform/${id}`);
   };
 
-  const handleDeletePackage = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this package? This action cannot be undone.')) {
+  const handleDeleteDomestic = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this domestic mice entry?')) {
       return;
     }
 
     setLoading(true);
     try {
-      const response = await fetch(`${baseurl}/api/mice/packages/${id}`, {
+      const response = await fetch(`${baseurl}/api/mice/domestic/${id}`, {
         method: 'DELETE',
       });
 
       const result = await response.json();
 
       if (response.ok) {
-        setSuccessMessage(result.message || 'Package deleted successfully');
+        setSuccessMessage(result.message || 'Domestic mice deleted successfully');
         await fetchData();
         setTimeout(() => setSuccessMessage(''), 3000);
       } else {
-        setError(result.error || 'Failed to delete package');
+        setError(result.error || 'Failed to delete domestic mice');
       }
     } catch (err) {
-      console.error('Error deleting package:', err);
-      setError('Error deleting package. Please try again.');
+      console.error('Error deleting domestic mice:', err);
+      setError('Error deleting domestic mice. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteInternational = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this international mice entry?')) {
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await fetch(`${baseurl}/api/mice/international/${id}`, {
+        method: 'DELETE',
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        setSuccessMessage(result.message || 'International mice deleted successfully');
+        await fetchData();
+        setTimeout(() => setSuccessMessage(''), 3000);
+      } else {
+        setError(result.error || 'Failed to delete international mice');
+      }
+    } catch (err) {
+      console.error('Error deleting international mice:', err);
+      setError('Error deleting international mice. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -324,12 +441,15 @@ function Mice() {
       image: null,
       imagePreview: ''
     });
-    setPackageForm({
+    setDomesticForm({
       id: null,
-      days: '',
-      price: '',
-      images: [],
-      imagePreviews: []
+      domestic_mice_name: '',
+      cities: []
+    });
+    setInternationalForm({
+      id: null,
+      international_mice_name: '',
+      cities: []
     });
     setClientsForm({
       images: [],
@@ -347,11 +467,12 @@ function Mice() {
       images: [],
       imagePreviews: []
     });
+    setCityEntries([]);
+    setShowCitySection(false);
     setError('');
   };
 
   const handleAddNew = () => {
-    // For enquiry tab, navigate to the add enquiry form page
     if (activeTab === 'enquiry') {
       navigate('/micenquiry-form');
       return;
@@ -384,6 +505,14 @@ function Mice() {
     setShowForm(false);
   };
 
+  const goToDomesticDetails = (id) => {
+    navigate(`/mice/domestic-details/${id}`);
+  };
+
+  const goToInternationalDetails = (id) => {
+    navigate(`/mice/international-details/${id}`);
+  };
+
   const renderTable = () => {
     if (loading) {
       return (
@@ -405,13 +534,17 @@ function Mice() {
     const commonProps = {
       getImageUrl,
       handleAddNew,
-      handleDeletePackage,
       handleDeleteImage,
-      fetchPackage,
+      fetchDomesticMice,
+      fetchInternationalMice,
+      handleDeleteDomestic,
+      handleDeleteInternational,
+      goToDomesticDetails,
+      goToInternationalDetails,
       resetForms,
       setActiveTab,
       setShowForm,
-      handleEditEnquiry // Pass the edit handler for enquiries
+      handleEditEnquiry
     };
 
     switch (activeTab) {
@@ -419,8 +552,10 @@ function Mice() {
         return <MiceMainTab miceMain={miceMain} {...commonProps} />;
       case 'freeflow':
         return <FreeFlowTab miceFreeFlow={miceFreeFlow} {...commonProps} />;
-      case 'packages':
-        return <PackagesTab samplePackages={samplePackages} {...commonProps} />;
+      case 'domestic':
+        return <DomesticMiceTab domesticMice={domesticMice} {...commonProps} />;
+      case 'international':
+        return <InternationalMiceTab internationalMice={internationalMice} {...commonProps} />;
       case 'clients':
         return <ClientsTab ourClients={ourClients} {...commonProps} />;
       case 'venues':
@@ -430,7 +565,6 @@ function Mice() {
       case 'events':
         return <EventsTab upcomingEvents={upcomingEvents} {...commonProps} />;
       case 'enquiry':
-        // Pass the edit handler to the MicEnquiryForm component
         return <MicEnquiryForm onEdit={handleEditEnquiry} />;
       default:
         return null;
@@ -444,7 +578,12 @@ function Mice() {
     setShowForm,
     setError,
     setSuccessMessage,
-    resetForms
+    resetForms,
+    cityEntries,
+    setCityEntries,
+    showCitySection,
+    setShowCitySection,
+    getImageUrl
   };
 
   return (
@@ -482,10 +621,16 @@ function Mice() {
               Free Flow Entry
             </button>
             <button
-              className={`tab-btn ${activeTab === 'packages' ? 'active' : ''}`}
-              onClick={() => { setActiveTab('packages'); setShowForm(false); resetForms(); }}
+              className={`tab-btn ${activeTab === 'domestic' ? 'active' : ''}`}
+              onClick={() => { setActiveTab('domestic'); setShowForm(false); resetForms(); }}
             >
-              Sample Packages
+              Domestic Mice
+            </button>
+            <button
+              className={`tab-btn ${activeTab === 'international' ? 'active' : ''}`}
+              onClick={() => { setActiveTab('international'); setShowForm(false); resetForms(); }}
+            >
+              International Mice
             </button>
             <button
               className={`tab-btn ${activeTab === 'clients' ? 'active' : ''}`}
@@ -554,10 +699,18 @@ function Mice() {
                   />
                 )}
 
-                {activeTab === 'packages' && (
-                  <PackagesForm
-                    packageForm={packageForm}
-                    setPackageForm={setPackageForm}
+                {activeTab === 'domestic' && (
+                  <DomesticMiceForm
+                    domesticForm={domesticForm}
+                    setDomesticForm={setDomesticForm}
+                    {...formProps}
+                  />
+                )}
+
+                {activeTab === 'international' && (
+                  <InternationalMiceForm
+                    internationalForm={internationalForm}
+                    setInternationalForm={setInternationalForm}
                     {...formProps}
                   />
                 )}

@@ -126,7 +126,10 @@ import Vendors from "./Components/Vendors/Vendors";
 import CategoryTable from "./Components/Vendors/Category/CategoryTable";
 import AddCategory from "./Components/Vendors/Category/AddCategory";
 
-import Mice from "./Components/Mice/Mice"
+import Mice from "./Components/Mice/Mice";
+import AddMiceDetails from './Components/Mice/AddMiceDetails.js';
+import NavigateToDomesticDetails from "./Components/Mice/NavigateToDomestic.js";
+import NavigateToInternationalDetails from "./Components/Mice/NavigateToInternational.js";
 import OfflineFlightsTable from "./Components/OfflineFlights/OfflineFlightsTable";
 import OfflineFlights from "./Components/OfflineFlights/OfflineFlights";
 
@@ -315,6 +318,14 @@ function App() {
                  <Route path="/international-exhibition" element={<Exhibition />} />
 
                  <Route path="/mice" element={<Mice />} />
+                 <Route path="/mice/domestic-details/:id" element={<AddMiceDetails />} />
+                 <Route path="/mice/international-details/:id" element={<AddMiceDetails />} />
+
+                
+                <Route path="/mice/domestic/city/:cityName" element={<NavigateToDomesticDetails />} />
+                <Route path="/mice/international/city/:cityName" element={<NavigateToInternationalDetails />} />
+
+
                    <Route path="/offline-flights-table" element={<OfflineFlightsTable />} />
                  <Route path="/add-offline-flight" element={<OfflineFlights />} />
                   <Route path="/add-offline-flight/:id" element={<OfflineFlights />} />
