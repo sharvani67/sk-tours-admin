@@ -394,12 +394,14 @@ console.log('ID:', id);
 
 
 
-  const getFileUrl = (fileName) => {
-    if (!fileName || typeof fileName !== 'string') return null;
-    if (fileName.startsWith('http')) return fileName;
-    if (fileName.startsWith('/uploads/')) return `${baseurl}${fileName}`;
-    return `${baseurl}/uploads/mice/visa/${fileName}`;
-  };
+ const getFileUrl = (fileName) => {
+  if (!fileName || typeof fileName !== 'string') return null;
+  if (fileName.startsWith('http')) return fileName;
+  if (fileName.startsWith('/uploads/')) return `${baseurl}${fileName}`;
+  return `${baseurl}/uploads/mice/visa/${fileName}`;
+};
+
+
   
   const openFileInNewTab = (url) => {
     if (url) {
@@ -1518,7 +1520,7 @@ console.log('ID:', id);
     }
   }, [isEditMode, isInternational]);
 
- const loadMiceData = async () => {
+const loadMiceData = async () => {
   try {
     setLoading(true);
     setError('');
@@ -1736,19 +1738,21 @@ console.log('ID:', id);
         }
       }
       
-      // Load images
-      try {
-        const imagesResponse = await fetch(`${baseurl}/api/mice/mice-images/${id}`);
-        if (imagesResponse.ok) {
-          const imagesData = await imagesResponse.json();
-          setExistingImages(imagesData);
-        } else {
-          setExistingImages([]);
-        }
-      } catch (imgErr) {
-        console.error('Error loading images:', imgErr);
-        setExistingImages([]);
-      }
+      // ========== FIXED: Load images from API response ==========
+      // First check if images are included in the main API response
+    // ========== FIXED: Load images from API response ==========
+// First check if images are included in the main API response
+if (data.images && Array.isArray(data.images) && data.images.length > 0) {
+  console.log('✅ Images loaded from main API response:', data.images);
+  // Process images to ensure URLs are correct
+  const processedImages = data.images.map(img => ({
+    ...img,
+    // Fix: The image URL is already correct from backend, just ensure it uses the right path
+    url: img.url.startsWith('http') ? img.url : `${baseurl}${img.url}`
+  }));
+  setExistingImages(processedImages);
+}
+      // ========== END OF FIXED IMAGES LOADING ==========
       
       setSuccess('Mice data loaded successfully');
     } else {
@@ -1761,6 +1765,7 @@ console.log('ID:', id);
     setLoading(false);
   }
 };
+
 
  useEffect(() => {
   // Only load data if we have a valid ID and it's not 'new'
@@ -1945,27 +1950,68 @@ const saveMiceDetails = async () => {
 
    // Inside saveMiceDetails function, replace this visa data processing section:
 
+// Inside saveMiceDetails function, replace the visa data processing section:
+
 if (isInternational) {
   const processedVisaForms = [];
   
   for (const form of visaFormItems) {
     const processedForm = { ...form };
     
-    // Handle file uploads
+    // Handle PDF file uploads (action1_file)
     if (form.action1_file && typeof form.action1_file !== 'string' && form.action1_file instanceof File) {
-      processedForm.action1_file = form.action1_file;
+      try {
+        const uploadFormData = new FormData();
+        uploadFormData.append('file', form.action1_file);
+        
+        const uploadResponse = await fetch(`${baseurl}/api/mice/upload-visa-file`, {
+          method: 'POST',
+          body: uploadFormData
+        });
+        
+        const uploadResult = await uploadResponse.json();
+        if (uploadResult.success) {
+          processedForm.action1_file = uploadResult.fileName;
+        } else {
+          console.error('Failed to upload PDF file');
+          processedForm.action1_file = null;
+        }
+      } catch (err) {
+        console.error('Error uploading PDF file:', err);
+        processedForm.action1_file = null;
+      }
     } else if (form.action1_file && typeof form.action1_file === 'string') {
       processedForm.action1_file = form.action1_file; // Keep existing filename
     } else {
-      processedForm.action1_file = null; // Send null instead of empty
+      processedForm.action1_file = null;
     }
     
+    // Handle Word file uploads (action2_file)
     if (form.action2_file && typeof form.action2_file !== 'string' && form.action2_file instanceof File) {
-      processedForm.action2_file = form.action2_file;
+      try {
+        const uploadFormData = new FormData();
+        uploadFormData.append('file', form.action2_file);
+        
+        const uploadResponse = await fetch(`${baseurl}/api/mice/upload-visa-file`, {
+          method: 'POST',
+          body: uploadFormData
+        });
+        
+        const uploadResult = await uploadResponse.json();
+        if (uploadResult.success) {
+          processedForm.action2_file = uploadResult.fileName;
+        } else {
+          console.error('Failed to upload Word file');
+          processedForm.action2_file = null;
+        }
+      } catch (err) {
+        console.error('Error uploading Word file:', err);
+        processedForm.action2_file = null;
+      }
     } else if (form.action2_file && typeof form.action2_file === 'string') {
       processedForm.action2_file = form.action2_file; // Keep existing filename
     } else {
-      processedForm.action2_file = null; // Send null instead of empty
+      processedForm.action2_file = null;
     }
     
     processedVisaForms.push(processedForm);
@@ -1979,7 +2025,7 @@ if (isInternational) {
     currency: [...currencyItems, ...freeFlowCurrencyEntries],
     visa_fees: visaFeesRows,
     submission: submissionRows,
-    tourist_visa_remarks: touristVisaRemarks || '' // Ensure it's not undefined
+    tourist_visa_remarks: touristVisaRemarks || ''
   };
 }
 
@@ -4140,126 +4186,133 @@ if (isInternational) {
                     ) : (
                       <Row>
                         {existingImages.map((image) => (
-                          <Col md={4} lg={3} key={image.image_id} className="mb-4">
-                            <Card className="h-100">
-                              <Card.Body className="p-2">
-                                <div className="position-relative">
-                                  <img
-                                    src={image.url}
-                                    alt={`exhibition-image-${image.image_id}`}
-                                    style={{
-                                      width: '100%',
-                                      height: '150px',
-                                      objectFit: 'cover',
-                                      borderRadius: '6px'
-                                    }}
-                                    className="mb-2"
-                                    onError={(e) => {
-                                      e.target.onerror = null;
-                                      e.target.src = `${baseurl}/uploads/exhibition/default-image.jpg`;
-                                    }}
-                                  />
-                                   
-                                  {image.is_cover === 1 && (
-                                    <div className="position-absolute top-0 start-0 bg-warning text-dark px-2 py-1 rounded-end">
-                                      <strong>★ Cover</strong>
-                                    </div>
-                                  )}
-                                   
-                                  {editingImageId === image.image_id ? (
-                                    <div className="mt-3 border p-3 rounded">
-                                      <Form.Group>
-                                        <Form.Label>Replace with new image:</Form.Label>
-                                        <Form.Control
-                                          id="replacementFileInput"
-                                          type="file"
-                                          onChange={handleReplacementFileChange}
-                                          accept="image/jpeg,image/jpg,image/png,image/webp"
-                                        />
-                                      </Form.Group>
-                                       
-                                      {replacementPreview && (
-                                        <div className="mt-2">
-                                          <p><strong>New preview:</strong></p>
-                                          <img
-                                            src={replacementPreview}
-                                            alt="replacement"
-                                            style={{
-                                              width: '100%',
-                                              height: '100px',
-                                              objectFit: 'cover',
-                                              borderRadius: '4px'
-                                            }}
-                                          />
-                                        </div>
-                                      )}
-                                       
-                                      <div className="d-flex gap-2 mt-3">
-                                        <Button
-                                          variant="success"
-                                          size="sm"
-                                          onClick={() => updateImage(image.image_id)}
-                                          disabled={!replacementFile || loading}
-                                        >
-                                          {loading ? 'Updating...' : 'Update'}
-                                        </Button>
-                                        <Button
-                                          variant="outline-secondary"
-                                          size="sm"
-                                          onClick={cancelEditImage}
-                                          disabled={loading}
-                                        >
-                                          Cancel
-                                        </Button>
-                                      </div>
-                                    </div>
-                                  ) : (
-                                    <div className="mt-2">
-                                      <div className="d-flex flex-wrap gap-1 justify-content-center">
-                                        {image.is_cover === 0 && (
-                                          <Button
-                                            variant="outline-warning"
-                                            size="sm"
-                                            onClick={() => setCoverImage(image.image_id)}
-                                            title="Set as Cover"
-                                            disabled={loading}
-                                          >
-                                            ★ Set Cover
-                                          </Button>
-                                        )}
-                                         
-                                        <Button
-                                          variant="outline-primary"
-                                          size="sm"
-                                          onClick={() => startEditImage(image)}
-                                          title="Replace Image"
-                                          disabled={loading}
-                                        >
-                                          <Pencil size={14} /> Replace
-                                        </Button>
-                                         
-                                        <Button
-                                          variant="outline-danger"
-                                          size="sm"
-                                          onClick={() => deleteImage(image.image_id)}
-                                          title="Delete Image"
-                                          disabled={loading}
-                                        >
-                                          <Trash size={14} />
-                                        </Button>
-                                      </div>
-                                    </div>
-                                  )}
-                                </div>
-                              </Card.Body>
-                              <Card.Footer className="bg-transparent border-0 pt-0">
-                                <small className="text-muted">
-                                  {image.caption ? `Caption: ${image.caption}` : 'No caption'}
-                                </small>
-                              </Card.Footer>
-                            </Card>
-                          </Col>
-                        ))}
+  <Col md={4} lg={3} key={image.image_id} className="mb-4">
+    <Card className="h-100">
+      <Card.Body className="p-2">
+        <div className="position-relative">
+          <img
+  src={image.url}
+  alt={`mice-image-${image.image_id}`}
+  style={{
+    width: '100%',
+    height: '150px',
+    objectFit: 'cover',
+    borderRadius: '6px'
+  }}
+  className="mb-2"
+  onError={(e) => {
+    e.target.onerror = null;
+    // Try different possible paths
+    const filename = image.url?.split('/').pop();
+    if (filename) {
+      // Try the correct path where images are actually stored
+      e.target.src = `${baseurl}/uploads/mice/${filename}`;
+    } else {
+      e.target.src = `${baseurl}/uploads/mice/default-image.jpg`;
+    }
+  }}
+/>
+          
+          {image.is_cover === 1 && (
+            <div className="position-absolute top-0 start-0 bg-warning text-dark px-2 py-1 rounded-end">
+              <strong>★ Cover</strong>
+            </div>
+          )}
+           
+          {editingImageId === image.image_id ? (
+            <div className="mt-3 border p-3 rounded">
+              <Form.Group>
+                <Form.Label>Replace with new image:</Form.Label>
+                <Form.Control
+                  id="replacementFileInput"
+                  type="file"
+                  onChange={handleReplacementFileChange}
+                  accept="image/jpeg,image/jpg,image/png,image/webp"
+                />
+              </Form.Group>
+               
+              {replacementPreview && (
+                <div className="mt-2">
+                  <p><strong>New preview:</strong></p>
+                  <img
+                    src={replacementPreview}
+                    alt="replacement"
+                    style={{
+                      width: '100%',
+                      height: '100px',
+                      objectFit: 'cover',
+                      borderRadius: '4px'
+                    }}
+                  />
+                </div>
+              )}
+               
+              <div className="d-flex gap-2 mt-3">
+                <Button
+                  variant="success"
+                  size="sm"
+                  onClick={() => updateImage(image.image_id)}
+                  disabled={!replacementFile || loading}
+                >
+                  {loading ? 'Updating...' : 'Update'}
+                </Button>
+                <Button
+                  variant="outline-secondary"
+                  size="sm"
+                  onClick={cancelEditImage}
+                  disabled={loading}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="mt-2">
+              <div className="d-flex flex-wrap gap-1 justify-content-center">
+                {image.is_cover === 0 && (
+                  <Button
+                    variant="outline-warning"
+                    size="sm"
+                    onClick={() => setCoverImage(image.image_id)}
+                    title="Set as Cover"
+                    disabled={loading}
+                  >
+                    ★ Set Cover
+                  </Button>
+                )}
+                 
+                <Button
+                  variant="outline-primary"
+                  size="sm"
+                  onClick={() => startEditImage(image)}
+                  title="Replace Image"
+                  disabled={loading}
+                >
+                  <Pencil size={14} /> Replace
+                </Button>
+                 
+                <Button
+                  variant="outline-danger"
+                  size="sm"
+                  onClick={() => deleteImage(image.image_id)}
+                  title="Delete Image"
+                  disabled={loading}
+                >
+                  <Trash size={14} />
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
+      </Card.Body>
+      <Card.Footer className="bg-transparent border-0 pt-0">
+        <small className="text-muted">
+          {image.caption ? `Caption: ${image.caption}` : 'No caption'}
+        </small>
+      </Card.Footer>
+    </Card>
+  </Col>
+))}
                       </Row>
                     )}
                      
