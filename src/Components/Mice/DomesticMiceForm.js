@@ -64,7 +64,9 @@ const DomesticMiceForm = ({
     }
   };
 
-  const handleSubmit = async (e) => {
+// In DomesticMiceForm.js - fix the handleSubmit function
+
+const handleSubmit = async (e) => {
   e.preventDefault();
   setError('');
   setSuccessMessage('');
@@ -121,15 +123,17 @@ const DomesticMiceForm = ({
         method: 'POST',
         body: formData
       });
-      const result = await response.json();
-      if (response.ok) {
-        savedId = result.id;
-      }
     }
 
+    // FIX: Read the response body only ONCE
     const result = await response.json();
 
     if (response.ok) {
+      // For create operations, get the saved ID from the response
+      if (!domesticForm.id && result.id) {
+        savedId = result.id;
+      }
+      
       setSuccessMessage(domesticForm.id ? 'Domestic Mice updated successfully!' : 'Domestic Mice added successfully!');
       await fetchData();
       resetForms();

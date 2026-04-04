@@ -64,92 +64,93 @@ const InternationalMiceForm = ({
     }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError('');
-    setSuccessMessage('');
+ const handleSubmit = async (e) => {
+  e.preventDefault();
+  setError('');
+  setSuccessMessage('');
 
-    if (cityEntries.length === 0) {
-      setError('Please add at least one city');
-      return;
+  if (cityEntries.length === 0) {
+    setError('Please add at least one city');
+    return;
+  }
+
+  const validEntries = cityEntries.filter(entry => 
+    entry.cityName.trim() !== '' && entry.price > 0
+  );
+
+  if (validEntries.length === 0) {
+    setError('Please fill in city details');
+    return;
+  }
+
+  const formData = new FormData();
+  
+  const countryNames = validEntries.map(entry => entry.countryName.trim());
+  const cityNames = validEntries.map(entry => entry.cityName.trim());
+  const prices = validEntries.map(entry => entry.price);
+  const existingImages = validEntries.map(entry => entry.existingImage || '').filter(img => img !== '');
+  const existingCityIds = validEntries.map(entry => entry.id).filter(id => typeof id === 'number');
+  
+  formData.append('countryNames', JSON.stringify(countryNames));
+  formData.append('cityNames', JSON.stringify(cityNames));
+  formData.append('prices', JSON.stringify(prices));
+  formData.append('existingImages', JSON.stringify(existingImages));
+  formData.append('existingCityIds', JSON.stringify(existingCityIds));
+  formData.append('mice_type', MICE_TYPE);
+  
+  validEntries.forEach(entry => {
+    if (entry.image) {
+      formData.append('images', entry.image);
+    }
+  });
+
+  try {
+    let response;
+    let savedId = internationalForm.id;
+    
+    if (internationalForm.id) {
+      // Update existing international
+      response = await fetch(`${baseurl}/api/mice/international/${internationalForm.id}`, {
+        method: 'PUT',
+        body: formData
+      });
+      savedId = internationalForm.id;
+    } else {
+      // Create new international
+      response = await fetch(`${baseurl}/api/mice/international`, {
+        method: 'POST',
+        body: formData
+      });
     }
 
-    const validEntries = cityEntries.filter(entry => 
-      entry.cityName.trim() !== '' && entry.price > 0
-    );
+    // FIX: Read the response body only ONCE
+    const result = await response.json();
 
-    if (validEntries.length === 0) {
-      setError('Please fill in city details');
-      return;
-    }
-
-    const formData = new FormData();
-    
-    // Use countryNames for international
-    const countryNames = validEntries.map(entry => entry.countryName.trim());
-    const cityNames = validEntries.map(entry => entry.cityName.trim());
-    const prices = validEntries.map(entry => entry.price);
-    const existingImages = validEntries.map(entry => entry.existingImage || '').filter(img => img !== '');
-    const existingCityIds = validEntries.map(entry => entry.id).filter(id => typeof id === 'number');
-    
-    formData.append('countryNames', JSON.stringify(countryNames));
-    formData.append('cityNames', JSON.stringify(cityNames));
-    formData.append('prices', JSON.stringify(prices));
-    formData.append('existingImages', JSON.stringify(existingImages));
-    formData.append('existingCityIds', JSON.stringify(existingCityIds));
-    formData.append('mice_type', MICE_TYPE);
-    
-    validEntries.forEach(entry => {
-      if (entry.image) {
-        formData.append('images', entry.image);
+    if (response.ok) {
+      // For create operations, get the saved ID from the response
+      if (!internationalForm.id && result.id) {
+        savedId = result.id;
       }
-    });
-
-    try {
-      let response;
-      let savedId = internationalForm.id;
       
-      if (internationalForm.id) {
-        // Update existing international
-        response = await fetch(`${baseurl}/api/mice/international/${internationalForm.id}`, {
-          method: 'PUT',
-          body: formData
-        });
-        savedId = internationalForm.id;
-      } else {
-        // Create new international
-        response = await fetch(`${baseurl}/api/mice/international`, {
-          method: 'POST',
-          body: formData
-        });
-        const result = await response.json();
-        if (response.ok) {
-          savedId = result.id;
-        }
+      setSuccessMessage(internationalForm.id ? 'International Mice updated successfully!' : 'International Mice added successfully!');
+      await fetchData();
+      resetForms();
+      setShowForm(false);
+      
+      // After saving, navigate to the full details page to edit other sections
+      if (savedId) {
+        setTimeout(() => {
+          window.location.href = `/mice/international-details/${savedId}`;
+        }, 1500);
       }
-
-      const result = await response.json();
-
-      if (response.ok) {
-        setSuccessMessage(internationalForm.id ? 'International Mice updated successfully!' : 'International Mice added successfully!');
-        await fetchData();
-        resetForms();
-        setShowForm(false);
-        
-        // After saving, navigate to the full details page to edit other sections
-        if (savedId) {
-          setTimeout(() => {
-            window.location.href = `/mice/international-details/${savedId}`;
-          }, 1500);
-        }
-      } else {
-        setError(result.error || 'Error processing request');
-      }
-    } catch (err) {
-      console.error('Error submitting international form:', err);
-      setError('Error submitting form. Please try again.');
+    } else {
+      setError(result.error || 'Error processing request');
     }
-  };
+  } catch (err) {
+    console.error('Error submitting international form:', err);
+    setError('Error submitting form. Please try again.');
+  }
+};
 
   return (
     <>
