@@ -2214,7 +2214,7 @@ if (isInternational) {
   return (
     <Navbar>
       <Container>
-        <h2 className="mb-4">{isEditMode ? 'Edit Exhibition Details' : 'Add Exhibition Details'}</h2>
+        <h2 className="mb-4">{isEditMode ? 'Edit Mice Details' : 'Add Mice Details'}</h2>
 
         {error && <Alert variant="danger">{error}</Alert>}
         {success && <Alert variant="success">{success}</Alert>}
@@ -2245,7 +2245,7 @@ if (isInternational) {
                 <Row>
                   <Col md={6}>
                     <Form.Group className="mb-3">
-                      <Form.Label>Exhibition Name *</Form.Label>
+                      <Form.Label>Mice Name *</Form.Label>
                       <Form.Control
                         type="text"
                         name="mice_name"
@@ -2291,7 +2291,7 @@ if (isInternational) {
 
                   <Col md={6}>
                     <Form.Group className="mb-3">
-                      <Form.Label>Exhibition Overview</Form.Label>
+                      <Form.Label>Mice Overview</Form.Label>
                       <Form.Control
                         as="textarea"
                         rows={6}

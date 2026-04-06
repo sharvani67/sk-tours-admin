@@ -1441,7 +1441,7 @@ const AddExhibitionDetails = () => {
     }
   }, [isEditMode, isInternational]);
 
- const loadExhibitionData = async () => {
+const loadExhibitionData = async () => {
   try {
     setLoading(true);
     setError('');
@@ -1458,29 +1458,42 @@ const AddExhibitionDetails = () => {
     if (result.success && result.data) {
       const data = result.data;
       
-      if (data.tours && data.tours.length > 0) {
-        const tour = data.tours[0];
-        setFormData({
-          exhibition_name: data.exhibition?.domestic_category_name || data.exhibition?.international_category_name || '',
-          exhibition_type: type,
-          overview: tour.overview || '',
-          duration_days: tour.duration_days || '',
-          base_price_adult: tour.base_price_adult || '',
-          emi_price: tour.emi_price || '',
-          cost_remarks: tour.cost_remarks || '',
-          hotel_remarks: tour.hotel_remarks || '',
-          transport_remarks: tour.transport_remarks || '',
-          booking_poi_remarks: tour.booking_poi_remarks || '',
-          cancellation_remarks: tour.cancellation_remarks || '',
-          emi_remarks: tour.emi_remarks || '',
-          optional_tour_remarks: tour.optional_tour_remarks || ''
-        });
+      // Get tour data (first tour in the array)
+      const tourData = data.tours && data.tours.length > 0 ? data.tours[0] : {};
+      
+      // Set basic form data with all remark fields from API
+      setFormData({
+        exhibition_name: data.exhibition?.domestic_category_name || data.exhibition?.international_category_name || '',
+        exhibition_type: type,
+        overview: tourData.overview || '',
+        duration_days: tourData.duration_days || '',
+        base_price_adult: tourData.base_price_adult || '',
+        emi_price: tourData.emi_price || '',
+        cost_remarks: tourData.cost_remarks || '',        // This should be pre-filled
+        hotel_remarks: tourData.hotel_remarks || '',      // This should be pre-filled
+        transport_remarks: tourData.transport_remarks || '', // This should be pre-filled
+        booking_poi_remarks: tourData.booking_poi_remarks || '',
+        cancellation_remarks: tourData.cancellation_remarks || '',
+        emi_remarks: tourData.emi_remarks || '',
+        optional_tour_remarks: tourData.optional_tour_remarks || ''
+      });
+
+      // Set state/city/country from tour data if available
+      if (type === 'domestic') {
+        // You can store these in state if needed
+        console.log('Domestic State:', tourData.state_name);
+        console.log('Domestic City:', tourData.city_name);
+      } else {
+        console.log('International Country:', tourData.country_name);
+        console.log('International City:', tourData.city_name);
       }
 
+      // Load itineraries
       if (data.itineraries && Array.isArray(data.itineraries)) {
         setItineraries(data.itineraries);
       }
 
+      // Load departures - map fields correctly
       if (data.departures && Array.isArray(data.departures)) {
         const formattedDepartures = data.departures.map(dept => ({
           start_date: dept.start_date ? dept.start_date.split('T')[0] : '',
@@ -1500,38 +1513,12 @@ const AddExhibitionDetails = () => {
         setDepartures(formattedDepartures);
       }
 
+      // Load optional tours
       if (data.optionaltours && Array.isArray(data.optionaltours)) {
         setOptionalTours(data.optionaltours);
       }
 
-      if (data.inclusions && Array.isArray(data.inclusions)) {
-        setInclusions(data.inclusions.map(inc => inc.item || inc));
-      }
-
-      if (data.exclusions && Array.isArray(data.exclusions)) {
-        setExclusions(data.exclusions.map(exc => exc.item || exc));
-      }
-
-      if (data.transports && Array.isArray(data.transports)) {
-        setTransports(data.transports);
-      }
-
-      if (data.hotels && Array.isArray(data.hotels)) {
-        setHotelRows(data.hotels);
-      }
-
-      if (data.bookingpoi && Array.isArray(data.bookingpoi)) {
-        setBookingPois(data.bookingpoi);
-      }
-
-      if (data.cancellationpolicies && Array.isArray(data.cancellationpolicies)) {
-        setCancelPolicies(data.cancellationpolicies);
-      }
-
-      if (data.instructions && Array.isArray(data.instructions)) {
-        setInstructions(data.instructions.map(inst => inst.item || inst));
-      }
-
+      // Load EMI options
       if (data.emioptions && Array.isArray(data.emioptions) && data.emioptions.length > 0) {
         setEmiOptions(data.emioptions);
         if (data.emioptions[0].loan_amount) {
@@ -1539,8 +1526,44 @@ const AddExhibitionDetails = () => {
         }
       }
 
+      // Load inclusions
+      if (data.inclusions && Array.isArray(data.inclusions)) {
+        setInclusions(data.inclusions.map(inc => inc.item || inc));
+      }
+
+      // Load exclusions
+      if (data.exclusions && Array.isArray(data.exclusions)) {
+        setExclusions(data.exclusions.map(exc => exc.item || exc));
+      }
+
+      // Load transports
+      if (data.transports && Array.isArray(data.transports)) {
+        setTransports(data.transports);
+      }
+
+      // Load hotels
+      if (data.hotels && Array.isArray(data.hotels)) {
+        setHotelRows(data.hotels);
+      }
+
+      // Load booking POIs
+      if (data.bookingpoi && Array.isArray(data.bookingpoi)) {
+        setBookingPois(data.bookingpoi);
+      }
+
+      // Load cancellation policies
+      if (data.cancellationpolicies && Array.isArray(data.cancellationpolicies)) {
+        setCancelPolicies(data.cancellationpolicies);
+      }
+
+      // Load instructions
+      if (data.instructions && Array.isArray(data.instructions)) {
+        setInstructions(data.instructions.map(inst => inst.item || inst));
+      }
+
+      // Load visa data for international
       if (isInternational) {
-        // Load visa details (tourist, transit, business)
+        // Load visa details
         if (data.visa_details && Array.isArray(data.visa_details)) {
           const touristVisaData = data.visa_details.filter(item => item.type === 'tourist');
           setTouristVisaItems(touristVisaData.map(item => ({ description: item.description })));
@@ -1552,27 +1575,14 @@ const AddExhibitionDetails = () => {
           setBusinessVisaItems(businessVisaData.map(item => ({ description: item.description })));
         }
         
-        // Load currency data from visa_currency (NOT from visa_details)
-        // FIXED: Load from structured_currency and free_flow_currency
+        // Load structured currency
         if (data.structured_currency && Array.isArray(data.structured_currency)) {
-          setCurrencyItems(data.structured_currency.map(item => ({ 
-            local_currency: item.local_currency || '',
-            currency_conversion_1: item.currency_conversion_1 || '',
-            currency_conversion_2: item.currency_conversion_2 || '',
-            city_name: item.city_name || '',
-            local_time: item.local_time || '',
-            india_time: item.india_time || indianTime
-          })));
-        } else {
-          setCurrencyItems([]);
+          setCurrencyItems(data.structured_currency);
         }
         
+        // Load free flow currency
         if (data.free_flow_currency && Array.isArray(data.free_flow_currency)) {
-          setFreeFlowCurrencyEntries(data.free_flow_currency.map(item => ({ 
-            description: item.description || ''
-          })));
-        } else {
-          setFreeFlowCurrencyEntries([]);
+          setFreeFlowCurrencyEntries(data.free_flow_currency);
         }
         
         // Load visa forms
@@ -1582,14 +1592,12 @@ const AddExhibitionDetails = () => {
             download_action: form.download_action,
             fill_action: form.fill_action,
             action1_file: form.action1_file,
-            action2_file: form.action2_file,
-            action1_file_url: form.action1_file ? `${baseurl}/uploads/exhibition/visa/${form.action1_file}` : null,
-            action2_file_url: form.action2_file ? `${baseurl}/uploads/exhibition/visa/${form.action2_file}` : null
+            action2_file: form.action2_file
           }));
           setVisaFormItems(formattedForms);
           
-          if (data.visa_forms.length > 0 && data.visa_forms[0].remarks) {
-            setTouristVisaRemarks(data.visa_forms[0].remarks);
+          if (data.tourist_visa_remarks) {
+            setTouristVisaRemarks(data.tourist_visa_remarks);
           }
         }
         
@@ -1621,6 +1629,7 @@ const AddExhibitionDetails = () => {
         }
       }
 
+      // Load images
       try {
         const imagesResponse = await fetch(`${baseurl}/api/exhibitions/exhibition-images/${id}`);
         if (imagesResponse.ok) {
@@ -1630,12 +1639,9 @@ const AddExhibitionDetails = () => {
             url: img.url.startsWith('http') ? img.url : `${baseurl}${img.url}`
           }));
           setExistingImages(processedImages);
-        } else {
-          setExistingImages([]);
         }
       } catch (imgErr) {
         console.error('Error loading images:', imgErr);
-        setExistingImages([]);
       }
 
       setSuccess('Exhibition data loaded successfully');
