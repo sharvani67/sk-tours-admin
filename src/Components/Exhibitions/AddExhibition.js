@@ -1356,6 +1356,112 @@ const AddExhibitionDetails = () => {
 
   const isLastTab = activeTab === TAB_LIST[TAB_LIST.length - 1];
 
+
+  // Add this function after your existing functions, before the useEffect hooks
+// Replace the entire applyPrefillDefaults function with this:
+const applyPrefillDefaults = () => {
+  console.log('🎯 Applying prefill defaults for Exhibition');
+  
+  // Set form data with remarks
+  setFormData(prev => ({
+    ...prev,
+    exhibition_name: prev.exhibition_name || '',
+    exhibition_type: type || 'domestic',
+    cost_remarks: "Please note that while the exhibition price has been indicated, it may vary based on the season. We therefore kindly request you to confirm the final price before proceeding with your booking.",
+    hotel_remarks: "Hotel categories are subject to availability. Standard, Deluxe, and Executive categories based on room types and amenities.",
+    transport_remarks: "Transport arrangements are subject to availability and may change based on the final itinerary.",
+    booking_poi_remarks: "Booking amount is non-refundable. Balance payment to be made as per the payment schedule.",
+    cancellation_remarks: "Cancellation charges apply as per the policy mentioned above. No refunds for no-shows.",
+    emi_remarks: "EMI options available with 18% interest rate. Terms and conditions apply.",
+    optional_tour_remarks: "Optional tours are subject to availability and weather conditions. Prices are per person."
+  }));
+
+  // Set default booking policies - DIRECT SET
+  const defaultBookingPois = [
+    { item: "Per Person Booking Amount", amount_details: "" },
+    { item: "30 Days Prior Per person cost", amount_details: "50% of the exhibition cost" },
+    { item: "21 Days Prior Per person cost", amount_details: "Balance amount to pay" }
+  ];
+  console.log('📋 Setting default booking policies:', defaultBookingPois);
+  setBookingPois(defaultBookingPois);
+
+  // Set default cancellation policies - DIRECT SET
+  const defaultCancelPolicies = [
+    { cancellation_policy: "45 Days to 30 Days Cost per person", charges: "" },
+    { cancellation_policy: "30 Days to 21 Days Cost per person", charges: "50% of exhibition cost" },
+    { cancellation_policy: "21 Days till Departure date Cost per person", charges: "100% Cancellation applies" }
+  ];
+  console.log('🚫 Setting default cancellation policies:', defaultCancelPolicies);
+  setCancelPolicies(defaultCancelPolicies);
+
+  // Set visa remarks and currency for international exhibitions
+  if (isInternational) {
+    setTouristVisaRemarks(
+      "Visa requirements are subject to change based on embassy regulations. " +
+      "Processing time may vary. It is recommended to apply at least 3-4 weeks before departure. " +
+      "All documents must be original and valid for at least 6 months from the date of return."
+    );
+    
+    setCurrencyItems([
+      {
+        local_currency: "GBP",
+        currency_conversion_1: "1 GBP = ₹105.50",
+        currency_conversion_2: "1 GBP = $1.27",
+        city_name: "London",
+        local_time: "03:33 PM",
+        india_time: indianTime
+      },
+      {
+        local_currency: "USD",
+        currency_conversion_1: "1 USD = ₹83.25",
+        currency_conversion_2: "1 USD = €0.92",
+        city_name: "New York",
+        local_time: "10:03 AM",
+        india_time: indianTime
+      },
+      {
+        local_currency: "AED",
+        currency_conversion_1: "1 AED = ₹22.65",
+        currency_conversion_2: "1 AED = $0.27",
+        city_name: "Dubai",
+        local_time: "06:03 PM",
+        india_time: indianTime
+      },
+      {
+        local_currency: "JPY",
+        currency_conversion_1: "1 JPY = ₹0.55",
+        currency_conversion_2: "1 JPY = $0.0066",
+        city_name: "Tokyo",
+        local_time: "11:03 PM",
+        india_time: indianTime
+      }
+    ]);
+  }
+};
+
+// REPLACE both useEffect hooks with this single one:
+useEffect(() => {
+  if (!isEditMode) {
+    // For new exhibitions, apply all defaults
+    applyPrefillDefaults();
+  } else if (id && id !== 'new') {
+    // For editing, load existing data
+    loadExhibitionData();
+  }
+}, [id, isEditMode, isInternational, type]);
+
+// Keep the EMI calculation useEffect separate (don't remove this one)
+useEffect(() => {
+  if (emiLoanAmount && !isNaN(emiLoanAmount) && emiLoanAmount > 0) {
+    const updatedOptions = emiOptions.map(option => ({
+      ...option,
+      loan_amount: emiLoanAmount,
+      emi: calculateEMI(emiLoanAmount, option.months, emiInterestRate)
+    }));
+    setEmiOptions(updatedOptions);
+  }
+}, [emiLoanAmount, emiInterestRate]);
+
   useEffect(() => {
     if (emiLoanAmount && !isNaN(emiLoanAmount) && emiLoanAmount > 0) {
       const updatedOptions = emiOptions.map(option => ({
@@ -1367,79 +1473,83 @@ const AddExhibitionDetails = () => {
     }
   }, [emiLoanAmount, emiInterestRate]);
 
-  useEffect(() => {
-    if (!isEditMode) {
-      setFormData(prev => ({
-        ...prev,
-        cost_remarks: "Please note that while the exhibition price has been indicated, it may vary based on the season. We therefore kindly request you to confirm the final price before proceeding with your booking.",
-        hotel_remarks: "Hotel categories are subject to availability. Standard, Deluxe, and Executive categories based on room types and amenities.",
-        transport_remarks: "Transport arrangements are subject to availability and may change based on the final itinerary.",
-        booking_poi_remarks: "Booking amount is non-refundable. Balance payment to be made as per the payment schedule.",
-        cancellation_remarks: "Cancellation charges apply as per the policy mentioned above. No refunds for no-shows.",
-        emi_remarks: "EMI options available with 18% interest rate. Terms and conditions apply.",
-        optional_tour_remarks: "Optional tours are subject to availability and weather conditions. Prices are per person."
-      }));
+//  useEffect(() => {
+//   if (!isEditMode) {
+//     // Set all remark fields with default messages
+//     setFormData(prev => ({
+//       ...prev,
+//       cost_remarks: "Please note that while the exhibition price has been indicated, it may vary based on the season. We therefore kindly request you to confirm the final price before proceeding with your booking.",
+//       hotel_remarks: "Hotel categories are subject to availability. Standard, Deluxe, and Executive categories based on room types and amenities.",
+//       transport_remarks: "Transport arrangements are subject to availability and may change based on the final itinerary.",
+//       booking_poi_remarks: "Booking amount is non-refundable. Balance payment to be made as per the payment schedule.",
+//       cancellation_remarks: "Cancellation charges apply as per the policy mentioned above. No refunds for no-shows.",
+//       emi_remarks: "EMI options available with 18% interest rate. Terms and conditions apply.",
+//       optional_tour_remarks: "Optional tours are subject to availability and weather conditions. Prices are per person."
+//     }));
 
-      if (bookingPois.length === 0) {
-        setBookingPois([
-          { item: "Per Person Booking Amount", amount_details: "" },
-          { item: "30 Days Prior Per person cost", amount_details: "50% of the exhibition cost" },
-          { item: "21 Days Prior Per person cost", amount_details: "Balance amount to pay" }
-        ]);
-      }
+//     // Set default booking policies - IMPORTANT: Use setTimeout to ensure state updates
+//     setTimeout(() => {
+//       setBookingPois([
+//         { item: "Per Person Booking Amount", amount_details: "" },
+//         { item: "30 Days Prior Per person cost", amount_details: "50% of the exhibition cost" },
+//         { item: "21 Days Prior Per person cost", amount_details: "Balance amount to pay" }
+//       ]);
 
-      if (cancelPolicies.length === 0) {
-        setCancelPolicies([
-          { cancellation_policy: "45 Days to 30 Days Cost per person", charges: "" },
-          { cancellation_policy: "30 Days to 21 Days Cost per person", charges: "50% of exhibition cost" },
-          { cancellation_policy: "21 Days till Departure date Cost per person", charges: "100% Cancellation applies" }
-        ]);
-      }
+//       // Set default cancellation policies
+//       setCancelPolicies([
+//         { cancellation_policy: "45 Days to 30 Days Cost per person", charges: "" },
+//         { cancellation_policy: "30 Days to 21 Days Cost per person", charges: "50% of exhibition cost" },
+//         { cancellation_policy: "21 Days till Departure date Cost per person", charges: "100% Cancellation applies" }
+//       ]);
+//     }, 100);
 
-      if (isInternational) {
-        setTouristVisaRemarks(
-          "Visa requirements are subject to change based on embassy regulations. " +
-          "Processing time may vary. It is recommended to apply at least 3-4 weeks before departure. " +
-          "All documents must be original and valid for at least 6 months from the date of return."
-        );
+//     // Set international defaults if applicable
+//     if (isInternational) {
+//       setTimeout(() => {
+//         setTouristVisaRemarks(
+//           "Visa requirements are subject to change based on embassy regulations. " +
+//           "Processing time may vary. It is recommended to apply at least 3-4 weeks before departure. " +
+//           "All documents must be original and valid for at least 6 months from the date of return."
+//         );
         
-        setCurrencyItems([
-          {
-            local_currency: "GBP",
-            currency_conversion_1: "1 GBP = ₹105.50",
-            currency_conversion_2: "1 GBP = $1.27",
-            city_name: "London",
-            local_time: "03:33 PM",
-            india_time: indianTime
-          },
-          {
-            local_currency: "USD",
-            currency_conversion_1: "1 USD = ₹83.25",
-            currency_conversion_2: "1 USD = €0.92",
-            city_name: "New York",
-            local_time: "10:03 AM",
-            india_time: indianTime
-          },
-          {
-            local_currency: "AED",
-            currency_conversion_1: "1 AED = ₹22.65",
-            currency_conversion_2: "1 AED = $0.27",
-            city_name: "Dubai",
-            local_time: "06:03 PM",
-            india_time: indianTime
-          },
-          {
-            local_currency: "JPY",
-            currency_conversion_1: "1 JPY = ₹0.55",
-            currency_conversion_2: "1 JPY = $0.0066",
-            city_name: "Tokyo",
-            local_time: "11:03 PM",
-            india_time: indianTime
-          }
-        ]);
-      }
-    }
-  }, [isEditMode, isInternational]);
+//         setCurrencyItems([
+//           {
+//             local_currency: "GBP",
+//             currency_conversion_1: "1 GBP = ₹105.50",
+//             currency_conversion_2: "1 GBP = $1.27",
+//             city_name: "London",
+//             local_time: "03:33 PM",
+//             india_time: indianTime
+//           },
+//           {
+//             local_currency: "USD",
+//             currency_conversion_1: "1 USD = ₹83.25",
+//             currency_conversion_2: "1 USD = €0.92",
+//             city_name: "New York",
+//             local_time: "10:03 AM",
+//             india_time: indianTime
+//           },
+//           {
+//             local_currency: "AED",
+//             currency_conversion_1: "1 AED = ₹22.65",
+//             currency_conversion_2: "1 AED = $0.27",
+//             city_name: "Dubai",
+//             local_time: "06:03 PM",
+//             india_time: indianTime
+//           },
+//           {
+//             local_currency: "JPY",
+//             currency_conversion_1: "1 JPY = ₹0.55",
+//             currency_conversion_2: "1 JPY = $0.0066",
+//             city_name: "Tokyo",
+//             local_time: "11:03 PM",
+//             india_time: indianTime
+//           }
+//         ]);
+//       }, 100);
+//     }
+//   }
+// }, [isEditMode, isInternational]);
 
 const loadExhibitionData = async () => {
   try {
@@ -1462,21 +1572,48 @@ const loadExhibitionData = async () => {
       const tourData = data.tours && data.tours.length > 0 ? data.tours[0] : {};
       
       // Set basic form data with all remark fields from API
-      setFormData({
-        exhibition_name: data.exhibition?.domestic_category_name || data.exhibition?.international_category_name || '',
-        exhibition_type: type,
-        overview: tourData.overview || '',
-        duration_days: tourData.duration_days || '',
-        base_price_adult: tourData.base_price_adult || '',
-        emi_price: tourData.emi_price || '',
-        cost_remarks: tourData.cost_remarks || '',        // This should be pre-filled
-        hotel_remarks: tourData.hotel_remarks || '',      // This should be pre-filled
-        transport_remarks: tourData.transport_remarks || '', // This should be pre-filled
-        booking_poi_remarks: tourData.booking_poi_remarks || '',
-        cancellation_remarks: tourData.cancellation_remarks || '',
-        emi_remarks: tourData.emi_remarks || '',
-        optional_tour_remarks: tourData.optional_tour_remarks || ''
-      });
+      // Update the setFormData section in loadExhibitionData
+setFormData({
+  exhibition_name: data.exhibition?.domestic_category_name || data.exhibition?.international_category_name || '',
+  exhibition_type: type,
+  overview: tourData.overview || '',
+  duration_days: tourData.duration_days || '',
+  base_price_adult: tourData.base_price_adult || '',
+  emi_price: tourData.emi_price || '',
+  cost_remarks: tourData.cost_remarks || "Please note that while the exhibition price has been indicated, it may vary based on the season. We therefore kindly request you to confirm the final price before proceeding with your booking.",
+  hotel_remarks: tourData.hotel_remarks || "Hotel categories are subject to availability. Standard, Deluxe, and Executive categories based on room types and amenities.",
+  transport_remarks: tourData.transport_remarks || "Transport arrangements are subject to availability and may change based on the final itinerary.",
+  booking_poi_remarks: tourData.booking_poi_remarks || "Booking amount is non-refundable. Balance payment to be made as per the payment schedule.",
+  cancellation_remarks: tourData.cancellation_remarks || "Cancellation charges apply as per the policy mentioned above. No refunds for no-shows.",
+  emi_remarks: tourData.emi_remarks || "EMI options available with 18% interest rate. Terms and conditions apply.",
+  optional_tour_remarks: tourData.optional_tour_remarks || "Optional tours are subject to availability and weather conditions. Prices are per person."
+});
+
+// Load booking POIs - with defaults if empty
+if (data.bookingpoi && Array.isArray(data.bookingpoi) && data.bookingpoi.length > 0) {
+  console.log('Loading existing booking policies:', data.bookingpoi);
+  setBookingPois(data.bookingpoi);
+} else {
+  console.log('No booking policies found, setting defaults');
+  setBookingPois([
+    { item: "Per Person Booking Amount", amount_details: "" },
+    { item: "30 Days Prior Per person cost", amount_details: "50% of the exhibition cost" },
+    { item: "21 Days Prior Per person cost", amount_details: "Balance amount to pay" }
+  ]);
+}
+
+// Load cancellation policies - with defaults if empty
+if (data.cancellationpolicies && Array.isArray(data.cancellationpolicies) && data.cancellationpolicies.length > 0) {
+  console.log('Loading existing cancellation policies:', data.cancellationpolicies);
+  setCancelPolicies(data.cancellationpolicies);
+} else {
+  console.log('No cancellation policies found, setting defaults');
+  setCancelPolicies([
+    { cancellation_policy: "45 Days to 30 Days Cost per person", charges: "" },
+    { cancellation_policy: "30 Days to 21 Days Cost per person", charges: "50% of exhibition cost" },
+    { cancellation_policy: "21 Days till Departure date Cost per person", charges: "100% Cancellation applies" }
+  ]);
+}
 
       // Set state/city/country from tour data if available
       if (type === 'domestic') {
@@ -1547,14 +1684,14 @@ const loadExhibitionData = async () => {
       }
 
       // Load booking POIs
-      if (data.bookingpoi && Array.isArray(data.bookingpoi)) {
-        setBookingPois(data.bookingpoi);
-      }
+      // if (data.bookingpoi && Array.isArray(data.bookingpoi)) {
+      //   setBookingPois(data.bookingpoi);
+      // }
 
       // Load cancellation policies
-      if (data.cancellationpolicies && Array.isArray(data.cancellationpolicies)) {
-        setCancelPolicies(data.cancellationpolicies);
-      }
+      // if (data.cancellationpolicies && Array.isArray(data.cancellationpolicies)) {
+      //   setCancelPolicies(data.cancellationpolicies);
+      // }
 
       // Load instructions
       if (data.instructions && Array.isArray(data.instructions)) {
@@ -1657,10 +1794,12 @@ const loadExhibitionData = async () => {
 };
 
   useEffect(() => {
-    if (id && id !== 'new') {
-      loadExhibitionData();
-    }
-  }, [id, type, isInternational]);
+  if (!isEditMode) {
+    applyPrefillDefaults();
+  } else if (id && id !== 'new') {
+    loadExhibitionData();
+  }
+}, [id, isEditMode, isInternational, type]);
 
   const saveExhibitionDetails = async () => {
     if (!formData.exhibition_name.trim()) {

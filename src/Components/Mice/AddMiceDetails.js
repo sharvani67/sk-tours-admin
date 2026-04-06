@@ -44,6 +44,9 @@ console.log('Is International:', isInternational);
 console.log('ID:', id);
 
 
+
+
+
    
 
   // TAB_LIST based on mice type
@@ -90,6 +93,9 @@ console.log('ID:', id);
   // CITY ENTRIES (for Domestic/International)
   const [cityEntries, setCityEntries] = useState([]);
   const [showCitySection, setShowCitySection] = useState(true);
+
+
+
 
   // BASIC DETAILS
   const [formData, setFormData] = useState({
@@ -330,6 +336,25 @@ console.log('ID:', id);
   const [replacementFile, setReplacementFile] = useState(null);
   const [replacementPreview, setReplacementPreview] = useState(null);
 
+
+
+    // Auto-sync Mice Name with the first city's City Name
+useEffect(() => {
+  // Only auto-sync for new records (not edit mode)
+  if (!isEditMode && cityEntries.length > 0) {
+    const firstCity = cityEntries[0];
+    if (firstCity && firstCity.cityName && firstCity.cityName.trim() !== '') {
+      // Only update if mice_name is empty or matches previous city name
+      if (!formData.mice_name || formData.mice_name === '') {
+        setFormData(prev => ({
+          ...prev,
+          mice_name: firstCity.cityName.trim()
+        }));
+      }
+    }
+  }
+}, [cityEntries, isEditMode, formData.mice_name]);
+
   // CITY ENTRY FUNCTIONS
   const addCityEntry = () => {
     if (isInternational) {
@@ -355,11 +380,27 @@ console.log('ID:', id);
     }
   };
 
-  const handleCityChange = (id, field, value) => {
-    setCityEntries(cityEntries.map(entry => 
+ const handleCityChange = (id, field, value) => {
+  setCityEntries(cityEntries.map(entry => 
+    entry.id === id ? { ...entry, [field]: value } : entry
+  ));
+  
+  // Auto-sync Mice Name with City Name for new records
+  if (!isEditMode && field === 'cityName') {
+    const updatedEntries = cityEntries.map(entry => 
       entry.id === id ? { ...entry, [field]: value } : entry
-    ));
-  };
+    );
+    // Find the first city with a city name
+    const firstCityWithName = updatedEntries.find(entry => entry.cityName && entry.cityName.trim() !== '');
+    if (firstCityWithName && firstCityWithName.cityName) {
+      setFormData(prev => ({
+        ...prev,
+        mice_name: firstCityWithName.cityName.trim()
+      }));
+    }
+  }
+};
+
 
   const handleCityImageChange = (id, e) => {
     const file = e.target.files[0];
@@ -1446,87 +1487,137 @@ console.log('ID:', id);
     }
   }, [emiLoanAmount, emiInterestRate]);
 
-  useEffect(() => {
-    if (!isEditMode) {
-      setFormData(prev => ({
-        ...prev,
-        cost_remarks: "Please note that while the mice price has been indicated, it may vary based on the season. We therefore kindly request you to confirm the final price before proceeding with your booking.",
-        hotel_remarks: "Hotel categories are subject to availability. Standard, Deluxe, and Executive categories based on room types and amenities.",
-        transport_remarks: "Transport arrangements are subject to availability and may change based on the final itinerary.",
-        booking_poi_remarks: "Booking amount is non-refundable. Balance payment to be made as per the payment schedule.",
-        cancellation_remarks: "Cancellation charges apply as per the policy mentioned above. No refunds for no-shows.",
-        emi_remarks: "EMI options available with 18% interest rate. Terms and conditions apply.",
-        optional_tour_remarks: "Optional tours are subject to availability and weather conditions. Prices are per person."
-      }));
+ useEffect(() => {
+  if (!isEditMode) {
+    setFormData(prev => ({
+      ...prev,
+      cost_remarks: "Please note that while the mice price has been indicated, it may vary based on the season. We therefore kindly request you to confirm the final price before proceeding with your booking.",
+      hotel_remarks: "Hotel categories are subject to availability. Standard, Deluxe, and Executive categories based on room types and amenities.",
+      transport_remarks: "Transport arrangements are subject to availability and may change based on the final itinerary.",
+      booking_poi_remarks: "Booking amount is non-refundable. Balance payment to be made as per the payment schedule.",
+      cancellation_remarks: "Cancellation charges apply as per the policy mentioned above. No refunds for no-shows.",
+      emi_remarks: "EMI options available with 18% interest rate. Terms and conditions apply.",
+      optional_tour_remarks: "Optional tours are subject to availability and weather conditions. Prices are per person."
+    }));
 
-      if (bookingPois.length === 0) {
-        setBookingPois([
-          { item: "Per Person Booking Amount", amount_details: "" },
-          { item: "30 Days Prior Per person cost", amount_details: "50% of the mice cost" },
-          { item: "21 Days Prior Per person cost", amount_details: "Balance amount to pay" }
-        ]);
-      }
-
-      if (cancelPolicies.length === 0) {
-        setCancelPolicies([
-          { cancellation_policy: "45 Days to 30 Days Cost per person", charges: "" },
-          { cancellation_policy: "30 Days to 21 Days Cost per person", charges: "50% of mice cost" },
-          { cancellation_policy: "21 Days till Departure date Cost per person", charges: "100% Cancellation applies" }
-        ]);
-      }
-
-      if (isInternational) {
-        setTouristVisaRemarks(
-          "Visa requirements are subject to change based on embassy regulations. " +
-          "Processing time may vary. It is recommended to apply at least 3-4 weeks before departure. " +
-          "All documents must be original and valid for at least 6 months from the date of return."
-        );
-        
-        setCurrencyItems([
-          {
-            local_currency: "GBP",
-            currency_conversion_1: "1 GBP = ₹105.50",
-            currency_conversion_2: "1 GBP = $1.27",
-            city_name: "London",
-            local_time: "03:33 PM",
-            india_time: indianTime
-          },
-          {
-            local_currency: "USD",
-            currency_conversion_1: "1 USD = ₹83.25",
-            currency_conversion_2: "1 USD = €0.92",
-            city_name: "New York",
-            local_time: "10:03 AM",
-            india_time: indianTime
-          },
-          {
-            local_currency: "AED",
-            currency_conversion_1: "1 AED = ₹22.65",
-            currency_conversion_2: "1 AED = $0.27",
-            city_name: "Dubai",
-            local_time: "06:03 PM",
-            india_time: indianTime
-          },
-          {
-            local_currency: "JPY",
-            currency_conversion_1: "1 JPY = ₹0.55",
-            currency_conversion_2: "1 JPY = $0.0066",
-            city_name: "Tokyo",
-            local_time: "11:03 PM",
-            india_time: indianTime
-          }
-        ]);
-      }
+    if (bookingPois.length === 0) {
+      setBookingPois([
+        { item: "Per Person Booking Amount", amount_details: "" },
+        { item: "30 Days Prior Per person cost", amount_details: "50% of the mice cost" },
+        { item: "21 Days Prior Per person cost", amount_details: "Balance amount to pay" }
+      ]);
     }
-  }, [isEditMode, isInternational]);
+
+    if (cancelPolicies.length === 0) {
+      setCancelPolicies([
+        { cancellation_policy: "45 Days to 30 Days Cost per person", charges: "" },
+        { cancellation_policy: "30 Days to 21 Days Cost per person", charges: "50% of mice cost" },
+        { cancellation_policy: "21 Days till Departure date Cost per person", charges: "100% Cancellation applies" }
+      ]);
+    }
+
+    if (isInternational) {
+      // ← THIS WAS MISSING — now matches AddGroupTour exactly
+      setTouristVisaRemarks(
+        "Visa requirements are subject to change based on embassy regulations. " +
+        "Processing time may vary. It is recommended to apply at least 3-4 weeks before departure. " +
+        "All documents must be original and valid for at least 6 months from the date of return."
+      );
+
+      setCurrencyItems([
+        {
+          local_currency: "GBP",
+          currency_conversion_1: "1 GBP = ₹105.50",
+          currency_conversion_2: "1 GBP = $1.27",
+          city_name: "London",
+          local_time: "03:33 PM",
+          india_time: indianTime
+        },
+        {
+          local_currency: "USD",
+          currency_conversion_1: "1 USD = ₹83.25",
+          currency_conversion_2: "1 USD = €0.92",
+          city_name: "New York",
+          local_time: "10:03 AM",
+          india_time: indianTime
+        },
+        {
+          local_currency: "AED",
+          currency_conversion_1: "1 AED = ₹22.65",
+          currency_conversion_2: "1 AED = $0.27",
+          city_name: "Dubai",
+          local_time: "06:03 PM",
+          india_time: indianTime
+        },
+        {
+          local_currency: "JPY",
+          currency_conversion_1: "1 JPY = ₹0.55",
+          currency_conversion_2: "1 JPY = $0.0066",
+          city_name: "Tokyo",
+          local_time: "11:03 PM",
+          india_time: indianTime
+        }
+      ]);
+    }
+  }
+}, [isEditMode, isInternational]);
+
+
+
+const applyPrefillDefaults = () => {
+  setFormData(prev => ({
+    ...prev,
+    mice_type: miceType || 'domestic',
+    cost_remarks: "Please note that while the mice price has been indicated, it may vary based on the season. We therefore kindly request you to confirm the final price before proceeding with your booking.",
+    hotel_remarks: "Hotel categories are subject to availability. Standard, Deluxe, and Executive categories based on room types and amenities.",
+    transport_remarks: "Transport arrangements are subject to availability and may change based on the final itinerary.",
+    booking_poi_remarks: "Booking amount is non-refundable. Balance payment to be made as per the payment schedule.",
+    cancellation_remarks: "Cancellation charges apply as per the policy mentioned above. No refunds for no-shows.",
+    emi_remarks: "EMI options available with 18% interest rate. Terms and conditions apply.",
+    optional_tour_remarks: "Optional tours are subject to availability and weather conditions. Prices are per person."
+  }));
+
+  setBookingPois([
+    { item: "Per Person Booking Amount", amount_details: "" },
+    { item: "30 Days Prior Per person cost", amount_details: "50% of the mice cost" },
+    { item: "21 Days Prior Per person cost", amount_details: "Balance amount to pay" }
+  ]);
+
+  setCancelPolicies([
+    { cancellation_policy: "45 Days to 30 Days Cost per person", charges: "" },
+    { cancellation_policy: "30 Days to 21 Days Cost per person", charges: "50% of mice cost" },
+    { cancellation_policy: "21 Days till Departure date Cost per person", charges: "100% Cancellation applies" }
+  ]);
+
+  if (isInternational) {
+    setTouristVisaRemarks(
+      "Visa requirements are subject to change based on embassy regulations. " +
+      "Processing time may vary. It is recommended to apply at least 3-4 weeks before departure. " +
+      "All documents must be original and valid for at least 6 months from the date of return."
+    );
+    setCurrencyItems([
+      { local_currency: "GBP", currency_conversion_1: "1 GBP = ₹105.50", currency_conversion_2: "1 GBP = $1.27", city_name: "London", local_time: "03:33 PM", india_time: indianTime },
+      { local_currency: "USD", currency_conversion_1: "1 USD = ₹83.25", currency_conversion_2: "1 USD = €0.92", city_name: "New York", local_time: "10:03 AM", india_time: indianTime },
+      { local_currency: "AED", currency_conversion_1: "1 AED = ₹22.65", currency_conversion_2: "1 AED = $0.27", city_name: "Dubai", local_time: "06:03 PM", india_time: indianTime },
+      { local_currency: "JPY", currency_conversion_1: "1 JPY = ₹0.55", currency_conversion_2: "1 JPY = $0.0066", city_name: "Tokyo", local_time: "11:03 PM", india_time: indianTime }
+    ]);
+  }
+
+  if (isInternational) {
+    setCityEntries([{ id: Date.now(), countryName: '', cityName: '', price: '', image: null, imagePreview: '', existingImage: '' }]);
+  } else {
+    setCityEntries([{ id: Date.now(), stateName: '', cityName: '', price: '', image: null, imagePreview: '', existingImage: '' }]);
+  }
+  setShowCitySection(true);
+};
+
 
 const loadMiceData = async () => {
   try {
     setLoading(true);
     setError('');
     
-    // CRITICAL: Use the miceType variable, not the param
-    const currentMiceType = miceType; // Use the state variable we computed
+    const currentMiceType = miceType;
     const endpoint = currentMiceType === 'domestic' 
       ? `${baseurl}/api/mice/domestic-details/${id}`
       : `${baseurl}/api/mice/international-details/${id}`;
@@ -1543,28 +1634,25 @@ const loadMiceData = async () => {
     
     const result = await response.json();
     console.log('Mice data loaded:', result);
-    
+
     if (result.success && result.data) {
       const data = result.data;
       
-      // Load city entries from mice_city
+      // Load city entries first
       if (data.mice_city) {
         console.log('Mice city data:', data.mice_city);
         
-        // Set exhibition name from city name
         setFormData(prev => ({
           ...prev,
           mice_name: data.mice_city.city_name || '',
           mice_type: currentMiceType
         }));
         
-        // Load city entries - CRITICAL FIX: Clear existing entries first
         setCityEntries([]);
         
-        // Create city entry based on type
+        let newCityEntries = [];
         if (currentMiceType === 'international') {
-          // For international: use country_name and city_name
-          setCityEntries([{
+          newCityEntries = [{
             id: data.mice_city.id || Date.now(),
             countryName: data.mice_city.country_name || '',
             cityName: data.mice_city.city_name || '',
@@ -1572,10 +1660,9 @@ const loadMiceData = async () => {
             image: null,
             imagePreview: '',
             existingImage: data.mice_city.image || ''
-          }]);
+          }];
         } else {
-          // For domestic: use state_name and city_name
-          setCityEntries([{
+          newCityEntries = [{
             id: data.mice_city.id || Date.now(),
             stateName: data.mice_city.state_name || '',
             cityName: data.mice_city.city_name || '',
@@ -1583,10 +1670,33 @@ const loadMiceData = async () => {
             image: null,
             imagePreview: '',
             existingImage: data.mice_city.image || ''
-          }]);
+          }];
         }
         
+        setCityEntries(newCityEntries);
         setShowCitySection(true);
+      } else {
+        if (currentMiceType === 'international') {
+          setCityEntries([{
+            id: Date.now(),
+            countryName: '',
+            cityName: formData.mice_name || '',
+            price: '',
+            image: null,
+            imagePreview: '',
+            existingImage: ''
+          }]);
+        } else {
+          setCityEntries([{
+            id: Date.now(),
+            stateName: '',
+            cityName: formData.mice_name || '',
+            price: '',
+            image: null,
+            imagePreview: '',
+            existingImage: ''
+          }]);
+        }
       }
       
       // Load tours data
@@ -1598,13 +1708,24 @@ const loadMiceData = async () => {
           duration_days: tour.duration_days || '',
           base_price_adult: tour.base_price_adult || '',
           emi_price: tour.emi_price || '',
-          cost_remarks: tour.cost_remarks || '',
-          hotel_remarks: tour.hotel_remarks || '',
-          transport_remarks: tour.transport_remarks || '',
-          booking_poi_remarks: tour.booking_poi_remarks || '',
-          cancellation_remarks: tour.cancellation_remarks || '',
-          emi_remarks: tour.emi_remarks || '',
-          optional_tour_remarks: tour.optional_tour_remarks || ''
+          cost_remarks: tour.cost_remarks || prev.cost_remarks || "Please note that while the mice price has been indicated, it may vary based on the season. We therefore kindly request you to confirm the final price before proceeding with your booking.",
+          hotel_remarks: tour.hotel_remarks || prev.hotel_remarks || "Hotel categories are subject to availability. Standard, Deluxe, and Executive categories based on room types and amenities.",
+          transport_remarks: tour.transport_remarks || prev.transport_remarks || "Transport arrangements are subject to availability and may change based on the final itinerary.",
+          booking_poi_remarks: tour.booking_poi_remarks || prev.booking_poi_remarks || "Booking amount is non-refundable. Balance payment to be made as per the payment schedule.",
+          cancellation_remarks: tour.cancellation_remarks || prev.cancellation_remarks || "Cancellation charges apply as per the policy mentioned above. No refunds for no-shows.",
+          emi_remarks: tour.emi_remarks || prev.emi_remarks || "EMI options available with 18% interest rate. Terms and conditions apply.",
+          optional_tour_remarks: tour.optional_tour_remarks || prev.optional_tour_remarks || "Optional tours are subject to availability and weather conditions. Prices are per person."
+        }));
+      } else {
+        setFormData(prev => ({
+          ...prev,
+          cost_remarks: prev.cost_remarks || "Please note that while the mice price has been indicated, it may vary based on the season. We therefore kindly request you to confirm the final price before proceeding with your booking.",
+          hotel_remarks: prev.hotel_remarks || "Hotel categories are subject to availability. Standard, Deluxe, and Executive categories based on room types and amenities.",
+          transport_remarks: prev.transport_remarks || "Transport arrangements are subject to availability and may change based on the final itinerary.",
+          booking_poi_remarks: prev.booking_poi_remarks || "Booking amount is non-refundable. Balance payment to be made as per the payment schedule.",
+          cancellation_remarks: prev.cancellation_remarks || "Cancellation charges apply as per the policy mentioned above. No refunds for no-shows.",
+          emi_remarks: prev.emi_remarks || "EMI options available with 18% interest rate. Terms and conditions apply.",
+          optional_tour_remarks: prev.optional_tour_remarks || "Optional tours are subject to availability and weather conditions. Prices are per person."
         }));
       }
 
@@ -1658,14 +1779,30 @@ const loadMiceData = async () => {
         setHotelRows(data.hotels);
       }
 
-      // Load booking POIs
-      if (data.bookingpoi && Array.isArray(data.bookingpoi)) {
+      // ========== FIX: Load booking POIs with defaults ==========
+      if (data.bookingpoi && Array.isArray(data.bookingpoi) && data.bookingpoi.length > 0) {
         setBookingPois(data.bookingpoi);
+      } else {
+        // Set default booking policies if none exist in the database
+        console.log('No booking policies found, setting defaults');
+        setBookingPois([
+          { item: "Per Person Booking Amount", amount_details: "" },
+          { item: "30 Days Prior Per person cost", amount_details: "50% of the mice cost" },
+          { item: "21 Days Prior Per person cost", amount_details: "Balance amount to pay" }
+        ]);
       }
 
-      // Load cancellation policies
-      if (data.cancellationpolicies && Array.isArray(data.cancellationpolicies)) {
+      // ========== FIX: Load cancellation policies with defaults ==========
+      if (data.cancellationpolicies && Array.isArray(data.cancellationpolicies) && data.cancellationpolicies.length > 0) {
         setCancelPolicies(data.cancellationpolicies);
+      } else {
+        // Set default cancellation policies if none exist in the database
+        console.log('No cancellation policies found, setting defaults');
+        setCancelPolicies([
+          { cancellation_policy: "45 Days to 30 Days Cost per person", charges: "" },
+          { cancellation_policy: "30 Days to 21 Days Cost per person", charges: "50% of mice cost" },
+          { cancellation_policy: "21 Days till Departure date Cost per person", charges: "100% Cancellation applies" }
+        ]);
       }
 
       // Load instructions
@@ -1738,21 +1875,15 @@ const loadMiceData = async () => {
         }
       }
       
-      // ========== FIXED: Load images from API response ==========
-      // First check if images are included in the main API response
-    // ========== FIXED: Load images from API response ==========
-// First check if images are included in the main API response
-if (data.images && Array.isArray(data.images) && data.images.length > 0) {
-  console.log('✅ Images loaded from main API response:', data.images);
-  // Process images to ensure URLs are correct
-  const processedImages = data.images.map(img => ({
-    ...img,
-    // Fix: The image URL is already correct from backend, just ensure it uses the right path
-    url: img.url.startsWith('http') ? img.url : `${baseurl}${img.url}`
-  }));
-  setExistingImages(processedImages);
-}
-      // ========== END OF FIXED IMAGES LOADING ==========
+      // Load images
+      if (data.images && Array.isArray(data.images) && data.images.length > 0) {
+        console.log('✅ Images loaded from main API response:', data.images);
+        const processedImages = data.images.map(img => ({
+          ...img,
+          url: img.url.startsWith('http') ? img.url : `${baseurl}${img.url}`
+        }));
+        setExistingImages(processedImages);
+      }
       
       setSuccess('Mice data loaded successfully');
     } else {
@@ -1767,63 +1898,37 @@ if (data.images && Array.isArray(data.images) && data.images.length > 0) {
 };
 
 
- useEffect(() => {
-  // Only load data if we have a valid ID and it's not 'new'
+useEffect(() => {
   if (id && id !== 'new') {
-    console.log('Loading mice data for ID:', id, 'Type:', miceType);
-    loadMiceData();
+    loadMiceData(); // will auto-detect add vs edit inside
   } else {
-    // For new record, set default values
-    console.log('Creating new record for type:', miceType);
-    setFormData(prev => ({
-      ...prev,
-      mice_type: miceType || 'domestic'
-    }));
-    
-    // Add initial city entry for new record
-    if (cityEntries.length === 0) {
-      if (isInternational) {
-        setCityEntries([{
-          id: Date.now(),
-          countryName: '',
-          cityName: '',
-          price: '',
-          image: null,
-          imagePreview: '',
-          existingImage: ''
-        }]);
-      } else {
-        setCityEntries([{
-          id: Date.now(),
-          stateName: '',
-          cityName: '',
-          price: '',
-          image: null,
-          imagePreview: '',
-          existingImage: ''
-        }]);
-      }
-      setShowCitySection(true);
-    }
+    applyPrefillDefaults();
   }
-}, [id, miceType]); // Add miceType to dependencies
+}, [id, miceType]);
 
-  // Replace your existing saveMiceDetails function with this:
 
 const saveMiceDetails = async () => {
-  // Validate city entries
-  if (cityEntries.length === 0) {
+  // Validate city entries - CRITICAL FIX
+  if (!cityEntries || cityEntries.length === 0) {
     setError('Please add at least one city');
     setActiveTab('basic');
     return;
   }
 
+  // Check if any city entry has a valid city name
   const validEntries = cityEntries.filter(entry => 
-    entry.cityName.trim() !== '' && entry.price > 0
+    entry.cityName && entry.cityName.trim() !== ''
   );
 
   if (validEntries.length === 0) {
-    setError('Please fill in city details (City Name and Price are required)');
+    setError('Please fill in city details (City Name is required)');
+    setActiveTab('basic');
+    return;
+  }
+
+  // Also check if mice_name is set
+  if (!formData.mice_name || formData.mice_name.trim() === '') {
+    setError('Mice Name is required');
     setActiveTab('basic');
     return;
   }
@@ -1837,9 +1942,9 @@ const saveMiceDetails = async () => {
     const cityFormData = new FormData();
     
     if (isInternational) {
-      const countryNames = validEntries.map(entry => entry.countryName.trim());
+      const countryNames = validEntries.map(entry => entry.countryName?.trim() || '');
       const cityNames = validEntries.map(entry => entry.cityName.trim());
-      const prices = validEntries.map(entry => entry.price);
+      const prices = validEntries.map(entry => entry.price || '');
       const existingImages = validEntries.map(entry => entry.existingImage || '').filter(img => img !== '');
       const existingCityIds = validEntries.map(entry => entry.id).filter(id => typeof id === 'number');
       
@@ -1855,9 +1960,9 @@ const saveMiceDetails = async () => {
         }
       });
     } else {
-      const stateNames = validEntries.map(entry => entry.stateName.trim());
+      const stateNames = validEntries.map(entry => entry.stateName?.trim() || '');
       const cityNames = validEntries.map(entry => entry.cityName.trim());
-      const prices = validEntries.map(entry => entry.price);
+      const prices = validEntries.map(entry => entry.price || '');
       const existingImages = validEntries.map(entry => entry.existingImage || '').filter(img => img !== '');
       const existingCityIds = validEntries.map(entry => entry.id).filter(id => typeof id === 'number');
       
@@ -1948,95 +2053,70 @@ const saveMiceDetails = async () => {
       instructions
     };
 
-   // Inside saveMiceDetails function, replace this visa data processing section:
-
-// Inside saveMiceDetails function, replace the visa data processing section:
-
-if (isInternational) {
-  const processedVisaForms = [];
-  
-  for (const form of visaFormItems) {
-    const processedForm = { ...form };
-    
-    // Handle PDF file uploads (action1_file)
-    if (form.action1_file && typeof form.action1_file !== 'string' && form.action1_file instanceof File) {
-      try {
-        const uploadFormData = new FormData();
-        uploadFormData.append('file', form.action1_file);
+    // Add visa data for international
+    if (isInternational) {
+      const processedVisaForms = [];
+      
+      for (const form of visaFormItems) {
+        const processedForm = { ...form };
         
-        const uploadResponse = await fetch(`${baseurl}/api/mice/upload-visa-file`, {
-          method: 'POST',
-          body: uploadFormData
-        });
-        
-        const uploadResult = await uploadResponse.json();
-        if (uploadResult.success) {
-          processedForm.action1_file = uploadResult.fileName;
-        } else {
-          console.error('Failed to upload PDF file');
-          processedForm.action1_file = null;
+        if (form.action1_file && typeof form.action1_file !== 'string' && form.action1_file instanceof File) {
+          try {
+            const uploadFormData = new FormData();
+            uploadFormData.append('file', form.action1_file);
+            
+            const uploadResponse = await fetch(`${baseurl}/api/mice/upload-visa-file`, {
+              method: 'POST',
+              body: uploadFormData
+            });
+            
+            const uploadResult = await uploadResponse.json();
+            if (uploadResult.success) {
+              processedForm.action1_file = uploadResult.fileName;
+            }
+          } catch (err) {
+            console.error('Error uploading PDF file:', err);
+          }
         }
-      } catch (err) {
-        console.error('Error uploading PDF file:', err);
-        processedForm.action1_file = null;
-      }
-    } else if (form.action1_file && typeof form.action1_file === 'string') {
-      processedForm.action1_file = form.action1_file; // Keep existing filename
-    } else {
-      processedForm.action1_file = null;
-    }
-    
-    // Handle Word file uploads (action2_file)
-    if (form.action2_file && typeof form.action2_file !== 'string' && form.action2_file instanceof File) {
-      try {
-        const uploadFormData = new FormData();
-        uploadFormData.append('file', form.action2_file);
         
-        const uploadResponse = await fetch(`${baseurl}/api/mice/upload-visa-file`, {
-          method: 'POST',
-          body: uploadFormData
-        });
-        
-        const uploadResult = await uploadResponse.json();
-        if (uploadResult.success) {
-          processedForm.action2_file = uploadResult.fileName;
-        } else {
-          console.error('Failed to upload Word file');
-          processedForm.action2_file = null;
+        if (form.action2_file && typeof form.action2_file !== 'string' && form.action2_file instanceof File) {
+          try {
+            const uploadFormData = new FormData();
+            uploadFormData.append('file', form.action2_file);
+            
+            const uploadResponse = await fetch(`${baseurl}/api/mice/upload-visa-file`, {
+              method: 'POST',
+              body: uploadFormData
+            });
+            
+            const uploadResult = await uploadResponse.json();
+            if (uploadResult.success) {
+              processedForm.action2_file = uploadResult.fileName;
+            }
+          } catch (err) {
+            console.error('Error uploading Word file:', err);
+          }
         }
-      } catch (err) {
-        console.error('Error uploading Word file:', err);
-        processedForm.action2_file = null;
+        
+        processedVisaForms.push(processedForm);
       }
-    } else if (form.action2_file && typeof form.action2_file === 'string') {
-      processedForm.action2_file = form.action2_file; // Keep existing filename
-    } else {
-      processedForm.action2_file = null;
+      
+      payload.visa_data = {
+        tourist_visa: touristVisaItems,
+        transit_visa: transitVisaItems,
+        business_visa: businessVisaItems,
+        visa_forms: processedVisaForms,
+        currency: [...currencyItems, ...freeFlowCurrencyEntries],
+        visa_fees: visaFeesRows,
+        submission: submissionRows,
+        tourist_visa_remarks: touristVisaRemarks || ''
+      };
     }
-    
-    processedVisaForms.push(processedForm);
-  }
-  
-  payload.visa_data = {
-    tourist_visa: touristVisaItems,
-    transit_visa: transitVisaItems,
-    business_visa: businessVisaItems,
-    visa_forms: processedVisaForms,
-    currency: [...currencyItems, ...freeFlowCurrencyEntries],
-    visa_fees: visaFeesRows,
-    submission: submissionRows,
-    tourist_visa_remarks: touristVisaRemarks || ''
-  };
-}
 
     const detailsEndpoint = isInternational
       ? `${baseurl}/api/mice/international-details/${savedMiceId}`
       : `${baseurl}/api/mice/domestic-details/${savedMiceId}`;
 
-    console.log('Saving details to endpoint:', detailsEndpoint);
-    console.log('Mice ID:', savedMiceId);
-    console.log('Type:', isInternational ? 'international' : 'domestic');
-    
     const response = await fetch(detailsEndpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -2060,10 +2140,8 @@ if (isInternational) {
         body: formDataImages
       });
       
-      const uploadResult = await uploadResponse.json();
-      
       if (!uploadResponse.ok) {
-        setError('Details saved but images upload failed: ' + (uploadResult.error || 'Unknown error'));
+        setError('Details saved but images upload failed');
       } else {
         setSuccess('Mice details and images saved successfully!');
       }
@@ -2071,7 +2149,6 @@ if (isInternational) {
       setSuccess('Mice details saved successfully!');
     }
     
-    // Navigate back to the appropriate list based on type
     setTimeout(() => {
       navigate('/mice');
     }, 2000);
@@ -2083,6 +2160,7 @@ if (isInternational) {
     setLoading(false);
   }
 };
+
 
   const handleSaveClick = () => {
     if (isLastTab) {
@@ -2242,6 +2320,15 @@ if (isInternational) {
               {/* Tab 1: Basic Details with City Entries */}
               <Tab eventKey="basic" title="Basic Details">
 
+                  <Alert variant="info" className="mb-3">
+    <small>
+      <strong>Note:</strong> The "Mice Name" will be automatically set to the first City Name you enter.
+      {!isEditMode && cityEntries[0]?.cityName && (
+        <span> Current Mice Name: <strong>{formData.mice_name}</strong></span>
+      )}
+    </small>
+  </Alert>
+
                 <Row>
                   <Col md={6}>
                     <Form.Group className="mb-3">
@@ -2252,7 +2339,14 @@ if (isInternational) {
                         value={formData.mice_name}
                         onChange={handleBasicChange}
                         placeholder="Enter exhibition name"
+                        readOnly={!isEditMode} // Make read-only for new records
                       />
+
+                        {!isEditMode && (
+          <Form.Text className="text-muted">
+            Mice name will be automatically set to the city name you enter below
+          </Form.Text>
+        )}
                     </Form.Group>
 
                     <Row className="g-3 mb-3">
