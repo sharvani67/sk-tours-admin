@@ -74,9 +74,9 @@ const InternationalMiceForm = ({
     return;
   }
 
-  const validEntries = cityEntries.filter(entry => 
-    entry.cityName.trim() !== '' && entry.price > 0
-  );
+ const validEntries = cityEntries.filter(entry => 
+  entry.cityName.trim() !== '' && entry.price && entry.price.toString().trim() !== ''
+);
 
   if (validEntries.length === 0) {
     setError('Please fill in city details');
@@ -214,16 +214,17 @@ const InternationalMiceForm = ({
                   
                   <Col md={4}>
                     <Form.Group className="mb-3">
-                      <Form.Label>Price (₹) *</Form.Label>
+                      <Form.Label>Price *</Form.Label>
                       <Form.Control
-                        type="number"
+                        type="text"
                         placeholder="Enter price"
                         value={entry.price}
                         onChange={(e) => handleCityChange(entry.id, 'price', e.target.value)}
                         required
-                        min="0"
-                        step="0.01"
                       />
+                      <Form.Text className="text-muted">
+                        You can enter alphanumeric values like "₹1000", "$500", "On Request", etc.
+                      </Form.Text>
                     </Form.Group>
                   </Col>
                 </Row>

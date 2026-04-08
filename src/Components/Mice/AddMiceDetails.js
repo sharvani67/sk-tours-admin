@@ -1,3 +1,5 @@
+// AddMiceDetails.js - Completely Fixed Version with Prefill Functionality
+
 import React, { useState, useEffect } from 'react';
 import {
   Container,
@@ -16,44 +18,29 @@ import {
 import { useNavigate, useParams } from 'react-router-dom';
 import Navbar from '../../Shared/Navbar/Navbar';
 import { baseurl } from '../../Api/Baseurl';
-import { FaPencilAlt, FaTrash, FaPlus, } from 'react-icons/fa';
-
 import { Pencil, Trash } from 'react-bootstrap-icons';
 
 const AddMiceDetails = () => {
   const navigate = useNavigate();
-
-
   const { id, type } = useParams();
-const isEditMode = !!id && id !== 'new';
+  const isEditMode = !!id && id !== 'new';
 
-// Get type from URL path
-const getTypeFromPath = () => {
-  const path = window.location.pathname;
-  if (path.includes('/domestic-details/')) return 'domestic';
-  if (path.includes('/international-details/')) return 'international';
-  return type || 'domestic';
-};
+  const getTypeFromPath = () => {
+    const path = window.location.pathname;
+    if (path.includes('/domestic-details/')) return 'domestic';
+    if (path.includes('/international-details/')) return 'international';
+    return type || 'domestic';
+  };
 
-const miceType = getTypeFromPath();
-const isInternational = miceType === 'international';
+  const miceType = getTypeFromPath();
+  const isInternational = miceType === 'international';
 
-console.log('URL Path:', window.location.pathname);
-console.log('Extracted Type:', miceType);
-console.log('Is International:', isInternational);
-console.log('ID:', id);
-
-
-
-
-
-   
-
-  // TAB_LIST based on mice type
+  // TAB_LIST with separate Departures and Tour Cost tabs
   const TAB_LIST = isInternational ? [
     'basic',
     'itineraries',
     'departures',
+    'tourCost',
     'optionalTours',
     'emiOptions',
     'inclusions',
@@ -69,6 +56,7 @@ console.log('ID:', id);
     'basic',
     'itineraries',
     'departures',
+    'tourCost',
     'optionalTours',
     'emiOptions',
     'inclusions',
@@ -94,10 +82,7 @@ console.log('ID:', id);
   const [cityEntries, setCityEntries] = useState([]);
   const [showCitySection, setShowCitySection] = useState(true);
 
-
-
-
-  // BASIC DETAILS
+  // BASIC DETAILS with prefill values
   const [formData, setFormData] = useState({
     mice_name: '',
     mice_type: type || 'domestic',
@@ -105,13 +90,13 @@ console.log('ID:', id);
     duration_days: '',
     base_price_adult: '',
     emi_price: '',
-    cost_remarks: '',
-    hotel_remarks: '',
-    transport_remarks: '',
-    booking_poi_remarks: '',
-    cancellation_remarks: '',
-    emi_remarks: '',
-    optional_tour_remarks: ''
+    cost_remarks: "Please note that while the mice price has been indicated, it may vary based on the season. We therefore kindly request you to confirm the final price before proceeding with your booking.",
+    hotel_remarks: "Hotel categories are subject to availability. Standard, Deluxe, and Executive categories based on room types and amenities.",
+    transport_remarks: "Transport arrangements are subject to availability and may change based on the final itinerary.",
+    booking_poi_remarks: "Booking amount is non-refundable. Balance payment to be made as per the payment schedule.",
+    cancellation_remarks: "Cancellation charges apply as per the policy mentioned above. No refunds for no-shows.",
+    emi_remarks: "EMI options available with 18% interest rate. Terms and conditions apply.",
+    optional_tour_remarks: "Optional tours are subject to availability and weather conditions. Prices are per person."
   });
 
   // ITINERARIES
@@ -127,24 +112,23 @@ console.log('ID:', id);
   });
   const [itineraries, setItineraries] = useState([]);
 
-  // DEPARTURES
+  // ========== DEPARTURES - FREE FLOW ==========
   const [departureForm, setDepartureForm] = useState({
-    start_date: '',
-    end_date: '',
-    status: 'Available',
-    description: '',
-    standard_twin: '',
-    standard_triple: '',
-    standard_single: '',
-    deluxe_twin: '',
-    deluxe_triple: '',
-    deluxe_single: '',
-    luxury_twin: '',
-    luxury_triple: '',
-    luxury_single: ''
+    description: ''
   });
   const [departures, setDepartures] = useState([]);
   const [editingDepartureIndex, setEditingDepartureIndex] = useState(-1);
+
+  // ========== TOUR COST ==========
+  const [tourCostItem, setTourCostItem] = useState({
+    pax: '',
+    standard_hotel: '',
+    deluxe_hotel: '',
+    executive_hotel: '',
+    remarks: ''
+  });
+  const [tourCosts, setTourCosts] = useState([]);
+  const [editingTourCostIndex, setEditingTourCostIndex] = useState(-1);
 
   // OPTIONAL TOURS
   const [optionalTourItem, setOptionalTourItem] = useState({
@@ -223,7 +207,6 @@ console.log('ID:', id);
     action2_file: null
   });
   
-  // Currency Section
   const [currencyItems, setCurrencyItems] = useState([]);
   const [currencyForm, setCurrencyForm] = useState({
     local_currency: '',
@@ -238,90 +221,40 @@ console.log('ID:', id);
   const [editingFreeFlowCurrencyIndex, setEditingFreeFlowCurrencyIndex] = useState(-1);
   const indianTime = "08:00 AM";
   
-  // Visa Fees
   const [visaFeesRows, setVisaFeesRows] = useState([
-    { 
-      id: 1,
-      type: 'Visa Fee', 
-      tourist: '', 
-      transit: '', 
-      business: '', 
-      tourist_charges: '',
-      transit_charges: '',
-      business_charges: ''
-    },
-    { 
-      id: 2,
-      type: 'VFS Fee', 
-      tourist: '', 
-      transit: '', 
-      business: '', 
-      tourist_charges: '',
-      transit_charges: '',
-      business_charges: ''
-    },
-    { 
-      id: 3,
-      type: 'Other Charges', 
-      tourist: '', 
-      transit: '', 
-      business: '', 
-      tourist_charges: '',
-      transit_charges: '',
-      business_charges: ''
-    }
+    { id: 1, type: 'Visa Fee', tourist: '', transit: '', business: '', tourist_charges: '', transit_charges: '', business_charges: '' },
+    { id: 2, type: 'VFS Fee', tourist: '', transit: '', business: '', tourist_charges: '', transit_charges: '', business_charges: '' },
+    { id: 3, type: 'Other Charges', tourist: '', transit: '', business: '', tourist_charges: '', transit_charges: '', business_charges: '' }
   ]);
   
   const [submissionRows, setSubmissionRows] = useState([
-    { 
-      id: 1,
-      label: 'Passport Submission Day', 
-      tourist: '', 
-      transit: '', 
-      business: '' 
-    },
-    { 
-      id: 2,
-      label: 'Passport Submission Time', 
-      tourist: '', 
-      transit: '', 
-      business: '' 
-    },
-    { 
-      id: 3,
-      label: 'Passport pick up Days', 
-      tourist: '', 
-      transit: '', 
-      business: '' 
-    },
-    { 
-      id: 4,
-      label: 'Passport Pick Up Time', 
-      tourist: '', 
-      transit: '', 
-      business: '' 
-    },
-    { 
-      id: 5,
-      label: 'Biometric requirement', 
-      tourist: '', 
-      transit: '', 
-      business: '' 
-    }
+    { id: 1, label: 'Passport Submission Day', tourist: '', transit: '', business: '' },
+    { id: 2, label: 'Passport Submission Time', tourist: '', transit: '', business: '' },
+    { id: 3, label: 'Passport pick up Days', tourist: '', transit: '', business: '' },
+    { id: 4, label: 'Passport Pick Up Time', tourist: '', transit: '', business: '' },
+    { id: 5, label: 'Biometric requirement', tourist: '', transit: '', business: '' }
   ]);
 
-  // BOOKING POI
+  // BOOKING POI with prefill values
   const [poiText, setPoiText] = useState('');
   const [poiAmount, setPoiAmount] = useState('');
-  const [bookingPois, setBookingPois] = useState([]);
+  const [bookingPois, setBookingPois] = useState([
+    { item: "Per Person Booking Amount", amount_details: "" },
+    { item: "30 Days Prior Per person cost", amount_details: "50% of the mice cost" },
+    { item: "21 Days Prior Per person cost", amount_details: "Balance amount to pay" }
+  ]);
   const [editingPoiIndex, setEditingPoiIndex] = useState(-1);
 
-  // CANCELLATION
+  // CANCELLATION with prefill values
   const [cancelItem, setCancelItem] = useState({
     cancellation_policy: '',
     charges: ''
   });
-  const [cancelPolicies, setCancelPolicies] = useState([]);
+  const [cancelPolicies, setCancelPolicies] = useState([
+    { cancellation_policy: "45 Days to 30 Days Cost per person", charges: "" },
+    { cancellation_policy: "30 Days to 21 Days Cost per person", charges: "50% of mice cost" },
+    { cancellation_policy: "21 Days till Departure date Cost per person", charges: "100% Cancellation applies" }
+  ]);
   const [editingCancelIndex, setEditingCancelIndex] = useState(-1);
 
   // INSTRUCTIONS
@@ -336,24 +269,50 @@ console.log('ID:', id);
   const [replacementFile, setReplacementFile] = useState(null);
   const [replacementPreview, setReplacementPreview] = useState(null);
 
-
-
-    // Auto-sync Mice Name with the first city's City Name
-useEffect(() => {
-  // Only auto-sync for new records (not edit mode)
-  if (!isEditMode && cityEntries.length > 0) {
-    const firstCity = cityEntries[0];
-    if (firstCity && firstCity.cityName && firstCity.cityName.trim() !== '') {
-      // Only update if mice_name is empty or matches previous city name
-      if (!formData.mice_name || formData.mice_name === '') {
-        setFormData(prev => ({
-          ...prev,
-          mice_name: firstCity.cityName.trim()
-        }));
+  // Auto-sync Mice Name with the first city's City Name
+  useEffect(() => {
+    if (!isEditMode && cityEntries.length > 0) {
+      const firstCity = cityEntries[0];
+      if (firstCity && firstCity.cityName && firstCity.cityName.trim() !== '') {
+        if (!formData.mice_name || formData.mice_name === '') {
+          setFormData(prev => ({
+            ...prev,
+            mice_name: firstCity.cityName.trim()
+          }));
+        }
       }
     }
-  }
-}, [cityEntries, isEditMode, formData.mice_name]);
+  }, [cityEntries, isEditMode, formData.mice_name]);
+
+  // Set default city entry on component mount for new records
+  useEffect(() => {
+    if (!isEditMode && cityEntries.length === 0) {
+      if (isInternational) {
+        setCityEntries([{ id: Date.now(), countryName: '', cityName: '', price: '', image: null, imagePreview: '', existingImage: '' }]);
+      } else {
+        setCityEntries([{ id: Date.now(), stateName: '', cityName: '', price: '', image: null, imagePreview: '', existingImage: '' }]);
+      }
+      setShowCitySection(true);
+    }
+  }, [isEditMode, isInternational]);
+
+  // Set international defaults on component mount for new records
+  useEffect(() => {
+    if (!isEditMode && isInternational) {
+      setTouristVisaRemarks(
+        "Visa requirements are subject to change based on embassy regulations. " +
+        "Processing time may vary. It is recommended to apply at least 3-4 weeks before departure. " +
+        "All documents must be original and valid for at least 6 months from the date of return."
+      );
+      
+      setCurrencyItems([
+        { local_currency: "GBP", currency_conversion_1: "1 GBP = ₹105.50", currency_conversion_2: "1 GBP = $1.27", city_name: "London", local_time: "03:33 PM", india_time: indianTime },
+        { local_currency: "USD", currency_conversion_1: "1 USD = ₹83.25", currency_conversion_2: "1 USD = €0.92", city_name: "New York", local_time: "10:03 AM", india_time: indianTime },
+        { local_currency: "AED", currency_conversion_1: "1 AED = ₹22.65", currency_conversion_2: "1 AED = $0.27", city_name: "Dubai", local_time: "06:03 PM", india_time: indianTime },
+        { local_currency: "JPY", currency_conversion_1: "1 JPY = ₹0.55", currency_conversion_2: "1 JPY = $0.0066", city_name: "Tokyo", local_time: "11:03 PM", india_time: indianTime }
+      ]);
+    }
+  }, [isEditMode, isInternational]);
 
   // CITY ENTRY FUNCTIONS
   const addCityEntry = () => {
@@ -380,27 +339,24 @@ useEffect(() => {
     }
   };
 
- const handleCityChange = (id, field, value) => {
-  setCityEntries(cityEntries.map(entry => 
-    entry.id === id ? { ...entry, [field]: value } : entry
-  ));
-  
-  // Auto-sync Mice Name with City Name for new records
-  if (!isEditMode && field === 'cityName') {
-    const updatedEntries = cityEntries.map(entry => 
+  const handleCityChange = (id, field, value) => {
+    setCityEntries(cityEntries.map(entry => 
       entry.id === id ? { ...entry, [field]: value } : entry
-    );
-    // Find the first city with a city name
-    const firstCityWithName = updatedEntries.find(entry => entry.cityName && entry.cityName.trim() !== '');
-    if (firstCityWithName && firstCityWithName.cityName) {
-      setFormData(prev => ({
-        ...prev,
-        mice_name: firstCityWithName.cityName.trim()
-      }));
+    ));
+    
+    if (!isEditMode && field === 'cityName') {
+      const updatedEntries = cityEntries.map(entry => 
+        entry.id === id ? { ...entry, [field]: value } : entry
+      );
+      const firstCityWithName = updatedEntries.find(entry => entry.cityName && entry.cityName.trim() !== '');
+      if (firstCityWithName && firstCityWithName.cityName) {
+        setFormData(prev => ({
+          ...prev,
+          mice_name: firstCityWithName.cityName.trim()
+        }));
+      }
     }
-  }
-};
-
+  };
 
   const handleCityImageChange = (id, e) => {
     const file = e.target.files[0];
@@ -433,16 +389,12 @@ useEffect(() => {
     return Math.round(emi * 100) / 100;
   };
 
-
-
- const getFileUrl = (fileName) => {
-  if (!fileName || typeof fileName !== 'string') return null;
-  if (fileName.startsWith('http')) return fileName;
-  if (fileName.startsWith('/uploads/')) return `${baseurl}${fileName}`;
-  return `${baseurl}/uploads/mice/visa/${fileName}`;
-};
-
-
+  const getFileUrl = (fileName) => {
+    if (!fileName || typeof fileName !== 'string') return null;
+    if (fileName.startsWith('http')) return fileName;
+    if (fileName.startsWith('/uploads/')) return `${baseurl}${fileName}`;
+    return `${baseurl}/uploads/mice/visa/${fileName}`;
+  };
   
   const openFileInNewTab = (url) => {
     if (url) {
@@ -450,6 +402,386 @@ useEffect(() => {
     }
   };
 
+  // ========== DEPARTURES - FREE FLOW FUNCTIONS ==========
+  const handleDepartureChange = (e) => {
+    const { name, value } = e.target;
+    setDepartureForm(prev => ({ ...prev, [name]: value }));
+  };
+
+  const addDeparture = () => {
+    const trimmed = departureForm.description.trim();
+    if (!trimmed) return;
+    
+    const newDeparture = { description: trimmed };
+    
+    if (editingDepartureIndex !== -1) {
+      const updated = [...departures];
+      updated[editingDepartureIndex] = newDeparture;
+      setDepartures(updated);
+      setEditingDepartureIndex(-1);
+    } else {
+      setDepartures(prev => [...prev, newDeparture]);
+    }
+    
+    setDepartureForm({ description: '' });
+  };
+
+  const editDeparture = (idx) => {
+    const departure = departures[idx];
+    setDepartureForm({ description: departure.description || '' });
+    setEditingDepartureIndex(idx);
+  };
+
+  const handleRemoveDeparture = (idx) => {
+    if (window.confirm('Are you sure you want to remove this departure?')) {
+      setDepartures(prev => prev.filter((_, i) => i !== idx));
+      if (editingDepartureIndex === idx) {
+        setEditingDepartureIndex(-1);
+        setDepartureForm({ description: '' });
+      }
+    }
+  };
+
+  // ========== TOUR COST FUNCTIONS ==========
+  const handleTourCostChange = (e) => {
+    const { name, value } = e.target;
+    setTourCostItem(prev => ({ ...prev, [name]: value }));
+  };
+
+  const addTourCost = () => {
+    if (!tourCostItem.pax) return;
+    
+    const newItem = { ...tourCostItem };
+    
+    if (editingTourCostIndex !== -1) {
+      const updated = [...tourCosts];
+      updated[editingTourCostIndex] = newItem;
+      setTourCosts(updated);
+      setEditingTourCostIndex(-1);
+    } else {
+      setTourCosts(prev => [...prev, newItem]);
+    }
+    
+    setTourCostItem({
+      pax: '',
+      standard_hotel: '',
+      deluxe_hotel: '',
+      executive_hotel: '',
+      remarks: ''
+    });
+  };
+
+  const editTourCostRow = (idx) => {
+    const item = tourCosts[idx];
+    setTourCostItem(item);
+    setEditingTourCostIndex(idx);
+  };
+
+  const removeTourCostRow = (idx) => {
+    if (window.confirm('Are you sure you want to remove this cost row?')) {
+      setTourCosts(prev => prev.filter((_, i) => i !== idx));
+      if (editingTourCostIndex === idx) {
+        setEditingTourCostIndex(-1);
+        setTourCostItem({
+          pax: '',
+          standard_hotel: '',
+          deluxe_hotel: '',
+          executive_hotel: '',
+          remarks: ''
+        });
+      }
+    }
+  };
+
+  // ITINERARY FUNCTIONS
+  const addItineraryDay = () => {
+    const { day, title, description, meals } = itineraryItem;
+    if (!day || !title.trim()) return;
+
+    const selectedMeals = [];
+    if (meals.breakfast) selectedMeals.push('Breakfast');
+    if (meals.lunch) selectedMeals.push('Lunch');
+    if (meals.dinner) selectedMeals.push('Dinner');
+    const mealsString = selectedMeals.join(', ');
+
+    const newItem = {
+      day: Number(day),
+      title: title.trim(),
+      description: description.trim(),
+      meals: mealsString
+    };
+
+    if (editingType === 'itinerary' && editIndex !== -1) {
+      const updated = [...itineraries];
+      updated[editIndex] = newItem;
+      setItineraries(updated);
+      setEditingType('');
+      setEditIndex(-1);
+    } else {
+      setItineraries(prev => [...prev, newItem]);
+    }
+
+    setItineraryItem({
+      day: '',
+      title: '',
+      description: '',
+      meals: { breakfast: false, lunch: false, dinner: false }
+    });
+  };
+
+  const editItinerary = (idx) => {
+    const item = itineraries[idx];
+    const mealsArray = item.meals ? item.meals.split(', ') : [];
+    setItineraryItem({
+      day: item.day,
+      title: item.title,
+      description: item.description || '',
+      meals: {
+        breakfast: mealsArray.includes('Breakfast'),
+        lunch: mealsArray.includes('Lunch'),
+        dinner: mealsArray.includes('Dinner')
+      }
+    });
+    setEditingType('itinerary');
+    setEditIndex(idx);
+  };
+
+  const handleRemoveItinerary = (idx) => {
+    if (window.confirm('Are you sure you want to remove this itinerary?')) {
+      setItineraries(prev => prev.filter((_, i) => i !== idx));
+      if (editingType === 'itinerary' && editIndex === idx) {
+        setEditingType('');
+        setEditIndex(-1);
+        setItineraryItem({
+          day: '',
+          title: '',
+          description: '',
+          meals: { breakfast: false, lunch: false, dinner: false }
+        });
+      }
+    }
+  };
+
+  const handleItineraryChange = (e) => {
+    const { name, value } = e.target;
+    setItineraryItem(prev => ({
+      ...prev,
+      [name]: name === 'day' ? value.replace(/[^0-9]/g, '') : value
+    }));
+  };
+
+  const handleMealsCheckboxChange = (e) => {
+    const { name, checked } = e.target;
+    setItineraryItem(prev => ({
+      ...prev,
+      meals: {
+        ...prev.meals,
+        [name]: checked
+      }
+    }));
+  };
+
+  // OPTIONAL TOUR FUNCTIONS
+  const addOptionalTourRow = () => {
+    if (!optionalTourItem.tour_name.trim()) return;
+
+    const processedItem = { ...optionalTourItem };
+
+    if (editingOptionalTourIndex !== -1) {
+      const updated = [...optionalTours];
+      updated[editingOptionalTourIndex] = processedItem;
+      setOptionalTours(updated);
+      setEditingOptionalTourIndex(-1);
+    } else {
+      setOptionalTours(prev => [...prev, processedItem]);
+    }
+
+    setOptionalTourItem({
+      tour_name: '',
+      adult_price: '',
+      child_price: ''
+    });
+  };
+
+  const editOptionalTourRow = (idx) => {
+    const item = optionalTours[idx];
+    setOptionalTourItem(item);
+    setEditingOptionalTourIndex(idx);
+  };
+
+  const removeOptionalTourRow = (idx) => {
+    if (window.confirm('Are you sure you want to remove this optional tour?')) {
+      setOptionalTours(prev => prev.filter((_, i) => i !== idx));
+      if (editingOptionalTourIndex === idx) {
+        setEditingOptionalTourIndex(-1);
+        setOptionalTourItem({
+          tour_name: '',
+          adult_price: '',
+          child_price: ''
+        });
+      }
+    }
+  };
+
+  const handleOptionalTourChange = (e) => {
+    const { name, value } = e.target;
+    setOptionalTourItem(prev => ({ ...prev, [name]: value }));
+  };
+
+  // INCLUSIONS & EXCLUSIONS FUNCTIONS
+  const handleAddInclusion = () => {
+    const trimmed = inclusionText.trim();
+    if (!trimmed) return;
+    
+    if (editingInclusionIndex !== -1) {
+      const updated = [...inclusions];
+      updated[editingInclusionIndex] = trimmed;
+      setInclusions(updated);
+      setEditingInclusionIndex(-1);
+    } else {
+      setInclusions(prev => [...prev, trimmed]);
+    }
+    
+    setInclusionText('');
+  };
+
+  const editInclusion = (idx) => {
+    const inclusion = inclusions[idx];
+    setInclusionText(inclusion);
+    setEditingInclusionIndex(idx);
+  };
+
+  const handleRemoveInclusion = (idx) => {
+    if (window.confirm('Are you sure you want to remove this inclusion?')) {
+      setInclusions(prev => prev.filter((_, i) => i !== idx));
+      if (editingInclusionIndex === idx) {
+        setEditingInclusionIndex(-1);
+        setInclusionText('');
+      }
+    }
+  };
+
+  const handleAddExclusion = () => {
+    const trimmed = exclusionText.trim();
+    if (!trimmed) return;
+    
+    if (editingExclusionIndex !== -1) {
+      const updated = [...exclusions];
+      updated[editingExclusionIndex] = trimmed;
+      setExclusions(updated);
+      setEditingExclusionIndex(-1);
+    } else {
+      setExclusions(prev => [...prev, trimmed]);
+    }
+    
+    setExclusionText('');
+  };
+
+  const editExclusion = (idx) => {
+    const exclusion = exclusions[idx];
+    setExclusionText(exclusion);
+    setEditingExclusionIndex(idx);
+  };
+
+  const handleRemoveExclusion = (idx) => {
+    if (window.confirm('Are you sure you want to remove this exclusion?')) {
+      setExclusions(prev => prev.filter((_, i) => i !== idx));
+      if (editingExclusionIndex === idx) {
+        setEditingExclusionIndex(-1);
+        setExclusionText('');
+      }
+    }
+  };
+
+  // TRANSPORT FUNCTIONS
+  const addTransportRow = () => {
+    if (!transportItem.description.trim()) return;
+    
+    if (editingTransportIndex !== -1) {
+      const updated = [...transports];
+      updated[editingTransportIndex] = { description: transportItem.description.trim() };
+      setTransports(updated);
+      setEditingTransportIndex(-1);
+    } else {
+      setTransports(prev => [...prev, { description: transportItem.description.trim() }]);
+    }
+
+    setTransportItem({ description: '' });
+  };
+
+  const editTransportRow = (idx) => {
+    const item = transports[idx];
+    setTransportItem({ description: item.description || '' });
+    setEditingTransportIndex(idx);
+  };
+
+  const removeTransportRow = (idx) => {
+    if (window.confirm('Are you sure you want to remove this transport?')) {
+      setTransports(prev => prev.filter((_, i) => i !== idx));
+      if (editingTransportIndex === idx) {
+        setEditingTransportIndex(-1);
+        setTransportItem({ description: '' });
+      }
+    }
+  };
+
+  const handleTransportChange = (e) => {
+    const { name, value } = e.target;
+    setTransportItem(prev => ({ ...prev, [name]: value }));
+  };
+
+  // HOTEL FUNCTIONS
+  const addHotelRow = () => {
+    if (!hotelItem.city.trim()) return;
+    
+    if (editingHotelIndex !== -1) {
+      const updated = [...hotelRows];
+      updated[editingHotelIndex] = { ...hotelItem };
+      setHotelRows(updated);
+      setEditingHotelIndex(-1);
+    } else {
+      setHotelRows(prev => [...prev, { ...hotelItem }]);
+    }
+
+    setHotelItem({
+      city: '',
+      nights: '',
+      standard_hotel_name: '',
+      deluxe_hotel_name: '',
+      executive_hotel_name: '',
+      remarks: ''
+    });
+  };
+
+  const editHotelRow = (idx) => {
+    const item = hotelRows[idx];
+    setHotelItem(item);
+    setEditingHotelIndex(idx);
+  };
+
+  const removeHotelRow = (idx) => {
+    if (window.confirm('Are you sure you want to remove this hotel?')) {
+      setHotelRows(prev => prev.filter((_, i) => i !== idx));
+      if (editingHotelIndex === idx) {
+        setEditingHotelIndex(-1);
+        setHotelItem({
+          city: '',
+          nights: '',
+          standard_hotel_name: '',
+          deluxe_hotel_name: '',
+          executive_hotel_name: '',
+          remarks: ''
+        });
+      }
+    }
+  };
+
+  const handleHotelChange = (e) => {
+    const { name, value } = e.target;
+    setHotelItem(prev => ({ ...prev, [name]: value }));
+  };
+
+  // VISA FUNCTIONS
   const handleVisaFormFileChange = (index, action, file) => {
     if (!file) return;
     const updated = [...visaFormItems];
@@ -796,415 +1128,12 @@ useEffect(() => {
     }));
   };
 
-  // HANDLER FUNCTIONS
-  const handleBasicChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleLoanAmountChange = (value) => {
-    setEmiLoanAmount(value);
-  };
-
-  const addItineraryDay = () => {
-    const { day, title, description, meals } = itineraryItem;
-    if (!day || !title.trim()) return;
-
-    const selectedMeals = [];
-    if (meals.breakfast) selectedMeals.push('Breakfast');
-    if (meals.lunch) selectedMeals.push('Lunch');
-    if (meals.dinner) selectedMeals.push('Dinner');
-    const mealsString = selectedMeals.join(', ');
-
-    const newItem = {
-      day: Number(day),
-      title: title.trim(),
-      description: description.trim(),
-      meals: mealsString
-    };
-
-    if (editingType === 'itinerary' && editIndex !== -1) {
-      const updated = [...itineraries];
-      updated[editIndex] = newItem;
-      setItineraries(updated);
-      setEditingType('');
-      setEditIndex(-1);
-    } else {
-      setItineraries(prev => [...prev, newItem]);
-    }
-
-    setItineraryItem({
-      day: '',
-      title: '',
-      description: '',
-      meals: { breakfast: false, lunch: false, dinner: false }
-    });
-  };
-
-  const editItinerary = (idx) => {
-    const item = itineraries[idx];
-    const mealsArray = item.meals ? item.meals.split(', ') : [];
-    setItineraryItem({
-      day: item.day,
-      title: item.title,
-      description: item.description || '',
-      meals: {
-        breakfast: mealsArray.includes('Breakfast'),
-        lunch: mealsArray.includes('Lunch'),
-        dinner: mealsArray.includes('Dinner')
-      }
-    });
-    setEditingType('itinerary');
-    setEditIndex(idx);
-  };
-
-  const handleRemoveItinerary = (idx) => {
-    if (window.confirm('Are you sure you want to remove this itinerary?')) {
-      setItineraries(prev => prev.filter((_, i) => i !== idx));
-      if (editingType === 'itinerary' && editIndex === idx) {
-        setEditingType('');
-        setEditIndex(-1);
-        setItineraryItem({
-          day: '',
-          title: '',
-          description: '',
-          meals: { breakfast: false, lunch: false, dinner: false }
-        });
-      }
-    }
-  };
-
-  const handleItineraryChange = (e) => {
-    const { name, value } = e.target;
-    setItineraryItem(prev => ({
-      ...prev,
-      [name]: name === 'day' ? value.replace(/[^0-9]/g, '') : value
-    }));
-  };
-
-  const handleMealsCheckboxChange = (e) => {
-    const { name, checked } = e.target;
-    setItineraryItem(prev => ({
-      ...prev,
-      meals: {
-        ...prev.meals,
-        [name]: checked
-      }
-    }));
-  };
-
-  const handleDepartureChange = (e) => {
-    const { name, value } = e.target;
-    const numericFields = [
-      'standard_twin', 'standard_triple', 'standard_single',
-      'deluxe_twin', 'deluxe_triple', 'deluxe_single',
-      'luxury_twin', 'luxury_triple', 'luxury_single'
-    ];
-
-    setDepartureForm(prev => ({
-      ...prev,
-      [name]: numericFields.includes(name)
-        ? value === '' ? '' : Number(value)
-        : value
-    }));
-  };
-
-  const addDeparture = () => {
-    if (!departureForm.start_date || !departureForm.end_date) {
-      setError('Please enter both start and end dates');
-      return;
-    }
-
-    const departureData = {
-      ...departureForm,
-      start_date: departureForm.start_date,
-      end_date: departureForm.end_date,
-      status: departureForm.status || 'Available',
-      description: departureForm.description || '',
-      standard_twin: departureForm.standard_twin ? Number(departureForm.standard_twin) : null,
-      standard_triple: departureForm.standard_triple ? Number(departureForm.standard_triple) : null,
-      standard_single: departureForm.standard_single ? Number(departureForm.standard_single) : null,
-      deluxe_twin: departureForm.deluxe_twin ? Number(departureForm.deluxe_twin) : null,
-      deluxe_triple: departureForm.deluxe_triple ? Number(departureForm.deluxe_triple) : null,
-      deluxe_single: departureForm.deluxe_single ? Number(departureForm.deluxe_single) : null,
-      luxury_twin: departureForm.luxury_twin ? Number(departureForm.luxury_twin) : null,
-      luxury_triple: departureForm.luxury_triple ? Number(departureForm.luxury_triple) : null,
-      luxury_single: departureForm.luxury_single ? Number(departureForm.luxury_single) : null
-    };
-
-    if (editingDepartureIndex !== -1) {
-      const updatedDepartures = [...departures];
-      updatedDepartures[editingDepartureIndex] = departureData;
-      setDepartures(updatedDepartures);
-      setEditingDepartureIndex(-1);
-      setSuccess('Departure updated successfully');
-    } else {
-      setDepartures(prev => [...prev, departureData]);
-      setSuccess('Departure added successfully');
-    }
-
-    setDepartureForm({
-      start_date: '',
-      end_date: '',
-      status: 'Available',
-      description: '',
-      standard_twin: '',
-      standard_triple: '',
-      standard_single: '',
-      deluxe_twin: '',
-      deluxe_triple: '',
-      deluxe_single: '',
-      luxury_twin: '',
-      luxury_triple: '',
-      luxury_single: ''
-    });
-  };
-
-  const editDeparture = (idx) => {
-    const departure = departures[idx];
-    setDepartureForm({
-      start_date: departure.start_date || '',
-      end_date: departure.end_date || '',
-      status: departure.status || 'Available',
-      description: departure.description || '',
-      standard_twin: departure.standard_twin || '',
-      standard_triple: departure.standard_triple || '',
-      standard_single: departure.standard_single || '',
-      deluxe_twin: departure.deluxe_twin || '',
-      deluxe_triple: departure.deluxe_triple || '',
-      deluxe_single: departure.deluxe_single || '',
-      luxury_twin: departure.luxury_twin || '',
-      luxury_triple: departure.luxury_triple || '',
-      luxury_single: departure.luxury_single || ''
-    });
-    setEditingDepartureIndex(idx);
-  };
-
-  const handleRemoveDeparture = (idx) => {
-    if (window.confirm('Are you sure you want to remove this departure?')) {
-      setDepartures(prev => prev.filter((_, i) => i !== idx));
-      if (editingDepartureIndex === idx) {
-        setEditingDepartureIndex(-1);
-        setDepartureForm({
-          start_date: '',
-          end_date: '',
-          status: 'Available',
-          description: '',
-          standard_twin: '',
-          standard_triple: '',
-          standard_single: '',
-          deluxe_twin: '',
-          deluxe_triple: '',
-          deluxe_single: '',
-          luxury_twin: '',
-          luxury_triple: '',
-          luxury_single: ''
-        });
-      }
-    }
-  };
-
-  const addOptionalTourRow = () => {
-    if (!optionalTourItem.tour_name.trim()) return;
-
-    const processedItem = { ...optionalTourItem };
-
-    if (editingOptionalTourIndex !== -1) {
-      const updated = [...optionalTours];
-      updated[editingOptionalTourIndex] = processedItem;
-      setOptionalTours(updated);
-      setEditingOptionalTourIndex(-1);
-    } else {
-      setOptionalTours(prev => [...prev, processedItem]);
-    }
-
-    setOptionalTourItem({
-      tour_name: '',
-      adult_price: '',
-      child_price: ''
-    });
-  };
-
-  const editOptionalTourRow = (idx) => {
-    const item = optionalTours[idx];
-    setOptionalTourItem(item);
-    setEditingOptionalTourIndex(idx);
-  };
-
-  const removeOptionalTourRow = (idx) => {
-    if (window.confirm('Are you sure you want to remove this optional tour?')) {
-      setOptionalTours(prev => prev.filter((_, i) => i !== idx));
-      if (editingOptionalTourIndex === idx) {
-        setEditingOptionalTourIndex(-1);
-        setOptionalTourItem({
-          tour_name: '',
-          adult_price: '',
-          child_price: ''
-        });
-      }
-    }
-  };
-
-  const handleOptionalTourChange = (e) => {
-    const { name, value } = e.target;
-    setOptionalTourItem(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleAddInclusion = () => {
-    const trimmed = inclusionText.trim();
-    if (!trimmed) return;
-    
-    if (editingInclusionIndex !== -1) {
-      const updated = [...inclusions];
-      updated[editingInclusionIndex] = trimmed;
-      setInclusions(updated);
-      setEditingInclusionIndex(-1);
-    } else {
-      setInclusions(prev => [...prev, trimmed]);
-    }
-    
-    setInclusionText('');
-  };
-
-  const editInclusion = (idx) => {
-    const inclusion = inclusions[idx];
-    setInclusionText(inclusion);
-    setEditingInclusionIndex(idx);
-  };
-
-  const handleRemoveInclusion = (idx) => {
-    if (window.confirm('Are you sure you want to remove this inclusion?')) {
-      setInclusions(prev => prev.filter((_, i) => i !== idx));
-      if (editingInclusionIndex === idx) {
-        setEditingInclusionIndex(-1);
-        setInclusionText('');
-      }
-    }
-  };
-
-  const handleAddExclusion = () => {
-    const trimmed = exclusionText.trim();
-    if (!trimmed) return;
-    
-    if (editingExclusionIndex !== -1) {
-      const updated = [...exclusions];
-      updated[editingExclusionIndex] = trimmed;
-      setExclusions(updated);
-      setEditingExclusionIndex(-1);
-    } else {
-      setExclusions(prev => [...prev, trimmed]);
-    }
-    
-    setExclusionText('');
-  };
-
-  const editExclusion = (idx) => {
-    const exclusion = exclusions[idx];
-    setExclusionText(exclusion);
-    setEditingExclusionIndex(idx);
-  };
-
-  const handleRemoveExclusion = (idx) => {
-    if (window.confirm('Are you sure you want to remove this exclusion?')) {
-      setExclusions(prev => prev.filter((_, i) => i !== idx));
-      if (editingExclusionIndex === idx) {
-        setEditingExclusionIndex(-1);
-        setExclusionText('');
-      }
-    }
-  };
-
-  const addTransportRow = () => {
-    if (!transportItem.description.trim()) return;
-    
-    if (editingTransportIndex !== -1) {
-      const updated = [...transports];
-      updated[editingTransportIndex] = { description: transportItem.description.trim() };
-      setTransports(updated);
-      setEditingTransportIndex(-1);
-    } else {
-      setTransports(prev => [...prev, { description: transportItem.description.trim() }]);
-    }
-
-    setTransportItem({ description: '' });
-  };
-
-  const editTransportRow = (idx) => {
-    const item = transports[idx];
-    setTransportItem({ description: item.description || '' });
-    setEditingTransportIndex(idx);
-  };
-
-  const removeTransportRow = (idx) => {
-    if (window.confirm('Are you sure you want to remove this transport?')) {
-      setTransports(prev => prev.filter((_, i) => i !== idx));
-      if (editingTransportIndex === idx) {
-        setEditingTransportIndex(-1);
-        setTransportItem({ description: '' });
-      }
-    }
-  };
-
-  const handleTransportChange = (e) => {
-    const { name, value } = e.target;
-    setTransportItem(prev => ({ ...prev, [name]: value }));
-  };
-
-  const addHotelRow = () => {
-    if (!hotelItem.city.trim()) return;
-    
-    if (editingHotelIndex !== -1) {
-      const updated = [...hotelRows];
-      updated[editingHotelIndex] = { ...hotelItem };
-      setHotelRows(updated);
-      setEditingHotelIndex(-1);
-    } else {
-      setHotelRows(prev => [...prev, { ...hotelItem }]);
-    }
-
-    setHotelItem({
-      city: '',
-      nights: '',
-      standard_hotel_name: '',
-      deluxe_hotel_name: '',
-      executive_hotel_name: '',
-      remarks: ''
-    });
-  };
-
-  const editHotelRow = (idx) => {
-    const item = hotelRows[idx];
-    setHotelItem(item);
-    setEditingHotelIndex(idx);
-  };
-
-  const removeHotelRow = (idx) => {
-    if (window.confirm('Are you sure you want to remove this hotel?')) {
-      setHotelRows(prev => prev.filter((_, i) => i !== idx));
-      if (editingHotelIndex === idx) {
-        setEditingHotelIndex(-1);
-        setHotelItem({
-          city: '',
-          nights: '',
-          standard_hotel_name: '',
-          deluxe_hotel_name: '',
-          executive_hotel_name: '',
-          remarks: ''
-        });
-      }
-    }
-  };
-
-  const handleHotelChange = (e) => {
-    const { name, value } = e.target;
-    setHotelItem(prev => ({ ...prev, [name]: value }));
-  };
-
+  // BOOKING POI FUNCTIONS
   const addPoi = () => {
     const txt = poiText.trim();
     if (!txt) return;
     
-    const newPoi = { item: poiText, amount_details: poiAmount };
+    const newPoi = { item: txt, amount_details: poiAmount };
     
     if (editingPoiIndex !== -1) {
       const updated = [...bookingPois];
@@ -1237,6 +1166,7 @@ useEffect(() => {
     }
   };
 
+  // CANCELLATION FUNCTIONS
   const addCancelRow = () => {
     if (!cancelItem.cancellation_policy.trim()) return;
     
@@ -1273,6 +1203,7 @@ useEffect(() => {
     setCancelItem(prev => ({ ...prev, [name]: value }));
   };
 
+  // INSTRUCTIONS FUNCTIONS
   const addInstruction = () => {
     const txt = instructionText.trim();
     if (!txt) return;
@@ -1305,6 +1236,7 @@ useEffect(() => {
     }
   };
 
+  // IMAGE FUNCTIONS
   const handleImageChange = (e) => {
     const files = e.target.files ? Array.from(e.target.files) : [];
     setImageFiles(files);
@@ -1428,6 +1360,502 @@ useEffect(() => {
     }
   };
 
+  // NAVIGATION FUNCTIONS
+  const handleBasicChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleLoanAmountChange = (value) => {
+    setEmiLoanAmount(value);
+  };
+
+  useEffect(() => {
+    if (emiLoanAmount && !isNaN(emiLoanAmount) && emiLoanAmount > 0) {
+      const updatedOptions = emiOptions.map(option => ({
+        ...option,
+        loan_amount: emiLoanAmount,
+        emi: calculateEMI(emiLoanAmount, option.months, emiInterestRate)
+      }));
+      setEmiOptions(updatedOptions);
+    }
+  }, [emiLoanAmount, emiInterestRate]);
+
+  const loadMiceData = async () => {
+    try {
+      setLoading(true);
+      setError('');
+      
+      const currentMiceType = miceType;
+      const endpoint = currentMiceType === 'domestic' 
+        ? `${baseurl}/api/mice/domestic-details/${id}`
+        : `${baseurl}/api/mice/international-details/${id}`;
+      
+      console.log('Loading mice data from:', endpoint);
+      
+      const response = await fetch(endpoint);
+      
+      if (!response.ok) {
+        throw new Error(`Failed to fetch mice data: ${response.status} ${response.statusText}`);
+      }
+      
+      const result = await response.json();
+
+      if (result.success && result.data) {
+        const data = result.data;
+        
+        // Load city data
+        if (data.mice_city) {
+          setFormData(prev => ({
+            ...prev,
+            mice_name: data.mice_city.city_name || '',
+            mice_type: currentMiceType
+          }));
+          
+          let newCityEntries = [];
+          if (currentMiceType === 'international') {
+            newCityEntries = [{
+              id: data.mice_city.id || Date.now(),
+              countryName: data.mice_city.country_name || '',
+              cityName: data.mice_city.city_name || '',
+              price: data.mice_city.price || '',
+              image: null,
+              imagePreview: '',
+              existingImage: data.mice_city.image || ''
+            }];
+          } else {
+            newCityEntries = [{
+              id: data.mice_city.id || Date.now(),
+              stateName: data.mice_city.state_name || '',
+              cityName: data.mice_city.city_name || '',
+              price: data.mice_city.price || '',
+              image: null,
+              imagePreview: '',
+              existingImage: data.mice_city.image || ''
+            }];
+          }
+          setCityEntries(newCityEntries);
+          setShowCitySection(true);
+        }
+
+        // Load tour data with remarks
+        if (data.tours && data.tours.length > 0) {
+          const tour = data.tours[0];
+          setFormData(prev => ({
+            ...prev,
+            overview: tour.overview || '',
+            duration_days: tour.duration_days || '',
+            base_price_adult: tour.base_price_adult || '',
+            emi_price: tour.emi_price || '',
+            cost_remarks: tour.cost_remarks || prev.cost_remarks,
+            hotel_remarks: tour.hotel_remarks || prev.hotel_remarks,
+            transport_remarks: tour.transport_remarks || prev.transport_remarks,
+            booking_poi_remarks: tour.booking_poi_remarks || prev.booking_poi_remarks,
+            cancellation_remarks: tour.cancellation_remarks || prev.cancellation_remarks,
+            emi_remarks: tour.emi_remarks || prev.emi_remarks,
+            optional_tour_remarks: tour.optional_tour_remarks || prev.optional_tour_remarks
+          }));
+        }
+
+        // Load itineraries
+        if (data.itineraries && Array.isArray(data.itineraries)) {
+          setItineraries(data.itineraries);
+        }
+
+        // Load departures (free flow)
+        if (data.departures && Array.isArray(data.departures)) {
+          setDepartures(data.departures);
+        }
+
+        // Load tour costs
+        if (data.tour_costs && Array.isArray(data.tour_costs)) {
+          setTourCosts(data.tour_costs);
+        }
+
+        // Load optional tours
+        if (data.optionaltours && Array.isArray(data.optionaltours)) {
+          setOptionalTours(data.optionaltours);
+        }
+
+        // Load inclusions
+        if (data.inclusions && Array.isArray(data.inclusions)) {
+          setInclusions(data.inclusions.map(inc => inc.item || inc));
+        }
+
+        // Load exclusions
+        if (data.exclusions && Array.isArray(data.exclusions)) {
+          setExclusions(data.exclusions.map(exc => exc.item || exc));
+        }
+
+        // Load transports
+        if (data.transports && Array.isArray(data.transports)) {
+          setTransports(data.transports);
+        }
+
+        // Load hotels
+        if (data.hotels && Array.isArray(data.hotels)) {
+          setHotelRows(data.hotels);
+        }
+
+        // Load booking POIs
+        if (data.bookingpoi && Array.isArray(data.bookingpoi) && data.bookingpoi.length > 0) {
+          setBookingPois(data.bookingpoi);
+        }
+
+        // Load cancellation policies
+        if (data.cancellationpolicies && Array.isArray(data.cancellationpolicies) && data.cancellationpolicies.length > 0) {
+          setCancelPolicies(data.cancellationpolicies);
+        }
+
+        // Load instructions
+        if (data.instructions && Array.isArray(data.instructions)) {
+          setInstructions(data.instructions.map(inst => inst.item || inst));
+        }
+
+        // Load EMI options
+        if (data.emioptions && Array.isArray(data.emioptions) && data.emioptions.length > 0) {
+          setEmiOptions(data.emioptions);
+          if (data.emioptions[0].loan_amount) {
+            setEmiLoanAmount(data.emioptions[0].loan_amount);
+          }
+        }
+
+        // Load visa data for international
+        if (currentMiceType === 'international') {
+          if (data.tourist_visa && Array.isArray(data.tourist_visa)) {
+            setTouristVisaItems(data.tourist_visa);
+          }
+          if (data.transit_visa && Array.isArray(data.transit_visa)) {
+            setTransitVisaItems(data.transit_visa);
+          }
+          if (data.business_visa && Array.isArray(data.business_visa)) {
+            setBusinessVisaItems(data.business_visa);
+          }
+          if (data.structured_currency && Array.isArray(data.structured_currency)) {
+            setCurrencyItems(data.structured_currency);
+          }
+          if (data.free_flow_currency && Array.isArray(data.free_flow_currency)) {
+            setFreeFlowCurrencyEntries(data.free_flow_currency);
+          }
+          if (data.visa_forms && Array.isArray(data.visa_forms)) {
+            const formattedForms = data.visa_forms.map(form => ({
+              type: form.visa_type,
+              download_action: form.download_action,
+              fill_action: form.fill_action,
+              action1_file: form.action1_file,
+              action2_file: form.action2_file,
+              action1_file_url: form.action1_file ? `${baseurl}/uploads/mice/visa/${form.action1_file}` : null,
+              action2_file_url: form.action2_file ? `${baseurl}/uploads/mice/visa/${form.action2_file}` : null
+            }));
+            setVisaFormItems(formattedForms);
+          }
+          if (data.visa_fees && Array.isArray(data.visa_fees)) {
+            const visaFeeRows = data.visa_fees.map((fee, index) => ({
+              id: fee.fee_id || index + 1,
+              type: fee.row_type,
+              tourist: fee.tourist || '',
+              transit: fee.transit || '',
+              business: fee.business || '',
+              tourist_charges: fee.tourist_charges || '',
+              transit_charges: fee.transit_charges || '',
+              business_charges: fee.business_charges || ''
+            }));
+            setVisaFeesRows(visaFeeRows);
+          }
+          if (data.visa_submission && Array.isArray(data.visa_submission)) {
+            const submissionRowsData = data.visa_submission.map((item, index) => ({
+              id: item.submission_id || index + 1,
+              label: item.label || '',
+              tourist: item.tourist || '',
+              transit: item.transit || '',
+              business: item.business || ''
+            }));
+            setSubmissionRows(submissionRowsData);
+          }
+          if (data.tourist_visa_remarks) {
+            setTouristVisaRemarks(data.tourist_visa_remarks);
+          } else {
+            setTouristVisaRemarks(
+              "Visa requirements are subject to change based on embassy regulations. " +
+              "Processing time may vary. It is recommended to apply at least 3-4 weeks before departure. " +
+              "All documents must be original and valid for at least 6 months from the date of return."
+            );
+          }
+        }
+        
+        // Load images
+        if (data.images && Array.isArray(data.images) && data.images.length > 0) {
+          const processedImages = data.images.map(img => ({
+            ...img,
+            url: img.url.startsWith('http') ? img.url : `${baseurl}${img.url}`
+          }));
+          setExistingImages(processedImages);
+        }
+        
+        setSuccess('Mice data loaded successfully');
+      } else {
+        throw new Error('Invalid data structure received from API');
+      }
+    } catch (err) {
+      console.error('Error loading mice data:', err);
+      setError('Error loading mice data: ' + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (id && id !== 'new') {
+      loadMiceData();
+    }
+  }, [id, miceType]);
+
+  const saveMiceDetails = async () => {
+    if (!cityEntries || cityEntries.length === 0) {
+      setError('Please add at least one city');
+      setActiveTab('basic');
+      return;
+    }
+
+    const validEntries = cityEntries.filter(entry => 
+      entry.cityName && entry.cityName.trim() !== ''
+    );
+
+    if (validEntries.length === 0) {
+      setError('Please fill in city details (City Name is required)');
+      setActiveTab('basic');
+      return;
+    }
+
+    if (!formData.mice_name || formData.mice_name.trim() === '') {
+      setError('Mice Name is required');
+      setActiveTab('basic');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError('');
+      setSuccess('');
+
+      const cityFormData = new FormData();
+      
+      if (isInternational) {
+        const countryNames = validEntries.map(entry => entry.countryName?.trim() || '');
+        const cityNames = validEntries.map(entry => entry.cityName.trim());
+        const prices = validEntries.map(entry => entry.price || '');
+        const existingImages = validEntries.map(entry => entry.existingImage || '').filter(img => img !== '');
+        const existingCityIds = validEntries.map(entry => entry.id).filter(id => typeof id === 'number');
+        
+        cityFormData.append('countryNames', JSON.stringify(countryNames));
+        cityFormData.append('cityNames', JSON.stringify(cityNames));
+        cityFormData.append('prices', JSON.stringify(prices));
+        cityFormData.append('existingImages', JSON.stringify(existingImages));
+        cityFormData.append('existingCityIds', JSON.stringify(existingCityIds));
+        
+        validEntries.forEach(entry => {
+          if (entry.image) {
+            cityFormData.append('images', entry.image);
+          }
+        });
+      } else {
+        const stateNames = validEntries.map(entry => entry.stateName?.trim() || '');
+        const cityNames = validEntries.map(entry => entry.cityName.trim());
+        const prices = validEntries.map(entry => entry.price || '');
+        const existingImages = validEntries.map(entry => entry.existingImage || '').filter(img => img !== '');
+        const existingCityIds = validEntries.map(entry => entry.id).filter(id => typeof id === 'number');
+        
+        cityFormData.append('stateNames', JSON.stringify(stateNames));
+        cityFormData.append('cityNames', JSON.stringify(cityNames));
+        cityFormData.append('prices', JSON.stringify(prices));
+        cityFormData.append('existingImages', JSON.stringify(existingImages));
+        cityFormData.append('existingCityIds', JSON.stringify(existingCityIds));
+        
+        validEntries.forEach(entry => {
+          if (entry.image) {
+            cityFormData.append('images', entry.image);
+          }
+        });
+      }
+
+      let cityResponse;
+      let savedMiceId;
+      
+      if (isEditMode && id && id !== 'new') {
+        const cityEndpoint = isInternational
+          ? `${baseurl}/api/mice/international/${id}`
+          : `${baseurl}/api/mice/domestic/${id}`;
+        
+        cityResponse = await fetch(cityEndpoint, {
+          method: 'PUT',
+          body: cityFormData
+        });
+        savedMiceId = id;
+      } else {
+        const cityEndpoint = isInternational
+          ? `${baseurl}/api/mice/international`
+          : `${baseurl}/api/mice/domestic`;
+        
+        cityResponse = await fetch(cityEndpoint, {
+          method: 'POST',
+          body: cityFormData
+        });
+        
+        const cityResult = await cityResponse.json();
+        if (cityResponse.ok) {
+          savedMiceId = cityResult.id;
+        } else {
+          throw new Error(cityResult.error || 'Error saving city details');
+        }
+      }
+
+      if (!cityResponse.ok) {
+        const errorResult = await cityResponse.json();
+        throw new Error(errorResult.error || 'Error saving city details');
+      }
+
+      if (!isEditMode && !savedMiceId) {
+        const cityResult = await cityResponse.json();
+        savedMiceId = cityResult.id;
+      }
+
+      // Save all details including departures and tour costs
+      const payload = {
+        mice_name: formData.mice_name,
+        duration_days: formData.duration_days,
+        overview: formData.overview,
+        base_price_adult: formData.base_price_adult,
+        emi_price: formData.emi_price,
+        cost_remarks: formData.cost_remarks,
+        hotel_remarks: formData.hotel_remarks,
+        transport_remarks: formData.transport_remarks,
+        booking_poi_remarks: formData.booking_poi_remarks,
+        cancellation_remarks: formData.cancellation_remarks,
+        emi_remarks: formData.emi_remarks,
+        optional_tour_remarks: formData.optional_tour_remarks,
+        itineraries,
+        departures,
+        tour_costs: tourCosts,
+        optional_tours: optionalTours,
+        emi_options: emiOptions,
+        emi_loan_amount: emiLoanAmount,
+        emi_interest_rate: emiInterestRate,
+        inclusions,
+        exclusions,
+        transports,
+        hotels: hotelRows,
+        booking_pois: bookingPois,
+        cancellation_policies: cancelPolicies,
+        instructions
+      };
+
+      if (isInternational) {
+        const processedVisaForms = [];
+        
+        for (const form of visaFormItems) {
+          const processedForm = { ...form };
+          
+          if (form.action1_file && typeof form.action1_file !== 'string' && form.action1_file instanceof File) {
+            try {
+              const uploadFormData = new FormData();
+              uploadFormData.append('file', form.action1_file);
+              
+              const uploadResponse = await fetch(`${baseurl}/api/mice/upload-visa-file`, {
+                method: 'POST',
+                body: uploadFormData
+              });
+              
+              const uploadResult = await uploadResponse.json();
+              if (uploadResult.success) {
+                processedForm.action1_file = uploadResult.fileName;
+              }
+            } catch (err) {
+              console.error('Error uploading PDF file:', err);
+            }
+          }
+          
+          if (form.action2_file && typeof form.action2_file !== 'string' && form.action2_file instanceof File) {
+            try {
+              const uploadFormData = new FormData();
+              uploadFormData.append('file', form.action2_file);
+              
+              const uploadResponse = await fetch(`${baseurl}/api/mice/upload-visa-file`, {
+                method: 'POST',
+                body: uploadFormData
+              });
+              
+              const uploadResult = await uploadResponse.json();
+              if (uploadResult.success) {
+                processedForm.action2_file = uploadResult.fileName;
+              }
+            } catch (err) {
+              console.error('Error uploading Word file:', err);
+            }
+          }
+          
+          processedVisaForms.push(processedForm);
+        }
+        
+        payload.visa_data = {
+          tourist_visa: touristVisaItems,
+          transit_visa: transitVisaItems,
+          business_visa: businessVisaItems,
+          visa_forms: processedVisaForms,
+          currency: [...currencyItems, ...freeFlowCurrencyEntries],
+          visa_fees: visaFeesRows,
+          submission: submissionRows,
+          tourist_visa_remarks: touristVisaRemarks || ''
+        };
+      }
+
+      const detailsEndpoint = isInternational
+        ? `${baseurl}/api/mice/international-details/${savedMiceId}`
+        : `${baseurl}/api/mice/domestic-details/${savedMiceId}`;
+
+      const response = await fetch(detailsEndpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Error saving details');
+      }
+
+      if (imageFiles.length > 0) {
+        const formDataImages = new FormData();
+        imageFiles.forEach((file) => {
+          formDataImages.append('images', file);
+        });
+        
+        const uploadResponse = await fetch(`${baseurl}/api/mice/mice-images/upload/${savedMiceId}`, {
+          method: 'POST',
+          body: formDataImages
+        });
+        
+        if (!uploadResponse.ok) {
+          setError('Details saved but images upload failed');
+        } else {
+          setSuccess('Mice details and images saved successfully!');
+        }
+      } else {
+        setSuccess('Mice details saved successfully!');
+      }
+      
+      setTimeout(() => {
+        navigate('/mice');
+      }, 2000);
+      
+    } catch (err) {
+      console.error('Error submitting form:', err);
+      setError('Error submitting form: ' + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const goNext = () => {
     const currentIndex = TAB_LIST.indexOf(activeTab);
     
@@ -1476,692 +1904,6 @@ useEffect(() => {
 
   const isLastTab = activeTab === TAB_LIST[TAB_LIST.length - 1];
 
-  useEffect(() => {
-    if (emiLoanAmount && !isNaN(emiLoanAmount) && emiLoanAmount > 0) {
-      const updatedOptions = emiOptions.map(option => ({
-        ...option,
-        loan_amount: emiLoanAmount,
-        emi: calculateEMI(emiLoanAmount, option.months, emiInterestRate)
-      }));
-      setEmiOptions(updatedOptions);
-    }
-  }, [emiLoanAmount, emiInterestRate]);
-
- useEffect(() => {
-  if (!isEditMode) {
-    setFormData(prev => ({
-      ...prev,
-      cost_remarks: "Please note that while the mice price has been indicated, it may vary based on the season. We therefore kindly request you to confirm the final price before proceeding with your booking.",
-      hotel_remarks: "Hotel categories are subject to availability. Standard, Deluxe, and Executive categories based on room types and amenities.",
-      transport_remarks: "Transport arrangements are subject to availability and may change based on the final itinerary.",
-      booking_poi_remarks: "Booking amount is non-refundable. Balance payment to be made as per the payment schedule.",
-      cancellation_remarks: "Cancellation charges apply as per the policy mentioned above. No refunds for no-shows.",
-      emi_remarks: "EMI options available with 18% interest rate. Terms and conditions apply.",
-      optional_tour_remarks: "Optional tours are subject to availability and weather conditions. Prices are per person."
-    }));
-
-    if (bookingPois.length === 0) {
-      setBookingPois([
-        { item: "Per Person Booking Amount", amount_details: "" },
-        { item: "30 Days Prior Per person cost", amount_details: "50% of the mice cost" },
-        { item: "21 Days Prior Per person cost", amount_details: "Balance amount to pay" }
-      ]);
-    }
-
-    if (cancelPolicies.length === 0) {
-      setCancelPolicies([
-        { cancellation_policy: "45 Days to 30 Days Cost per person", charges: "" },
-        { cancellation_policy: "30 Days to 21 Days Cost per person", charges: "50% of mice cost" },
-        { cancellation_policy: "21 Days till Departure date Cost per person", charges: "100% Cancellation applies" }
-      ]);
-    }
-
-    if (isInternational) {
-      // ← THIS WAS MISSING — now matches AddGroupTour exactly
-      setTouristVisaRemarks(
-        "Visa requirements are subject to change based on embassy regulations. " +
-        "Processing time may vary. It is recommended to apply at least 3-4 weeks before departure. " +
-        "All documents must be original and valid for at least 6 months from the date of return."
-      );
-
-      setCurrencyItems([
-        {
-          local_currency: "GBP",
-          currency_conversion_1: "1 GBP = ₹105.50",
-          currency_conversion_2: "1 GBP = $1.27",
-          city_name: "London",
-          local_time: "03:33 PM",
-          india_time: indianTime
-        },
-        {
-          local_currency: "USD",
-          currency_conversion_1: "1 USD = ₹83.25",
-          currency_conversion_2: "1 USD = €0.92",
-          city_name: "New York",
-          local_time: "10:03 AM",
-          india_time: indianTime
-        },
-        {
-          local_currency: "AED",
-          currency_conversion_1: "1 AED = ₹22.65",
-          currency_conversion_2: "1 AED = $0.27",
-          city_name: "Dubai",
-          local_time: "06:03 PM",
-          india_time: indianTime
-        },
-        {
-          local_currency: "JPY",
-          currency_conversion_1: "1 JPY = ₹0.55",
-          currency_conversion_2: "1 JPY = $0.0066",
-          city_name: "Tokyo",
-          local_time: "11:03 PM",
-          india_time: indianTime
-        }
-      ]);
-    }
-  }
-}, [isEditMode, isInternational]);
-
-
-
-const applyPrefillDefaults = () => {
-  setFormData(prev => ({
-    ...prev,
-    mice_type: miceType || 'domestic',
-    cost_remarks: "Please note that while the mice price has been indicated, it may vary based on the season. We therefore kindly request you to confirm the final price before proceeding with your booking.",
-    hotel_remarks: "Hotel categories are subject to availability. Standard, Deluxe, and Executive categories based on room types and amenities.",
-    transport_remarks: "Transport arrangements are subject to availability and may change based on the final itinerary.",
-    booking_poi_remarks: "Booking amount is non-refundable. Balance payment to be made as per the payment schedule.",
-    cancellation_remarks: "Cancellation charges apply as per the policy mentioned above. No refunds for no-shows.",
-    emi_remarks: "EMI options available with 18% interest rate. Terms and conditions apply.",
-    optional_tour_remarks: "Optional tours are subject to availability and weather conditions. Prices are per person."
-  }));
-
-  setBookingPois([
-    { item: "Per Person Booking Amount", amount_details: "" },
-    { item: "30 Days Prior Per person cost", amount_details: "50% of the mice cost" },
-    { item: "21 Days Prior Per person cost", amount_details: "Balance amount to pay" }
-  ]);
-
-  setCancelPolicies([
-    { cancellation_policy: "45 Days to 30 Days Cost per person", charges: "" },
-    { cancellation_policy: "30 Days to 21 Days Cost per person", charges: "50% of mice cost" },
-    { cancellation_policy: "21 Days till Departure date Cost per person", charges: "100% Cancellation applies" }
-  ]);
-
-  if (isInternational) {
-    setTouristVisaRemarks(
-      "Visa requirements are subject to change based on embassy regulations. " +
-      "Processing time may vary. It is recommended to apply at least 3-4 weeks before departure. " +
-      "All documents must be original and valid for at least 6 months from the date of return."
-    );
-    setCurrencyItems([
-      { local_currency: "GBP", currency_conversion_1: "1 GBP = ₹105.50", currency_conversion_2: "1 GBP = $1.27", city_name: "London", local_time: "03:33 PM", india_time: indianTime },
-      { local_currency: "USD", currency_conversion_1: "1 USD = ₹83.25", currency_conversion_2: "1 USD = €0.92", city_name: "New York", local_time: "10:03 AM", india_time: indianTime },
-      { local_currency: "AED", currency_conversion_1: "1 AED = ₹22.65", currency_conversion_2: "1 AED = $0.27", city_name: "Dubai", local_time: "06:03 PM", india_time: indianTime },
-      { local_currency: "JPY", currency_conversion_1: "1 JPY = ₹0.55", currency_conversion_2: "1 JPY = $0.0066", city_name: "Tokyo", local_time: "11:03 PM", india_time: indianTime }
-    ]);
-  }
-
-  if (isInternational) {
-    setCityEntries([{ id: Date.now(), countryName: '', cityName: '', price: '', image: null, imagePreview: '', existingImage: '' }]);
-  } else {
-    setCityEntries([{ id: Date.now(), stateName: '', cityName: '', price: '', image: null, imagePreview: '', existingImage: '' }]);
-  }
-  setShowCitySection(true);
-};
-
-
-const loadMiceData = async () => {
-  try {
-    setLoading(true);
-    setError('');
-    
-    const currentMiceType = miceType;
-    const endpoint = currentMiceType === 'domestic' 
-      ? `${baseurl}/api/mice/domestic-details/${id}`
-      : `${baseurl}/api/mice/international-details/${id}`;
-    
-    console.log('Loading mice data from:', endpoint);
-    console.log('Type used:', currentMiceType);
-    console.log('ID:', id);
-    
-    const response = await fetch(endpoint);
-    
-    if (!response.ok) {
-      throw new Error(`Failed to fetch mice data: ${response.status} ${response.statusText}`);
-    }
-    
-    const result = await response.json();
-    console.log('Mice data loaded:', result);
-
-    if (result.success && result.data) {
-      const data = result.data;
-      
-      // Load city entries first
-      if (data.mice_city) {
-        console.log('Mice city data:', data.mice_city);
-        
-        setFormData(prev => ({
-          ...prev,
-          mice_name: data.mice_city.city_name || '',
-          mice_type: currentMiceType
-        }));
-        
-        setCityEntries([]);
-        
-        let newCityEntries = [];
-        if (currentMiceType === 'international') {
-          newCityEntries = [{
-            id: data.mice_city.id || Date.now(),
-            countryName: data.mice_city.country_name || '',
-            cityName: data.mice_city.city_name || '',
-            price: data.mice_city.price || '',
-            image: null,
-            imagePreview: '',
-            existingImage: data.mice_city.image || ''
-          }];
-        } else {
-          newCityEntries = [{
-            id: data.mice_city.id || Date.now(),
-            stateName: data.mice_city.state_name || '',
-            cityName: data.mice_city.city_name || '',
-            price: data.mice_city.price || '',
-            image: null,
-            imagePreview: '',
-            existingImage: data.mice_city.image || ''
-          }];
-        }
-        
-        setCityEntries(newCityEntries);
-        setShowCitySection(true);
-      } else {
-        if (currentMiceType === 'international') {
-          setCityEntries([{
-            id: Date.now(),
-            countryName: '',
-            cityName: formData.mice_name || '',
-            price: '',
-            image: null,
-            imagePreview: '',
-            existingImage: ''
-          }]);
-        } else {
-          setCityEntries([{
-            id: Date.now(),
-            stateName: '',
-            cityName: formData.mice_name || '',
-            price: '',
-            image: null,
-            imagePreview: '',
-            existingImage: ''
-          }]);
-        }
-      }
-      
-      // Load tours data
-      if (data.tours && data.tours.length > 0) {
-        const tour = data.tours[0];
-        setFormData(prev => ({
-          ...prev,
-          overview: tour.overview || '',
-          duration_days: tour.duration_days || '',
-          base_price_adult: tour.base_price_adult || '',
-          emi_price: tour.emi_price || '',
-          cost_remarks: tour.cost_remarks || prev.cost_remarks || "Please note that while the mice price has been indicated, it may vary based on the season. We therefore kindly request you to confirm the final price before proceeding with your booking.",
-          hotel_remarks: tour.hotel_remarks || prev.hotel_remarks || "Hotel categories are subject to availability. Standard, Deluxe, and Executive categories based on room types and amenities.",
-          transport_remarks: tour.transport_remarks || prev.transport_remarks || "Transport arrangements are subject to availability and may change based on the final itinerary.",
-          booking_poi_remarks: tour.booking_poi_remarks || prev.booking_poi_remarks || "Booking amount is non-refundable. Balance payment to be made as per the payment schedule.",
-          cancellation_remarks: tour.cancellation_remarks || prev.cancellation_remarks || "Cancellation charges apply as per the policy mentioned above. No refunds for no-shows.",
-          emi_remarks: tour.emi_remarks || prev.emi_remarks || "EMI options available with 18% interest rate. Terms and conditions apply.",
-          optional_tour_remarks: tour.optional_tour_remarks || prev.optional_tour_remarks || "Optional tours are subject to availability and weather conditions. Prices are per person."
-        }));
-      } else {
-        setFormData(prev => ({
-          ...prev,
-          cost_remarks: prev.cost_remarks || "Please note that while the mice price has been indicated, it may vary based on the season. We therefore kindly request you to confirm the final price before proceeding with your booking.",
-          hotel_remarks: prev.hotel_remarks || "Hotel categories are subject to availability. Standard, Deluxe, and Executive categories based on room types and amenities.",
-          transport_remarks: prev.transport_remarks || "Transport arrangements are subject to availability and may change based on the final itinerary.",
-          booking_poi_remarks: prev.booking_poi_remarks || "Booking amount is non-refundable. Balance payment to be made as per the payment schedule.",
-          cancellation_remarks: prev.cancellation_remarks || "Cancellation charges apply as per the policy mentioned above. No refunds for no-shows.",
-          emi_remarks: prev.emi_remarks || "EMI options available with 18% interest rate. Terms and conditions apply.",
-          optional_tour_remarks: prev.optional_tour_remarks || "Optional tours are subject to availability and weather conditions. Prices are per person."
-        }));
-      }
-
-      // Load itineraries
-      if (data.itineraries && Array.isArray(data.itineraries)) {
-        setItineraries(data.itineraries);
-      }
-
-      // Load departures
-      if (data.departures && Array.isArray(data.departures)) {
-        const formattedDepartures = data.departures.map(dept => ({
-          start_date: dept.start_date ? dept.start_date.split('T')[0] : '',
-          end_date: dept.end_date ? dept.end_date.split('T')[0] : '',
-          status: dept.status || 'Available',
-          description: dept.description || '',
-          standard_twin: dept.standard_twin || '',
-          standard_triple: dept.standard_triple || '',
-          standard_single: dept.standard_single || '',
-          deluxe_twin: dept.deluxe_twin || '',
-          deluxe_triple: dept.deluxe_triple || '',
-          deluxe_single: dept.deluxe_single || '',
-          luxury_twin: dept.luxury_twin || '',
-          luxury_triple: dept.luxury_triple || '',
-          luxury_single: dept.luxury_single || ''
-        }));
-        setDepartures(formattedDepartures);
-      }
-
-      // Load optional tours
-      if (data.optionaltours && Array.isArray(data.optionaltours)) {
-        setOptionalTours(data.optionaltours);
-      }
-
-      // Load inclusions
-      if (data.inclusions && Array.isArray(data.inclusions)) {
-        setInclusions(data.inclusions.map(inc => inc.item || inc));
-      }
-
-      // Load exclusions
-      if (data.exclusions && Array.isArray(data.exclusions)) {
-        setExclusions(data.exclusions.map(exc => exc.item || exc));
-      }
-
-      // Load transports
-      if (data.transports && Array.isArray(data.transports)) {
-        setTransports(data.transports);
-      }
-
-      // Load hotels
-      if (data.hotels && Array.isArray(data.hotels)) {
-        setHotelRows(data.hotels);
-      }
-
-      // ========== FIX: Load booking POIs with defaults ==========
-      if (data.bookingpoi && Array.isArray(data.bookingpoi) && data.bookingpoi.length > 0) {
-        setBookingPois(data.bookingpoi);
-      } else {
-        // Set default booking policies if none exist in the database
-        console.log('No booking policies found, setting defaults');
-        setBookingPois([
-          { item: "Per Person Booking Amount", amount_details: "" },
-          { item: "30 Days Prior Per person cost", amount_details: "50% of the mice cost" },
-          { item: "21 Days Prior Per person cost", amount_details: "Balance amount to pay" }
-        ]);
-      }
-
-      // ========== FIX: Load cancellation policies with defaults ==========
-      if (data.cancellationpolicies && Array.isArray(data.cancellationpolicies) && data.cancellationpolicies.length > 0) {
-        setCancelPolicies(data.cancellationpolicies);
-      } else {
-        // Set default cancellation policies if none exist in the database
-        console.log('No cancellation policies found, setting defaults');
-        setCancelPolicies([
-          { cancellation_policy: "45 Days to 30 Days Cost per person", charges: "" },
-          { cancellation_policy: "30 Days to 21 Days Cost per person", charges: "50% of mice cost" },
-          { cancellation_policy: "21 Days till Departure date Cost per person", charges: "100% Cancellation applies" }
-        ]);
-      }
-
-      // Load instructions
-      if (data.instructions && Array.isArray(data.instructions)) {
-        setInstructions(data.instructions.map(inst => inst.item || inst));
-      }
-
-      // Load EMI options
-      if (data.emioptions && Array.isArray(data.emioptions) && data.emioptions.length > 0) {
-        setEmiOptions(data.emioptions);
-        if (data.emioptions[0].loan_amount) {
-          setEmiLoanAmount(data.emioptions[0].loan_amount);
-        }
-      }
-
-      // Load visa data for international
-      if (currentMiceType === 'international') {
-        if (data.tourist_visa && Array.isArray(data.tourist_visa)) {
-          setTouristVisaItems(data.tourist_visa);
-        }
-        if (data.transit_visa && Array.isArray(data.transit_visa)) {
-          setTransitVisaItems(data.transit_visa);
-        }
-        if (data.business_visa && Array.isArray(data.business_visa)) {
-          setBusinessVisaItems(data.business_visa);
-        }
-        if (data.structured_currency && Array.isArray(data.structured_currency)) {
-          setCurrencyItems(data.structured_currency);
-        }
-        if (data.free_flow_currency && Array.isArray(data.free_flow_currency)) {
-          setFreeFlowCurrencyEntries(data.free_flow_currency);
-        }
-        if (data.visa_forms && Array.isArray(data.visa_forms)) {
-          const formattedForms = data.visa_forms.map(form => ({
-            type: form.visa_type,
-            download_action: form.download_action,
-            fill_action: form.fill_action,
-            action1_file: form.action1_file,
-            action2_file: form.action2_file,
-            action1_file_url: form.action1_file ? `${baseurl}/uploads/mice/visa/${form.action1_file}` : null,
-            action2_file_url: form.action2_file ? `${baseurl}/uploads/mice/visa/${form.action2_file}` : null
-          }));
-          setVisaFormItems(formattedForms);
-        }
-        if (data.visa_fees && Array.isArray(data.visa_fees)) {
-          const visaFeeRows = data.visa_fees.map((fee, index) => ({
-            id: fee.fee_id || index + 1,
-            type: fee.row_type,
-            tourist: fee.tourist || '',
-            transit: fee.transit || '',
-            business: fee.business || '',
-            tourist_charges: fee.tourist_charges || '',
-            transit_charges: fee.transit_charges || '',
-            business_charges: fee.business_charges || ''
-          }));
-          setVisaFeesRows(visaFeeRows);
-        }
-        if (data.visa_submission && Array.isArray(data.visa_submission)) {
-          const submissionRowsData = data.visa_submission.map((item, index) => ({
-            id: item.submission_id || index + 1,
-            label: item.label || '',
-            tourist: item.tourist || '',
-            transit: item.transit || '',
-            business: item.business || ''
-          }));
-          setSubmissionRows(submissionRowsData);
-        }
-        if (data.tourist_visa_remarks) {
-          setTouristVisaRemarks(data.tourist_visa_remarks);
-        }
-      }
-      
-      // Load images
-      if (data.images && Array.isArray(data.images) && data.images.length > 0) {
-        console.log('✅ Images loaded from main API response:', data.images);
-        const processedImages = data.images.map(img => ({
-          ...img,
-          url: img.url.startsWith('http') ? img.url : `${baseurl}${img.url}`
-        }));
-        setExistingImages(processedImages);
-      }
-      
-      setSuccess('Mice data loaded successfully');
-    } else {
-      throw new Error('Invalid data structure received from API');
-    }
-  } catch (err) {
-    console.error('Error loading mice data:', err);
-    setError('Error loading mice data: ' + err.message);
-  } finally {
-    setLoading(false);
-  }
-};
-
-
-useEffect(() => {
-  if (id && id !== 'new') {
-    loadMiceData(); // will auto-detect add vs edit inside
-  } else {
-    applyPrefillDefaults();
-  }
-}, [id, miceType]);
-
-
-const saveMiceDetails = async () => {
-  // Validate city entries - CRITICAL FIX
-  if (!cityEntries || cityEntries.length === 0) {
-    setError('Please add at least one city');
-    setActiveTab('basic');
-    return;
-  }
-
-  // Check if any city entry has a valid city name
-  const validEntries = cityEntries.filter(entry => 
-    entry.cityName && entry.cityName.trim() !== ''
-  );
-
-  if (validEntries.length === 0) {
-    setError('Please fill in city details (City Name is required)');
-    setActiveTab('basic');
-    return;
-  }
-
-  // Also check if mice_name is set
-  if (!formData.mice_name || formData.mice_name.trim() === '') {
-    setError('Mice Name is required');
-    setActiveTab('basic');
-    return;
-  }
-
-  try {
-    setLoading(true);
-    setError('');
-    setSuccess('');
-
-    // Create FormData for city entries with images
-    const cityFormData = new FormData();
-    
-    if (isInternational) {
-      const countryNames = validEntries.map(entry => entry.countryName?.trim() || '');
-      const cityNames = validEntries.map(entry => entry.cityName.trim());
-      const prices = validEntries.map(entry => entry.price || '');
-      const existingImages = validEntries.map(entry => entry.existingImage || '').filter(img => img !== '');
-      const existingCityIds = validEntries.map(entry => entry.id).filter(id => typeof id === 'number');
-      
-      cityFormData.append('countryNames', JSON.stringify(countryNames));
-      cityFormData.append('cityNames', JSON.stringify(cityNames));
-      cityFormData.append('prices', JSON.stringify(prices));
-      cityFormData.append('existingImages', JSON.stringify(existingImages));
-      cityFormData.append('existingCityIds', JSON.stringify(existingCityIds));
-      
-      validEntries.forEach(entry => {
-        if (entry.image) {
-          cityFormData.append('images', entry.image);
-        }
-      });
-    } else {
-      const stateNames = validEntries.map(entry => entry.stateName?.trim() || '');
-      const cityNames = validEntries.map(entry => entry.cityName.trim());
-      const prices = validEntries.map(entry => entry.price || '');
-      const existingImages = validEntries.map(entry => entry.existingImage || '').filter(img => img !== '');
-      const existingCityIds = validEntries.map(entry => entry.id).filter(id => typeof id === 'number');
-      
-      cityFormData.append('stateNames', JSON.stringify(stateNames));
-      cityFormData.append('cityNames', JSON.stringify(cityNames));
-      cityFormData.append('prices', JSON.stringify(prices));
-      cityFormData.append('existingImages', JSON.stringify(existingImages));
-      cityFormData.append('existingCityIds', JSON.stringify(existingCityIds));
-      
-      validEntries.forEach(entry => {
-        if (entry.image) {
-          cityFormData.append('images', entry.image);
-        }
-      });
-    }
-
-    // Save city entries first
-    let cityResponse;
-    let savedMiceId;
-    
-    if (isEditMode && id && id !== 'new') {
-      // Update existing city
-      const cityEndpoint = isInternational
-        ? `${baseurl}/api/mice/international/${id}`
-        : `${baseurl}/api/mice/domestic/${id}`;
-      
-      cityResponse = await fetch(cityEndpoint, {
-        method: 'PUT',
-        body: cityFormData
-      });
-      savedMiceId = id;
-    } else {
-      // Create new city
-      const cityEndpoint = isInternational
-        ? `${baseurl}/api/mice/international`
-        : `${baseurl}/api/mice/domestic`;
-      
-      cityResponse = await fetch(cityEndpoint, {
-        method: 'POST',
-        body: cityFormData
-      });
-      
-      const cityResult = await cityResponse.json();
-      if (cityResponse.ok) {
-        savedMiceId = cityResult.id;
-      } else {
-        throw new Error(cityResult.error || 'Error saving city details');
-      }
-    }
-
-    if (!cityResponse.ok) {
-      const errorResult = await cityResponse.json();
-      throw new Error(errorResult.error || 'Error saving city details');
-    }
-
-    // If this is a new record, we need to get the ID from the response
-    if (!isEditMode && !savedMiceId) {
-      const cityResult = await cityResponse.json();
-      savedMiceId = cityResult.id;
-    }
-
-    // Now save the rest of the details
-    const payload = {
-      mice_name: formData.mice_name,
-      duration_days: formData.duration_days,
-      overview: formData.overview,
-      base_price_adult: formData.base_price_adult,
-      emi_price: formData.emi_price,
-      cost_remarks: formData.cost_remarks,
-      hotel_remarks: formData.hotel_remarks,
-      transport_remarks: formData.transport_remarks,
-      booking_poi_remarks: formData.booking_poi_remarks,
-      cancellation_remarks: formData.cancellation_remarks,
-      emi_remarks: formData.emi_remarks,
-      optional_tour_remarks: formData.optional_tour_remarks,
-      itineraries,
-      departures,
-      optional_tours: optionalTours,
-      emi_options: emiOptions,
-      emi_loan_amount: emiLoanAmount,
-      emi_interest_rate: emiInterestRate,
-      inclusions,
-      exclusions,
-      transports,
-      hotels: hotelRows,
-      booking_pois: bookingPois,
-      cancellation_policies: cancelPolicies,
-      instructions
-    };
-
-    // Add visa data for international
-    if (isInternational) {
-      const processedVisaForms = [];
-      
-      for (const form of visaFormItems) {
-        const processedForm = { ...form };
-        
-        if (form.action1_file && typeof form.action1_file !== 'string' && form.action1_file instanceof File) {
-          try {
-            const uploadFormData = new FormData();
-            uploadFormData.append('file', form.action1_file);
-            
-            const uploadResponse = await fetch(`${baseurl}/api/mice/upload-visa-file`, {
-              method: 'POST',
-              body: uploadFormData
-            });
-            
-            const uploadResult = await uploadResponse.json();
-            if (uploadResult.success) {
-              processedForm.action1_file = uploadResult.fileName;
-            }
-          } catch (err) {
-            console.error('Error uploading PDF file:', err);
-          }
-        }
-        
-        if (form.action2_file && typeof form.action2_file !== 'string' && form.action2_file instanceof File) {
-          try {
-            const uploadFormData = new FormData();
-            uploadFormData.append('file', form.action2_file);
-            
-            const uploadResponse = await fetch(`${baseurl}/api/mice/upload-visa-file`, {
-              method: 'POST',
-              body: uploadFormData
-            });
-            
-            const uploadResult = await uploadResponse.json();
-            if (uploadResult.success) {
-              processedForm.action2_file = uploadResult.fileName;
-            }
-          } catch (err) {
-            console.error('Error uploading Word file:', err);
-          }
-        }
-        
-        processedVisaForms.push(processedForm);
-      }
-      
-      payload.visa_data = {
-        tourist_visa: touristVisaItems,
-        transit_visa: transitVisaItems,
-        business_visa: businessVisaItems,
-        visa_forms: processedVisaForms,
-        currency: [...currencyItems, ...freeFlowCurrencyEntries],
-        visa_fees: visaFeesRows,
-        submission: submissionRows,
-        tourist_visa_remarks: touristVisaRemarks || ''
-      };
-    }
-
-    const detailsEndpoint = isInternational
-      ? `${baseurl}/api/mice/international-details/${savedMiceId}`
-      : `${baseurl}/api/mice/domestic-details/${savedMiceId}`;
-
-    const response = await fetch(detailsEndpoint, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
-
-    const result = await response.json();
-
-    if (!response.ok) {
-      throw new Error(result.error || 'Error saving details');
-    }
-
-    if (imageFiles.length > 0) {
-      const formDataImages = new FormData();
-      imageFiles.forEach((file) => {
-        formDataImages.append('images', file);
-      });
-      
-      const uploadResponse = await fetch(`${baseurl}/api/mice/mice-images/upload/${savedMiceId}`, {
-        method: 'POST',
-        body: formDataImages
-      });
-      
-      if (!uploadResponse.ok) {
-        setError('Details saved but images upload failed');
-      } else {
-        setSuccess('Mice details and images saved successfully!');
-      }
-    } else {
-      setSuccess('Mice details saved successfully!');
-    }
-    
-    setTimeout(() => {
-      navigate('/mice');
-    }, 2000);
-    
-  } catch (err) {
-    console.error('Error submitting form:', err);
-    setError('Error submitting form: ' + err.message);
-  } finally {
-    setLoading(false);
-  }
-};
-
-
   const handleSaveClick = () => {
     if (isLastTab) {
       saveMiceDetails();
@@ -2181,6 +1923,11 @@ const saveMiceDetails = async () => {
         return { 
           label: editingDepartureIndex !== -1 ? 'Update Departure' : '+ Add Departure', 
           onClick: addDeparture 
+        };
+      case 'tourCost':
+        return { 
+          label: editingTourCostIndex !== -1 ? 'Update Cost Row' : '+ Add Cost Row', 
+          onClick: addTourCost 
         };
       case 'optionalTours':
         return { 
@@ -2259,6 +2006,7 @@ const saveMiceDetails = async () => {
 
   const addConfig = getAddConfigForTab(activeTab);
 
+  // Early return for no mice selected
   if (!id || id === 'new') {
     return (
       <Navbar>
@@ -2317,17 +2065,16 @@ const saveMiceDetails = async () => {
         <Card className="content-card">
           <Card.Body>
             <Tabs activeKey={activeTab} onSelect={(k) => setActiveTab(k)} className="mb-4">
-              {/* Tab 1: Basic Details with City Entries */}
+              {/* Basic Tab */}
               <Tab eventKey="basic" title="Basic Details">
-
-                  <Alert variant="info" className="mb-3">
-    <small>
-      <strong>Note:</strong> The "Mice Name" will be automatically set to the first City Name you enter.
-      {!isEditMode && cityEntries[0]?.cityName && (
-        <span> Current Mice Name: <strong>{formData.mice_name}</strong></span>
-      )}
-    </small>
-  </Alert>
+                <Alert variant="info" className="mb-3">
+                  <small>
+                    <strong>Note:</strong> The "Mice Name" will be automatically set to the first City Name you enter.
+                    {!isEditMode && cityEntries[0]?.cityName && (
+                      <span> Current Mice Name: <strong>{formData.mice_name}</strong></span>
+                    )}
+                  </small>
+                </Alert>
 
                 <Row>
                   <Col md={6}>
@@ -2339,14 +2086,13 @@ const saveMiceDetails = async () => {
                         value={formData.mice_name}
                         onChange={handleBasicChange}
                         placeholder="Enter exhibition name"
-                        readOnly={!isEditMode} // Make read-only for new records
+                        readOnly={!isEditMode}
                       />
-
-                        {!isEditMode && (
-          <Form.Text className="text-muted">
-            Mice name will be automatically set to the city name you enter below
-          </Form.Text>
-        )}
+                      {!isEditMode && (
+                        <Form.Text className="text-muted">
+                          Mice name will be automatically set to the city name you enter below
+                        </Form.Text>
+                      )}
                     </Form.Group>
 
                     <Row className="g-3 mb-3">
@@ -2397,9 +2143,110 @@ const saveMiceDetails = async () => {
                     </Form.Group>
                   </Col>
                 </Row>
+
+                {/* City Entries Section */}
+                {/* <hr /> */}
+                {/* <div className="d-flex justify-content-between align-items-center mb-3">
+                  <h5>City Entries</h5>
+                  <Button variant="outline-primary" size="sm" onClick={addCityEntry}>
+                    + Add City
+                  </Button>
+                </div> */}
+
+                {/* {cityEntries.length === 0 ? (
+                  <Alert variant="info">
+                    No cities added. Click "Add City" to add your first city.
+                  </Alert>
+                ) : (
+                  cityEntries.map((entry, idx) => (
+                    <Card key={entry.id} className="mb-3">
+                      <Card.Body>
+                        <div className="d-flex justify-content-between align-items-start mb-3">
+                          <h6>City {idx + 1}</h6>
+                          <Button 
+                            variant="outline-danger" 
+                            size="sm" 
+                            onClick={() => removeCityEntry(entry.id)}
+                            disabled={cityEntries.length === 1}
+                          >
+                            <Trash size={14} /> Remove
+                          </Button>
+                        </div>
+                        <Row>
+                          {isInternational ? (
+                            <Col md={4}>
+                              <Form.Group className="mb-2">
+                                <Form.Label>Country Name</Form.Label>
+                                <Form.Control
+                                  type="text"
+                                  value={entry.countryName || ''}
+                                  onChange={(e) => handleCityChange(entry.id, 'countryName', e.target.value)}
+                                  placeholder="Enter country name"
+                                />
+                              </Form.Group>
+                            </Col>
+                          ) : (
+                            <Col md={4}>
+                              <Form.Group className="mb-2">
+                                <Form.Label>State Name</Form.Label>
+                                <Form.Control
+                                  type="text"
+                                  value={entry.stateName || ''}
+                                  onChange={(e) => handleCityChange(entry.id, 'stateName', e.target.value)}
+                                  placeholder="Enter state name"
+                                />
+                              </Form.Group>
+                            </Col>
+                          )}
+                          <Col md={4}>
+                            <Form.Group className="mb-2">
+                              <Form.Label>City Name *</Form.Label>
+                              <Form.Control
+                                type="text"
+                                value={entry.cityName || ''}
+                                onChange={(e) => handleCityChange(entry.id, 'cityName', e.target.value)}
+                                placeholder="Enter city name"
+                              />
+                            </Form.Group>
+                          </Col>
+                          <Col md={4}>
+                            <Form.Group className="mb-2">
+                              <Form.Label>Price</Form.Label>
+                              <Form.Control
+                                type="text"
+                                value={entry.price || ''}
+                                onChange={(e) => handleCityChange(entry.id, 'price', e.target.value)}
+                                placeholder="Enter price"
+                              />
+                            </Form.Group>
+                          </Col>
+                          <Col md={12}>
+                            <Form.Group className="mb-2">
+                              <Form.Label>City Image</Form.Label>
+                              <Form.Control
+                                type="file"
+                                accept="image/*"
+                                onChange={(e) => handleCityImageChange(entry.id, e)}
+                              />
+                              {(entry.imagePreview || entry.existingImage) && (
+                                <div className="mt-2">
+                                  <img
+                                    src={entry.imagePreview || (entry.existingImage ? `${baseurl}${entry.existingImage}` : '')}
+                                    alt="City preview"
+                                    style={{ width: '100px', height: '100px', objectFit: 'cover', borderRadius: '8px' }}
+                                  />
+                                </div>
+                              )}
+                            </Form.Group>
+                          </Col>
+                        </Row>
+                      </Card.Body>
+                    </Card>
+                  ))
+                )} */}
               </Tab>
 
-              {/* Tab 2: Itineraries */}
+              {/* Itineraries Tab */}
               <Tab eventKey="itineraries" title="Itineraries">
                 <Row>
                   <Col md={2}>
@@ -2515,185 +2362,113 @@ const saveMiceDetails = async () => {
                 )}
               </Tab>
 
-              {/* Tab 3: Departures */}
+              {/* Departures Tab */}
               <Tab eventKey="departures" title="Departures">
-                <div>
-                  <Row className="mb-4">
-                    <h5>Add Departure with Costs</h5>
-                    <Col md={3}>
-                      <Form.Group className="mb-3">
-                        <Form.Label>Start Date *</Form.Label>
-                        <Form.Control
-                          type="date"
-                          name="start_date"
-                          value={departureForm.start_date}
-                          onChange={handleDepartureChange}
-                        />
-                      </Form.Group>
-                    </Col>
-                    <Col md={3}>
-                      <Form.Group className="mb-3">
-                        <Form.Label>End Date *</Form.Label>
-                        <Form.Control
-                          type="date"
-                          name="end_date"
-                          value={departureForm.end_date}
-                          onChange={handleDepartureChange}
-                        />
-                      </Form.Group>
-                    </Col>
-                    <Col md={3}>
-                      <Form.Group className="mb-3">
-                        <Form.Label>Status *</Form.Label>
-                        <Form.Select
-                          name="status"
-                          value={departureForm.status}
-                          onChange={handleDepartureChange}
-                        >
-                          <option value="Available">Available</option>
-                          <option value="Few Seats">Few Seats</option>
-                          <option value="Sold Out">Sold Out</option>
-                          <option value="Fast Filling">Fast Filling</option>
-                        </Form.Select>
-                      </Form.Group>
-                    </Col>
-                    <Col md={12}>
-                      <Form.Group className="mb-3">
-                        <Form.Label>Description</Form.Label>
-                        <Form.Control
-                          as="textarea"
-                          rows={2}
-                          name="description"
-                          value={departureForm.description}
-                          onChange={handleDepartureChange}
-                          placeholder="Enter departure description..."
-                        />
-                      </Form.Group>
-                    </Col>
-                  </Row>
+                <Form.Group className="mb-3">
+                  <Form.Label>Departure Description</Form.Label>
+                  <Form.Control
+                    as="textarea"
+                    rows={4}
+                    name="description"
+                    value={departureForm.description}
+                    onChange={handleDepartureChange}
+                    placeholder="Enter departure details here..."
+                  />
+                </Form.Group>
 
-                  <Row className="mb-4">
-                    <h6>Standard Hotel Prices</h6>
-                    <Col md={4}>
-                      <Form.Group>
-                        <Form.Label>Twin Sharing</Form.Label>
-                        <Form.Control
-                          type="number"
-                          name="standard_twin"
-                          value={departureForm.standard_twin || ''}
-                          onChange={handleDepartureChange}
-                          placeholder="₹"
-                        />
-                      </Form.Group>
-                    </Col>
-                    <Col md={4}>
-                      <Form.Group>
-                        <Form.Label>Triple Sharing</Form.Label>
-                        <Form.Control
-                          type="number"
-                          name="standard_triple"
-                          value={departureForm.standard_triple || ''}
-                          onChange={handleDepartureChange}
-                          placeholder="₹"
-                        />
-                      </Form.Group>
-                    </Col>
-                    <Col md={4}>
-                      <Form.Group>
-                        <Form.Label>Single</Form.Label>
-                        <Form.Control
-                          type="number"
-                          name="standard_single"
-                          value={departureForm.standard_single || ''}
-                          onChange={handleDepartureChange}
-                          placeholder="₹"
-                        />
-                      </Form.Group>
-                    </Col>
-                  </Row>
+                {departures.length > 0 && (
+                  <Table striped bordered hover size="sm" className="mt-3">
+                    <thead>
+                      <tr>
+                        <th>#</th>
+                        <th>Description</th>
+                        <th>Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {departures.map((dep, idx) => (
+                        <tr key={idx}>
+                          <td>{idx + 1}</td>
+                          <td>{dep.description || '-'}</td>
+                          <td>
+                            <div className="d-flex gap-1">
+                              <Button variant="outline-warning" size="sm" onClick={() => editDeparture(idx)} title="Edit">
+                                <Pencil size={14} />
+                              </Button>
+                              <Button variant="outline-danger" size="sm" onClick={() => handleRemoveDeparture(idx)} title="Remove">
+                                <Trash size={14} />
+                              </Button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </Table>
+                )}
+                {editingDepartureIndex !== -1 && (
+                  <Button variant="outline-secondary" size="sm" onClick={() => {
+                    setEditingDepartureIndex(-1);
+                    setDepartureForm({ description: '' });
+                  }}>
+                    Cancel Edit
+                  </Button>
+                )}
+              </Tab>
 
-                  <Row className="mb-4">
-                    <h6>Deluxe Hotel Prices</h6>
-                    <Col md={4}>
-                      <Form.Group>
-                        <Form.Label>Twin Sharing</Form.Label>
-                        <Form.Control
-                          type="number"
-                          name="deluxe_twin"
-                          value={departureForm.deluxe_twin || ''}
-                          onChange={handleDepartureChange}
-                          placeholder="₹"
-                        />
-                      </Form.Group>
-                    </Col>
-                    <Col md={4}>
-                      <Form.Group>
-                        <Form.Label>Triple Sharing</Form.Label>
-                        <Form.Control
-                          type="number"
-                          name="deluxe_triple"
-                          value={departureForm.deluxe_triple || ''}
-                          onChange={handleDepartureChange}
-                          placeholder="₹"
-                        />
-                      </Form.Group>
-                    </Col>
-                    <Col md={4}>
-                      <Form.Group>
-                        <Form.Label>Single</Form.Label>
-                        <Form.Control
-                          type="number"
-                          name="deluxe_single"
-                          value={departureForm.deluxe_single || ''}
-                          onChange={handleDepartureChange}
-                          placeholder="₹"
-                        />
-                      </Form.Group>
-                    </Col>
-                  </Row>
+              {/* Tour Cost Tab */}
+              <Tab eventKey="tourCost" title="Tour Cost">
+                <Row className="align-items-end">
+                  <Col md={3}>
+                    <Form.Group>
+                      <Form.Label>Pax *</Form.Label>
+                      <Form.Control
+                        type="text"
+                        name="pax"
+                        value={tourCostItem.pax}
+                        onChange={handleTourCostChange}
+                        placeholder="e.g., 2 PAX, 4 PAX, 6 PAX"
+                      />
+                    </Form.Group>
+                  </Col>
+                  <Col md={3}>
+                    <Form.Group>
+                      <Form.Label>Standard Hotel</Form.Label>
+                      <Form.Control
+                        type="text"
+                        name="standard_hotel"
+                        value={tourCostItem.standard_hotel}
+                        onChange={handleTourCostChange}
+                        placeholder="Price per person"
+                      />
+                    </Form.Group>
+                  </Col>
+                  <Col md={3}>
+                    <Form.Group>
+                      <Form.Label>Deluxe Hotel</Form.Label>
+                      <Form.Control
+                        type="text"
+                        name="deluxe_hotel"
+                        value={tourCostItem.deluxe_hotel}
+                        onChange={handleTourCostChange}
+                        placeholder="Price per person"
+                      />
+                    </Form.Group>
+                  </Col>
+                  <Col md={3}>
+                    <Form.Group>
+                      <Form.Label>Executive Hotel</Form.Label>
+                      <Form.Control
+                        type="text"
+                        name="executive_hotel"
+                        value={tourCostItem.executive_hotel}
+                        onChange={handleTourCostChange}
+                        placeholder="Price per person"
+                      />
+                    </Form.Group>
+                  </Col>
+                </Row>
 
-                  <Row className="mb-4">
-                    <h6>Luxury Hotel Prices</h6>
-                    <Col md={4}>
-                      <Form.Group>
-                        <Form.Label>Twin Sharing</Form.Label>
-                        <Form.Control
-                          type="number"
-                          name="luxury_twin"
-                          value={departureForm.luxury_twin || ''}
-                          onChange={handleDepartureChange}
-                          placeholder="₹"
-                        />
-                      </Form.Group>
-                    </Col>
-                    <Col md={4}>
-                      <Form.Group>
-                        <Form.Label>Triple Sharing</Form.Label>
-                        <Form.Control
-                          type="number"
-                          name="luxury_triple"
-                          value={departureForm.luxury_triple || ''}
-                          onChange={handleDepartureChange}
-                          placeholder="₹"
-                        />
-                      </Form.Group>
-                    </Col>
-                    <Col md={4}>
-                      <Form.Group>
-                        <Form.Label>Single</Form.Label>
-                        <Form.Control
-                          type="number"
-                          name="luxury_single"
-                          value={departureForm.luxury_single || ''}
-                          onChange={handleDepartureChange}
-                          placeholder="₹"
-                        />
-                      </Form.Group>
-                    </Col>
-                  </Row>
-                </div>
-
-                <Form.Group className="mt-4">
+                <Form.Group className="mt-3">
                   <Form.Label>Cost Remarks</Form.Label>
                   <Form.Control
                     as="textarea"
@@ -2703,90 +2478,63 @@ const saveMiceDetails = async () => {
                     onChange={handleBasicChange}
                     placeholder="Enter cost remarks here..."
                   />
+                  <Form.Text className="text-muted">
+                    This remark will appear for all tour cost entries
+                  </Form.Text>
                 </Form.Group>
 
-                {departures.length > 0 && (
-                  <div className="mt-4">
-                    <h5>Added Departures</h5>
-                    <Table striped bordered hover size="sm">
-                      <thead>
-                        <tr>
-                          <th>#</th>
-                          <th>Start Date</th>
-                          <th>End Date</th>
-                          <th>Status</th>
-                          <th>Standard Twin</th>
-                          <th>Deluxe Twin</th>
-                          <th>Luxury Twin</th>
-                          <th>Action</th>
+                {tourCosts.length > 0 && (
+                  <Table striped bordered hover size="sm" className="mt-3">
+                    <thead>
+                      <tr>
+                        <th>#</th>
+                        <th>Pax</th>
+                        <th>Standard Hotel</th>
+                        <th>Deluxe Hotel</th>
+                        <th>Executive Hotel</th>
+                        <th>Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {tourCosts.map((c, idx) => (
+                        <tr key={idx}>
+                          <td>{idx + 1}</td>
+                          <td>{c.pax}</td>
+                          <td>{c.standard_hotel || 'NA'}</td>
+                          <td>{c.deluxe_hotel || 'NA'}</td>
+                          <td>{c.executive_hotel || 'NA'}</td>
+                          <td>
+                            <div className="d-flex gap-1">
+                              <Button variant="outline-warning" size="sm" onClick={() => editTourCostRow(idx)} title="Edit">
+                                <Pencil size={14} />
+                              </Button>
+                              <Button variant="outline-danger" size="sm" onClick={() => removeTourCostRow(idx)} title="Remove">
+                                <Trash size={14} />
+                              </Button>
+                            </div>
+                          </td>
                         </tr>
-                      </thead>
-                      <tbody>
-                        {departures.map((dep, idx) => (
-                          <tr key={idx}>
-                            <td>{idx + 1}</td>
-                            <td>{dep.start_date || '-'}</td>
-                            <td>{dep.end_date || '-'}</td>
-                            <td>{dep.status || '-'}</td>
-                            <td>{dep.standard_twin ? `₹${dep.standard_twin.toLocaleString()}` : '-'}</td>
-                            <td>{dep.deluxe_twin ? `₹${dep.deluxe_twin.toLocaleString()}` : '-'}</td>
-                            <td>{dep.luxury_twin ? `₹${dep.luxury_twin.toLocaleString()}` : '-'}</td>
-                            <td>
-                              <div className="d-flex gap-1">
-                                <Button
-                                  variant="outline-warning"
-                                  size="sm"
-                                  onClick={() => editDeparture(idx)}
-                                  title="Edit"
-                                >
-                                  <Pencil size={14} />
-                                </Button>
-                                <Button
-                                  variant="outline-danger"
-                                  size="sm"
-                                  onClick={() => handleRemoveDeparture(idx)}
-                                  title="Remove"
-                                >
-                                  <Trash size={14} />
-                                </Button>
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </Table>
-                  </div>
+                      ))}
+                    </tbody>
+                  </Table>
                 )}
-
-                {editingDepartureIndex !== -1 && (
-                  <Button
-                    variant="outline-secondary"
-                    onClick={() => {
-                      setEditingDepartureIndex(-1);
-                      setDepartureForm({
-                        start_date: '',
-                        end_date: '',
-                        status: 'Available',
-                        description: '',
-                        standard_twin: '',
-                        standard_triple: '',
-                        standard_single: '',
-                        deluxe_twin: '',
-                        deluxe_triple: '',
-                        deluxe_single: '',
-                        luxury_twin: '',
-                        luxury_triple: '',
-                        luxury_single: ''
-                      });
-                    }}
-                    className="ms-2"
-                  >
+                {editingTourCostIndex !== -1 && (
+                  <Button variant="outline-secondary" size="sm" onClick={() => {
+                    setEditingTourCostIndex(-1);
+                    setTourCostItem({
+                      pax: '',
+                      standard_hotel: '',
+                      deluxe_hotel: '',
+                      executive_hotel: '',
+                      remarks: ''
+                    });
+                  }}>
                     Cancel Edit
                   </Button>
                 )}
               </Tab>
 
-              {/* Tab 4: Optional Tours */}
+              {/* Optional Tours Tab */}
               <Tab eventKey="optionalTours" title="Optional Tours">
                 <Row className="align-items-end">
                   <Col md={4}>
@@ -2886,7 +2634,7 @@ const saveMiceDetails = async () => {
                 )}
               </Tab>
 
-              {/* Tab 5: EMI Options */}
+              {/* EMI Options Tab */}
               <Tab eventKey="emiOptions" title="EMI Options">
                 <Card className="mb-4">
                   <Card.Body>
@@ -3011,7 +2759,7 @@ const saveMiceDetails = async () => {
                 </Form.Group>
               </Tab>
 
-              {/* Tab 6: Inclusions */}
+              {/* Inclusions Tab */}
               <Tab eventKey="inclusions" title="Inclusions">
                 <Form.Group className="mb-3">
                   <Form.Label>Add Inclusion</Form.Label>
@@ -3063,7 +2811,7 @@ const saveMiceDetails = async () => {
                 )}
               </Tab>
 
-              {/* Tab 7: Exclusions */}
+              {/* Exclusions Tab */}
               <Tab eventKey="exclusions" title="Exclusions">
                 <Form.Group className="mb-3">
                   <Form.Label>Add Exclusion</Form.Label>
@@ -3115,7 +2863,7 @@ const saveMiceDetails = async () => {
                 )}
               </Tab>
 
-              {/* Tab 8: Transport */}
+              {/* Transport Tab */}
               <Tab eventKey="transport" title="Transport">
                 <Row className="mt-3">
                   <Col md={12}>
@@ -3184,7 +2932,7 @@ const saveMiceDetails = async () => {
                 )}
               </Tab>
 
-              {/* Tab 9: Hotels */}
+              {/* Hotels Tab */}
               <Tab eventKey="hotels" title="Hotels">
                 <Row className="align-items-end">
                   <Col md={6}>
@@ -3313,7 +3061,7 @@ const saveMiceDetails = async () => {
                 )}
               </Tab>
 
-              {/* Visa Tab */}
+              {/* Visa Tab for International */}
               {isInternational && (
                 <Tab eventKey="visa" title="Visa">
                   <Tabs
@@ -3673,7 +3421,7 @@ const saveMiceDetails = async () => {
                                       </Button>
                                     </div>
                                    </td>
-                                 </tr>
+                                  </tr>
                               );
                             })}
                           </tbody>
@@ -3696,7 +3444,6 @@ const saveMiceDetails = async () => {
                       </Card>
                     </Tab>
  
-                    {/* Currency Tab */}
                     <Tab eventKey="currency" title="Currency">
                       <Card className="mb-4">
                         <Card.Body>
@@ -4007,7 +3754,7 @@ const saveMiceDetails = async () => {
                   </Tabs>
                 </Tab>
               )}
- 
+
               {/* Booking POI Tab */}
               <Tab eventKey="bookingPoi" title="Booking POI">
                 <Form.Group className="mb-3">
@@ -4043,7 +3790,7 @@ const saveMiceDetails = async () => {
                     />
                   </Form.Group>
                 </Form.Group>
- 
+
                 {bookingPois.length > 0 && (
                   <Table striped bordered hover size="sm">
                     <thead>
@@ -4052,7 +3799,7 @@ const saveMiceDetails = async () => {
                         <th>Item</th>
                         <th>Amount Details</th>
                         <th>Action</th>
-                       </tr>
+                      </tr>
                     </thead>
                     <tbody>
                       {bookingPois.map((p, idx) => (
@@ -4085,7 +3832,7 @@ const saveMiceDetails = async () => {
                   </Button>
                 )}
               </Tab>
- 
+
               {/* Cancellation Policy Tab */}
               <Tab eventKey="cancellation" title="Cancellation Policy">
                 <Row>
@@ -4112,7 +3859,7 @@ const saveMiceDetails = async () => {
                     />
                   </Col>
                 </Row>
- 
+
                 <Form.Group className="mt-3">
                   <Form.Label>Cancellation Remarks</Form.Label>
                   <Form.Control
@@ -4123,7 +3870,7 @@ const saveMiceDetails = async () => {
                     onChange={handleBasicChange}
                   />
                 </Form.Group>
- 
+
                 {cancelPolicies.length > 0 && (
                   <Table striped bordered hover className="mt-3" size="sm">
                     <thead>
@@ -4132,7 +3879,7 @@ const saveMiceDetails = async () => {
                         <th>Cancellation Policy</th>
                         <th>Charges</th>
                         <th>Action</th>
-                       </tr>
+                      </tr>
                     </thead>
                     <tbody>
                       {cancelPolicies.map((c, idx) => (
@@ -4168,7 +3915,7 @@ const saveMiceDetails = async () => {
                   </Button>
                 )}
               </Tab>
- 
+
               {/* Instructions Tab */}
               <Tab eventKey="instructions" title="Instructions">
                 <Form.Group className="mb-3">
@@ -4181,7 +3928,7 @@ const saveMiceDetails = async () => {
                     placeholder="Type instruction"
                   />
                 </Form.Group>
- 
+
                 {instructions.length > 0 && (
                   <Table striped bordered hover size="sm">
                     <thead>
@@ -4189,7 +3936,7 @@ const saveMiceDetails = async () => {
                         <th>#</th>
                         <th>Instruction</th>
                         <th>Action</th>
-                       </tr>
+                      </tr>
                     </thead>
                     <tbody>
                       {instructions.map((item, idx) => (
@@ -4220,7 +3967,7 @@ const saveMiceDetails = async () => {
                   </Button>
                 )}
               </Tab>
- 
+
               {/* Images Tab */}
               <Tab eventKey="images" title="Images">
                 <Card className="mb-4">
@@ -4269,7 +4016,7 @@ const saveMiceDetails = async () => {
                     )}
                   </Card.Body>
                 </Card>
- 
+
                 <Card>
                   <Card.Header>Existing Images</Card.Header>
                   <Card.Body>
@@ -4280,133 +4027,131 @@ const saveMiceDetails = async () => {
                     ) : (
                       <Row>
                         {existingImages.map((image) => (
-  <Col md={4} lg={3} key={image.image_id} className="mb-4">
-    <Card className="h-100">
-      <Card.Body className="p-2">
-        <div className="position-relative">
-          <img
-  src={image.url}
-  alt={`mice-image-${image.image_id}`}
-  style={{
-    width: '100%',
-    height: '150px',
-    objectFit: 'cover',
-    borderRadius: '6px'
-  }}
-  className="mb-2"
-  onError={(e) => {
-    e.target.onerror = null;
-    // Try different possible paths
-    const filename = image.url?.split('/').pop();
-    if (filename) {
-      // Try the correct path where images are actually stored
-      e.target.src = `${baseurl}/uploads/mice/${filename}`;
-    } else {
-      e.target.src = `${baseurl}/uploads/mice/default-image.jpg`;
-    }
-  }}
-/>
-          
-          {image.is_cover === 1 && (
-            <div className="position-absolute top-0 start-0 bg-warning text-dark px-2 py-1 rounded-end">
-              <strong>★ Cover</strong>
-            </div>
-          )}
-           
-          {editingImageId === image.image_id ? (
-            <div className="mt-3 border p-3 rounded">
-              <Form.Group>
-                <Form.Label>Replace with new image:</Form.Label>
-                <Form.Control
-                  id="replacementFileInput"
-                  type="file"
-                  onChange={handleReplacementFileChange}
-                  accept="image/jpeg,image/jpg,image/png,image/webp"
-                />
-              </Form.Group>
-               
-              {replacementPreview && (
-                <div className="mt-2">
-                  <p><strong>New preview:</strong></p>
-                  <img
-                    src={replacementPreview}
-                    alt="replacement"
-                    style={{
-                      width: '100%',
-                      height: '100px',
-                      objectFit: 'cover',
-                      borderRadius: '4px'
-                    }}
-                  />
-                </div>
-              )}
-               
-              <div className="d-flex gap-2 mt-3">
-                <Button
-                  variant="success"
-                  size="sm"
-                  onClick={() => updateImage(image.image_id)}
-                  disabled={!replacementFile || loading}
-                >
-                  {loading ? 'Updating...' : 'Update'}
-                </Button>
-                <Button
-                  variant="outline-secondary"
-                  size="sm"
-                  onClick={cancelEditImage}
-                  disabled={loading}
-                >
-                  Cancel
-                </Button>
-              </div>
-            </div>
-          ) : (
-            <div className="mt-2">
-              <div className="d-flex flex-wrap gap-1 justify-content-center">
-                {image.is_cover === 0 && (
-                  <Button
-                    variant="outline-warning"
-                    size="sm"
-                    onClick={() => setCoverImage(image.image_id)}
-                    title="Set as Cover"
-                    disabled={loading}
-                  >
-                    ★ Set Cover
-                  </Button>
-                )}
-                 
-                <Button
-                  variant="outline-primary"
-                  size="sm"
-                  onClick={() => startEditImage(image)}
-                  title="Replace Image"
-                  disabled={loading}
-                >
-                  <Pencil size={14} /> Replace
-                </Button>
-                 
-                <Button
-                  variant="outline-danger"
-                  size="sm"
-                  onClick={() => deleteImage(image.image_id)}
-                  title="Delete Image"
-                  disabled={loading}
-                >
-                  <Trash size={14} />
-                </Button>
-              </div>
-            </div>
-          )}
-        </div>
-      </Card.Body>
-      <Card.Footer className="bg-transparent border-0 pt-0">
-        <small className="text-muted">
-          {image.caption ? `Caption: ${image.caption}` : 'No caption'}
-        </small>
-      </Card.Footer>
-    </Card>
-  </Col>
-))}
+                          <Col md={4} lg={3} key={image.image_id} className="mb-4">
+                            <Card className="h-100">
+                              <Card.Body className="p-2">
+                                <div className="position-relative">
+                                  <img
+                                    src={image.url}
+                                    alt={`mice-image-${image.image_id}`}
+                                    style={{
+                                      width: '100%',
+                                      height: '150px',
+                                      objectFit: 'cover',
+                                      borderRadius: '6px'
+                                    }}
+                                    className="mb-2"
+                                    onError={(e) => {
+                                      e.target.onerror = null;
+                                      const filename = image.url?.split('/').pop();
+                                      if (filename) {
+                                        e.target.src = `${baseurl}/uploads/mice/${filename}`;
+                                      } else {
+                                        e.target.src = `${baseurl}/uploads/mice/default-image.jpg`;
+                                      }
+                                    }}
+                                  />
+                                  
+                                  {image.is_cover === 1 && (
+                                    <div className="position-absolute top-0 start-0 bg-warning text-dark px-2 py-1 rounded-end">
+                                      <strong>★ Cover</strong>
+                                    </div>
+                                  )}
+                                   
+                                  {editingImageId === image.image_id ? (
+                                    <div className="mt-3 border p-3 rounded">
+                                      <Form.Group>
+                                        <Form.Label>Replace with new image:</Form.Label>
+                                        <Form.Control
+                                          id="replacementFileInput"
+                                          type="file"
+                                          onChange={handleReplacementFileChange}
+                                          accept="image/jpeg,image/jpg,image/png,image/webp"
+                                        />
+                                      </Form.Group>
+                                       
+                                      {replacementPreview && (
+                                        <div className="mt-2">
+                                          <p><strong>New preview:</strong></p>
+                                          <img
+                                            src={replacementPreview}
+                                            alt="replacement"
+                                            style={{
+                                              width: '100%',
+                                              height: '100px',
+                                              objectFit: 'cover',
+                                              borderRadius: '4px'
+                                            }}
+                                          />
+                                        </div>
+                                      )}
+                                       
+                                      <div className="d-flex gap-2 mt-3">
+                                        <Button
+                                          variant="success"
+                                          size="sm"
+                                          onClick={() => updateImage(image.image_id)}
+                                          disabled={!replacementFile || loading}
+                                        >
+                                          {loading ? 'Updating...' : 'Update'}
+                                        </Button>
+                                        <Button
+                                          variant="outline-secondary"
+                                          size="sm"
+                                          onClick={cancelEditImage}
+                                          disabled={loading}
+                                        >
+                                          Cancel
+                                        </Button>
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    <div className="mt-2">
+                                      <div className="d-flex flex-wrap gap-1 justify-content-center">
+                                        {image.is_cover === 0 && (
+                                          <Button
+                                            variant="outline-warning"
+                                            size="sm"
+                                            onClick={() => setCoverImage(image.image_id)}
+                                            title="Set as Cover"
+                                            disabled={loading}
+                                          >
+                                            ★ Set Cover
+                                          </Button>
+                                        )}
+                                         
+                                        <Button
+                                          variant="outline-primary"
+                                          size="sm"
+                                          onClick={() => startEditImage(image)}
+                                          title="Replace Image"
+                                          disabled={loading}
+                                        >
+                                          <Pencil size={14} /> Replace
+                                        </Button>
+                                         
+                                        <Button
+                                          variant="outline-danger"
+                                          size="sm"
+                                          onClick={() => deleteImage(image.image_id)}
+                                          title="Delete Image"
+                                          disabled={loading}
+                                        >
+                                          <Trash size={14} />
+                                        </Button>
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+                              </Card.Body>
+                              <Card.Footer className="bg-transparent border-0 pt-0">
+                                <small className="text-muted">
+                                  {image.caption ? `Caption: ${image.caption}` : 'No caption'}
+                                </small>
+                              </Card.Footer>
+                            </Card>
+                          </Col>
+                        ))}
                       </Row>
                     )}
                      

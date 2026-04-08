@@ -11,6 +11,33 @@ const InternationalMiceTab = ({
   goToInternationalDetails,
   fetchInternationalMice
 }) => {
+  
+  // Helper function to format price display
+  const formatPrice = (price) => {
+    if (!price) return 'N/A';
+    
+    // Convert to string if it's not already
+    const priceStr = String(price).trim();
+    
+    // Check if it's a valid number (only digits, decimal point, and optional negative sign)
+    const numericValue = parseFloat(priceStr);
+    
+    // If it's a valid number (not NaN and finite), format it with currency
+    if (!isNaN(numericValue) && isFinite(numericValue) && /^[\d.-]+$/.test(priceStr.replace(/[,\s]/g, ''))) {
+      // Remove any existing commas and parse
+      const cleanNumber = parseFloat(priceStr.replace(/,/g, ''));
+      if (!isNaN(cleanNumber)) {
+        return `₹${cleanNumber.toLocaleString('en-IN')}`;
+      }
+      return `₹${numericValue.toLocaleString('en-IN')}`;
+    }
+    
+    // If it's alphanumeric, return as is (but ensure it doesn't have extra ₹ symbol)
+    // Remove any existing ₹ symbol to avoid duplicate
+    let displayPrice = priceStr.replace(/^₹\s*/, '');
+    return displayPrice;
+  };
+
   return (
     <div className="table-container">
       <div className="table-header">
@@ -25,7 +52,7 @@ const InternationalMiceTab = ({
             <th>ID</th>
             <th>Country Name</th>
             <th>City Name</th>
-            <th>Price (₹)</th>
+            <th>Price</th>
             <th>Image</th>
             <th>Created At</th>
             <th>Actions</th>
@@ -38,7 +65,9 @@ const InternationalMiceTab = ({
                 <td>{item.id}</td>
                 <td>{item.country_name || 'N/A'}</td>
                 <td><strong>{item.city_name || 'N/A'}</strong></td>
-                <td>₹{parseFloat(item.price).toLocaleString('en-IN')}</td>
+                <td className="price-cell">
+                  {formatPrice(item.price)}
+                </td>
                 <td>
                   {item.image ? (
                     <img 
