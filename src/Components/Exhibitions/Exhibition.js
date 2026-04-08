@@ -433,14 +433,14 @@ function Exhibition() {
     
     if (showCitySection && cityEntries.length > 0) {
       const validEntries = cityEntries.filter(entry => 
-        entry.cityName.trim() !== '' && entry.price > 0
-      );
+  entry.cityName.trim() !== '' && entry.price && entry.price.toString().trim() !== ''
+);
 
-      if (validEntries.length === 0) {
-        setError('Please fill in city details or disable cities section');
-        setLoading(false);
-        return;
-      }
+      // if (validEntries.length === 0) {
+      //   setError('Please fill in city details or disable cities section');
+      //   setLoading(false);
+      //   return;
+      // }
 
       if (!internationalForm.id) {
         const missingImages = validEntries.some(entry => !entry.image && !entry.existingImage);
@@ -1092,7 +1092,7 @@ function Exhibition() {
                                     <div className="form-group">
                                       <label>Price (₹) *</label>
                                       <input
-                                        type="number"
+                                        type="text"
                                         placeholder="Enter price"
                                         value={entry.price}
                                         onChange={(e) => handleCityChange(entry.id, 'price', e.target.value)}
@@ -1232,7 +1232,7 @@ function Exhibition() {
                                     <div className="form-group">
                                       <label>Price (₹) *</label>
                                       <input
-                                        type="number"
+                                        type="text"
                                         placeholder="Enter price"
                                         value={entry.price}
                                         onChange={(e) => handleCityChange(entry.id, 'price', e.target.value)}
@@ -1324,7 +1324,7 @@ function Exhibition() {
                               <h6 className="text-muted">{city.country_name}</h6>
                             )}
                             <h5>{city.city_name}</h5>
-                            <p className="price">₹{Number(city.price).toLocaleString()}</p>
+                            <p className="price">{(city.price)}</p>
                           </div>
                         </div>
                       ))
