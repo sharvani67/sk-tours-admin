@@ -158,14 +158,18 @@ import FlightTax from "./Components/FlightTax/FlightTax";
 import AddFlightTax from "./Components/FlightTax/AddFlightTax";
 import PassportTable from "./Components/Tours/Passport/PassportTable";
 import PassportForm from "./Components/Tours/Passport/PassportForm";
-import WeekendForm from "./Components/BookingForms/WeekendTable.js";
-import OnedayBookingForm from "./Components/BookingForms/OnedaybookingTable.js";
-import BungalowTable from "./Components/BookingForms/BungalowTable.js";
+import WeekendForm from "./Components/BookingForms/WeekendTable";
+import OnedayBookingForm from "./Components/BookingForms/OnedaybookingTable";
+import BungalowTable from "./Components/BookingForms/BungalowTable";
 import BookingView from "./Components/BookingForms/BookingView";
-import OnedaybookingView from "./Components/BookingForms/OnedaybookingView.js";
-import OnedaybookingTable from "./Components/BookingForms/OnedaybookingTable.js";
-import WeekendView from "./Components/BookingForms/WeekendView.js";
-import WeekendTable from "./Components/BookingForms/WeekendTable.js";
+import OnedaybookingView from "./Components/BookingForms/OnedaybookingView";
+import OnedaybookingTable from "./Components/BookingForms/OnedaybookingTable";
+import WeekendView from "./Components/BookingForms/WeekendView";
+import WeekendTable from "./Components/BookingForms/WeekendTable";
+
+// In your App.js or routing file
+import Transactions from "./Components/Transactions/Transactions";
+
 
 function App() {
   return (
@@ -384,6 +388,8 @@ function App() {
 <Route path="/weekendview/:id" element={<WeekendView />} />
 
 <Route path="/weekendtable" element={<WeekendTable />} />
+
+<Route path="/transactions" element={<Transactions />} />
 
               
 

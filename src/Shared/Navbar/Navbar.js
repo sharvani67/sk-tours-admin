@@ -320,12 +320,12 @@ const Navbar = ({ children }) => {
     matchPaths: ["/one-day-picnic", "/add-one-day-picnic", "/edit-one-day-picnic"],
   },
   
-  {
-    label: "Payments",
-    path: "/payments",
-    icon: <FiDollarSign className="sidebar-icon" />,
-    matchPaths: ["/payments"],
-  },
+  // {
+  //   label: "Payments",
+  //   path: "/payments",
+  //   icon: <FiDollarSign className="sidebar-icon" />,
+  //   matchPaths: ["/payments"],
+  // },
   {
     label: "PopUp Leads",
     path: "/leadspopup",
@@ -379,7 +379,13 @@ const Navbar = ({ children }) => {
     { label: "Oneday Forms", path: "/onedaypicnictable" },
     { label: "Weekend Forms", path: "/weekendtable" }
   ]
-}
+},
+{
+  label: "Transactions",
+  path: "/transactions",
+  icon: <FiDollarSign className="sidebar-icon" />,
+  matchPaths: ["/transactions"],
+},
 ];
 
 
