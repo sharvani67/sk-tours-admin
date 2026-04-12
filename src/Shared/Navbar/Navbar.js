@@ -326,6 +326,8 @@ const Navbar = ({ children }) => {
   //   icon: <FiDollarSign className="sidebar-icon" />,
   //   matchPaths: ["/payments"],
   // },
+
+  
   {
     label: "PopUp Leads",
     path: "/leadspopup",

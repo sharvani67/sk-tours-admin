@@ -39,8 +39,17 @@ function Exhibition() {
     cities: []
   });
 
-  // City form state for dynamic addition
-  const [cityEntries, setCityEntries] = useState([]);
+  // Single city form state (only one city at a time)
+  const [singleCity, setSingleCity] = useState({
+    id: null,
+    stateName: '',
+    countryName: '',
+    cityName: '',
+    price: '',
+    image: null,
+    imagePreview: '',
+    existingImage: ''
+  });
   const [showCitySection, setShowCitySection] = useState(false);
 
   useEffect(() => {
@@ -88,24 +97,26 @@ function Exhibition() {
         const data = await response.json();
         setDomesticForm({
           id: data.id,
-          domestic_category_name: data.domestic_category_name
+          domestic_category_name: data.domestic_category_name,
+          cities: data.cities || []
         });
         
-        // Convert cities to cityEntries format if they exist
+        // Set single city data if cities exist (only first city)
         if (data.cities && data.cities.length > 0) {
-          const entries = data.cities.map(city => ({
+          const city = data.cities[0];
+          setSingleCity({
             id: city.id,
             stateName: city.state_name || '',
+            countryName: city.country_name || '',
             cityName: city.city_name,
             price: city.price,
             image: null,
             imagePreview: city.image ? `${baseurl}/uploads/exhibition/${city.image}` : '',
             existingImage: city.image || ''
-          }));
-          setCityEntries(entries);
+          });
           setShowCitySection(true);
         } else {
-          setCityEntries([]);
+          resetSingleCity();
           setShowCitySection(false);
         }
         
@@ -126,23 +137,26 @@ function Exhibition() {
         const data = await response.json();
         setInternationalForm({
           id: data.id,
-          international_category_name: data.international_category_name
+          international_category_name: data.international_category_name,
+          cities: data.cities || []
         });
         
+        // Set single city data if cities exist (only first city)
         if (data.cities && data.cities.length > 0) {
-          const entries = data.cities.map(city => ({
+          const city = data.cities[0];
+          setSingleCity({
             id: city.id,
+            stateName: city.state_name || '',
             countryName: city.country_name || '',
             cityName: city.city_name,
             price: city.price,
             image: null,
             imagePreview: city.image ? `${baseurl}/uploads/exhibition/${city.image}` : '',
             existingImage: city.image || ''
-          }));
-          setCityEntries(entries);
+          });
           setShowCitySection(true);
         } else {
-          setCityEntries([]);
+          resetSingleCity();
           setShowCitySection(false);
         }
         
@@ -205,52 +219,38 @@ function Exhibition() {
     }
   };
 
-  // Handle city entries
-  const addCityEntry = () => {
-    if (activeTab === 'domestic') {
-      setCityEntries([
-        ...cityEntries,
-        { id: Date.now(), stateName: '', cityName: '', price: '', image: null, imagePreview: '', existingImage: '' }
-      ]);
-    } else {
-      setCityEntries([
-        ...cityEntries,
-        { id: Date.now(), countryName: '', cityName: '', price: '', image: null, imagePreview: '', existingImage: '' }
-      ]);
-    }
+  // Handle single city changes
+  const handleCityChange = (field, value) => {
+    setSingleCity({ ...singleCity, [field]: value });
   };
 
-  const removeCityEntry = (id) => {
-    if (cityEntries.length > 1) {
-      setCityEntries(cityEntries.filter(entry => entry.id !== id));
-    } else {
-      setCityEntries([]);
-      setShowCitySection(false);
-    }
-  };
-
-  const handleCityChange = (id, field, value) => {
-    setCityEntries(cityEntries.map(entry => 
-      entry.id === id ? { ...entry, [field]: value } : entry
-    ));
-  };
-
-  const handleCityImageChange = (id, e) => {
+  const handleCityImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setCityEntries(cityEntries.map(entry => 
-          entry.id === id ? { 
-            ...entry, 
-            image: file, 
-            imagePreview: reader.result,
-            existingImage: ''
-          } : entry
-        ));
+        setSingleCity({ 
+          ...singleCity, 
+          image: file, 
+          imagePreview: reader.result,
+          existingImage: ''
+        });
       };
       reader.readAsDataURL(file);
     }
+  };
+
+  const resetSingleCity = () => {
+    setSingleCity({
+      id: null,
+      stateName: '',
+      countryName: '',
+      cityName: '',
+      price: '',
+      image: null,
+      imagePreview: '',
+      existingImage: ''
+    });
   };
 
   // Handle category name change
@@ -266,13 +266,9 @@ function Exhibition() {
   // Toggle city section
   const toggleCitySection = () => {
     if (!showCitySection) {
-      if (activeTab === 'domestic') {
-        setCityEntries([{ id: Date.now(), stateName: '', cityName: '', price: '', image: null, imagePreview: '', existingImage: '' }]);
-      } else {
-        setCityEntries([{ id: Date.now(), countryName: '', cityName: '', price: '', image: null, imagePreview: '', existingImage: '' }]);
-      }
+      resetSingleCity();
     } else {
-      setCityEntries([]);
+      resetSingleCity();
     }
     setShowCitySection(!showCitySection);
   };
@@ -335,47 +331,34 @@ function Exhibition() {
     const formData = new FormData();
     formData.append('domestic_category_name', domesticForm.domestic_category_name.trim());
     
-    // Handle cities if they exist
-    if (showCitySection && cityEntries.length > 0) {
-      const validEntries = cityEntries.filter(entry => 
-        entry.cityName.trim() !== '' && entry.price > 0
-      );
-
-      if (validEntries.length === 0) {
-        setError('Please fill in city details or disable cities section');
+    // Handle single city if it exists
+    if (showCitySection && singleCity.cityName.trim() !== '') {
+      if (!singleCity.cityName.trim()) {
+        setError('Please enter city name');
         setLoading(false);
         return;
       }
 
-      if (!domesticForm.id) {
-        const missingImages = validEntries.some(entry => !entry.image && !entry.existingImage);
-        if (missingImages) {
-          setError('Please upload an image for each city');
-          setLoading(false);
-          return;
-        }
+      if (!domesticForm.id && !singleCity.image && !singleCity.existingImage) {
+        setError('Please upload an image for the city');
+        setLoading(false);
+        return;
       }
 
-      const stateNames = validEntries.map(entry => entry.stateName.trim());
-      const cityNames = validEntries.map(entry => entry.cityName.trim());
-      const prices = validEntries.map(entry => entry.price);
-      const existingImages = validEntries.map(entry => entry.existingImage || '').filter(img => img !== '');
-      const existingCityIds = validEntries.map(entry => entry.id).filter(id => typeof id === 'number');
+      // Prepare single city data
+      formData.append('stateNames', JSON.stringify([singleCity.stateName.trim()]));
+      formData.append('cityNames', JSON.stringify([singleCity.cityName.trim()]));
+      formData.append('prices', JSON.stringify([singleCity.price]));
+      formData.append('existingImages', JSON.stringify([singleCity.existingImage || '']));
+      formData.append('existingCityIds', JSON.stringify([singleCity.id || '']));
       
-      formData.append('stateNames', JSON.stringify(stateNames));
-      formData.append('cityNames', JSON.stringify(cityNames));
-      formData.append('prices', JSON.stringify(prices));
-      formData.append('existingImages', JSON.stringify(existingImages));
-      formData.append('existingCityIds', JSON.stringify(existingCityIds));
-      
-      validEntries.forEach(entry => {
-        if (entry.image) {
-          formData.append('images', entry.image);
-        }
-      });
+      if (singleCity.image) {
+        formData.append('images', singleCity.image);
+      }
     } else {
       formData.append('cityNames', JSON.stringify([]));
       formData.append('prices', JSON.stringify([]));
+      formData.append('existingCityIds', JSON.stringify([]));
     }
 
     try {
@@ -431,46 +414,34 @@ function Exhibition() {
     const formData = new FormData();
     formData.append('international_category_name', internationalForm.international_category_name.trim());
     
-    if (showCitySection && cityEntries.length > 0) {
-      const validEntries = cityEntries.filter(entry => 
-  entry.cityName.trim() !== '' && entry.price && entry.price.toString().trim() !== ''
-);
-
-      // if (validEntries.length === 0) {
-      //   setError('Please fill in city details or disable cities section');
-      //   setLoading(false);
-      //   return;
-      // }
-
-      if (!internationalForm.id) {
-        const missingImages = validEntries.some(entry => !entry.image && !entry.existingImage);
-        if (missingImages) {
-          setError('Please upload an image for each city');
-          setLoading(false);
-          return;
-        }
+    // Handle single city if it exists
+    if (showCitySection && singleCity.cityName.trim() !== '') {
+      if (!singleCity.cityName.trim()) {
+        setError('Please enter city name');
+        setLoading(false);
+        return;
       }
 
-      const countryNames = validEntries.map(entry => entry.countryName.trim());
-      const cityNames = validEntries.map(entry => entry.cityName.trim());
-      const prices = validEntries.map(entry => entry.price);
-      const existingImages = validEntries.map(entry => entry.existingImage || '').filter(img => img !== '');
-      const existingCityIds = validEntries.map(entry => entry.id).filter(id => typeof id === 'number');
+      if (!internationalForm.id && !singleCity.image && !singleCity.existingImage) {
+        setError('Please upload an image for the city');
+        setLoading(false);
+        return;
+      }
+
+      // Prepare single city data
+      formData.append('countryNames', JSON.stringify([singleCity.countryName.trim()]));
+      formData.append('cityNames', JSON.stringify([singleCity.cityName.trim()]));
+      formData.append('prices', JSON.stringify([singleCity.price]));
+      formData.append('existingImages', JSON.stringify([singleCity.existingImage || '']));
+      formData.append('existingCityIds', JSON.stringify([singleCity.id || '']));
       
-      formData.append('countryNames', JSON.stringify(countryNames));
-      formData.append('cityNames', JSON.stringify(cityNames));
-      formData.append('prices', JSON.stringify(prices));
-      formData.append('existingImages', JSON.stringify(existingImages));
-      formData.append('existingCityIds', JSON.stringify(existingCityIds));
-      
-      validEntries.forEach(entry => {
-        if (entry.image) {
-          formData.append('images', entry.image);
-        }
-      });
+      if (singleCity.image) {
+        formData.append('images', singleCity.image);
+      }
     } else {
       formData.append('cityNames', JSON.stringify([]));
       formData.append('prices', JSON.stringify([]));
+      formData.append('existingCityIds', JSON.stringify([]));
     }
 
     try {
@@ -569,13 +540,15 @@ function Exhibition() {
     });
     setDomesticForm({
       id: null,
-      domestic_category_name: ''
+      domestic_category_name: '',
+      cities: []
     });
     setInternationalForm({
       id: null,
-      international_category_name: ''
+      international_category_name: '',
+      cities: []
     });
-    setCityEntries([]);
+    resetSingleCity();
     setShowCitySection(false);
   };
 
@@ -646,7 +619,7 @@ function Exhibition() {
                     <th>Questions</th>
                     <th>Last Updated</th>
                     <th>Actions</th>
-                   </tr>
+                  </tr>
                 </thead>
                 <tbody>
                   <tr>
@@ -697,8 +670,7 @@ function Exhibition() {
                 <tr>
                   <th>ID</th>
                   <th>Category</th>
-                  <th>Cities</th>
-                  <th>Total Cities</th>
+                  <th>City</th>
                   <th>Created At</th>
                   <th>Actions</th>
                 </tr>
@@ -711,20 +683,17 @@ function Exhibition() {
                     <td>
                       {item.cities && item.cities.length > 0 ? (
                         <div className="city-tags">
-                          {item.cities.slice(0, 3).map((city, idx) => (
-                            <span key={idx} className="city-tag" title={`${city.state_name ? city.state_name + ', ' : ''}${city.city_name} - ₹${city.price}`}>
-                              {city.state_name ? `${city.state_name} - ` : ''}{city.city_name} (₹{city.price})
-                            </span>
-                          ))}
-                          {item.cities.length > 3 && (
-                            <span className="city-tag more">+{item.cities.length - 3}</span>
+                          <span className="city-tag" title={`${item.cities[0].state_name ? item.cities[0].state_name + ', ' : ''}${item.cities[0].city_name} - ₹${item.cities[0].price}`}>
+                            {item.cities[0].state_name ? `${item.cities[0].state_name} - ` : ''}{item.cities[0].city_name} (₹{item.cities[0].price})
+                          </span>
+                          {item.cities.length > 1 && (
+                            <span className="city-tag more">+{item.cities.length - 1} more</span>
                           )}
                         </div>
                       ) : (
-                        <span className="text-muted">No cities</span>
+                        <span className="text-muted">No city added</span>
                       )}
                     </td>
-                    <td>{item.cities?.length || 0}</td>
                     <td>{new Date(item.created_at).toLocaleDateString()}</td>
                     <td className="actions">
                       <Button 
@@ -776,8 +745,7 @@ function Exhibition() {
                 <tr>
                   <th>ID</th>
                   <th>Category</th>
-                  <th>Cities</th>
-                  <th>Total Cities</th>
+                  <th>City</th>
                   <th>Created At</th>
                   <th>Actions</th>
                 </tr>
@@ -790,20 +758,17 @@ function Exhibition() {
                     <td>
                       {item.cities && item.cities.length > 0 ? (
                         <div className="city-tags">
-                          {item.cities.slice(0, 3).map((city, idx) => (
-                            <span key={idx} className="city-tag" title={`${city.country_name ? city.country_name + ', ' : ''}${city.city_name} - ₹${city.price}`}>
-                              {city.country_name ? `${city.country_name} - ` : ''}{city.city_name} (₹{city.price})
-                            </span>
-                          ))}
-                          {item.cities.length > 3 && (
-                            <span className="city-tag more">+{item.cities.length - 3}</span>
+                          <span className="city-tag" title={`${item.cities[0].country_name ? item.cities[0].country_name + ', ' : ''}${item.cities[0].city_name} - ₹${item.cities[0].price}`}>
+                            {item.cities[0].country_name ? `${item.cities[0].country_name} - ` : ''}{item.cities[0].city_name} (₹{item.cities[0].price})
+                          </span>
+                          {item.cities.length > 1 && (
+                            <span className="city-tag more">+{item.cities.length - 1} more</span>
                           )}
                         </div>
                       ) : (
-                        <span className="text-muted">No cities</span>
+                        <span className="text-muted">No city added</span>
                       )}
                     </td>
-                    <td>{item.cities?.length || 0}</td>
                     <td>{new Date(item.created_at).toLocaleDateString()}</td>
                     <td className="actions">
                       <Button 
@@ -1029,106 +994,88 @@ function Exhibition() {
                           onClick={toggleCitySection}
                           className="mb-3"
                         >
-                          {showCitySection ? 'Remove Cities Section' : '+ Add Cities with Details'}
+                          {showCitySection ? 'Remove City' : '+ Add City'}
                         </Button>
                         {showCitySection && (
-                          <p className="text-muted small">Add cities with state name, city name, image, and price (optional)</p>
+                          <p className="text-muted small">Add city with state name, city name, image, and price</p>
                         )}
                       </div>
 
                       {showCitySection && (
                         <div className="cities-section">
                           <div className="section-header">
-                            <h4>Cities with State Name, Image and Price</h4>
-                            <button type="button" onClick={addCityEntry} className="add-btn">
-                              <FaPlus /> Add City
-                            </button>
+                            <h4>City Details</h4>
                           </div>
 
-                          {cityEntries.map((entry, index) => (
-                            <div key={entry.id} className="city-entry-card">
-                              <div className="city-entry-header">
-                                <h5>City {index + 1}</h5>
-                                {cityEntries.length > 1 && (
-                                  <button 
-                                    type="button" 
-                                    onClick={() => removeCityEntry(entry.id)}
-                                    className="remove-btn"
-                                  >
-                                    Remove City
-                                  </button>
-                                )}
-                              </div>
-                              
-                              <div className="city-entry-body">
-                                <div className="row">
-                                  <div className="col-md-4">
-                                    <div className="form-group">
-                                      <label>State Name *</label>
-                                      <input
-                                        type="text"
-                                        placeholder="Enter state name"
-                                        value={entry.stateName}
-                                        onChange={(e) => handleCityChange(entry.id, 'stateName', e.target.value)}
-                                        required={showCitySection}
-                                      />
-                                    </div>
-                                  </div>
-                                  
-                                  <div className="col-md-4">
-                                    <div className="form-group">
-                                      <label>City Name *</label>
-                                      <input
-                                        type="text"
-                                        placeholder="Enter city name"
-                                        value={entry.cityName}
-                                        onChange={(e) => handleCityChange(entry.id, 'cityName', e.target.value)}
-                                        required={showCitySection}
-                                      />
-                                    </div>
-                                  </div>
-                                  
-                                  <div className="col-md-4">
-                                    <div className="form-group">
-                                      <label>Price (₹) *</label>
-                                      <input
-                                        type="text"
-                                        placeholder="Enter price"
-                                        value={entry.price}
-                                        onChange={(e) => handleCityChange(entry.id, 'price', e.target.value)}
-                                        required={showCitySection}
-                                        min="0"
-                                        step="0.01"
-                                      />
-                                    </div>
-                                  </div>
-                                </div>
-                                
-                                <div className="row">
-                                  <div className="col-md-12">
-                                    <div className="form-group">
-                                      <label>Image {!entry.existingImage && '*'}</label>
-                                      <input
-                                        type="file"
-                                        accept="image/*"
-                                        onChange={(e) => handleCityImageChange(entry.id, e)}
-                                        required={!entry.existingImage && !domesticForm.id && showCitySection}
-                                      />
-                                    </div>
-                                  </div>
-                                </div>
-                                
-                                {(entry.imagePreview || entry.existingImage) && (
-                                  <div className="image-preview">
-                                    <img 
-                                      src={entry.imagePreview || `${baseurl}/uploads/exhibition/${entry.existingImage}`}
-                                      alt={`City ${index + 1}`}
+                          <div className="city-entry-card">
+                            <div className="city-entry-body">
+                              <div className="row">
+                                <div className="col-md-4">
+                                  <div className="form-group">
+                                    <label>State Name *</label>
+                                    <input
+                                      type="text"
+                                      placeholder="Enter state name"
+                                      value={singleCity.stateName}
+                                      onChange={(e) => handleCityChange('stateName', e.target.value)}
+                                      required={showCitySection}
                                     />
                                   </div>
-                                )}
+                                </div>
+                                
+                                <div className="col-md-4">
+                                  <div className="form-group">
+                                    <label>City Name *</label>
+                                    <input
+                                      type="text"
+                                      placeholder="Enter city name"
+                                      value={singleCity.cityName}
+                                      onChange={(e) => handleCityChange('cityName', e.target.value)}
+                                      required={showCitySection}
+                                    />
+                                  </div>
+                                </div>
+                                
+                                <div className="col-md-4">
+                                  <div className="form-group">
+                                    <label>Price (₹) *</label>
+                                    <input
+                                      type="text"
+                                      placeholder="Enter price"
+                                      value={singleCity.price}
+                                      onChange={(e) => handleCityChange('price', e.target.value)}
+                                      required={showCitySection}
+                                      min="0"
+                                      step="0.01"
+                                    />
+                                  </div>
+                                </div>
                               </div>
+                              
+                              <div className="row">
+                                <div className="col-md-12">
+                                  <div className="form-group">
+                                    <label>Image {!singleCity.existingImage && '*'}</label>
+                                    <input
+                                      type="file"
+                                      accept="image/*"
+                                      onChange={handleCityImageChange}
+                                      required={!singleCity.existingImage && !domesticForm.id && showCitySection}
+                                    />
+                                  </div>
+                                </div>
+                              </div>
+                              
+                              {(singleCity.imagePreview || singleCity.existingImage) && (
+                                <div className="image-preview">
+                                  <img 
+                                    src={singleCity.imagePreview || `${baseurl}/uploads/exhibition/${singleCity.existingImage}`}
+                                    alt="City"
+                                  />
+                                </div>
+                              )}
                             </div>
-                          ))}
+                          </div>
                         </div>
                       )}
 
@@ -1169,106 +1116,88 @@ function Exhibition() {
                           onClick={toggleCitySection}
                           className="mb-3"
                         >
-                          {showCitySection ? 'Remove Cities Section' : '+ Add Cities with Details'}
+                          {showCitySection ? 'Remove City' : '+ Add City'}
                         </Button>
                         {showCitySection && (
-                          <p className="text-muted small">Add cities with country name, city name, image, and price (optional)</p>
+                          <p className="text-muted small">Add city with country name, city name, image, and price</p>
                         )}
                       </div>
 
                       {showCitySection && (
                         <div className="cities-section">
                           <div className="section-header">
-                            <h4>Cities with Country Name, Image and Price</h4>
-                            <button type="button" onClick={addCityEntry} className="add-btn">
-                              <FaPlus /> Add City
-                            </button>
+                            <h4>City Details</h4>
                           </div>
 
-                          {cityEntries.map((entry, index) => (
-                            <div key={entry.id} className="city-entry-card">
-                              <div className="city-entry-header">
-                                <h5>City {index + 1}</h5>
-                                {cityEntries.length > 1 && (
-                                  <button 
-                                    type="button" 
-                                    onClick={() => removeCityEntry(entry.id)}
-                                    className="remove-btn"
-                                  >
-                                    Remove City
-                                  </button>
-                                )}
-                              </div>
-                              
-                              <div className="city-entry-body">
-                                <div className="row">
-                                  <div className="col-md-4">
-                                    <div className="form-group">
-                                      <label>Country Name *</label>
-                                      <input
-                                        type="text"
-                                        placeholder="Enter country name"
-                                        value={entry.countryName}
-                                        onChange={(e) => handleCityChange(entry.id, 'countryName', e.target.value)}
-                                        required={showCitySection}
-                                      />
-                                    </div>
-                                  </div>
-                                  
-                                  <div className="col-md-4">
-                                    <div className="form-group">
-                                      <label>City Name *</label>
-                                      <input
-                                        type="text"
-                                        placeholder="Enter city name"
-                                        value={entry.cityName}
-                                        onChange={(e) => handleCityChange(entry.id, 'cityName', e.target.value)}
-                                        required={showCitySection}
-                                      />
-                                    </div>
-                                  </div>
-                                  
-                                  <div className="col-md-4">
-                                    <div className="form-group">
-                                      <label>Price (₹) *</label>
-                                      <input
-                                        type="text"
-                                        placeholder="Enter price"
-                                        value={entry.price}
-                                        onChange={(e) => handleCityChange(entry.id, 'price', e.target.value)}
-                                        required={showCitySection}
-                                        min="0"
-                                        step="0.01"
-                                      />
-                                    </div>
-                                  </div>
-                                </div>
-                                
-                                <div className="row">
-                                  <div className="col-md-12">
-                                    <div className="form-group">
-                                      <label>Image {!entry.existingImage && '*'}</label>
-                                      <input
-                                        type="file"
-                                        accept="image/*"
-                                        onChange={(e) => handleCityImageChange(entry.id, e)}
-                                        required={!entry.existingImage && !internationalForm.id && showCitySection}
-                                      />
-                                    </div>
-                                  </div>
-                                </div>
-                                
-                                {(entry.imagePreview || entry.existingImage) && (
-                                  <div className="image-preview">
-                                    <img 
-                                      src={entry.imagePreview || `${baseurl}/uploads/exhibition/${entry.existingImage}`}
-                                      alt={`City ${index + 1}`}
+                          <div className="city-entry-card">
+                            <div className="city-entry-body">
+                              <div className="row">
+                                <div className="col-md-4">
+                                  <div className="form-group">
+                                    <label>Country Name *</label>
+                                    <input
+                                      type="text"
+                                      placeholder="Enter country name"
+                                      value={singleCity.countryName}
+                                      onChange={(e) => handleCityChange('countryName', e.target.value)}
+                                      required={showCitySection}
                                     />
                                   </div>
-                                )}
+                                </div>
+                                
+                                <div className="col-md-4">
+                                  <div className="form-group">
+                                    <label>City Name *</label>
+                                    <input
+                                      type="text"
+                                      placeholder="Enter city name"
+                                      value={singleCity.cityName}
+                                      onChange={(e) => handleCityChange('cityName', e.target.value)}
+                                      required={showCitySection}
+                                    />
+                                  </div>
+                                </div>
+                                
+                                <div className="col-md-4">
+                                  <div className="form-group">
+                                    <label>Price (₹) *</label>
+                                    <input
+                                      type="text"
+                                      placeholder="Enter price"
+                                      value={singleCity.price}
+                                      onChange={(e) => handleCityChange('price', e.target.value)}
+                                      required={showCitySection}
+                                      min="0"
+                                      step="0.01"
+                                    />
+                                  </div>
+                                </div>
                               </div>
+                              
+                              <div className="row">
+                                <div className="col-md-12">
+                                  <div className="form-group">
+                                    <label>Image {!singleCity.existingImage && '*'}</label>
+                                    <input
+                                      type="file"
+                                      accept="image/*"
+                                      onChange={handleCityImageChange}
+                                      required={!singleCity.existingImage && !internationalForm.id && showCitySection}
+                                    />
+                                  </div>
+                                </div>
+                              </div>
+                              
+                              {(singleCity.imagePreview || singleCity.existingImage) && (
+                                <div className="image-preview">
+                                  <img 
+                                    src={singleCity.imagePreview || `${baseurl}/uploads/exhibition/${singleCity.existingImage}`}
+                                    alt="City"
+                                  />
+                                </div>
+                              )}
                             </div>
-                          ))}
+                          </div>
                         </div>
                       )}
 

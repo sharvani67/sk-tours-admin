@@ -25,19 +25,14 @@ const InternationalMiceForm = ({
 
   const addCityEntry = () => {
     setCityEntries([
-      ...cityEntries,
       { id: Date.now(), countryName: '', cityName: '', price: '', image: null, imagePreview: '', existingImage: '' }
     ]);
     setShowCitySection(true);
   };
 
   const removeCityEntry = (id) => {
-    if (cityEntries.length > 1) {
-      setCityEntries(cityEntries.filter(entry => entry.id !== id));
-    } else {
-      setCityEntries([]);
-      setShowCitySection(false);
-    }
+    setCityEntries([]);
+    setShowCitySection(false);
   };
 
   const handleCityChange = (id, field, value) => {
@@ -64,93 +59,88 @@ const InternationalMiceForm = ({
     }
   };
 
- const handleSubmit = async (e) => {
-  e.preventDefault();
-  setError('');
-  setSuccessMessage('');
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+    setSuccessMessage('');
 
-  if (cityEntries.length === 0) {
-    setError('Please add at least one city');
-    return;
-  }
-
- const validEntries = cityEntries.filter(entry => 
-  entry.cityName.trim() !== '' && entry.price && entry.price.toString().trim() !== ''
-);
-
-  if (validEntries.length === 0) {
-    setError('Please fill in city details');
-    return;
-  }
-
-  const formData = new FormData();
-  
-  const countryNames = validEntries.map(entry => entry.countryName.trim());
-  const cityNames = validEntries.map(entry => entry.cityName.trim());
-  const prices = validEntries.map(entry => entry.price);
-  const existingImages = validEntries.map(entry => entry.existingImage || '').filter(img => img !== '');
-  const existingCityIds = validEntries.map(entry => entry.id).filter(id => typeof id === 'number');
-  
-  formData.append('countryNames', JSON.stringify(countryNames));
-  formData.append('cityNames', JSON.stringify(cityNames));
-  formData.append('prices', JSON.stringify(prices));
-  formData.append('existingImages', JSON.stringify(existingImages));
-  formData.append('existingCityIds', JSON.stringify(existingCityIds));
-  formData.append('mice_type', MICE_TYPE);
-  
-  validEntries.forEach(entry => {
-    if (entry.image) {
-      formData.append('images', entry.image);
+    if (cityEntries.length === 0) {
+      setError('Please add a city');
+      return;
     }
-  });
 
-  try {
-    let response;
-    let savedId = internationalForm.id;
+    const validEntries = cityEntries.filter(entry => 
+      entry.cityName.trim() !== '' && entry.price && entry.price.toString().trim() !== ''
+    );
+
+    if (validEntries.length === 0) {
+      setError('Please fill in city details');
+      return;
+    }
+
+    const formData = new FormData();
     
-    if (internationalForm.id) {
-      // Update existing international
-      response = await fetch(`${baseurl}/api/mice/international/${internationalForm.id}`, {
-        method: 'PUT',
-        body: formData
-      });
-      savedId = internationalForm.id;
-    } else {
-      // Create new international
-      response = await fetch(`${baseurl}/api/mice/international`, {
-        method: 'POST',
-        body: formData
-      });
-    }
-
-    // FIX: Read the response body only ONCE
-    const result = await response.json();
-
-    if (response.ok) {
-      // For create operations, get the saved ID from the response
-      if (!internationalForm.id && result.id) {
-        savedId = result.id;
+    const countryNames = validEntries.map(entry => entry.countryName.trim());
+    const cityNames = validEntries.map(entry => entry.cityName.trim());
+    const prices = validEntries.map(entry => entry.price);
+    const existingImages = validEntries.map(entry => entry.existingImage || '').filter(img => img !== '');
+    const existingCityIds = validEntries.map(entry => entry.id).filter(id => typeof id === 'number');
+    
+    formData.append('countryNames', JSON.stringify(countryNames));
+    formData.append('cityNames', JSON.stringify(cityNames));
+    formData.append('prices', JSON.stringify(prices));
+    formData.append('existingImages', JSON.stringify(existingImages));
+    formData.append('existingCityIds', JSON.stringify(existingCityIds));
+    formData.append('mice_type', MICE_TYPE);
+    
+    validEntries.forEach(entry => {
+      if (entry.image) {
+        formData.append('images', entry.image);
       }
+    });
+
+    try {
+      let response;
+      let savedId = internationalForm.id;
       
-      setSuccessMessage(internationalForm.id ? 'International Mice updated successfully!' : 'International Mice added successfully!');
-      await fetchData();
-      resetForms();
-      setShowForm(false);
-      
-      // After saving, navigate to the full details page to edit other sections
-      if (savedId) {
-        setTimeout(() => {
-          window.location.href = `/mice/international-details/${savedId}`;
-        }, 1500);
+      if (internationalForm.id) {
+        response = await fetch(`${baseurl}/api/mice/international/${internationalForm.id}`, {
+          method: 'PUT',
+          body: formData
+        });
+        savedId = internationalForm.id;
+      } else {
+        response = await fetch(`${baseurl}/api/mice/international`, {
+          method: 'POST',
+          body: formData
+        });
       }
-    } else {
-      setError(result.error || 'Error processing request');
+
+      const result = await response.json();
+
+      if (response.ok) {
+        if (!internationalForm.id && result.id) {
+          savedId = result.id;
+        }
+        
+        setSuccessMessage(internationalForm.id ? 'International Mice updated successfully!' : 'International Mice added successfully!');
+        await fetchData();
+        resetForms();
+        setShowForm(false);
+        
+        if (savedId) {
+          setTimeout(() => {
+            window.location.href = `/mice/international-details/${savedId}`;
+          }, 1500);
+        }
+      } else {
+        setError(result.error || 'Error processing request');
+      }
+    } catch (err) {
+      console.error('Error submitting international form:', err);
+      setError('Error submitting form. Please try again.');
     }
-  } catch (err) {
-    console.error('Error submitting international form:', err);
-    setError('Error submitting form. Please try again.');
-  }
-};
+  };
 
   return (
     <>
@@ -164,26 +154,26 @@ const InternationalMiceForm = ({
       <form onSubmit={handleSubmit}>
         <div className="cities-section mb-4">
           <div className="d-flex justify-content-between align-items-center mb-3">
-            <h4>Cities with Country Name, Image and Price</h4>
-            <Button type="button" onClick={addCityEntry} variant="outline-primary" size="sm">
-              <FaPlus /> Add City
-            </Button>
+            <h4>City with Country Name, Image and Price</h4>
+            {cityEntries.length === 0 && (
+              <Button type="button" onClick={addCityEntry} variant="outline-primary" size="sm">
+                <FaPlus /> Add City
+              </Button>
+            )}
           </div>
 
           {cityEntries.map((entry, index) => (
             <Card key={entry.id} className="mb-3 border-primary">
               <Card.Header className="bg-primary bg-opacity-10 d-flex justify-content-between align-items-center">
-                <h5 className="mb-0">City {index + 1}</h5>
-                {cityEntries.length > 1 && (
-                  <Button 
-                    type="button" 
-                    variant="outline-danger" 
-                    size="sm"
-                    onClick={() => removeCityEntry(entry.id)}
-                  >
-                    <FaTrash /> Remove
-                  </Button>
-                )}
+                <h5 className="mb-0">City Information</h5>
+                <Button 
+                  type="button" 
+                  variant="outline-danger" 
+                  size="sm"
+                  onClick={() => removeCityEntry(entry.id)}
+                >
+                  <FaTrash /> Remove
+                </Button>
               </Card.Header>
               <Card.Body>
                 <Row>
@@ -243,7 +233,7 @@ const InternationalMiceForm = ({
                   <div className="mt-2">
                     <img 
                       src={entry.imagePreview || `${baseurl}/uploads/mice/international/${entry.existingImage}`}
-                      alt={`City ${index + 1}`}
+                      alt={`City`}
                       style={{ maxWidth: '200px', maxHeight: '150px', objectFit: 'cover', borderRadius: '8px' }}
                     />
                   </div>
@@ -253,14 +243,17 @@ const InternationalMiceForm = ({
           ))}
         </div>
 
-        <div className="d-flex gap-2 mt-4">
-          <Button type="submit" variant="primary" disabled={loading}>
-            {loading ? <Spinner size="sm" /> : (internationalForm.id ? 'Update International' : 'Save International')}
-          </Button>
-          <Button type="button" variant="secondary" onClick={handleCancel} disabled={loading}>
-            Cancel
-          </Button>
-        </div>
+        {/* Only show buttons when a city card is present */}
+        {cityEntries.length > 0 && (
+          <div className="d-flex gap-2 mt-4">
+            <Button type="submit" variant="primary" disabled={loading}>
+              {loading ? <Spinner size="sm" /> : (internationalForm.id ? 'Update International' : 'Save International')}
+            </Button>
+            <Button type="button" variant="secondary" onClick={handleCancel} disabled={loading}>
+              Cancel
+            </Button>
+          </div>
+        )}
       </form>
     </>
   );
