@@ -127,53 +127,50 @@ const OfflineFlightsTable = () => {
   };
 
   // Calculate arrival date based on departure date, departure time, and duration
-  const calculateArrivalDate = (departureDateStr, departureTimeStr, durationStr) => {
-    if (!departureDateStr || !departureTimeStr || !durationStr) {
-      return departureDateStr;
+ // Calculate arrival date based on departure date and arrival time
+const calculateArrivalDate = (departureDateStr, departureTimeStr, arrivalTimeStr) => {
+  if (!departureDateStr || !departureTimeStr || !arrivalTimeStr) {
+    return formatDateForDisplay(departureDateStr);
+  }
+
+  try {
+    const [year, month, day] = departureDateStr.split('-');
+
+    const [depHour, depMin] = departureTimeStr.split(':').map(Number);
+    const [arrHour, arrMin] = arrivalTimeStr.split(':').map(Number);
+
+    const departure = new Date(
+      year,
+      month - 1,
+      day,
+      depHour,
+      depMin
+    );
+
+    let arrival = new Date(
+      year,
+      month - 1,
+      day,
+      arrHour,
+      arrMin
+    );
+
+    // If arrival time is less than departure → next day
+    if (arrival < departure) {
+      arrival.setDate(arrival.getDate() + 1);
     }
 
-    try {
-      // Parse departure date
-      const [year, month, day] = departureDateStr.split('-');
-      
-      // Parse departure time (HH:MM:SS)
-      const [depHours, depMinutes, depSeconds] = departureTimeStr.split(':').map(Number);
-      
-      // Parse duration (e.g., "2h 10mins", "3hr 30 mins", "1h 30m")
-      let durationHours = 0;
-      let durationMinutes = 0;
-      
-      // Match patterns like "2h 10mins", "3hr 30 mins", "1h 30m"
-      const hourMatch = durationStr.match(/(\d+)\s*(?:h|hr)/i);
-      const minuteMatch = durationStr.match(/(\d+)\s*(?:min|mins|m)/i);
-      
-      if (hourMatch) {
-        durationHours = parseInt(hourMatch[1]);
-      }
-      if (minuteMatch) {
-        durationMinutes = parseInt(minuteMatch[1]);
-      }
-      
-      // Create departure datetime in UTC
-      const departureDateTime = new Date(Date.UTC(year, month - 1, day, depHours, depMinutes, depSeconds || 0));
-      
-      // Add duration
-      const arrivalDateTime = new Date(departureDateTime.getTime() + (durationHours * 60 * 60 * 1000) + (durationMinutes * 60 * 1000));
-      
-      // Format arrival date
-      const arrivalDate = new Date(Date.UTC(arrivalDateTime.getUTCFullYear(), arrivalDateTime.getUTCMonth(), arrivalDateTime.getUTCDate()));
-      
-      return arrivalDate.toLocaleDateString('en-IN', {
-        day: '2-digit',
-        month: 'short',
-        year: 'numeric',
-        timeZone: 'UTC'
-      });
-    } catch (error) {
-      console.error('Error calculating arrival date:', error);
-      return formatDateForDisplay(departureDateStr);
-    }
-  };
+    return arrival.toLocaleDateString('en-IN', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric'
+    });
+
+  } catch (error) {
+    console.error("Arrival calculation error:", error);
+    return formatDateForDisplay(departureDateStr);
+  }
+};
 
   // Format time only - handles HH:MM:SS format
   const formatTimeOnly = (timeString) => {
@@ -272,23 +269,23 @@ const OfflineFlightsTable = () => {
         </div>
       ),
     },
-    {
-      key: 'arrival_info',
-      title: 'Arrival',
-      render: (item) => {
-        const arrivalDate = calculateArrivalDate(
-          item.departure_date, 
-          item.flight_time, 
-          item.duration
-        );
-        return (
-          <div>
-            <div className="fw-bold">{arrivalDate}</div>
-            <small className="text-muted">{formatTimeOnly(item.arrival_time)}</small>
-          </div>
-        );
-      },
-    },
+//     {
+//       key: 'arrival_info',
+//       title: 'Arrival',
+//       render: (item) => {
+//        const arrivalDate = calculateArrivalDate(
+//   item.departure_date, 
+//   item.flight_time, 
+//   item.arrival_time
+// );
+//         return (
+//           <div>
+//             <div className="fw-bold">{arrivalDate}</div>
+//             <small className="text-muted">{formatTimeOnly(item.arrival_time)}</small>
+//           </div>
+//         );
+//       },
+//     },
     {
       key: 'duration',
       title: 'Duration',

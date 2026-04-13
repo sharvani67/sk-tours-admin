@@ -1217,7 +1217,7 @@ function OfflineHotels() {
           </Card>
 
           {/* Filters Section */}
-          <Card className="mb-4">
+          {/* <Card className="mb-4">
             <Card.Header>
               <h5 className="mb-0">Hotel Filters</h5>
             </Card.Header>
@@ -1293,7 +1293,7 @@ function OfflineHotels() {
                 </Col>
               </Row>
             </Card.Body>
-          </Card>
+          </Card> */}
 
           {/* Submit Buttons */}
           <div className="d-flex justify-content-end gap-2">
