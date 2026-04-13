@@ -458,3 +458,73 @@ code {
 .transactions-card {
   animation: fadeIn 0.6s ease-out;
 }
+
+
+/* Additional styles for new transaction types */
+.stats-card-icon.bungalow-icon {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.stats-card-icon.picnic-icon {
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+.stats-card-icon.weekend-icon {
+  background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+}
+
+.stats-card-icon.exhibition-icon {
+  background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+}
+
+.stats-card-icon.mice-icon {
+  background: linear-gradient(135deg, #d9afd9 0%, #97d9e1 100%);
+}
+
+.stats-card {
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.stats-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+}
+
+.stats-card.active {
+  border: 2px solid #2E4D98;
+  box-shadow: 0 4px 15px rgba(46,77,152,0.2);
+}
+
+.notes-pre {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  background: #f8f9fa;
+  padding: 10px;
+  border-radius: 5px;
+  font-size: 12px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.tour-code {
+  background: #e9ecef;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.tab-badge {
+  font-size: 10px;
+  padding: 2px 6px;
+  margin-left: 8px;
+}
+
+.transaction-tabs .nav-link {
+  padding: 10px 16px;
+  font-size: 13px;
+}
+
+.transaction-tabs .nav-link .me-2 {
+  margin-right: 0.5rem;
+}
