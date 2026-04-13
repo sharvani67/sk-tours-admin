@@ -55,7 +55,7 @@ const countries = [
 
 function OfflineHotels() {
   const navigate = useNavigate();
-  const { id } = useParams(); // Get ID from URL if editing
+  const { id } = useParams();
   const [loading, setLoading] = useState(false);
   const [fetchLoading, setFetchLoading] = useState(false);
   const [error, setError] = useState('');
@@ -69,7 +69,7 @@ function OfflineHotels() {
   const [additionalImagePreviews, setAdditionalImagePreviews] = useState([]);
   const [existingImages, setExistingImages] = useState([]);
 
-  // Hotel Search Details (Based on images 1-4)
+  // Hotel Search Details
   const [searchDetails, setSearchDetails] = useState({
     country: '',
     city: '',
@@ -86,7 +86,7 @@ function OfflineHotels() {
   // Children ages state
   const [childrenAges, setChildrenAges] = useState([]);
 
-  // Hotel Details (Based on image 5)
+  // Hotel Details
   const [hotelDetails, setHotelDetails] = useState({
     hotelName: '',
     location: '',
@@ -107,7 +107,7 @@ function OfflineHotels() {
     payLater: false
   });
 
-  // Description Content (Based on image 6)
+  // Description Content
   const [descriptions, setDescriptions] = useState({
     overview: '',
     hotelFacilities: '',
@@ -116,7 +116,7 @@ function OfflineHotels() {
     taxesDescription: ''
   });
 
-  // Filters (Based on images 7-8)
+  // Filters
   const [filters, setFilters] = useState({
     searchLocality: '',
     priceRanges: [
@@ -139,6 +139,15 @@ function OfflineHotels() {
     ]
   });
 
+  // Helper function to format date to YYYY-MM-DD for API
+  const formatDateForAPI = (date) => {
+    if (!date) return '';
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
   // Fetch hotel data if editing
   useEffect(() => {
     if (id) {
@@ -156,14 +165,14 @@ function OfflineHotels() {
       if (response.data.success) {
         const hotelData = response.data.data;
         
-        // Set search details
+        // Set search details - dates are already in YYYY-MM-DD format from backend
         setSearchDetails({
           country: hotelData.country || '',
           city: hotelData.city || '',
           location: hotelData.location || '',
           propertyName: hotelData.property_name || '',
-          checkInDate: hotelData.check_in_date ? hotelData.check_in_date.split('T')[0] : '',
-          checkOutDate: hotelData.check_out_date ? hotelData.check_out_date.split('T')[0] : '',
+          checkInDate: hotelData.check_in_date || '',
+          checkOutDate: hotelData.check_out_date || '',
           rooms: hotelData.rooms || 1,
           adults: hotelData.adults || 2,
           children: hotelData.children || 0,
@@ -205,29 +214,27 @@ function OfflineHotels() {
           taxesDescription: hotelData.taxes_description || ''
         });
 
-       // Set main image preview if exists
-if (hotelData.main_image) {
-  // Remove any duplicate baseurl if the image path already starts with /uploads
-  const imageUrl = hotelData.main_image.startsWith('http') 
-    ? hotelData.main_image 
-    : `${baseurl}${hotelData.main_image}`;
-  setMainImagePreview(imageUrl);
-}
+        // Set main image preview if exists
+        if (hotelData.main_image) {
+          const imageUrl = hotelData.main_image.startsWith('http') 
+            ? hotelData.main_image 
+            : `${baseurl}${hotelData.main_image}`;
+          setMainImagePreview(imageUrl);
+        }
 
-// Set additional images
-if (hotelData.additional_images && hotelData.additional_images.length > 0) {
-  const imageUrls = hotelData.additional_images.map(img => {
-    return img.startsWith('http') ? img : `${baseurl}${img}`;
-  });
-  setAdditionalImagePreviews(imageUrls);
-  setExistingImages(hotelData.additional_images);
-}
+        // Set additional images
+        if (hotelData.additional_images && hotelData.additional_images.length > 0) {
+          const imageUrls = hotelData.additional_images.map(img => {
+            return img.startsWith('http') ? img : `${baseurl}${img}`;
+          });
+          setAdditionalImagePreviews(imageUrls);
+          setExistingImages(hotelData.additional_images);
+        }
 
         // Set filters if available
         if (hotelData.filters) {
           const { priceRanges, starCategories, budget, searchLocalities } = hotelData.filters;
 
-          // Update price ranges selection
           if (priceRanges && priceRanges.length > 0) {
             setFilters(prev => ({
               ...prev,
@@ -238,7 +245,6 @@ if (hotelData.additional_images && hotelData.additional_images.length > 0) {
             }));
           }
 
-          // Update star categories selection
           if (starCategories && starCategories.length > 0) {
             setFilters(prev => ({
               ...prev,
@@ -249,7 +255,6 @@ if (hotelData.additional_images && hotelData.additional_images.length > 0) {
             }));
           }
 
-          // Update budget
           if (budget) {
             setFilters(prev => ({
               ...prev,
@@ -260,7 +265,6 @@ if (hotelData.additional_images && hotelData.additional_images.length > 0) {
             }));
           }
 
-          // Update search locality
           if (searchLocalities && searchLocalities.length > 0) {
             setFilters(prev => ({
               ...prev,
@@ -297,9 +301,8 @@ if (hotelData.additional_images && hotelData.additional_images.length > 0) {
         newCount = prev.children - 1;
       }
 
-      // Update children ages array
       if (newCount > childrenAges.length) {
-        setChildrenAges([...childrenAges, 5]); // Default age 5
+        setChildrenAges([...childrenAges, 5]);
       } else if (newCount < childrenAges.length) {
         setChildrenAges(childrenAges.slice(0, newCount));
       }
@@ -327,13 +330,11 @@ if (hotelData.additional_images && hotelData.additional_images.length > 0) {
   const handleMainImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      // Check file size (max 5MB)
       if (file.size > 5 * 1024 * 1024) {
         setError('Image size should be less than 5MB');
         return;
       }
       
-      // Check file type
       const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
       if (!allowedTypes.includes(file.type)) {
         setError('Only JPEG, JPG, PNG, GIF, and WEBP images are allowed');
@@ -346,8 +347,6 @@ if (hotelData.additional_images && hotelData.additional_images.length > 0) {
         setMainImagePreview(reader.result);
       };
       reader.readAsDataURL(file);
-      
-      // Clear the URL field when file is uploaded
       setHotelDetails(prev => ({ ...prev, mainImage: '' }));
     }
   };
@@ -359,13 +358,11 @@ if (hotelData.additional_images && hotelData.additional_images.length > 0) {
     const validPreviews = [];
 
     for (const file of files) {
-      // Check file size (max 5MB)
       if (file.size > 5 * 1024 * 1024) {
         setError('Each image should be less than 5MB');
         continue;
       }
       
-      // Check file type
       const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
       if (!allowedTypes.includes(file.type)) {
         setError('Only JPEG, JPG, PNG, GIF, and WEBP images are allowed');
@@ -483,26 +480,21 @@ if (hotelData.additional_images && hotelData.additional_images.length > 0) {
     try {
       const formData = new FormData();
       
-      // Append all data as JSON strings
       formData.append('searchDetails', JSON.stringify(searchDetails));
       formData.append('childrenAges', JSON.stringify(childrenAges));
       
-      // Update hotelDetails with existing images
       const updatedHotelDetails = {
         ...hotelDetails,
         additionalImages: existingImages
       };
       formData.append('hotelDetails', JSON.stringify(updatedHotelDetails));
-      
       formData.append('descriptions', JSON.stringify(descriptions));
       formData.append('filters', JSON.stringify(filters));
       
-      // Append main image file if exists
       if (mainImageFile) {
         formData.append('mainImage', mainImageFile);
       }
       
-      // Append additional image files
       if (additionalImageFiles.length > 0) {
         additionalImageFiles.forEach((file) => {
           formData.append('additionalImages', file);
@@ -511,14 +503,12 @@ if (hotelData.additional_images && hotelData.additional_images.length > 0) {
 
       let response;
       if (id) {
-        // Update existing hotel
         response = await axios.put(`${baseurl}/api/offline-hotels/${id}`, formData, {
           headers: {
             'Content-Type': 'multipart/form-data'
           }
         });
       } else {
-        // Create new hotel
         response = await axios.post(`${baseurl}/api/offline-hotels`, formData, {
           headers: {
             'Content-Type': 'multipart/form-data'
@@ -619,7 +609,6 @@ if (hotelData.additional_images && hotelData.additional_images.length > 0) {
           <h2 className="mb-0">{id ? 'Edit Offline Hotel' : 'Add Offline Hotel'}</h2>
         </div>
 
-        {/* Alert Messages */}
         {error && (
           <Alert variant="danger" onClose={() => setError('')} dismissible>
             {error}
@@ -633,7 +622,7 @@ if (hotelData.additional_images && hotelData.additional_images.length > 0) {
         )}
 
         <Form onSubmit={handleSubmit}>
-          {/* Hotel Search Section - Based on images 1-4 */}
+          {/* Hotel Search Section */}
           <Card className="mb-4">
             <Card.Header>
               <h5 className="mb-0">Hotel Search Details</h5>
@@ -805,7 +794,6 @@ if (hotelData.additional_images && hotelData.additional_images.length > 0) {
                 </Col>
               </Row>
 
-              {/* Children Ages - Shown when children > 0 */}
               {searchDetails.children > 0 && (
                 <Row className="mt-3">
                   <Col md={12}>
@@ -835,7 +823,7 @@ if (hotelData.additional_images && hotelData.additional_images.length > 0) {
             </Card.Body>
           </Card>
 
-          {/* Hotel Details Section - Based on image 5 */}
+          {/* Hotel Details Section */}
           <Card className="mb-4">
             <Card.Header>
               <h5 className="mb-0">Hotel Details</h5>
@@ -1128,7 +1116,7 @@ if (hotelData.additional_images && hotelData.additional_images.length > 0) {
             </Card.Body>
           </Card>
 
-          {/* Description Tabs Section - Based on image 6 */}
+          {/* Description Tabs Section */}
           <Card className="mb-4">
             <Card.Header>
               <h5 className="mb-0">Hotel Descriptions</h5>
@@ -1228,7 +1216,7 @@ if (hotelData.additional_images && hotelData.additional_images.length > 0) {
             </Card.Body>
           </Card>
 
-          {/* Filters Section - Based on images 7-8 */}
+          {/* Filters Section */}
           <Card className="mb-4">
             <Card.Header>
               <h5 className="mb-0">Hotel Filters</h5>

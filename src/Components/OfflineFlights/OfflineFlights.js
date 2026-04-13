@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Card, Form, Row, Col, Button, InputGroup, Alert, Spinner } from 'react-bootstrap';
+import { Container, Card, Form, Row, Col, Button, Alert, Spinner } from 'react-bootstrap';
 import Navbar from '../../Shared/Navbar/Navbar';
-import { indianAirports, countries } from './airports';
+import { indianAirports } from './airports';
 import axios from 'axios';
 import { baseurl } from '../../Api/Baseurl';
 import { useNavigate, useParams } from 'react-router-dom';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 
 function OfflineFlights() {
   const [bookingType, setBookingType] = useState('oneWay');
@@ -15,18 +17,20 @@ function OfflineFlights() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const navigate = useNavigate();
-  const { id } = useParams(); // Get ID from URL if editing
+  const { id } = useParams();
+  
+  // Date picker states
+  const [departureDate, setDepartureDate] = useState(null);
+  const [returnDate, setReturnDate] = useState(null);
   
   // Get unique cities from airports
   const indianCities = [...new Set(indianAirports.map(airport => airport.city))].sort();
   
-  // Get airports for selected city
   const getAirportsByCity = (city) => {
     return indianAirports.filter(airport => airport.city === city);
   };
 
   const [flightDetails, setFlightDetails] = useState({
-    // Basic Flight Info
     fromCountry: 'IN',
     fromCity: '',
     fromAirport: '',
@@ -35,21 +39,14 @@ function OfflineFlights() {
     toCity: '',
     toAirport: '',
     toAirportCode: '',
-    departureDate: '',
-    returnDate: '',
-    
-    // Travellers
     adults: 1,
     children: 0,
     infants: 0,
     travellerClass: 'Economy',
-    
-    // Flight Display Info
     flightTime: '',
     duration: '',
     arrivalTime: '',
     flightType: 'Non Stop',
-    destination: '',
     airline: '',
     flightNumber: '',
     baggageAllowance: '',
@@ -59,137 +56,6 @@ function OfflineFlights() {
     pricePerAdult: '',
   });
 
-  const [filters, setFilters] = useState({
-    // Popular Filters
-    nonStop: true,
-    hideNearbyAirports: false,
-    refundableFares: false,
-    oneStop: false,
-    
-    // Departure Airports Filter
-    departureAirports: [
-      {
-        id: 1,
-        name: 'Indira Gandhi International Airport',
-        code: 'DEL',
-        price: '7,121',
-        selected: false
-      },
-      {
-        id: 2,
-        name: 'Hindon Airport',
-        code: 'HDO',
-        distance: '32Km',
-        price: '6,848',
-        selected: false
-      }
-    ],
-    
-    // Stops Filter
-    stops: [
-      {
-        id: 1,
-        type: 'Non Stop',
-        price: '6,848',
-        selected: true
-      },
-      {
-        id: 2,
-        type: '1 Stop',
-        price: '7,173',
-        selected: false
-      }
-    ],
-    
-    // Departure Time Filters
-    departureTimeRanges: [
-      {
-        id: 1,
-        range: 'Before 6 AM to 12 PM',
-        selected: true
-      },
-      {
-        id: 2,
-        range: 'After 6 PM to 12 PM',
-        selected: false
-      }
-    ],
-    
-    // Arrival Time Filters
-    arrivalTimeRanges: [
-      {
-        id: 1,
-        range: 'Before 6 AM to 12 PM',
-        selected: true
-      },
-      {
-        id: 2,
-        range: 'After 6 PM to 12 PM',
-        selected: false
-      }
-    ],
-    
-    // Airlines Filter
-    airlines: [
-      {
-        id: 1,
-        name: 'Air India',
-        code: 'AI',
-        price: '7,171',
-        selected: true
-      },
-      {
-        id: 2,
-        name: 'Air India Express',
-        code: 'IX',
-        price: '6,848',
-        selected: false
-      },
-      {
-        id: 3,
-        name: 'Akasa Air',
-        code: 'QP',
-        price: '8,338',
-        selected: false
-      },
-      {
-        id: 4,
-        name: 'IndiGo',
-        code: '6E',
-        price: '7,121',
-        selected: false
-      },
-      {
-        id: 5,
-        name: 'SpiceJet',
-        code: 'SG',
-        price: '7,237',
-        selected: false
-      }
-    ],
-    
-    // Aircraft Size Filter
-    aircraftSizes: [
-      {
-        id: 1,
-        size: 'Small / Mid-size aircraft',
-        price: '6,848',
-        selected: true
-      },
-      {
-        id: 2,
-        size: 'Large Aircraft',
-        price: '7,173',
-        selected: false
-      }
-    ],
-    
-    // One Way Price Range
-    minPrice: '6,848',
-    maxPrice: '28,800'
-  });
-
-  // Fetch flight data if editing
   useEffect(() => {
     if (id) {
       fetchFlightData(id);
@@ -206,10 +72,16 @@ function OfflineFlights() {
       if (response.data.success) {
         const flightData = response.data.data;
         
-        // Set booking type
         setBookingType(flightData.booking_type || 'oneWay');
         
-        // Set flight details
+        // Set date picker values
+        if (flightData.departure_date) {
+          setDepartureDate(new Date(flightData.departure_date));
+        }
+        if (flightData.return_date) {
+          setReturnDate(new Date(flightData.return_date));
+        }
+        
         setFlightDetails({
           fromCountry: 'IN',
           fromCity: flightData.from_city || '',
@@ -219,8 +91,6 @@ function OfflineFlights() {
           toCity: flightData.to_city || '',
           toAirport: flightData.to_airport || '',
           toAirportCode: flightData.to_airport_code || '',
-          departureDate: flightData.departure_date ? flightData.departure_date.split('T')[0] : '',
-          returnDate: flightData.return_date ? flightData.return_date.split('T')[0] : '',
           adults: flightData.adults || 1,
           children: flightData.children || 0,
           infants: flightData.infants || 0,
@@ -229,7 +99,6 @@ function OfflineFlights() {
           duration: flightData.duration || '',
           arrivalTime: flightData.arrival_time || '',
           flightType: flightData.flight_type || 'Non Stop',
-          destination: flightData.destination || '',
           airline: flightData.airline || '',
           flightNumber: flightData.flight_number || '',
           baggageAllowance: flightData.baggage_allowance || '',
@@ -239,67 +108,8 @@ function OfflineFlights() {
           pricePerAdult: flightData.price_per_adult || '',
         });
 
-        // Set selected airports
         setSelectedFromAirport(flightData.from_airport_code || '');
         setSelectedToAirport(flightData.to_airport_code || '');
-
-        // Parse and set filters if available
-        if (flightData.filters && flightData.filters.length > 0) {
-          const filtersData = flightData.filters;
-          
-          // Update stops
-          const nonStopFilter = filtersData.find(f => f.filter_type === 'non_stop');
-          const oneStopFilter = filtersData.find(f => f.filter_type === 'one_stop');
-          
-          setFilters(prev => ({
-            ...prev,
-            hideNearbyAirports: filtersData.some(f => f.filter_type === 'hide_nearby' && f.is_selected === 1),
-            refundableFares: filtersData.some(f => f.filter_type === 'refundable' && f.is_selected === 1),
-            stops: [
-              { ...prev.stops[0], selected: nonStopFilter ? nonStopFilter.is_selected === 1 : prev.stops[0].selected },
-              { ...prev.stops[1], selected: oneStopFilter ? oneStopFilter.is_selected === 1 : prev.stops[1].selected }
-            ],
-            departureAirports: prev.departureAirports.map(airport => ({
-              ...airport,
-              selected: filtersData.some(f => 
-                f.filter_category === 'departure_airport' && 
-                f.filter_value === airport.code && 
-                f.is_selected === 1
-              )
-            })),
-            airlines: prev.airlines.map(airline => ({
-              ...airline,
-              selected: filtersData.some(f => 
-                f.filter_category === 'airline' && 
-                f.filter_value === airline.code && 
-                f.is_selected === 1
-              )
-            })),
-            aircraftSizes: prev.aircraftSizes.map(size => ({
-              ...size,
-              selected: filtersData.some(f => 
-                f.filter_category === 'aircraft_size' && 
-                f.filter_name === size.size && 
-                f.is_selected === 1
-              )
-            }))
-          }));
-
-          // Fetch price range data separately if needed
-          try {
-            const priceRangeResponse = await axios.get(`${baseurl}/api/offline-flights/${flightId}/price-range`);
-            if (priceRangeResponse.data.success) {
-              const priceRange = priceRangeResponse.data.data;
-              setFilters(prev => ({
-                ...prev,
-                minPrice: priceRange.min_price || prev.minPrice,
-                maxPrice: priceRange.max_price || prev.maxPrice
-              }));
-            }
-          } catch (priceError) {
-            console.log('Price range not found, using defaults');
-          }
-        }
       }
     } catch (err) {
       console.error('Error fetching flight data:', err);
@@ -309,7 +119,6 @@ function OfflineFlights() {
     }
   };
 
-  // Validation function
   const validateForm = () => {
     if (!flightDetails.fromCity) {
       setError('Please select departure city');
@@ -327,11 +136,11 @@ function OfflineFlights() {
       setError('Please select arrival airport');
       return false;
     }
-    if (!flightDetails.departureDate) {
+    if (!departureDate) {
       setError('Please select departure date');
       return false;
     }
-    if (bookingType === 'roundTrip' && !flightDetails.returnDate) {
+    if (bookingType === 'roundTrip' && !returnDate) {
       setError('Please select return date for round trip');
       return false;
     }
@@ -406,15 +215,6 @@ function OfflineFlights() {
     }
   };
 
-  const handleFilterChange = (category, index, field, value) => {
-    setFilters(prev => ({
-      ...prev,
-      [category]: prev[category].map((item, i) => 
-        i === index ? { ...item, [field]: value } : item
-      )
-    }));
-  };
-
   const handleTravellerChange = (type, operation) => {
     setFlightDetails(prev => {
       const currentValue = prev[type];
@@ -434,18 +234,15 @@ function OfflineFlights() {
     });
   };
 
-  // Clear messages
   const clearMessages = () => {
     setError('');
     setSuccess('');
   };
 
-  // Submit handler with backend connection
   const handleSubmit = async (e) => {
     e.preventDefault();
     clearMessages();
 
-    // Validate form
     if (!validateForm()) {
       return;
     }
@@ -453,24 +250,34 @@ function OfflineFlights() {
     setLoading(true);
 
     try {
+      // Format dates to YYYY-MM-DD
+      const formatDate = (date) => {
+        if (!date) return null;
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+      };
+
       const formData = {
         bookingType,
-        flightDetails,
-        filters
+        flightDetails: {
+          ...flightDetails,
+          departureDate: formatDate(departureDate),
+          returnDate: formatDate(returnDate)
+        }
       };
 
       console.log('Submitting offline flight data:', formData);
 
       let response;
       if (id) {
-        // Update existing flight
         response = await axios.put(`${baseurl}/api/offline-flights/${id}`, formData, {
           headers: {
             'Content-Type': 'application/json'
           }
         });
       } else {
-        // Create new flight
         response = await axios.post(`${baseurl}/api/offline-flights`, formData, {
           headers: {
             'Content-Type': 'application/json'
@@ -481,7 +288,6 @@ function OfflineFlights() {
       if (response.data.success) {
         setSuccess(id ? 'Offline flight updated successfully!' : 'Offline flight saved successfully!');
         
-        // Navigate to offline flights table after successful submission
         setTimeout(() => {
           navigate('/offline-flights-table');
         }, 1500);
@@ -501,11 +307,12 @@ function OfflineFlights() {
     }
   };
 
-  // Reset form function
   const resetForm = () => {
     setBookingType('oneWay');
     setSelectedFromAirport('');
     setSelectedToAirport('');
+    setDepartureDate(null);
+    setReturnDate(null);
     setFlightDetails({
       fromCountry: 'IN',
       fromCity: '',
@@ -515,8 +322,6 @@ function OfflineFlights() {
       toCity: '',
       toAirport: '',
       toAirportCode: '',
-      departureDate: '',
-      returnDate: '',
       adults: 1,
       children: 0,
       infants: 0,
@@ -525,7 +330,6 @@ function OfflineFlights() {
       duration: '',
       arrivalTime: '',
       flightType: 'Non Stop',
-      destination: '',
       airline: '',
       flightNumber: '',
       baggageAllowance: '',
@@ -535,25 +339,7 @@ function OfflineFlights() {
       pricePerAdult: '',
     });
     setSuccess('');
-    
-    // Reset filters to default
-    setFilters({
-      nonStop: true,
-      hideNearbyAirports: false,
-      refundableFares: false,
-      oneStop: false,
-      departureAirports: filters.departureAirports.map(airport => ({ ...airport, selected: false })),
-      stops: [
-        { ...filters.stops[0], selected: true },
-        { ...filters.stops[1], selected: false }
-      ],
-      departureTimeRanges: filters.departureTimeRanges.map((range, index) => ({ ...range, selected: index === 0 })),
-      arrivalTimeRanges: filters.arrivalTimeRanges.map((range, index) => ({ ...range, selected: index === 0 })),
-      airlines: filters.airlines.map((airline, index) => ({ ...airline, selected: index === 0 })),
-      aircraftSizes: filters.aircraftSizes.map((size, index) => ({ ...size, selected: index === 0 })),
-      minPrice: '6,848',
-      maxPrice: '28,800'
-    });
+    setError('');
   };
 
   if (fetchLoading) {
@@ -574,7 +360,6 @@ function OfflineFlights() {
           <h2 className="mb-0">{id ? 'Edit Offline Flight' : 'Add Offline Flight'}</h2>
         </div>
 
-        {/* Alert Messages */}
         {error && (
           <Alert variant="danger" onClose={() => setError('')} dismissible>
             {error}
@@ -630,7 +415,6 @@ function OfflineFlights() {
                   <Form.Group>
                     <Form.Label>From City <span className="text-danger">*</span></Form.Label>
                     <Form.Select
-                      name="fromCity"
                       value={flightDetails.fromCity}
                       onChange={handleFromCityChange}
                       required
@@ -679,7 +463,6 @@ function OfflineFlights() {
                   <Form.Group>
                     <Form.Label>To City <span className="text-danger">*</span></Form.Label>
                     <Form.Select
-                      name="toCity"
                       value={flightDetails.toCity}
                       onChange={handleToCityChange}
                       required
@@ -726,26 +509,34 @@ function OfflineFlights() {
                 <Col md={6}>
                   <Form.Group>
                     <Form.Label>Departure Date <span className="text-danger">*</span></Form.Label>
-                    <Form.Control
-                      type="date"
-                      name="departureDate"
-                      value={flightDetails.departureDate}
-                      onChange={handleFlightDetailChange}
-                      required
-                    />
+                    <div className="date-picker-wrapper">
+                      <DatePicker
+                        selected={departureDate}
+                        onChange={(date) => setDepartureDate(date)}
+                        dateFormat="dd/MM/yyyy"
+                        className="form-control"
+                        placeholderText="Select departure date"
+                        minDate={new Date()}
+                        required
+                      />
+                    </div>
                   </Form.Group>
                 </Col>
                 <Col md={6}>
                   <Form.Group>
                     <Form.Label>Return Date {bookingType === 'roundTrip' && <span className="text-danger">*</span>}</Form.Label>
-                    <Form.Control
-                      type="date"
-                      name="returnDate"
-                      value={flightDetails.returnDate}
-                      onChange={handleFlightDetailChange}
-                      disabled={bookingType === 'oneWay'}
-                      required={bookingType === 'roundTrip'}
-                    />
+                    <div className="date-picker-wrapper">
+                      <DatePicker
+                        selected={returnDate}
+                        onChange={(date) => setReturnDate(date)}
+                        dateFormat="dd/MM/yyyy"
+                        className="form-control"
+                        placeholderText="Select return date"
+                        minDate={departureDate || new Date()}
+                        disabled={bookingType === 'oneWay'}
+                        required={bookingType === 'roundTrip'}
+                      />
+                    </div>
                     {bookingType === 'oneWay' && (
                       <Form.Text className="text-muted">
                         Disabled for One Way booking
@@ -767,7 +558,7 @@ function OfflineFlights() {
                 <Col md={4}>
                   <Form.Group>
                     <Form.Label>Adults (12y+)</Form.Label>
-                    <InputGroup>
+                    <div className="d-flex">
                       <Button 
                         variant="outline-secondary"
                         onClick={() => handleTravellerChange('adults', 'decrease')}
@@ -776,10 +567,11 @@ function OfflineFlights() {
                         -
                       </Button>
                       <Form.Control
-                        type="number"
+                        type="text"
                         value={flightDetails.adults}
                         readOnly
-                        className="text-center"
+                        className="text-center mx-2"
+                        style={{ width: '60px' }}
                       />
                       <Button 
                         variant="outline-secondary"
@@ -787,13 +579,13 @@ function OfflineFlights() {
                       >
                         +
                       </Button>
-                    </InputGroup>
+                    </div>
                   </Form.Group>
                 </Col>
                 <Col md={4}>
                   <Form.Group>
                     <Form.Label>Children (2-11y)</Form.Label>
-                    <InputGroup>
+                    <div className="d-flex">
                       <Button 
                         variant="outline-secondary"
                         onClick={() => handleTravellerChange('children', 'decrease')}
@@ -802,10 +594,11 @@ function OfflineFlights() {
                         -
                       </Button>
                       <Form.Control
-                        type="number"
+                        type="text"
                         value={flightDetails.children}
                         readOnly
-                        className="text-center"
+                        className="text-center mx-2"
+                        style={{ width: '60px' }}
                       />
                       <Button 
                         variant="outline-secondary"
@@ -813,13 +606,13 @@ function OfflineFlights() {
                       >
                         +
                       </Button>
-                    </InputGroup>
+                    </div>
                   </Form.Group>
                 </Col>
                 <Col md={4}>
                   <Form.Group>
                     <Form.Label>Infants (0-2y)</Form.Label>
-                    <InputGroup>
+                    <div className="d-flex">
                       <Button 
                         variant="outline-secondary"
                         onClick={() => handleTravellerChange('infants', 'decrease')}
@@ -828,10 +621,11 @@ function OfflineFlights() {
                         -
                       </Button>
                       <Form.Control
-                        type="number"
+                        type="text"
                         value={flightDetails.infants}
                         readOnly
-                        className="text-center"
+                        className="text-center mx-2"
+                        style={{ width: '60px' }}
                       />
                       <Button 
                         variant="outline-secondary"
@@ -839,7 +633,7 @@ function OfflineFlights() {
                       >
                         +
                       </Button>
-                    </InputGroup>
+                    </div>
                   </Form.Group>
                 </Col>
               </Row>
@@ -849,7 +643,7 @@ function OfflineFlights() {
           {/* Flight Display Information */}
           <Card className="mb-4">
             <Card.Header>
-              <h5 className="mb-0">Flight Details Display</h5>
+              <h5 className="mb-0">Flight Details</h5>
             </Card.Header>
             <Card.Body>
               <Row>
@@ -870,7 +664,7 @@ function OfflineFlights() {
                     <Form.Control
                       type="text"
                       name="duration"
-                      placeholder="02h 50m"
+                      placeholder="2h 30m"
                       value={flightDetails.duration}
                       onChange={handleFlightDetailChange}
                     />
@@ -934,9 +728,9 @@ function OfflineFlights() {
                   <Form.Group className="mb-3">
                     <Form.Label>Price Per Adult (₹) <span className="text-danger">*</span></Form.Label>
                     <Form.Control
-                      type="text"
+                      type="number"
                       name="pricePerAdult"
-                      placeholder="6,848"
+                      placeholder="6848"
                       value={flightDetails.pricePerAdult}
                       onChange={handleFlightDetailChange}
                       required
@@ -948,12 +742,12 @@ function OfflineFlights() {
               <Row>
                 <Col md={4}>
                   <Form.Group className="mb-3">
-                    <Form.Label>Baggage Allowance Description</Form.Label>
+                    <Form.Label>Baggage Allowance</Form.Label>
                     <Form.Control
                       as="textarea"
                       rows={3}
                       name="baggageAllowance"
-                      placeholder="e.g., 15kg Check-in baggage, 7kg Cabin baggage, Additional handbag allowed"
+                      placeholder="e.g., 15kg Check-in baggage, 7kg Cabin baggage"
                       value={flightDetails.baggageAllowance}
                       onChange={handleFlightDetailChange}
                     />
@@ -966,7 +760,7 @@ function OfflineFlights() {
                       as="textarea"
                       rows={3}
                       name="mealsSeatDescription"
-                      placeholder="e.g., Vegetarian meal available, Non-vegetarian meal available, Pre-paid meal, Standard seat with extra legroom available at additional cost"
+                      placeholder="e.g., Vegetarian meal available, Standard seat with extra legroom"
                       value={flightDetails.mealsSeatDescription}
                       onChange={handleFlightDetailChange}
                     />
@@ -979,7 +773,7 @@ function OfflineFlights() {
                       as="textarea"
                       rows={3}
                       name="refundableStatusDescription"
-                      placeholder="e.g., Fully refundable before 24 hours of departure, 50% cancellation fee within 24 hours, Non-refundable after check-in"
+                      placeholder="e.g., Fully refundable before 24 hours of departure"
                       value={flightDetails.refundableStatusDescription}
                       onChange={handleFlightDetailChange}
                     />
@@ -998,165 +792,6 @@ function OfflineFlights() {
                       onChange={handleFlightDetailChange}
                     />
                   </Form.Group>
-                </Col>
-              </Row>
-            </Card.Body>
-          </Card>
-
-          {/* Filters Section */}
-          <Card className="mb-4">
-            <Card.Header>
-              <h5 className="mb-0">Flight Filters</h5>
-            </Card.Header>
-            <Card.Body>
-              <Row>
-                {/* Popular Filters */}
-                <Col md={6}>
-                  <h6 className="mb-3">Popular Filters</h6>
-                  <Form.Group className="mb-3">
-                    <Form.Check
-                      type="checkbox"
-                      label={`Non Stop (₹ ${filters.stops[0].price})`}
-                      checked={filters.stops[0].selected}
-                      onChange={(e) => handleFilterChange('stops', 0, 'selected', e.target.checked)}
-                    />
-                    <Form.Check
-                      type="checkbox"
-                      label={`Hide Nearby Airports (₹ 7,121)`}
-                      checked={filters.hideNearbyAirports}
-                      onChange={(e) => setFilters(prev => ({ ...prev, hideNearbyAirports: e.target.checked }))}
-                    />
-                    <Form.Check
-                      type="checkbox"
-                      label={`Refundable Fares (₹ 6,848)`}
-                      checked={filters.refundableFares}
-                      onChange={(e) => setFilters(prev => ({ ...prev, refundableFares: e.target.checked }))}
-                    />
-                    <Form.Check
-                      type="checkbox"
-                      label={`1 Stop (₹ ${filters.stops[1].price})`}
-                      checked={filters.stops[1].selected}
-                      onChange={(e) => handleFilterChange('stops', 1, 'selected', e.target.checked)}
-                    />
-                  </Form.Group>
-                </Col>
-
-                {/* Departure Airports */}
-                <Col md={6}>
-                  <h6 className="mb-3">Departure Airports</h6>
-                  {filters.departureAirports.map((airport, index) => (
-                    <Form.Group key={airport.id} className="mb-2">
-                      <Form.Check
-                        type="checkbox"
-                        label={`${airport.name} ${airport.distance ? `(${airport.distance})` : ''} - ₹ ${airport.price}`}
-                        checked={airport.selected}
-                        onChange={(e) => handleFilterChange('departureAirports', index, 'selected', e.target.checked)}
-                      />
-                    </Form.Group>
-                  ))}
-                </Col>
-              </Row>
-
-              <Row className="mt-4">
-                {/* Departure Time */}
-                <Col md={6}>
-                  <h6 className="mb-3">Departure From {flightDetails.fromCity || 'New Delhi'}</h6>
-                  {filters.departureTimeRanges.map((range, index) => (
-                    <Form.Group key={range.id} className="mb-2">
-                      <Form.Check
-                        type="radio"
-                        name="departureTime"
-                        label={range.range}
-                        checked={range.selected}
-                        onChange={() => {
-                          filters.departureTimeRanges.forEach((_, i) => {
-                            handleFilterChange('departureTimeRanges', i, 'selected', i === index);
-                          });
-                        }}
-                      />
-                    </Form.Group>
-                  ))}
-                </Col>
-
-                {/* Arrival Time */}
-                <Col md={6}>
-                  <h6 className="mb-3">Arrival at {flightDetails.toCity || 'Bengaluru'}</h6>
-                  {filters.arrivalTimeRanges.map((range, index) => (
-                    <Form.Group key={range.id} className="mb-2">
-                      <Form.Check
-                        type="radio"
-                        name="arrivalTime"
-                        label={range.range}
-                        checked={range.selected}
-                        onChange={() => {
-                          filters.arrivalTimeRanges.forEach((_, i) => {
-                            handleFilterChange('arrivalTimeRanges', i, 'selected', i === index);
-                          });
-                        }}
-                      />
-                    </Form.Group>
-                  ))}
-                </Col>
-              </Row>
-
-              <Row className="mt-4">
-                {/* Airlines */}
-                <Col md={6}>
-                  <h6 className="mb-3">Airlines</h6>
-                  {filters.airlines.map((airline, index) => (
-                    <Form.Group key={airline.id} className="mb-2">
-                      <Form.Check
-                        type="checkbox"
-                        label={`${airline.name} - ₹ ${airline.price}`}
-                        checked={airline.selected}
-                        onChange={(e) => handleFilterChange('airlines', index, 'selected', e.target.checked)}
-                      />
-                    </Form.Group>
-                  ))}
-                </Col>
-
-                {/* Aircraft Size */}
-                <Col md={6}>
-                  <h6 className="mb-3">Aircraft Size</h6>
-                  {filters.aircraftSizes.map((size, index) => (
-                    <Form.Group key={size.id} className="mb-2">
-                      <Form.Check
-                        type="checkbox"
-                        label={`${size.size} - ₹ ${size.price}`}
-                        checked={size.selected}
-                        onChange={(e) => handleFilterChange('aircraftSizes', index, 'selected', e.target.checked)}
-                      />
-                    </Form.Group>
-                  ))}
-                </Col>
-              </Row>
-
-              <Row className="mt-4">
-                {/* Price Range */}
-                <Col md={12}>
-                  <h6 className="mb-3">One Way Price Range</h6>
-                  <Row>
-                    <Col md={6}>
-                      <Form.Group>
-                        <Form.Label>Min Price (₹)</Form.Label>
-                        <Form.Control
-                          type="text"
-                          value={filters.minPrice}
-                          onChange={(e) => setFilters(prev => ({ ...prev, minPrice: e.target.value }))}
-                        />
-                      </Form.Group>
-                    </Col>
-                    <Col md={6}>
-                      <Form.Group>
-                        <Form.Label>Max Price (₹)</Form.Label>
-                        <Form.Control
-                          type="text"
-                          value={filters.maxPrice}
-                          onChange={(e) => setFilters(prev => ({ ...prev, maxPrice: e.target.value }))}
-                        />
-                      </Form.Group>
-                    </Col>
-                  </Row>
                 </Col>
               </Row>
             </Card.Body>

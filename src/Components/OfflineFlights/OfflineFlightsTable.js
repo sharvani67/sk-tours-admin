@@ -14,7 +14,6 @@ const OfflineFlightsTable = () => {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  // Fetch Offline Flights
   const fetchOfflineFlights = async () => {
     try {
       setLoading(true);
@@ -23,21 +22,17 @@ const OfflineFlightsTable = () => {
       const response = await fetch(`${baseurl}/api/offline-flights`);
       const result = await response.json();
       
-      console.log('API Response:', result); // Debug log
+      console.log('API Response:', result);
 
-      // Extract data array from the response
-      const flightsData = result.data || result; // Handle both nested and direct array responses
-      
+      const flightsData = result.data || result;
       const flightsArray = Array.isArray(flightsData) ? flightsData : [];
 
-      // Sort offline flights by created_at in descending order (newest first)
       const sortedFlights = flightsArray.sort((a, b) => {
         const dateA = a.created_at ? new Date(a.created_at) : new Date(0);
         const dateB = b.created_at ? new Date(b.created_at) : new Date(0);
         return dateB - dateA;
       });
 
-      // Add serial numbers to the data
       const flightsWithSerialNo = sortedFlights.map((item, index) => ({
         ...item,
         serial_no: index + 1
@@ -57,7 +52,6 @@ const OfflineFlightsTable = () => {
     fetchOfflineFlights();
   }, []);
 
-  // Handle Delete Offline Flight
   const handleDelete = async (flightId) => {
     if (!window.confirm('Are you sure you want to delete this offline flight?')) {
       return;
@@ -82,18 +76,15 @@ const OfflineFlightsTable = () => {
     }
   };
 
-  // Handle Edit - Navigate to add/edit form with ID
   const handleEdit = (flightId) => {
     navigate(`/add-offline-flight/${flightId}`);
   };
 
-  // Format flight duration from string
   const formatDuration = (duration) => {
     if (!duration) return '—';
-    return duration; // Already formatted as "2h 10mins"
+    return duration;
   };
 
-  // Format price with currency (INR since it's Indian flights)
   const formatPrice = (price) => {
     if (!price) return '—';
     return new Intl.NumberFormat('en-IN', {
@@ -104,23 +95,132 @@ const OfflineFlightsTable = () => {
     }).format(price);
   };
 
-  // Format date and time
-  const formatDateTime = (dateString) => {
+  // Format date for display - handles YYYY-MM-DD directly without timezone
+  const formatDateForDisplay = (dateString) => {
+    if (!dateString) return 'N/A';
+    try {
+      // If it's already in YYYY-MM-DD format, parse it as local date
+      if (typeof dateString === 'string' && dateString.match(/^\d{4}-\d{2}-\d{2}$/)) {
+        const [year, month, day] = dateString.split('-');
+        // Create date in local timezone by using UTC to avoid shifting
+        const date = new Date(Date.UTC(year, month - 1, day));
+        return date.toLocaleDateString('en-IN', {
+          day: '2-digit',
+          month: 'short',
+          year: 'numeric',
+          timeZone: 'UTC'
+        });
+      }
+      // Fallback for other formats
+      const date = new Date(dateString);
+      if (!isNaN(date.getTime())) {
+        return date.toLocaleDateString('en-IN', {
+          day: '2-digit',
+          month: 'short',
+          year: 'numeric'
+        });
+      }
+      return dateString;
+    } catch {
+      return dateString;
+    }
+  };
+
+  // Calculate arrival date based on departure date, departure time, and duration
+  const calculateArrivalDate = (departureDateStr, departureTimeStr, durationStr) => {
+    if (!departureDateStr || !departureTimeStr || !durationStr) {
+      return departureDateStr;
+    }
+
+    try {
+      // Parse departure date
+      const [year, month, day] = departureDateStr.split('-');
+      
+      // Parse departure time (HH:MM:SS)
+      const [depHours, depMinutes, depSeconds] = departureTimeStr.split(':').map(Number);
+      
+      // Parse duration (e.g., "2h 10mins", "3hr 30 mins", "1h 30m")
+      let durationHours = 0;
+      let durationMinutes = 0;
+      
+      // Match patterns like "2h 10mins", "3hr 30 mins", "1h 30m"
+      const hourMatch = durationStr.match(/(\d+)\s*(?:h|hr)/i);
+      const minuteMatch = durationStr.match(/(\d+)\s*(?:min|mins|m)/i);
+      
+      if (hourMatch) {
+        durationHours = parseInt(hourMatch[1]);
+      }
+      if (minuteMatch) {
+        durationMinutes = parseInt(minuteMatch[1]);
+      }
+      
+      // Create departure datetime in UTC
+      const departureDateTime = new Date(Date.UTC(year, month - 1, day, depHours, depMinutes, depSeconds || 0));
+      
+      // Add duration
+      const arrivalDateTime = new Date(departureDateTime.getTime() + (durationHours * 60 * 60 * 1000) + (durationMinutes * 60 * 1000));
+      
+      // Format arrival date
+      const arrivalDate = new Date(Date.UTC(arrivalDateTime.getUTCFullYear(), arrivalDateTime.getUTCMonth(), arrivalDateTime.getUTCDate()));
+      
+      return arrivalDate.toLocaleDateString('en-IN', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+        timeZone: 'UTC'
+      });
+    } catch (error) {
+      console.error('Error calculating arrival date:', error);
+      return formatDateForDisplay(departureDateStr);
+    }
+  };
+
+  // Format time only - handles HH:MM:SS format
+  const formatTimeOnly = (timeString) => {
+    if (!timeString) return 'N/A';
+    try {
+      if (timeString.includes(':')) {
+        const parts = timeString.split(':');
+        const hours = parseInt(parts[0]);
+        const minutes = parseInt(parts[1]);
+        
+        if (isNaN(hours) || isNaN(minutes)) {
+          return timeString;
+        }
+        
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        const hour12 = hours % 12 || 12;
+        const minuteStr = minutes.toString().padStart(2, '0');
+        
+        return `${hour12}:${minuteStr} ${ampm}`;
+      }
+      return timeString;
+    } catch {
+      return timeString;
+    }
+  };
+
+  // Format created_at timestamp
+  const formatCreatedAt = (dateString) => {
     if (!dateString) return 'N/A';
     try {
       const date = new Date(dateString);
+      if (isNaN(date.getTime())) {
+        return dateString;
+      }
       return date.toLocaleString('en-IN', {
-        day: 'numeric',
+        day: '2-digit',
         month: 'short',
+        year: 'numeric',
         hour: '2-digit',
-        minute: '2-digit'
+        minute: '2-digit',
+        hour12: true
       });
     } catch {
       return dateString;
     }
   };
 
-  // Define table columns - updated to match your API response
   const columns = [
     {
       key: 'serial_no',
@@ -164,14 +264,30 @@ const OfflineFlightsTable = () => {
     },
     {
       key: 'departure_date',
-      title: 'Departure',
-      render: (item) => formatDateTime(item.departure_date),
+      title: 'Departure Date & Time',
+      render: (item) => (
+        <div>
+          <div className="fw-bold">{formatDateForDisplay(item.departure_date)}</div>
+          <small className="text-muted">{formatTimeOnly(item.flight_time)}</small>
+        </div>
+      ),
     },
     {
-      key: 'arrival_time',
-      title: 'Arrival Time',
-      render: (item) => item.arrival_time || 'N/A',
-      style: { textAlign: 'center' }
+      key: 'arrival_info',
+      title: 'Arrival',
+      render: (item) => {
+        const arrivalDate = calculateArrivalDate(
+          item.departure_date, 
+          item.flight_time, 
+          item.duration
+        );
+        return (
+          <div>
+            <div className="fw-bold">{arrivalDate}</div>
+            <small className="text-muted">{formatTimeOnly(item.arrival_time)}</small>
+          </div>
+        );
+      },
     },
     {
       key: 'duration',
@@ -218,34 +334,9 @@ const OfflineFlightsTable = () => {
       style: { textAlign: 'center' }
     },
     {
-      key: 'baggage_allowance',
-      title: 'Baggage',
-      render: (item) => {
-        if (!item.baggage_allowance) return '—';
-        return (
-          <span title={item.baggage_allowance}>
-            {item.baggage_allowance.substring(0, 20)}...
-          </span>
-        );
-      },
-      style: { maxWidth: '150px' }
-    },
-    {
       key: 'created_at',
       title: 'Created At',
-      render: (item) => {
-        if (!item.created_at) return 'N/A';
-        try {
-          const date = new Date(item.created_at);
-          return date.toLocaleDateString('en-IN', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric'
-          });
-        } catch {
-          return 'Invalid Date';
-        }
-      }
+      render: (item) => formatCreatedAt(item.created_at)
     },
     {
       key: 'actions',

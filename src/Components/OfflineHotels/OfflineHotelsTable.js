@@ -1,4 +1,3 @@
-// OfflineHotelsTable.js
 import React, { useState, useEffect } from 'react';
 import { Container, Card, Alert, Spinner } from 'react-bootstrap';
 import Navbar from '../../Shared/Navbar/Navbar';
@@ -13,8 +12,39 @@ const OfflineHotelsTable = () => {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  // API base URL - adjust this based on your environment
+  // API base URL
   const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+
+  // Format date for display - handles YYYY-MM-DD directly without timezone
+  const formatDate = (dateString) => {
+    if (!dateString) return 'N/A';
+    try {
+      // If it's already in YYYY-MM-DD format, parse it as local date
+      if (typeof dateString === 'string' && dateString.match(/^\d{4}-\d{2}-\d{2}$/)) {
+        const [year, month, day] = dateString.split('-');
+        // Create date in UTC to avoid timezone shifting
+        const date = new Date(Date.UTC(year, month - 1, day));
+        return date.toLocaleDateString('en-IN', {
+          day: '2-digit',
+          month: 'short',
+          year: 'numeric',
+          timeZone: 'UTC'
+        });
+      }
+      // Fallback for other formats
+      const date = new Date(dateString);
+      if (!isNaN(date.getTime())) {
+        return date.toLocaleDateString('en-IN', {
+          day: '2-digit',
+          month: 'short',
+          year: 'numeric'
+        });
+      }
+      return dateString;
+    } catch {
+      return 'Invalid Date';
+    }
+  };
 
   // Fetch hotels from API
   const fetchHotels = async () => {
@@ -57,7 +87,6 @@ const OfflineHotelsTable = () => {
       
       if (response.data.success) {
         alert('Hotel deleted successfully');
-        // Refresh the list
         fetchHotels();
       } else {
         alert('Error deleting hotel. Please try again.');
@@ -68,7 +97,7 @@ const OfflineHotelsTable = () => {
     }
   };
 
-  // Handle Edit - Navigate to add/edit form with ID
+  // Handle Edit
   const handleEdit = (hotelId) => {
     navigate(`/add-offline-hotels/${hotelId}`);
   };
@@ -88,21 +117,6 @@ const OfflineHotelsTable = () => {
   const getStarRating = (rating) => {
     if (!rating) return '—';
     return '★'.repeat(rating) + '☆'.repeat(5 - rating);
-  };
-
-  // Format date
-  const formatDate = (dateString) => {
-    if (!dateString) return 'N/A';
-    try {
-      const date = new Date(dateString);
-      return date.toLocaleDateString('en-IN', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric'
-      });
-    } catch {
-      return 'Invalid Date';
-    }
   };
 
   // Define table columns
@@ -183,8 +197,8 @@ const OfflineHotelsTable = () => {
       title: 'Check-in/out',
       render: (item) => (
         <div>
-          <div>In: {item.check_in_date ? new Date(item.check_in_date).toLocaleDateString() : 'N/A'}</div>
-          <div>Out: {item.check_out_date ? new Date(item.check_out_date).toLocaleDateString() : 'N/A'}</div>
+          <div>In: {formatDate(item.check_in_date)}</div>
+          <div>Out: {formatDate(item.check_out_date)}</div>
         </div>
       ),
       style: { textAlign: 'center', minWidth: '120px' }
