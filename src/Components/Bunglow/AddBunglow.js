@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, memo } from 'react';
 import {
   Container,
   Card,
@@ -14,22 +14,21 @@ import {
 import { useNavigate, useParams } from 'react-router-dom';
 import Navbar from '../../Shared/Navbar/Navbar';
 import { baseurl } from '../../Api/Baseurl';
-import { Pencil, Trash, PlusCircle, XCircle } from 'react-bootstrap-icons';
+import { Pencil, Trash, PlusCircle, XCircle, Plus, Save } from 'react-bootstrap-icons';
 
 const AddBungalow = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const isEditMode = !!id;
 
-  // Updated TAB_LIST - Removed tourCost, added bungalowRate and cancellationPolicy
-  const TAB_LIST = ['basic', 'images', 'overview', 'bungalowRate', 'inclusiveExclusive', 'placesNearby', 'bookingPolicy', 'cancellationPolicy', 'related'];
+  const TAB_LIST = ['basic', 'images', 'overview', 'bungalowRate', 'inclusiveExclusive', 'placesNearby', 'bookingPolicy', 'cancellationPolicy'];
 
   const [activeTab, setActiveTab] = useState('basic');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  // Basic Details - REMOVED tour cost fields
+  // Basic Details
   const [formData, setFormData] = useState({
     bungalow_code: '',
     name: '',
@@ -41,6 +40,14 @@ const AddBungalow = () => {
     places_nearby: '',
     booking_policy: '',
     cancellation_policy: ''
+  });
+
+  // Description texts for each rate type
+  const [rateDescriptions, setRateDescriptions] = useState({
+    week_day_rate_desc: '',
+    weekend_rate_desc: '',
+    long_holidays_desc: '',
+    festival_holidays_desc: ''
   });
 
   // Booking Form State
@@ -66,21 +73,6 @@ const AddBungalow = () => {
   const [replacementFile, setReplacementFile] = useState(null);
   const [replacementPreview, setReplacementPreview] = useState(null);
 
-  // Related Bungalows
-  const [relatedBungalows, setRelatedBungalows] = useState([]);
-  const [relatedItem, setRelatedItem] = useState({
-    related_name: '',
-    related_price: '',
-    related_image: '',
-    related_image_file: null,
-    sort_order: 0,
-    relation_id: null
-  });
-  const [relatedImagePreview, setRelatedImagePreview] = useState(null);
-  const [editingRelated, setEditingRelated] = useState(null);
-  const [showRelatedForm, setShowRelatedForm] = useState(false);
-  const [allBungalows, setAllBungalows] = useState([]);
-
   // Cities List
   const cities = [
     'Alibaug', 'Aamby Valley', 'Goa', 'Igatpuri', 'Karjat', 
@@ -94,7 +86,6 @@ const AddBungalow = () => {
     } else {
       getNextBungalowCode();
     }
-    loadAllBungalows();
   }, [id]);
 
   // Update guest boxes when number of people changes
@@ -102,39 +93,16 @@ const AddBungalow = () => {
     const numPeople = parseInt(bookingForm.no_of_people) || 0;
     const newGuests = [...guestDetails];
     
-    // Add rows if needed
     while (newGuests.length < numPeople) {
       newGuests.push({ name: '', age: '', cell_no: '', email_id: '' });
     }
     
-    // Remove rows if needed
     while (newGuests.length > numPeople) {
       newGuests.pop();
     }
     
     setGuestDetails(newGuests);
   }, [bookingForm.no_of_people]);
-
-  // Cleanup object URLs
-  useEffect(() => {
-    return () => {
-      if (relatedImagePreview && relatedImagePreview.startsWith('blob:')) {
-        URL.revokeObjectURL(relatedImagePreview);
-      }
-    };
-  }, [relatedImagePreview]);
-
-  const loadAllBungalows = async () => {
-    try {
-      const response = await fetch(`${baseurl}/api/bungalows`);
-      if (response.ok) {
-        const data = await response.json();
-        setAllBungalows(data);
-      }
-    } catch (err) {
-      console.error('Failed to load bungalows for dropdown:', err);
-    }
-  };
 
   const getNextBungalowCode = async () => {
     try {
@@ -145,7 +113,6 @@ const AddBungalow = () => {
           ...prev,
           bungalow_code: data.next_bungalow_code
         }));
-        // Update booking form bungalow number
         setBookingForm(prev => ({
           ...prev,
           bungalow_no: data.next_bungalow_code
@@ -163,7 +130,6 @@ const AddBungalow = () => {
       if (!response.ok) throw new Error('Failed to fetch bungalow data');
       
       const data = await response.json();
-      console.log('Loaded bungalow data:', data);
       
       setFormData({
         bungalow_code: data.bungalow.bungalow_code || '',
@@ -178,13 +144,16 @@ const AddBungalow = () => {
         cancellation_policy: data.bungalow.cancellation_policy || ''
       });
 
-      // Update booking form with bungalow code
+      // Load rate descriptions if available
+      if (data.rate_descriptions) {
+        setRateDescriptions(data.rate_descriptions);
+      }
+
       setBookingForm(prev => ({
         ...prev,
         bungalow_no: data.bungalow.bungalow_code || 'BUNG0001'
       }));
 
-      // Fix image URLs
       const imagesWithFullUrl = (data.images || []).map(img => ({
         ...img,
         image_url: img.image_url.startsWith('http') 
@@ -192,30 +161,6 @@ const AddBungalow = () => {
           : `${baseurl}${img.image_url}`
       }));
       setExistingImages(imagesWithFullUrl);
-      
-      // Fix related bungalow image URLs
-      if (data.related_bungalows && data.related_bungalows.length > 0) {
-        console.log('Related bungalows from API:', data.related_bungalows);
-        
-        const relatedWithFullUrl = data.related_bungalows.map(rel => ({
-          ...rel,
-          relation_id: rel.relation_id,
-          related_name: rel.related_name,
-          related_price: rel.related_price,
-          related_image: rel.related_image && !rel.related_image.startsWith('blob:')
-            ? (rel.related_image.startsWith('http') 
-                ? rel.related_image 
-                : `${baseurl}${rel.related_image}`)
-            : null,
-          sort_order: rel.sort_order || 0
-        }));
-        
-        console.log('Processed related bungalows:', relatedWithFullUrl);
-        setRelatedBungalows(relatedWithFullUrl);
-      } else {
-        console.log('No related bungalows found');
-        setRelatedBungalows([]);
-      }
       
     } catch (err) {
       setError('Failed to load bungalow data: ' + err.message);
@@ -228,6 +173,12 @@ const AddBungalow = () => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
+
+  // Memoized handler for rate description changes
+  const handleRateDescriptionChange = useCallback((e) => {
+    const { name, value } = e.target;
+    setRateDescriptions(prev => ({ ...prev, [name]: value }));
+  }, []);
 
   // Booking Form Handlers
   const handleBookingChange = (e) => {
@@ -242,7 +193,6 @@ const AddBungalow = () => {
   };
 
   const handleBookingSubmit = async () => {
-    // Validate form
     if (!bookingForm.city) {
       alert('Please select a city');
       return;
@@ -256,7 +206,6 @@ const AddBungalow = () => {
       return;
     }
 
-    // Validate guest details
     for (let i = 0; i < guestDetails.length; i++) {
       const guest = guestDetails[i];
       if (!guest.name || !guest.age || !guest.cell_no || !guest.email_id) {
@@ -268,7 +217,6 @@ const AddBungalow = () => {
     try {
       setLoading(true);
       
-      // Prepare the data for API
       const bookingData = {
         bungalow_code: bookingForm.bungalow_no,
         city: bookingForm.city,
@@ -288,14 +236,9 @@ const AddBungalow = () => {
         }))
       };
 
-      console.log('Sending booking data:', bookingData);
-
-      // Send data to backend
       const response = await fetch(`${baseurl}/api/bungalows/bookings`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(bookingData)
       });
 
@@ -305,27 +248,14 @@ const AddBungalow = () => {
         throw new Error(result.error || 'Failed to submit booking');
       }
 
-      console.log('Booking saved successfully:', result);
-      
-      // Show success message
       setSuccess('Booking submitted successfully!');
-      
-      // Reset form after successful submission
       resetBookingForm();
       
-      // Clear success message after 3 seconds
-      setTimeout(() => {
-        setSuccess('');
-      }, 3000);
-      
+      setTimeout(() => setSuccess(''), 3000);
     } catch (err) {
       console.error('Error submitting booking:', err);
       setError('Failed to submit booking: ' + err.message);
-      
-      // Clear error message after 5 seconds
-      setTimeout(() => {
-        setError('');
-      }, 5000);
+      setTimeout(() => setError(''), 5000);
     } finally {
       setLoading(false);
     }
@@ -428,12 +358,10 @@ const AddBungalow = () => {
     try {
       setLoading(true);
       
-      // Delete old image
       await fetch(`${baseurl}/api/bungalows/images/${imageId}`, {
         method: 'DELETE'
       });
 
-      // Upload new image
       const formData = new FormData();
       formData.append('images', replacementFile);
       
@@ -444,7 +372,6 @@ const AddBungalow = () => {
 
       if (!uploadResponse.ok) throw new Error('Failed to upload new image');
       
-      // Reload data to get updated images
       await loadBungalowData();
       setSuccess('Image updated successfully');
       cancelEditImage();
@@ -471,155 +398,31 @@ const AddBungalow = () => {
     if (!response.ok) throw new Error('Failed to upload images');
   };
 
-  // Related Bungalow Handlers
-  const handleRelatedChange = (e) => {
-    const { name, value } = e.target;
-    setRelatedItem(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleRelatedImageChange = (e) => {
-    const file = e.target.files ? e.target.files[0] : null;
-    
-    if (relatedImagePreview && relatedImagePreview.startsWith('blob:')) {
-      URL.revokeObjectURL(relatedImagePreview);
-    }
-    
-    if (file) {
-      const preview = URL.createObjectURL(file);
-      setRelatedImagePreview(preview);
-      setRelatedItem(prev => ({
-        ...prev,
-        related_image: preview,
-        related_image_file: file
-      }));
-    } else {
-      setRelatedImagePreview(null);
-      setRelatedItem(prev => ({
-        ...prev,
-        related_image: '',
-        related_image_file: null
-      }));
-    }
-  };
-
-  const handleSelectRelatedBungalow = (e) => {
-    const selectedId = e.target.value;
-    if (!selectedId) return;
-    
-    const selected = allBungalows.find(b => b.bungalow_id === parseInt(selectedId));
-    if (selected) {
-      setRelatedItem({
-        related_name: selected.name,
-        related_price: selected.price,
-        related_image: selected.main_image || '',
-        related_image_file: null,
-        sort_order: relatedBungalows.length,
-        relation_id: null
-      });
-      setRelatedImagePreview(selected.main_image 
-        ? (selected.main_image.startsWith('http') 
-            ? selected.main_image 
-            : `${baseurl}${selected.main_image}`)
-        : null);
-    }
-  };
-
-  const uploadRelatedImage = async (bungalowId, imageFile) => {
-    if (!imageFile) return null;
-
-    const formData = new FormData();
-    formData.append('image', imageFile);
-
-    const response = await fetch(`${baseurl}/api/bungalows/upload-related/${bungalowId}`, {
-      method: 'POST',
-      body: formData
-    });
-
-    if (!response.ok) throw new Error('Failed to upload related image');
-    
-    const data = await response.json();
-    return data.image_url;
-  };
-
-  const addRelatedBungalow = () => {
-    if (!relatedItem.related_name.trim()) {
-      alert('Please enter a bungalow name');
-      return;
-    }
-    
-    const newRelated = {
-      ...relatedItem,
-      sort_order: relatedBungalows.length,
-      relation_id: null // Ensure new items don't have an ID
-    };
-    
-    setRelatedBungalows(prev => [...prev, newRelated]);
-    resetRelatedForm();
-    setShowRelatedForm(false);
-  };
-
-  const editRelatedBungalow = (idx) => {
-    const itemToEdit = relatedBungalows[idx];
-    console.log('Editing related bungalow:', itemToEdit);
-    
-    setEditingRelated({ ...itemToEdit, index: idx });
-    setRelatedItem({
-      related_name: itemToEdit.related_name || '',
-      related_price: itemToEdit.related_price || '',
-      related_image: itemToEdit.related_image || '',
-      related_image_file: null,
-      sort_order: itemToEdit.sort_order || 0,
-      relation_id: itemToEdit.relation_id || null
-    });
-    setRelatedImagePreview(itemToEdit.related_image || null);
-    setShowRelatedForm(true);
-  };
-
-  const updateRelatedBungalow = () => {
-    if (!editingRelated) return;
-    
-    const updated = [...relatedBungalows];
-    updated[editingRelated.index] = { 
-      ...relatedItem, 
-      sort_order: editingRelated.index,
-      relation_id: editingRelated.relation_id
-    };
-    setRelatedBungalows(updated);
-    
-    resetRelatedForm();
-    setShowRelatedForm(false);
-  };
-
-  const deleteRelatedBungalow = (idx) => {
-    const confirmDelete = window.confirm('Are you sure you want to remove this related bungalow?');
-    if (confirmDelete) {
-      setRelatedBungalows(prev => prev.filter((_, i) => i !== idx));
-    }
-  };
-
-  const cancelRelatedForm = () => {
-    resetRelatedForm();
-    setShowRelatedForm(false);
-  };
-
-  const resetRelatedForm = () => {
-    if (relatedImagePreview && relatedImagePreview.startsWith('blob:')) {
-      URL.revokeObjectURL(relatedImagePreview);
-    }
-    
-    setEditingRelated(null);
-    setRelatedItem({
-      related_name: '',
-      related_price: '',
-      related_image: '',
-      related_image_file: null,
-      sort_order: 0,
-      relation_id: null
-    });
-    setRelatedImagePreview(null);
-  };
-
   // Save Functions
+  const saveRateDetails = async () => {
+    if (!id && !isEditMode) {
+      return true;
+    }
+
+    try {
+      const payload = {
+        descriptions: rateDescriptions
+      };
+
+      const response = await fetch(`${baseurl}/api/bungalows/${id}/rate-details`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) throw new Error('Failed to save rate details');
+      return true;
+    } catch (err) {
+      setError('Failed to save rate details: ' + err.message);
+      return false;
+    }
+  };
+
   const createBungalow = async () => {
     if (!formData.name.trim()) {
       setError('Bungalow name is required');
@@ -638,7 +441,7 @@ const AddBungalow = () => {
       const response = await fetch(`${baseurl}/api/bungalows`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
+        body: JSON.stringify({ ...formData, ...rateDescriptions })
       });
 
       if (!response.ok) throw new Error('Failed to create bungalow');
@@ -650,28 +453,20 @@ const AddBungalow = () => {
         await uploadImages(bungalowId);
       }
 
-      if (relatedBungalows.length > 0) {
-        for (let i = 0; i < relatedBungalows.length; i++) {
-          const related = relatedBungalows[i];
-          
-          let imageUrl = null;
-          if (related.related_image_file) {
-            imageUrl = await uploadRelatedImage(bungalowId, related.related_image_file);
-          } else if (related.related_image && !related.related_image.startsWith('blob:')) {
-            imageUrl = related.related_image;
-          }
-          
-          await fetch(`${baseurl}/api/bungalows/related/${bungalowId}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              related_name: related.related_name,
-              related_price: related.related_price,
-              related_image: imageUrl,
-              sort_order: i
-            })
-          });
-        }
+      // Save rate details after bungalow is created
+      const tempId = id || bungalowId;
+      const payload = {
+        descriptions: rateDescriptions
+      };
+
+      const rateSaveResponse = await fetch(`${baseurl}/api/bungalows/${tempId}/rate-details`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (!rateSaveResponse.ok) {
+        console.warn('Failed to save rate details');
       }
 
       setSuccess('Bungalow created successfully!');
@@ -696,7 +491,7 @@ const AddBungalow = () => {
       const response = await fetch(`${baseurl}/api/bungalows/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
+        body: JSON.stringify({ ...formData, ...rateDescriptions })
       });
 
       if (!response.ok) throw new Error('Failed to update bungalow');
@@ -705,59 +500,8 @@ const AddBungalow = () => {
         await uploadImages(id);
       }
 
-      const relatedResponse = await fetch(`${baseurl}/api/bungalows/related/${id}`);
-      const existingRelated = await relatedResponse.json();
-
-      // Delete related bungalows that are no longer in the list
-      for (const existing of existingRelated) {
-        const stillExists = relatedBungalows.some(r => r.relation_id === existing.relation_id);
-        if (!stillExists && existing.relation_id) {
-          await fetch(`${baseurl}/api/bungalows/related/${existing.relation_id}`, {
-            method: 'DELETE'
-          });
-        }
-      }
-
-      // Update or create related bungalows
-      for (let i = 0; i < relatedBungalows.length; i++) {
-        const related = relatedBungalows[i];
-        
-        let imageUrl = related.related_image;
-        if (related.related_image_file) {
-          imageUrl = await uploadRelatedImage(id, related.related_image_file);
-        } else if (related.related_image && !related.related_image.startsWith('blob:')) {
-          // Keep existing image URL
-          imageUrl = related.related_image;
-        } else {
-          imageUrl = null;
-        }
-        
-        if (related.relation_id) {
-          // Update existing
-          await fetch(`${baseurl}/api/bungalows/related/${related.relation_id}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              related_name: related.related_name,
-              related_price: related.related_price,
-              related_image: imageUrl,
-              sort_order: i
-            })
-          });
-        } else {
-          // Create new
-          await fetch(`${baseurl}/api/bungalows/related/${id}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              related_name: related.related_name,
-              related_price: related.related_price,
-              related_image: imageUrl,
-              sort_order: i
-            })
-          });
-        }
-      }
+      // Save rate details
+      await saveRateDetails();
 
       setSuccess('Bungalow updated successfully!');
       setTimeout(() => navigate('/bungalows'), 1500);
@@ -776,6 +520,20 @@ const AddBungalow = () => {
     }
   };
 
+  const handleSaveAndContinue = async () => {
+    if (isEditMode) {
+      await updateBungalow();
+    } else {
+      await createBungalow();
+    }
+    if (!error) {
+      const currentIndex = TAB_LIST.indexOf(activeTab);
+      if (currentIndex < TAB_LIST.length - 1) {
+        setActiveTab(TAB_LIST[currentIndex + 1]);
+      }
+    }
+  };
+
   const goBack = () => {
     const currentIndex = TAB_LIST.indexOf(activeTab);
     if (currentIndex > 0) {
@@ -791,6 +549,75 @@ const AddBungalow = () => {
   };
 
   const isLastTab = activeTab === TAB_LIST[TAB_LIST.length - 1];
+
+  // Memoized Rate Description Component for each tab to prevent re-renders
+  const WeekDayRateTab = memo(() => (
+    <div>
+      <h5 className="mb-3">Week Day Rates</h5>
+      <Form.Group className="mb-4">
+        <Form.Label>Description</Form.Label>
+        <Form.Control
+          as="textarea"
+          rows={4}
+          name="week_day_rate_desc"
+          value={rateDescriptions.week_day_rate_desc}
+          onChange={handleRateDescriptionChange}
+          placeholder="Enter description for week day rates..."
+        />
+      </Form.Group>
+    </div>
+  ));
+
+  const WeekendRateTab = memo(() => (
+    <div>
+      <h5 className="mb-3">Weekend Rates</h5>
+      <Form.Group className="mb-4">
+        <Form.Label>Description</Form.Label>
+        <Form.Control
+          as="textarea"
+          rows={4}
+          name="weekend_rate_desc"
+          value={rateDescriptions.weekend_rate_desc}
+          onChange={handleRateDescriptionChange}
+          placeholder="Enter description for weekend rates..."
+        />
+      </Form.Group>
+    </div>
+  ));
+
+  const LongHolidaysTab = memo(() => (
+    <div>
+      <h5 className="mb-3">Long Holidays</h5>
+      <Form.Group className="mb-4">
+        <Form.Label>Description</Form.Label>
+        <Form.Control
+          as="textarea"
+          rows={4}
+          name="long_holidays_desc"
+          value={rateDescriptions.long_holidays_desc}
+          onChange={handleRateDescriptionChange}
+          placeholder="Enter description for long holidays rates..."
+        />
+      </Form.Group>
+    </div>
+  ));
+
+  const FestivalHolidaysTab = memo(() => (
+    <div>
+      <h5 className="mb-3">Festival Holidays</h5>
+      <Form.Group className="mb-4">
+        <Form.Label>Description</Form.Label>
+        <Form.Control
+          as="textarea"
+          rows={4}
+          name="festival_holidays_desc"
+          value={rateDescriptions.festival_holidays_desc}
+          onChange={handleRateDescriptionChange}
+          placeholder="Enter description for festival holidays rates..."
+        />
+      </Form.Group>
+    </div>
+  ));
 
   return (
     <Navbar>
@@ -1022,22 +849,22 @@ const AddBungalow = () => {
                 </Form.Group>
               </Tab>
 
-              {/* Bungalow Rate Tab (NEW) */}
-              <Tab eventKey="bungalowRate" title="Bungalow Rate">
-                <Form.Group className="mb-3">
-                  <Form.Label>Bungalow Rate Details</Form.Label>
-                  <Form.Control
-                    as="textarea"
-                    rows={8}
-                    name="bungalow_rate"
-                    value={formData.bungalow_rate}
-                    onChange={handleBasicChange}
-                    placeholder="Enter bungalow rate details, seasonal pricing, or any other rate-related information..."
-                  />
-                  <Form.Text className="text-muted">
-                    Enter detailed rate information including seasonal rates, weekend rates, special offers, etc.
-                  </Form.Text>
-                </Form.Group>
+              {/* Bungalow Rate Tab with Sub-tabs */}
+              <Tab eventKey="bungalowRate" title="Bungalow Rent">
+                <Tabs defaultActiveKey="weekDayRate" className="mb-3">
+                  <Tab eventKey="weekDayRate" title="Week Day Rate">
+                    <WeekDayRateTab />
+                  </Tab>
+                  <Tab eventKey="weekendRate" title="Weekend Rate">
+                    <WeekendRateTab />
+                  </Tab>
+                  <Tab eventKey="longHolidays" title="Long Holidays">
+                    <LongHolidaysTab />
+                  </Tab>
+                  <Tab eventKey="festivalHolidays" title="Festival Holidays">
+                    <FestivalHolidaysTab />
+                  </Tab>
+                </Tabs>
               </Tab>
 
               {/* Inclusive & Exclusive Tab */}
@@ -1104,7 +931,7 @@ const AddBungalow = () => {
                 </Col>
               </Tab>
 
-              {/* Cancellation Policy Tab (NEW) */}
+              {/* Cancellation Policy Tab */}
               <Tab eventKey="cancellationPolicy" title="Cancellation Policy">
                 <Form.Group className="mb-3">
                   <Form.Label>Cancellation Policy Details</Form.Label>
@@ -1121,228 +948,58 @@ const AddBungalow = () => {
                   </Form.Text>
                 </Form.Group>
               </Tab>
-
-              {/* Related Bungalows Tab */}
-              <Tab eventKey="related" title="Related Bungalows">
-                {!showRelatedForm ? (
-                  <div className="mb-3">
-                    <Button
-                      variant="primary"
-                      onClick={() => {
-                        resetRelatedForm();
-                        setShowRelatedForm(true);
-                      }}
-                    >
-                      <PlusCircle className="me-2" /> Add Related Bungalow
-                    </Button>
-                  </div>
-                ) : (
-                  <Card className="mb-4">
-                    <Card.Header>
-                      <div className="d-flex justify-content-between align-items-center">
-                        <h5 className="mb-0">{editingRelated ? 'Edit Related Bungalow' : 'Add New Related Bungalow'}</h5>
-                        <Button variant="outline-secondary" size="sm" onClick={cancelRelatedForm}>
-                          <XCircle size={16} /> Cancel
-                        </Button>
-                      </div>
-                    </Card.Header>
-                    <Card.Body>
-                      <Form>
-                        <Row>
-                          <Col md={12}>
-                            <Form.Group className="mb-3">
-                              <Form.Label>Select from existing bungalows (optional)</Form.Label>
-                              <Form.Select
-                                onChange={handleSelectRelatedBungalow}
-                                value=""
-                              >
-                                <option value="">-- Choose a bungalow --</option>
-                                {allBungalows
-                                  .filter(b => isEditMode ? b.bungalow_id !== parseInt(id) : true)
-                                  .map(b => (
-                                    <option key={b.bungalow_id} value={b.bungalow_id}>
-                                      {b.name} - ₹{parseFloat(b.price).toLocaleString('en-IN')}
-                                    </option>
-                                  ))}
-                              </Form.Select>
-                              <Form.Text className="text-muted">
-                                Or enter custom details below
-                              </Form.Text>
-                            </Form.Group>
-                          </Col>
-                        </Row>
-
-                        <Row>
-                          <Col md={6}>
-                            <Form.Group className="mb-3">
-                              <Form.Label>Name *</Form.Label>
-                              <Form.Control
-                                type="text"
-                                name="related_name"
-                                value={relatedItem.related_name}
-                                onChange={handleRelatedChange}
-                                placeholder="Enter bungalow name"
-                              />
-                            </Form.Group>
-                          </Col>
-                          <Col md={6}>
-                            <Form.Group className="mb-3">
-                              <Form.Label>Price (₹)</Form.Label>
-                              <Form.Control
-                                type="number"
-                                name="related_price"
-                                value={relatedItem.related_price}
-                                onChange={handleRelatedChange}
-                                placeholder="Enter price"
-                              />
-                            </Form.Group>
-                          </Col>
-                        </Row>
-
-                        <Row>
-                          <Col md={12}>
-                            <Form.Group className="mb-3">
-                              <Form.Label>Image</Form.Label>
-                              <Form.Control
-                                type="file"
-                                onChange={handleRelatedImageChange}
-                                accept="image/jpeg,image/jpg,image/png,image/webp"
-                              />
-                              {relatedImagePreview && (
-                                <div className="mt-3 text-center">
-                                  <p className="mb-2">Preview:</p>
-                                  <img
-                                    src={relatedImagePreview}
-                                    alt="preview"
-                                    style={{
-                                      maxWidth: '200px',
-                                      maxHeight: '200px',
-                                      objectFit: 'cover',
-                                      borderRadius: '8px',
-                                      border: '1px solid #ddd'
-                                    }}
-                                    onError={(e) => {
-                                      e.target.onerror = null;
-                                      e.target.src = 'https://via.placeholder.com/200?text=Image+Not+Found';
-                                    }}
-                                  />
-                                </div>
-                              )}
-                            </Form.Group>
-                          </Col>
-                        </Row>
-
-                        <div className="d-flex gap-2 justify-content-end">
-                          <Button variant="secondary" onClick={cancelRelatedForm}>
-                            Cancel
-                          </Button>
-                          <Button 
-                            variant="primary" 
-                            onClick={editingRelated ? updateRelatedBungalow : addRelatedBungalow}
-                            disabled={!relatedItem.related_name.trim()}
-                          >
-                            {editingRelated ? 'Update' : 'Add'} Related Bungalow
-                          </Button>
-                        </div>
-                      </Form>
-                    </Card.Body>
-                  </Card>
-                )}
-
-                {relatedBungalows.length > 0 ? (
-                  <Table striped bordered hover responsive>
-                    <thead>
-                      <tr>
-                        <th>#</th>
-                        <th>Name</th>
-                        <th>Price (₹)</th>
-                        <th>Image</th>
-                        <th>Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {relatedBungalows.map((rel, idx) => (
-                        <tr key={rel.relation_id || idx}>
-                          <td>{idx + 1}</td>
-                          <td>{rel.related_name}</td>
-                          <td>₹{parseFloat(rel.related_price || 0).toLocaleString('en-IN')}</td>
-                          <td>
-                            {rel.related_image ? (
-                              <img
-                                src={rel.related_image}
-                                alt={rel.related_name}
-                                style={{
-                                  width: '50px',
-                                  height: '50px',
-                                  objectFit: 'cover',
-                                  borderRadius: '4px'
-                                }}
-                                onError={(e) => {
-                                  e.target.onerror = null;
-                                  e.target.src = 'https://via.placeholder.com/50?text=No+Image';
-                                }}
-                              />
-                            ) : (
-                              <span className="text-muted">No image</span>
-                            )}
-                          </td>
-                          <td>
-                            <div className="d-flex gap-1">
-                              <Button
-                                size="sm"
-                                variant="outline-warning"
-                                onClick={() => editRelatedBungalow(idx)}
-                                title="Edit"
-                              >
-                                <Pencil size={14} />
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="outline-danger"
-                                onClick={() => deleteRelatedBungalow(idx)}
-                                title="Delete"
-                              >
-                                <Trash size={14} />
-                              </Button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </Table>
-                ) : (
-                  !showRelatedForm && (
-                    <p className="text-muted text-center py-4">No related bungalows added yet</p>
-                  )
-                )}
-              </Tab>
             </Tabs>
 
             {/* Navigation Buttons */}
-            <div className="d-flex justify-content-end gap-2 mt-4">
-              <Button
-                variant="secondary"
-                onClick={() => navigate('/bungalows')}
-                disabled={loading}
-              >
-                Cancel
-              </Button>
+            <div className="d-flex justify-content-between gap-2 mt-4">
+              <div>
+                {/* <Button
+                  variant="secondary"
+                  onClick={() => navigate('/bungalows')}
+                  disabled={loading}
+                >
+                  Cancel
+                </Button> */}
+              </div>
+              
+              <div className="d-flex gap-2">
+                <Button
+                  variant="secondary"
+                  onClick={goBack}
+                  disabled={activeTab === 'basic' || loading}
+                >
+                  Back
+                </Button>
 
-              <Button
-                variant="secondary"
-                onClick={goBack}
-                disabled={activeTab === 'basic' || loading}
-              >
-                Back
-              </Button>
+                {!isLastTab && (
+                  <Button
+                    variant="primary"
+                    onClick={goNext}
+                    disabled={loading}
+                  >
+                    Next
+                  </Button>
+                )}
 
-              <Button
-                variant="primary"
-                onClick={isLastTab ? handleSave : goNext}
-                disabled={loading}
-              >
-                {loading ? 'Saving...' : isLastTab ? (isEditMode ? 'Update Bungalow' : 'Save Bungalow') : 'Next'}
-              </Button>
+                {isLastTab && (
+                  <>
+                    <Button
+                      variant="success"
+                      onClick={handleSaveAndContinue}
+                      disabled={loading}
+                    >
+                      <Save className="me-1" /> Save & Continue
+                    </Button>
+                    <Button
+                      variant="primary"
+                      onClick={handleSave}
+                      disabled={loading}
+                    >
+                      {loading ? 'Saving...' : (isEditMode ? 'Update Bungalow' : 'Save Bungalow')}
+                    </Button>
+                  </>
+                )}
+              </div>
             </div>
           </Card.Body>
         </Card>
