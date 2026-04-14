@@ -5,6 +5,7 @@ import ReusableTable from '../../Shared/TableLayout/DataTable';
 import { useNavigate } from 'react-router-dom';
 import { Pencil, Trash, Building } from 'react-bootstrap-icons';
 import axios from 'axios';
+import { baseurl } from '../../Api/Baseurl';
 
 const OfflineHotelsTable = () => {
   const [filteredHotels, setFilteredHotels] = useState([]);
@@ -13,7 +14,7 @@ const OfflineHotelsTable = () => {
   const navigate = useNavigate();
 
   // API base URL
-  const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+  const API_BASE_URL = process.env.REACT_APP_API_URL || `${baseurl}/api`;
 
   // Format date for display - handles YYYY-MM-DD directly without timezone
   const formatDate = (dateString) => {
@@ -51,7 +52,7 @@ const OfflineHotelsTable = () => {
     setLoading(true);
     setError('');
     try {
-      const response = await axios.get(`${API_BASE_URL}/offline-hotels`);
+      const response = await axios.get(`${baseurl}/offline-hotels`);
       
       if (response.data.success) {
         // Add serial numbers to the data
@@ -83,7 +84,7 @@ const OfflineHotelsTable = () => {
     }
 
     try {
-      const response = await axios.delete(`${API_BASE_URL}/offline-hotels/${hotelId}`);
+      const response = await axios.delete(`${baseurl}/offline-hotels/${hotelId}`);
       
       if (response.data.success) {
         alert('Hotel deleted successfully');
