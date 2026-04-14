@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, memo } from 'react';
+import React, { useState, useEffect, useCallback, memo, useRef } from 'react';
 import {
   Container,
   Card,
@@ -22,8 +22,10 @@ const AddBungalow = () => {
   const isEditMode = !!id;
 
   const TAB_LIST = ['basic', 'images', 'overview', 'bungalowRate', 'inclusiveExclusive', 'placesNearby', 'bookingPolicy', 'cancellationPolicy'];
+  const BUNGALOW_RATE_SUB_TABS = ['weekDayRate', 'weekendRate', 'longHolidays', 'festivalHolidays'];
 
   const [activeTab, setActiveTab] = useState('basic');
+  const [activeSubTab, setActiveSubTab] = useState('weekDayRate');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -174,10 +176,25 @@ const AddBungalow = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  // Memoized handler for rate description changes
-  const handleRateDescriptionChange = useCallback((e) => {
-    const { name, value } = e.target;
-    setRateDescriptions(prev => ({ ...prev, [name]: value }));
+  // Use useCallback with empty dependency array to keep function reference stable
+  const handleWeekDayRateChange = useCallback((e) => {
+    const { value } = e.target;
+    setRateDescriptions(prev => ({ ...prev, week_day_rate_desc: value }));
+  }, []);
+
+  const handleWeekendRateChange = useCallback((e) => {
+    const { value } = e.target;
+    setRateDescriptions(prev => ({ ...prev, weekend_rate_desc: value }));
+  }, []);
+
+  const handleLongHolidaysChange = useCallback((e) => {
+    const { value } = e.target;
+    setRateDescriptions(prev => ({ ...prev, long_holidays_desc: value }));
+  }, []);
+
+  const handleFestivalHolidaysChange = useCallback((e) => {
+    const { value } = e.target;
+    setRateDescriptions(prev => ({ ...prev, festival_holidays_desc: value }));
   }, []);
 
   // Booking Form Handlers
@@ -521,15 +538,24 @@ const AddBungalow = () => {
   };
 
   const handleSaveAndContinue = async () => {
-    if (isEditMode) {
-      await updateBungalow();
-    } else {
-      await createBungalow();
+    // Save the current rate description data
+    if (isEditMode && id) {
+      try {
+        await saveRateDetails();
+      } catch (err) {
+        console.error('Failed to save rate details:', err);
+      }
     }
-    if (!error) {
-      const currentIndex = TAB_LIST.indexOf(activeTab);
-      if (currentIndex < TAB_LIST.length - 1) {
-        setActiveTab(TAB_LIST[currentIndex + 1]);
+    
+    // Move to next sub-tab within Bungalow Rent
+    const currentSubTabIndex = BUNGALOW_RATE_SUB_TABS.indexOf(activeSubTab);
+    if (currentSubTabIndex < BUNGALOW_RATE_SUB_TABS.length - 1) {
+      setActiveSubTab(BUNGALOW_RATE_SUB_TABS[currentSubTabIndex + 1]);
+    } else {
+      // If we're at the last sub-tab, move to the next main tab
+      const currentMainTabIndex = TAB_LIST.indexOf(activeTab);
+      if (currentMainTabIndex < TAB_LIST.length - 1) {
+        setActiveTab(TAB_LIST[currentMainTabIndex + 1]);
       }
     }
   };
@@ -549,9 +575,12 @@ const AddBungalow = () => {
   };
 
   const isLastTab = activeTab === TAB_LIST[TAB_LIST.length - 1];
+  const isBungalowRentTab = activeTab === 'bungalowRate';
+  const isLastSubTab = activeSubTab === BUNGALOW_RATE_SUB_TABS[BUNGALOW_RATE_SUB_TABS.length - 1];
 
-  // Memoized Rate Description Component for each tab to prevent re-renders
-  const WeekDayRateTab = memo(() => (
+  // Create memoized components OUTSIDE of the render function
+  // Use React.memo with custom comparison to prevent unnecessary re-renders
+  const WeekDayRateTab = memo(({ value, onChange }) => (
     <div>
       <h5 className="mb-3">Week Day Rates</h5>
       <Form.Group className="mb-4">
@@ -560,15 +589,17 @@ const AddBungalow = () => {
           as="textarea"
           rows={4}
           name="week_day_rate_desc"
-          value={rateDescriptions.week_day_rate_desc}
-          onChange={handleRateDescriptionChange}
+          value={value}
+          onChange={onChange}
           placeholder="Enter description for week day rates..."
         />
       </Form.Group>
     </div>
-  ));
+  ), (prevProps, nextProps) => {
+    return prevProps.value === nextProps.value;
+  });
 
-  const WeekendRateTab = memo(() => (
+  const WeekendRateTab = memo(({ value, onChange }) => (
     <div>
       <h5 className="mb-3">Weekend Rates</h5>
       <Form.Group className="mb-4">
@@ -577,15 +608,17 @@ const AddBungalow = () => {
           as="textarea"
           rows={4}
           name="weekend_rate_desc"
-          value={rateDescriptions.weekend_rate_desc}
-          onChange={handleRateDescriptionChange}
+          value={value}
+          onChange={onChange}
           placeholder="Enter description for weekend rates..."
         />
       </Form.Group>
     </div>
-  ));
+  ), (prevProps, nextProps) => {
+    return prevProps.value === nextProps.value;
+  });
 
-  const LongHolidaysTab = memo(() => (
+  const LongHolidaysTab = memo(({ value, onChange }) => (
     <div>
       <h5 className="mb-3">Long Holidays</h5>
       <Form.Group className="mb-4">
@@ -594,15 +627,17 @@ const AddBungalow = () => {
           as="textarea"
           rows={4}
           name="long_holidays_desc"
-          value={rateDescriptions.long_holidays_desc}
-          onChange={handleRateDescriptionChange}
+          value={value}
+          onChange={onChange}
           placeholder="Enter description for long holidays rates..."
         />
       </Form.Group>
     </div>
-  ));
+  ), (prevProps, nextProps) => {
+    return prevProps.value === nextProps.value;
+  });
 
-  const FestivalHolidaysTab = memo(() => (
+  const FestivalHolidaysTab = memo(({ value, onChange }) => (
     <div>
       <h5 className="mb-3">Festival Holidays</h5>
       <Form.Group className="mb-4">
@@ -611,13 +646,15 @@ const AddBungalow = () => {
           as="textarea"
           rows={4}
           name="festival_holidays_desc"
-          value={rateDescriptions.festival_holidays_desc}
-          onChange={handleRateDescriptionChange}
+          value={value}
+          onChange={onChange}
           placeholder="Enter description for festival holidays rates..."
         />
       </Form.Group>
     </div>
-  ));
+  ), (prevProps, nextProps) => {
+    return prevProps.value === nextProps.value;
+  });
 
   return (
     <Navbar>
@@ -851,18 +888,34 @@ const AddBungalow = () => {
 
               {/* Bungalow Rate Tab with Sub-tabs */}
               <Tab eventKey="bungalowRate" title="Bungalow Rent">
-                <Tabs defaultActiveKey="weekDayRate" className="mb-3">
+                <Tabs 
+                  activeKey={activeSubTab} 
+                  onSelect={(k) => setActiveSubTab(k)}
+                  className="mb-3"
+                >
                   <Tab eventKey="weekDayRate" title="Week Day Rate">
-                    <WeekDayRateTab />
+                    <WeekDayRateTab 
+                      value={rateDescriptions.week_day_rate_desc} 
+                      onChange={handleWeekDayRateChange}
+                    />
                   </Tab>
                   <Tab eventKey="weekendRate" title="Weekend Rate">
-                    <WeekendRateTab />
+                    <WeekendRateTab 
+                      value={rateDescriptions.weekend_rate_desc}
+                      onChange={handleWeekendRateChange}
+                    />
                   </Tab>
                   <Tab eventKey="longHolidays" title="Long Holidays">
-                    <LongHolidaysTab />
+                    <LongHolidaysTab 
+                      value={rateDescriptions.long_holidays_desc}
+                      onChange={handleLongHolidaysChange}
+                    />
                   </Tab>
                   <Tab eventKey="festivalHolidays" title="Festival Holidays">
-                    <FestivalHolidaysTab />
+                    <FestivalHolidaysTab 
+                      value={rateDescriptions.festival_holidays_desc}
+                      onChange={handleFestivalHolidaysChange}
+                    />
                   </Tab>
                 </Tabs>
               </Tab>
@@ -963,40 +1016,83 @@ const AddBungalow = () => {
               </div>
               
               <div className="d-flex gap-2">
-                <Button
-                  variant="secondary"
-                  onClick={goBack}
-                  disabled={activeTab === 'basic' || loading}
-                >
-                  Back
-                </Button>
-
-                {!isLastTab && (
-                  <Button
-                    variant="primary"
-                    onClick={goNext}
-                    disabled={loading}
-                  >
-                    Next
-                  </Button>
-                )}
-
-                {isLastTab && (
+                {!isBungalowRentTab ? (
+                  // Regular navigation for non-Bungalow Rent tabs
                   <>
                     <Button
-                      variant="success"
-                      onClick={handleSaveAndContinue}
-                      disabled={loading}
+                      variant="secondary"
+                      onClick={goBack}
+                      disabled={activeTab === 'basic' || loading}
                     >
-                      <Save className="me-1" /> Save & Continue
+                      Back
                     </Button>
+
+                    {!isLastTab && (
+                      <Button
+                        variant="primary"
+                        onClick={goNext}
+                        disabled={loading}
+                      >
+                        Next
+                      </Button>
+                    )}
+
+                    {isLastTab && (
+                      <Button
+                        variant="primary"
+                        onClick={handleSave}
+                        disabled={loading}
+                      >
+                        {loading ? 'Saving...' : (isEditMode ? 'Update Bungalow' : 'Save Bungalow')}
+                      </Button>
+                    )}
+                  </>
+                ) : (
+                  // Special navigation for Bungalow Rent tab
+                  <>
                     <Button
-                      variant="primary"
-                      onClick={handleSave}
+                      variant="secondary"
+                      onClick={() => {
+                        const currentSubTabIndex = BUNGALOW_RATE_SUB_TABS.indexOf(activeSubTab);
+                        if (currentSubTabIndex > 0) {
+                          setActiveSubTab(BUNGALOW_RATE_SUB_TABS[currentSubTabIndex - 1]);
+                        } else {
+                          // If at first sub-tab, go back to previous main tab
+                          const currentMainTabIndex = TAB_LIST.indexOf(activeTab);
+                          if (currentMainTabIndex > 0) {
+                            setActiveTab(TAB_LIST[currentMainTabIndex - 1]);
+                          }
+                        }
+                      }}
                       disabled={loading}
                     >
-                      {loading ? 'Saving...' : (isEditMode ? 'Update Bungalow' : 'Save Bungalow')}
+                      Back
                     </Button>
+
+                    <div className="d-flex gap-2">
+                      <Button
+                        variant="success"
+                        onClick={handleSaveAndContinue}
+                        disabled={loading}
+                      >
+                        <Save className="me-1" /> Save & Continue
+                      </Button>
+                      
+                      {isLastSubTab && (
+                        <Button
+                          variant="primary"
+                          onClick={() => {
+                            const currentMainTabIndex = TAB_LIST.indexOf(activeTab);
+                            if (currentMainTabIndex < TAB_LIST.length - 1) {
+                              setActiveTab(TAB_LIST[currentMainTabIndex + 1]);
+                            }
+                          }}
+                          disabled={loading}
+                        >
+                          Next Tab
+                        </Button>
+                      )}
+                    </div>
                   </>
                 )}
               </div>
