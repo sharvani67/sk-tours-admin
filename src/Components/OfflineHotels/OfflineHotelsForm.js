@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Card, Form, Row, Col, Button, InputGroup, Alert, Spinner, Tab, Nav } from 'react-bootstrap';
+import { Container, Card, Form, Row, Col, Button, InputGroup, Alert, Spinner, Tab, Nav, Badge } from 'react-bootstrap';
 import Navbar from '../../Shared/Navbar/Navbar';
 import axios from 'axios';
 import { baseurl } from '../../Api/Baseurl';
@@ -53,6 +53,45 @@ const countries = [
   { id: 44, name: 'Russia', code: 'RU' }
 ];
 
+// Predefined Amenities
+const COMMON_AMENITIES = [
+  'Free WiFi', 'Air Conditioning', 'TV', 'Room Service', 'Wardrobe'
+];
+
+const ADVANCED_AMENITIES = [
+  'Mini Fridge', 'Tea/Coffee Maker', 'Balcony', 'Work Desk'
+];
+
+const LUXURY_AMENITIES = [
+  'Bathtub', 'Mini Bar', 'Butler Service', 'Jacuzzi', 'Smart Controls'
+];
+
+const ALL_AMENITIES = [...COMMON_AMENITIES, ...ADVANCED_AMENITIES, ...LUXURY_AMENITIES];
+
+// Helper function to ensure amenities is always an array
+const ensureArray = (value) => {
+  if (!value) return [];
+  if (Array.isArray(value)) return value;
+  if (typeof value === 'string') {
+    try {
+      const parsed = JSON.parse(value);
+      return Array.isArray(parsed) ? parsed : value.split(',').map(a => a.trim());
+    } catch (e) {
+      return value.split(',').map(a => a.trim());
+    }
+  }
+  return [];
+};
+
+// Helper function to get full image URL
+const getImageUrl = (imagePath) => {
+  if (!imagePath) return '';
+  if (imagePath.startsWith('http')) return imagePath;
+  // Remove any leading slash to avoid double slashes
+  const cleanPath = imagePath.startsWith('/') ? imagePath : `/${imagePath}`;
+  return `${baseurl}${cleanPath}`;
+};
+
 function OfflineHotels() {
   const navigate = useNavigate();
   const { id } = useParams();
@@ -68,6 +107,8 @@ function OfflineHotels() {
   const [additionalImageFiles, setAdditionalImageFiles] = useState([]);
   const [additionalImagePreviews, setAdditionalImagePreviews] = useState([]);
   const [existingImages, setExistingImages] = useState([]);
+  // Track deleted existing images for backend processing
+  const [deletedExistingImages, setDeletedExistingImages] = useState([]);
 
   // Hotel Search Details
   const [searchDetails, setSearchDetails] = useState({
@@ -97,7 +138,7 @@ function OfflineHotels() {
     totalRatings: 0,
     price: '',
     taxes: '',
-    amenities: '',
+    amenities: [],
     status: 'Available',
     freeStayForKids: false,
     limitedTimeSale: false,
@@ -106,6 +147,10 @@ function OfflineHotels() {
     loginToBook: false,
     payLater: false
   });
+
+  // Custom Amenities
+  const [customAmenities, setCustomAmenities] = useState([]);
+  const [newAmenityInput, setNewAmenityInput] = useState('');
 
   // Description Content
   const [descriptions, setDescriptions] = useState({
@@ -116,37 +161,72 @@ function OfflineHotels() {
     taxesDescription: ''
   });
 
-  // Filters
-  const [filters, setFilters] = useState({
-    searchLocality: '',
-    priceRanges: [
-      { id: 1, range: '₹0 - ₹2500', min: 0, max: 2500, count: 509, selected: false },
-      { id: 2, range: '₹2500 - ₹4500', min: 2500, max: 4500, count: 781, selected: false },
-      { id: 3, range: '₹4500 - ₹7500', min: 4500, max: 7500, count: 418, selected: false },
-      { id: 4, range: '₹7500 - ₹10000', min: 7500, max: 10000, count: 169, selected: false },
-      { id: 5, range: '₹10000 - ₹15000', min: 10000, max: 15000, count: 299, selected: false },
-      { id: 6, range: '₹15000 - ₹30000', min: 15000, max: 30000, count: 342, selected: false },
-      { id: 7, range: '₹30000+', min: 30000, max: null, count: 163, selected: false }
-    ],
-    budget: {
-      min: '',
-      max: ''
+  // Default empty room types data
+  const getDefaultRoomTypesData = () => ({
+    standard: {
+      enabled: true,
+      hotels: [
+        {
+          id: Date.now(),
+          roomType: 'Standard Room Non AC',
+          price: '',
+          amenities: ['Free WiFi'],
+          maxOccupancy: 2,
+          bedType: 'Double Bed',
+          roomSize: '',
+          availableRooms: '',
+          description: '',
+          images: [],
+          imagePreviews: [],
+          imageFiles: [],
+          deletedImages: [] // Track deleted existing images for this room
+        }
+      ]
     },
-    starCategories: [
-      { id: 1, stars: 3, count: 676, selected: false },
-      { id: 2, stars: 4, count: 368, selected: false },
-      { id: 3, stars: 5, count: 206, selected: false }
-    ]
+    deluxe: {
+      enabled: true,
+      hotels: [
+        {
+          id: Date.now() + 1,
+          roomType: 'Deluxe Room With AC',
+          price: '',
+          amenities: ['Free WiFi', 'Air Conditioning'],
+          maxOccupancy: 2,
+          bedType: 'Queen Bed',
+          roomSize: '',
+          availableRooms: '',
+          description: '',
+          images: [],
+          imagePreviews: [],
+          imageFiles: [],
+          deletedImages: []
+        }
+      ]
+    },
+    luxury: {
+      enabled: true,
+      hotels: [
+        {
+          id: Date.now() + 2,
+          roomType: 'Luxury Suite With AC',
+          price: '',
+          amenities: ['Free WiFi', 'Air Conditioning', 'Mini Bar'],
+          maxOccupancy: 3,
+          bedType: 'King Bed',
+          roomSize: '',
+          availableRooms: '',
+          description: '',
+          images: [],
+          imagePreviews: [],
+          imageFiles: [],
+          deletedImages: []
+        }
+      ]
+    }
   });
 
-  // Helper function to format date to YYYY-MM-DD for API
-  const formatDateForAPI = (date) => {
-    if (!date) return '';
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  };
+  // Room Types Data
+  const [roomTypesData, setRoomTypesData] = useState(getDefaultRoomTypesData());
 
   // Fetch hotel data if editing
   useEffect(() => {
@@ -164,8 +244,9 @@ function OfflineHotels() {
       
       if (response.data.success) {
         const hotelData = response.data.data;
+        console.log('Fetched hotel data:', hotelData);
         
-        // Set search details - dates are already in YYYY-MM-DD format from backend
+        // Set search details
         setSearchDetails({
           country: hotelData.country || '',
           city: hotelData.city || '',
@@ -180,9 +261,7 @@ function OfflineHotels() {
         });
 
         // Set children ages
-        if (hotelData.children_ages && hotelData.children_ages.length > 0) {
-          setChildrenAges(hotelData.children_ages);
-        }
+        setChildrenAges(ensureArray(hotelData.children_ages));
 
         // Set hotel details
         setHotelDetails({
@@ -190,12 +269,12 @@ function OfflineHotels() {
           location: hotelData.hotel_location || '',
           starRating: hotelData.star_rating || 3,
           mainImage: hotelData.main_image || '',
-          additionalImages: hotelData.additional_images || [],
-          rating: hotelData.rating || 0,
+          additionalImages: ensureArray(hotelData.additional_images),
+          rating: parseFloat(hotelData.rating) || 0,
           totalRatings: hotelData.total_ratings || 0,
           price: hotelData.price || '',
           taxes: hotelData.taxes || '',
-          amenities: hotelData.amenities || '',
+          amenities: ensureArray(hotelData.amenities),
           status: hotelData.status || 'Available',
           freeStayForKids: hotelData.free_stay_for_kids === 1 || hotelData.free_stay_for_kids === true,
           limitedTimeSale: hotelData.limited_time_sale === 1 || hotelData.limited_time_sale === true,
@@ -204,6 +283,9 @@ function OfflineHotels() {
           loginToBook: hotelData.login_to_book === 1 || hotelData.login_to_book === true,
           payLater: hotelData.pay_later === 1 || hotelData.pay_later === true
         });
+
+        // Set custom amenities
+        setCustomAmenities(ensureArray(hotelData.custom_amenities));
 
         // Set descriptions
         setDescriptions({
@@ -214,63 +296,58 @@ function OfflineHotels() {
           taxesDescription: hotelData.taxes_description || ''
         });
 
+        // Set room types data if available
+        if (hotelData.room_types_data) {
+          const roomData = { ...hotelData.room_types_data };
+          
+          // Ensure all categories exist
+          ['standard', 'deluxe', 'luxury'].forEach(category => {
+            if (!roomData[category]) {
+              roomData[category] = { enabled: false, hotels: [] };
+            }
+          });
+          
+          // Process each category
+          Object.keys(roomData).forEach(category => {
+            if (roomData[category] && roomData[category].hotels) {
+              roomData[category].hotels = roomData[category].hotels.map((hotel, index) => {
+                const hotelId = hotel.id || Date.now() + index + Math.random();
+                const hotelImages = ensureArray(hotel.images);
+                const imagePreviews = hotelImages.map(img => getImageUrl(img));
+                
+                return {
+                  ...hotel,
+                  id: hotelId,
+                  roomType: hotel.roomType || hotel.room_name || '',
+                  amenities: ensureArray(hotel.amenities),
+                  maxOccupancy: hotel.maxOccupancy || hotel.max_occupancy || 2,
+                  bedType: hotel.bedType || hotel.bed_type || '',
+                  roomSize: hotel.roomSize || hotel.room_size || '',
+                  availableRooms: hotel.availableRooms || hotel.available_rooms || '',
+                  description: hotel.description || '',
+                  imagePreviews: imagePreviews,
+                  images: hotelImages,
+                  imageFiles: [],
+                  deletedImages: []
+                };
+              });
+            }
+          });
+          
+          setRoomTypesData(roomData);
+        }
+
         // Set main image preview if exists
         if (hotelData.main_image) {
-          const imageUrl = hotelData.main_image.startsWith('http') 
-            ? hotelData.main_image 
-            : `${baseurl}${hotelData.main_image}`;
-          setMainImagePreview(imageUrl);
+          setMainImagePreview(getImageUrl(hotelData.main_image));
         }
 
         // Set additional images
-        if (hotelData.additional_images && hotelData.additional_images.length > 0) {
-          const imageUrls = hotelData.additional_images.map(img => {
-            return img.startsWith('http') ? img : `${baseurl}${img}`;
-          });
+        const additionalImages = ensureArray(hotelData.additional_images);
+        if (additionalImages.length > 0) {
+          const imageUrls = additionalImages.map(img => getImageUrl(img));
           setAdditionalImagePreviews(imageUrls);
-          setExistingImages(hotelData.additional_images);
-        }
-
-        // Set filters if available
-        if (hotelData.filters) {
-          const { priceRanges, starCategories, budget, searchLocalities } = hotelData.filters;
-
-          if (priceRanges && priceRanges.length > 0) {
-            setFilters(prev => ({
-              ...prev,
-              priceRanges: prev.priceRanges.map((range, index) => ({
-                ...range,
-                selected: priceRanges[index]?.is_selected === 1
-              }))
-            }));
-          }
-
-          if (starCategories && starCategories.length > 0) {
-            setFilters(prev => ({
-              ...prev,
-              starCategories: prev.starCategories.map((star, index) => ({
-                ...star,
-                selected: starCategories[index]?.is_selected === 1
-              }))
-            }));
-          }
-
-          if (budget) {
-            setFilters(prev => ({
-              ...prev,
-              budget: {
-                min: budget.min_budget || '',
-                max: budget.max_budget || ''
-              }
-            }));
-          }
-
-          if (searchLocalities && searchLocalities.length > 0) {
-            setFilters(prev => ({
-              ...prev,
-              searchLocality: searchLocalities[0]?.locality_name || ''
-            }));
-          }
+          setExistingImages(additionalImages);
         }
       }
     } catch (err) {
@@ -326,6 +403,51 @@ function OfflineHotels() {
     }));
   };
 
+  // Hotel Amenities Handlers
+  const toggleHotelAmenity = (amenity) => {
+    setHotelDetails(prev => {
+      const amenities = prev.amenities || [];
+      if (amenities.includes(amenity)) {
+        return { ...prev, amenities: amenities.filter(a => a !== amenity) };
+      } else {
+        return { ...prev, amenities: [...amenities, amenity] };
+      }
+    });
+  };
+
+  const addCustomAmenity = () => {
+    if (newAmenityInput.trim() && !customAmenities.includes(newAmenityInput.trim())) {
+      setCustomAmenities([...customAmenities, newAmenityInput.trim()]);
+      setNewAmenityInput('');
+    }
+  };
+
+  const removeCustomAmenity = (amenity) => {
+    setCustomAmenities(customAmenities.filter(a => a !== amenity));
+    setHotelDetails(prev => ({
+      ...prev,
+      amenities: (prev.amenities || []).filter(a => a !== amenity)
+    }));
+  };
+
+  // Room Amenities Handlers
+  const toggleRoomAmenity = (roomType, hotelIndex, amenity) => {
+    setRoomTypesData(prev => ({
+      ...prev,
+      [roomType]: {
+        ...prev[roomType],
+        hotels: prev[roomType].hotels.map((hotel, idx) => 
+          idx === hotelIndex ? {
+            ...hotel,
+            amenities: (hotel.amenities || []).includes(amenity) 
+              ? hotel.amenities.filter(a => a !== amenity)
+              : [...(hotel.amenities || []), amenity]
+          } : hotel
+        )
+      }
+    }));
+  };
+
   // Handle main image upload
   const handleMainImageChange = (e) => {
     const file = e.target.files[0];
@@ -347,7 +469,6 @@ function OfflineHotels() {
         setMainImagePreview(reader.result);
       };
       reader.readAsDataURL(file);
-      setHotelDetails(prev => ({ ...prev, mainImage: '' }));
     }
   };
 
@@ -375,23 +496,124 @@ function OfflineHotels() {
       reader.onloadend = () => {
         validPreviews.push(reader.result);
         if (validPreviews.length === validFiles.length) {
-          setAdditionalImagePreviews([...additionalImagePreviews, ...validPreviews]);
+          setAdditionalImagePreviews(prev => [...prev, ...validPreviews]);
         }
       };
       reader.readAsDataURL(file);
     }
 
-    setAdditionalImageFiles([...additionalImageFiles, ...validFiles]);
+    setAdditionalImageFiles(prev => [...prev, ...validFiles]);
   };
 
-  // Remove additional image
+  // Remove additional image - FIXED
   const removeAdditionalImage = (index) => {
-    const newFiles = [...additionalImageFiles];
+    // Check if this is an existing image (index < existingImages.length)
+    if (index < existingImages.length) {
+      // Track as deleted
+      setDeletedExistingImages(prev => [...prev, existingImages[index]]);
+      
+      // Remove from existing images
+      const newExisting = [...existingImages];
+      newExisting.splice(index, 1);
+      setExistingImages(newExisting);
+    } else {
+      // Remove from new files (adjust index)
+      const fileIndex = index - existingImages.length;
+      const newFiles = [...additionalImageFiles];
+      newFiles.splice(fileIndex, 1);
+      setAdditionalImageFiles(newFiles);
+    }
+    
+    // Remove preview
     const newPreviews = [...additionalImagePreviews];
-    newFiles.splice(index, 1);
     newPreviews.splice(index, 1);
-    setAdditionalImageFiles(newFiles);
     setAdditionalImagePreviews(newPreviews);
+  };
+
+  // Handle room image upload
+  const handleRoomImageUpload = (roomType, hotelIndex, e) => {
+    const files = Array.from(e.target.files);
+    const validFiles = [];
+    const validPreviews = [];
+
+    for (const file of files) {
+      if (file.size > 5 * 1024 * 1024) {
+        setError('Each image should be less than 5MB');
+        continue;
+      }
+      
+      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+      if (!allowedTypes.includes(file.type)) {
+        setError('Only JPEG, JPG, PNG, GIF, and WEBP images are allowed');
+        continue;
+      }
+
+      validFiles.push(file);
+      
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        validPreviews.push(reader.result);
+        if (validPreviews.length === validFiles.length) {
+          setRoomTypesData(prev => ({
+            ...prev,
+            [roomType]: {
+              ...prev[roomType],
+              hotels: prev[roomType].hotels.map((hotel, idx) => 
+                idx === hotelIndex ? {
+                  ...hotel,
+                  imageFiles: [...(hotel.imageFiles || []), ...validFiles],
+                  imagePreviews: [...(hotel.imagePreviews || []), ...validPreviews]
+                } : hotel
+              )
+            }
+          }));
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Remove room image - FIXED (this was the main issue)
+  const removeRoomImage = (roomType, hotelIndex, imageIndex) => {
+    setRoomTypesData(prev => ({
+      ...prev,
+      [roomType]: {
+        ...prev[roomType],
+        hotels: prev[roomType].hotels.map((hotel, idx) => {
+          if (idx !== hotelIndex) return hotel;
+          
+          const existingImagesCount = (hotel.images || []).length;
+          
+          // Create new arrays
+          let newImages = [...(hotel.images || [])];
+          let newImagePreviews = [...(hotel.imagePreviews || [])];
+          let newImageFiles = [...(hotel.imageFiles || [])];
+          let newDeletedImages = [...(hotel.deletedImages || [])];
+          
+          if (imageIndex < existingImagesCount) {
+            // Removing an existing database image
+            const deletedImagePath = newImages[imageIndex];
+            newDeletedImages.push(deletedImagePath);
+            newImages.splice(imageIndex, 1);
+          } else {
+            // Removing a newly uploaded image
+            const fileIndex = imageIndex - existingImagesCount;
+            newImageFiles.splice(fileIndex, 1);
+          }
+          
+          // Remove the preview at the specified index
+          newImagePreviews.splice(imageIndex, 1);
+          
+          return {
+            ...hotel,
+            images: newImages,
+            imagePreviews: newImagePreviews,
+            imageFiles: newImageFiles,
+            deletedImages: newDeletedImages
+          };
+        })
+      }
+    }));
   };
 
   // Handle descriptions change
@@ -403,31 +625,67 @@ function OfflineHotels() {
     }));
   };
 
-  // Handle filters change
-  const handleFilterChange = (category, index, field, value) => {
-    if (category === 'priceRanges') {
-      setFilters(prev => ({
-        ...prev,
-        priceRanges: prev.priceRanges.map((item, i) => 
-          i === index ? { ...item, [field]: value } : item
-        )
-      }));
-    } else if (category === 'starCategories') {
-      setFilters(prev => ({
-        ...prev,
-        starCategories: prev.starCategories.map((item, i) => 
-          i === index ? { ...item, [field]: value } : item
-        )
-      }));
-    }
+  // Room Types Handlers
+  const handleRoomTypeEnabledChange = (roomType, enabled) => {
+    setRoomTypesData(prev => ({
+      ...prev,
+      [roomType]: {
+        ...prev[roomType],
+        enabled
+      }
+    }));
   };
 
-  // Handle budget change
-  const handleBudgetChange = (e) => {
-    const { name, value } = e.target;
-    setFilters(prev => ({
+  const handleRoomHotelChange = (roomType, hotelIndex, field, value) => {
+    setRoomTypesData(prev => ({
       ...prev,
-      budget: { ...prev.budget, [name]: value }
+      [roomType]: {
+        ...prev[roomType],
+        hotels: prev[roomType].hotels.map((hotel, idx) => 
+          idx === hotelIndex ? { ...hotel, [field]: value } : hotel
+        )
+      }
+    }));
+  };
+
+  const addRoomHotel = (roomType) => {
+    const defaultAmenities = roomType === 'standard' ? ['Free WiFi'] : 
+                            roomType === 'deluxe' ? ['Free WiFi', 'Air Conditioning'] : 
+                            ['Free WiFi', 'Air Conditioning', 'Mini Bar'];
+    
+    const newHotel = {
+      id: Date.now() + Math.random(),
+      roomType: roomType === 'standard' ? 'Standard Room' : 
+                roomType === 'deluxe' ? 'Deluxe Room With AC' : 'Luxury Suite With AC',
+      price: '',
+      amenities: defaultAmenities,
+      maxOccupancy: 2,
+      bedType: '',
+      roomSize: '',
+      availableRooms: '',
+      description: '',
+      images: [],
+      imagePreviews: [],
+      imageFiles: [],
+      deletedImages: []
+    };
+    
+    setRoomTypesData(prev => ({
+      ...prev,
+      [roomType]: {
+        ...prev[roomType],
+        hotels: [...prev[roomType].hotels, newHotel]
+      }
+    }));
+  };
+
+  const removeRoomHotel = (roomType, hotelIndex) => {
+    setRoomTypesData(prev => ({
+      ...prev,
+      [roomType]: {
+        ...prev[roomType],
+        hotels: prev[roomType].hotels.filter((_, idx) => idx !== hotelIndex)
+      }
     }));
   };
 
@@ -466,6 +724,72 @@ function OfflineHotels() {
     setSuccess('');
   };
 
+  // Prepare room types data for submission
+ // Prepare room types data for submission
+const prepareRoomTypesDataForSubmit = () => {
+  const cleanedData = {};
+  
+  Object.keys(roomTypesData).forEach(category => {
+    cleanedData[category] = {
+      enabled: roomTypesData[category].enabled,
+      hotels: roomTypesData[category].hotels.map(hotel => {
+        // Keep images array - we need this for existing images!
+        const { imagePreviews, imageFiles, deletedImages, ...hotelWithoutImages } = hotel;
+        return {
+          ...hotelWithoutImages,
+          images: hotel.images || [], // Send existing images to backend
+          deletedImages: hotel.deletedImages || [] // Send deleted images to backend
+        };
+      })
+    };
+  });
+  
+  return cleanedData;
+};
+
+  // Collect all room image files for FormData
+  const collectRoomImageFiles = () => {
+    const files = [];
+    
+    Object.keys(roomTypesData).forEach(category => {
+      roomTypesData[category].hotels.forEach((hotel, hotelIndex) => {
+        if (hotel.imageFiles && hotel.imageFiles.length > 0) {
+          hotel.imageFiles.forEach((file, fileIndex) => {
+            files.push({
+              category,
+              hotelIndex,
+              fileIndex,
+              file
+            });
+          });
+        }
+      });
+    });
+    
+    return files;
+  };
+
+  // Collect deleted room images to inform backend
+  const collectDeletedRoomImages = () => {
+    const deletedImages = [];
+    
+    Object.keys(roomTypesData).forEach(category => {
+      roomTypesData[category].hotels.forEach((hotel, hotelIndex) => {
+        if (hotel.deletedImages && hotel.deletedImages.length > 0) {
+          hotel.deletedImages.forEach((imagePath) => {
+            deletedImages.push({
+              category,
+              hotelIndex,
+              imagePath
+            });
+          });
+        }
+      });
+    });
+    
+    return deletedImages;
+  };
+
   // Submit handler with FormData for file upload
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -485,11 +809,23 @@ function OfflineHotels() {
       
       const updatedHotelDetails = {
         ...hotelDetails,
-        additionalImages: existingImages
+        additionalImages: existingImages,
+        amenities: hotelDetails.amenities || []
       };
       formData.append('hotelDetails', JSON.stringify(updatedHotelDetails));
+      formData.append('customAmenities', JSON.stringify(customAmenities));
       formData.append('descriptions', JSON.stringify(descriptions));
-      formData.append('filters', JSON.stringify(filters));
+      
+      // Append deleted existing images for hotel
+      formData.append('deletedExistingImages', JSON.stringify(deletedExistingImages));
+      
+      // Prepare and append room types data
+      const cleanedRoomData = prepareRoomTypesDataForSubmit();
+      formData.append('roomTypesData', JSON.stringify(cleanedRoomData));
+      
+      // Append deleted room images
+      const deletedRoomImages = collectDeletedRoomImages();
+      formData.append('deletedRoomImages', JSON.stringify(deletedRoomImages));
       
       if (mainImageFile) {
         formData.append('mainImage', mainImageFile);
@@ -500,6 +836,17 @@ function OfflineHotels() {
           formData.append('additionalImages', file);
         });
       }
+      
+      // Append room images with metadata
+      const roomImageFiles = collectRoomImageFiles();
+      roomImageFiles.forEach((item) => {
+        formData.append('roomImages', item.file);
+        formData.append('roomImageMetadata', JSON.stringify({
+          category: item.category,
+          hotelIndex: item.hotelIndex,
+          fileIndex: item.fileIndex
+        }));
+      });
 
       let response;
       if (id) {
@@ -538,57 +885,334 @@ function OfflineHotels() {
 
   // Reset form
   const resetForm = () => {
-    setSearchDetails({
-      country: '',
-      city: '',
-      location: '',
-      propertyName: '',
-      checkInDate: '',
-      checkOutDate: '',
-      rooms: 1,
-      adults: 2,
-      children: 0,
-      pets: false
-    });
-    setChildrenAges([]);
-    setHotelDetails({
-      hotelName: '',
-      location: '',
-      starRating: 3,
-      mainImage: '',
-      additionalImages: [],
-      rating: 0,
-      totalRatings: 0,
-      price: '',
-      taxes: '',
-      amenities: '',
-      status: 'Available',
-      freeStayForKids: false,
-      limitedTimeSale: false,
-      salePrice: '',
-      originalPrice: '',
-      loginToBook: false,
-      payLater: false
-    });
-    setDescriptions({
-      overview: '',
-      hotelFacilities: '',
-      airportTransfers: '',
-      mealPlan: '',
-      taxesDescription: ''
-    });
-    setFilters({
-      searchLocality: '',
-      priceRanges: filters.priceRanges.map(p => ({ ...p, selected: false })),
-      budget: { min: '', max: '' },
-      starCategories: filters.starCategories.map(s => ({ ...s, selected: false }))
-    });
-    setMainImageFile(null);
-    setMainImagePreview(null);
-    setAdditionalImageFiles([]);
-    setAdditionalImagePreviews([]);
-    setExistingImages([]);
-    setSuccess('');
+    if (id) {
+      fetchHotelData(id);
+      setSuccess('');
+    } else {
+      setSearchDetails({
+        country: '',
+        city: '',
+        location: '',
+        propertyName: '',
+        checkInDate: '',
+        checkOutDate: '',
+        rooms: 1,
+        adults: 2,
+        children: 0,
+        pets: false
+      });
+      setChildrenAges([]);
+      setHotelDetails({
+        hotelName: '',
+        location: '',
+        starRating: 3,
+        mainImage: '',
+        additionalImages: [],
+        rating: 0,
+        totalRatings: 0,
+        price: '',
+        taxes: '',
+        amenities: [],
+        status: 'Available',
+        freeStayForKids: false,
+        limitedTimeSale: false,
+        salePrice: '',
+        originalPrice: '',
+        loginToBook: false,
+        payLater: false
+      });
+      setCustomAmenities([]);
+      setNewAmenityInput('');
+      setDescriptions({
+        overview: '',
+        hotelFacilities: '',
+        airportTransfers: '',
+        mealPlan: '',
+        taxesDescription: ''
+      });
+      setRoomTypesData(getDefaultRoomTypesData());
+      setMainImageFile(null);
+      setMainImagePreview(null);
+      setAdditionalImageFiles([]);
+      setAdditionalImagePreviews([]);
+      setExistingImages([]);
+      setDeletedExistingImages([]);
+      setSuccess('');
+    }
+  };
+
+  // Amenity Selector Component
+  const AmenitySelector = ({ selectedAmenities, onToggle, availableAmenities, title }) => {
+    return (
+      <div className="mb-3">
+        <Form.Label>{title}</Form.Label>
+        <div className="d-flex flex-wrap gap-2 p-3 border rounded bg-white" style={{ maxHeight: '200px', overflowY: 'auto' }}>
+          {availableAmenities.map(amenity => (
+            <Form.Check
+              key={amenity}
+              type="checkbox"
+              id={`amenity-${amenity}-${title?.replace(/\s/g, '')}`}
+              label={amenity}
+              checked={(selectedAmenities || []).includes(amenity)}
+              onChange={() => onToggle(amenity)}
+              inline
+            />
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  // Room Amenity Selector Component
+  const RoomAmenitySelector = ({ selectedAmenities, onToggle, roomType }) => {
+    let availableAmenities = ALL_AMENITIES;
+    if (roomType === 'standard') {
+      availableAmenities = COMMON_AMENITIES;
+    } else if (roomType === 'deluxe') {
+      availableAmenities = [...COMMON_AMENITIES, ...ADVANCED_AMENITIES];
+    }
+    
+    return (
+      <div className="mb-3">
+        <div className="d-flex flex-wrap gap-2 p-3 border rounded bg-white" style={{ maxHeight: '150px', overflowY: 'auto' }}>
+          {availableAmenities.map(amenity => (
+            <Form.Check
+              key={amenity}
+              type="checkbox"
+              id={`room-amenity-${amenity}-${roomType}`}
+              label={amenity}
+              checked={(selectedAmenities || []).includes(amenity)}
+              onChange={() => onToggle(amenity)}
+              inline
+            />
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  // Render Room Type Section
+  const renderRoomTypeSection = (roomType, title, color) => {
+    const data = roomTypesData[roomType] || { enabled: false, hotels: [] };
+    
+    return (
+      <Card className="mb-4">
+        <Card.Header style={{ backgroundColor: color, color: 'white' }}>
+          <div className="d-flex justify-content-between align-items-center">
+            <h5 className="mb-0">{title} Rooms</h5>
+            <Form.Check
+              type="switch"
+              id={`${roomType}-enabled`}
+              label="Enable"
+              checked={data.enabled || false}
+              onChange={(e) => handleRoomTypeEnabledChange(roomType, e.target.checked)}
+              style={{ color: 'white' }}
+            />
+          </div>
+        </Card.Header>
+        {data.enabled && (
+          <Card.Body>
+            {data.hotels && data.hotels.map((hotel, index) => (
+              <div key={hotel.id || index} className="mb-4 p-3 border rounded bg-light">
+                <div className="d-flex justify-content-between align-items-center mb-3">
+                  <h6 className="mb-0">Room Option #{index + 1}</h6>
+                  {data.hotels.length > 1 && (
+                    <Button
+                      variant="danger"
+                      size="sm"
+                      onClick={() => removeRoomHotel(roomType, index)}
+                    >
+                      Remove
+                    </Button>
+                  )}
+                </div>
+                
+                <Row className="mb-3">
+                  <Col md={6}>
+                    <Form.Group>
+                      <Form.Label>Room Type Name <span className="text-danger">*</span></Form.Label>
+                      <Form.Control
+                        type="text"
+                        placeholder="e.g., Deluxe Room Non AC"
+                        value={hotel.roomType || ''}
+                        onChange={(e) => handleRoomHotelChange(roomType, index, 'roomType', e.target.value)}
+                      />
+                    </Form.Group>
+                  </Col>
+                  <Col md={3}>
+                    <Form.Group>
+                      <Form.Label>Price (₹) <span className="text-danger">*</span></Form.Label>
+                      <InputGroup>
+                        <InputGroup.Text>₹</InputGroup.Text>
+                        <Form.Control
+                          type="text"
+                          placeholder="1,044"
+                          value={hotel.price || ''}
+                          onChange={(e) => handleRoomHotelChange(roomType, index, 'price', e.target.value)}
+                        />
+                      </InputGroup>
+                    </Form.Group>
+                  </Col>
+                  <Col md={3}>
+                    <Form.Group>
+                      <Form.Label>Available Rooms</Form.Label>
+                      <Form.Control
+                        type="number"
+                        min="0"
+                        placeholder="e.g., 10"
+                        value={hotel.availableRooms || ''}
+                        onChange={(e) => handleRoomHotelChange(roomType, index, 'availableRooms', e.target.value)}
+                      />
+                    </Form.Group>
+                  </Col>
+                </Row>
+
+                <Row className="mb-3">
+                  <Col md={4}>
+                    <Form.Group>
+                      <Form.Label>Bed Type</Form.Label>
+                      <Form.Select
+                        value={hotel.bedType || ''}
+                        onChange={(e) => handleRoomHotelChange(roomType, index, 'bedType', e.target.value)}
+                      >
+                        <option value="">Select Bed Type</option>
+                        <option value="Single Bed">Single Bed</option>
+                        <option value="Double Bed">Double Bed</option>
+                        <option value="Queen Bed">Queen Bed</option>
+                        <option value="King Bed">King Bed</option>
+                        <option value="Twin Beds">Twin Beds</option>
+                        <option value="Bunk Bed">Bunk Bed</option>
+                      </Form.Select>
+                    </Form.Group>
+                  </Col>
+                  <Col md={4}>
+                    <Form.Group>
+                      <Form.Label>Max Occupancy</Form.Label>
+                      <Form.Control
+                        type="number"
+                        min="1"
+                        max="10"
+                        value={hotel.maxOccupancy || 2}
+                        onChange={(e) => handleRoomHotelChange(roomType, index, 'maxOccupancy', e.target.value)}
+                      />
+                    </Form.Group>
+                  </Col>
+                  <Col md={4}>
+                    <Form.Group>
+                      <Form.Label>Room Size (sq ft)</Form.Label>
+                      <Form.Control
+                        type="text"
+                        placeholder="e.g., 250"
+                        value={hotel.roomSize || ''}
+                        onChange={(e) => handleRoomHotelChange(roomType, index, 'roomSize', e.target.value)}
+                      />
+                    </Form.Group>
+                  </Col>
+                </Row>
+
+                <Row className="mb-3">
+                  <Col md={12}>
+                    <Form.Group>
+                      <Form.Label>Room Amenities</Form.Label>
+                      <RoomAmenitySelector
+                        selectedAmenities={hotel.amenities || []}
+                        onToggle={(amenity) => toggleRoomAmenity(roomType, index, amenity)}
+                        roomType={roomType}
+                      />
+                      {hotel.amenities && hotel.amenities.length > 0 && (
+                        <div className="mt-2">
+                          <strong>Selected: </strong>
+                          {hotel.amenities.map(amenity => (
+                            <Badge key={amenity} bg="primary" className="me-1 mb-1">
+                              {amenity}
+                              <span 
+                                style={{ cursor: 'pointer', marginLeft: '5px' }}
+                                onClick={() => toggleRoomAmenity(roomType, index, amenity)}
+                              >
+                                ×
+                              </span>
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
+                    </Form.Group>
+                  </Col>
+                </Row>
+
+                <Row className="mb-3">
+                  <Col md={12}>
+                    <Form.Group>
+                      <Form.Label>Room Images</Form.Label>
+                      <Form.Control
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        onChange={(e) => handleRoomImageUpload(roomType, index, e)}
+                      />
+                      <Form.Text className="text-muted">
+                        Upload images of this room type. Max 5MB each.
+                      </Form.Text>
+                    </Form.Group>
+                    
+                    {/* Display existing and newly uploaded room images */}
+                    {(hotel.imagePreviews && hotel.imagePreviews.length > 0) && (
+                      <Row className="mt-3">
+                        {hotel.imagePreviews.map((preview, imgIndex) => (
+                          <Col md={3} key={imgIndex} className="mb-2">
+                            <div className="position-relative">
+                              <img 
+                                src={preview} 
+                                alt={`Room ${index + 1} - Image ${imgIndex + 1}`} 
+                                style={{ width: '100%', height: '100px', objectFit: 'cover' }} 
+                                className="border rounded"
+                                onError={(e) => {
+                                  e.target.src = 'https://via.placeholder.com/100?text=Error';
+                                }}
+                              />
+                              <Button
+                                variant="danger"
+                                size="sm"
+                                className="position-absolute top-0 end-0"
+                                onClick={() => removeRoomImage(roomType, index, imgIndex)}
+                              >
+                                ×
+                              </Button>
+                            </div>
+                          </Col>
+                        ))}
+                      </Row>
+                    )}
+                  </Col>
+                </Row>
+
+                <Row>
+                  <Col md={12}>
+                    <Form.Group>
+                      <Form.Label>Room Description</Form.Label>
+                      <Form.Control
+                        as="textarea"
+                        rows={3}
+                        placeholder="Enter room description, features, and highlights..."
+                        value={hotel.description || ''}
+                        onChange={(e) => handleRoomHotelChange(roomType, index, 'description', e.target.value)}
+                      />
+                    </Form.Group>
+                  </Col>
+                </Row>
+              </div>
+            ))}
+            
+            <Button
+              variant="outline-primary"
+              onClick={() => addRoomHotel(roomType)}
+              className="w-100"
+            >
+              + Add Another {title} Room Option
+            </Button>
+          </Card.Body>
+        )}
+      </Card>
+    );
   };
 
   if (fetchLoading) {
@@ -932,6 +1556,9 @@ function OfflineHotels() {
                           alt="Preview" 
                           style={{ maxWidth: '200px', maxHeight: '150px', objectFit: 'cover' }} 
                           className="border rounded"
+                          onError={(e) => {
+                            e.target.src = 'https://via.placeholder.com/200x150?text=No+Image';
+                          }}
                         />
                         <Button
                           variant="danger"
@@ -986,6 +1613,9 @@ function OfflineHotels() {
                                 alt={`Additional ${index + 1}`} 
                                 style={{ width: '100%', height: '100px', objectFit: 'cover' }} 
                                 className="border rounded"
+                                onError={(e) => {
+                                  e.target.src = 'https://via.placeholder.com/100?text=Error';
+                                }}
                               />
                               <Button
                                 variant="danger"
@@ -1007,18 +1637,89 @@ function OfflineHotels() {
                 </Col>
               </Row>
 
+              {/* Hotel Amenities Section */}
               <Row className="mb-3">
                 <Col md={12}>
                   <Form.Group>
-                    <Form.Label>Amenities</Form.Label>
-                    <Form.Control
-                      as="textarea"
-                      rows={2}
-                      name="amenities"
-                      placeholder="e.g., Near Calangute Beach, swimming pool and jacuzzi, live music during meals"
-                      value={hotelDetails.amenities}
-                      onChange={handleHotelDetailChange}
+                    <Form.Label>Hotel Amenities / Facilities</Form.Label>
+                    
+                    <AmenitySelector
+                      selectedAmenities={hotelDetails.amenities || []}
+                      onToggle={toggleHotelAmenity}
+                      availableAmenities={COMMON_AMENITIES}
+                      title="Common Amenities"
                     />
+                    
+                    <AmenitySelector
+                      selectedAmenities={hotelDetails.amenities || []}
+                      onToggle={toggleHotelAmenity}
+                      availableAmenities={ADVANCED_AMENITIES}
+                      title="Advanced Amenities (Deluxe / Luxury)"
+                    />
+                    
+                    <AmenitySelector
+                      selectedAmenities={hotelDetails.amenities || []}
+                      onToggle={toggleHotelAmenity}
+                      availableAmenities={LUXURY_AMENITIES}
+                      title="Luxury Amenities"
+                    />
+                    
+                    {/* Custom Amenities */}
+                    <div className="mt-3">
+                      <Form.Label>Custom Amenities</Form.Label>
+                      <div className="d-flex flex-wrap gap-2 mb-2">
+                        {customAmenities.map(amenity => (
+                          <Badge key={amenity} bg="success" className="p-2">
+                            <Form.Check
+                              type="checkbox"
+                              id={`custom-${amenity}`}
+                              label={amenity}
+                              checked={(hotelDetails.amenities || []).includes(amenity)}
+                              onChange={() => toggleHotelAmenity(amenity)}
+                              inline
+                              className="text-white"
+                            />
+                            <span 
+                              style={{ cursor: 'pointer', marginLeft: '8px', color: 'white' }}
+                              onClick={() => removeCustomAmenity(amenity)}
+                            >
+                              ×
+                            </span>
+                          </Badge>
+                        ))}
+                      </div>
+                      <InputGroup>
+                        <Form.Control
+                          type="text"
+                          placeholder="Add custom amenity"
+                          value={newAmenityInput}
+                          onChange={(e) => setNewAmenityInput(e.target.value)}
+                          onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addCustomAmenity())}
+                        />
+                        <Button variant="outline-secondary" onClick={addCustomAmenity}>
+                          Add
+                        </Button>
+                      </InputGroup>
+                    </div>
+                    
+                    {(hotelDetails.amenities && hotelDetails.amenities.length > 0) && (
+                      <div className="mt-3">
+                        <strong>Selected Amenities: </strong>
+                        <div className="d-flex flex-wrap gap-1 mt-2">
+                          {hotelDetails.amenities.map(amenity => (
+                            <Badge key={amenity} bg="primary" className="p-2">
+                              {amenity}
+                              <span 
+                                style={{ cursor: 'pointer', marginLeft: '5px' }}
+                                onClick={() => toggleHotelAmenity(amenity)}
+                              >
+                                ×
+                              </span>
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </Form.Group>
                 </Col>
               </Row>
@@ -1216,84 +1917,21 @@ function OfflineHotels() {
             </Card.Body>
           </Card>
 
-          {/* Filters Section */}
-          {/* <Card className="mb-4">
+          {/* Room Types Section */}
+          <Card className="mb-4">
             <Card.Header>
-              <h5 className="mb-0">Hotel Filters</h5>
+              <h5 className="mb-0">Room Types & Pricing</h5>
             </Card.Header>
             <Card.Body>
-              <Row>
-                <Col md={6}>
-                  <h6 className="mb-3">Search Locality / Hotel Name</h6>
-                  <Form.Group className="mb-4">
-                    <Form.Control
-                      type="text"
-                      placeholder="Enter locality or hotel"
-                      value={filters.searchLocality}
-                      onChange={(e) => setFilters(prev => ({ ...prev, searchLocality: e.target.value }))}
-                    />
-                  </Form.Group>
-
-                  <h6 className="mb-3">Price Per Night</h6>
-                  {filters.priceRanges.map((range, index) => (
-                    <Form.Group key={range.id} className="mb-2">
-                      <Form.Check
-                        type="checkbox"
-                        label={`${range.range} (${range.count})`}
-                        checked={range.selected}
-                        onChange={(e) => handleFilterChange('priceRanges', index, 'selected', e.target.checked)}
-                      />
-                    </Form.Group>
-                  ))}
-                </Col>
-
-                <Col md={6}>
-                  <h6 className="mb-3">Your Budget</h6>
-                  <Row className="mb-4">
-                    <Col md={5}>
-                      <Form.Group>
-                        <Form.Label>Min (₹)</Form.Label>
-                        <Form.Control
-                          type="number"
-                          name="min"
-                          placeholder="Min"
-                          value={filters.budget.min}
-                          onChange={handleBudgetChange}
-                        />
-                      </Form.Group>
-                    </Col>
-                    <Col md={2} className="d-flex align-items-center justify-content-center">
-                      <span>to</span>
-                    </Col>
-                    <Col md={5}>
-                      <Form.Group>
-                        <Form.Label>Max (₹)</Form.Label>
-                        <Form.Control
-                          type="number"
-                          name="max"
-                          placeholder="Max"
-                          value={filters.budget.max}
-                          onChange={handleBudgetChange}
-                        />
-                      </Form.Group>
-                    </Col>
-                  </Row>
-
-                  <h6 className="mb-3">Star Category</h6>
-                  {filters.starCategories.map((star, index) => (
-                    <Form.Group key={star.id} className="mb-2">
-                      <Form.Check
-                        type="checkbox"
-                        label={`${star.stars} Star (${star.count})`}
-                        checked={star.selected}
-                        onChange={(e) => handleFilterChange('starCategories', index, 'selected', e.target.checked)}
-                      />
-                    </Form.Group>
-                  ))}
-                </Col>
-              </Row>
+              <p className="text-muted mb-4">
+                Configure room types for this hotel. Reference format: Deluxe Room Non AC with Complimentary Wi-Fi Starting @ ₹1,044
+              </p>
+              
+              {renderRoomTypeSection('standard', 'Standard', '#6c757d')}
+              {renderRoomTypeSection('deluxe', 'Deluxe', '#0d6efd')}
+              {renderRoomTypeSection('luxury', 'Luxury', '#dc3545')}
             </Card.Body>
-          </Card> */}
+          </Card>
 
           {/* Submit Buttons */}
           <div className="d-flex justify-content-end gap-2">

@@ -7,14 +7,42 @@ import { Pencil, Trash, Building } from 'react-bootstrap-icons';
 import axios from 'axios';
 import { baseurl } from '../../Api/Baseurl';
 
+// Helper function to ensure amenities is always an array
+const ensureArray = (value) => {
+  if (!value) return [];
+  if (Array.isArray(value)) return value;
+  if (typeof value === 'string') {
+    try {
+      const parsed = JSON.parse(value);
+      return Array.isArray(parsed) ? parsed : value.split(',').map(a => a.trim());
+    } catch (e) {
+      return value.split(',').map(a => a.trim());
+    }
+  }
+  return [];
+};
+
+// Helper function to format amenities for display
+const formatAmenities = (amenities, maxItems = 3) => {
+  const amenitiesArray = ensureArray(amenities);
+  if (amenitiesArray.length === 0) return '—';
+  
+  const displayItems = amenitiesArray.slice(0, maxItems);
+  const remaining = amenitiesArray.length - maxItems;
+  
+  return {
+    display: displayItems.join(', '),
+    full: amenitiesArray.join(', '),
+    hasMore: remaining > 0,
+    remaining
+  };
+};
+
 const OfflineHotelsTable = () => {
   const [filteredHotels, setFilteredHotels] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const navigate = useNavigate();
-
-  // API base URL
-  const API_BASE_URL = process.env.REACT_APP_API_URL || `${baseurl}/api`;
 
   // Format date for display - handles YYYY-MM-DD directly without timezone
   const formatDate = (dateString) => {
@@ -55,10 +83,14 @@ const OfflineHotelsTable = () => {
       const response = await axios.get(`${baseurl}/api/offline-hotels`);
       
       if (response.data.success) {
-        // Add serial numbers to the data
+        // Process the data and ensure amenities is an array
         const hotelsWithSerial = response.data.data.map((hotel, index) => ({
           ...hotel,
-          serial_no: index + 1
+          serial_no: index + 1,
+          // Ensure amenities is an array for display
+          amenities: ensureArray(hotel.amenities),
+          additional_images: ensureArray(hotel.additional_images),
+          children_ages: ensureArray(hotel.children_ages)
         }));
         setFilteredHotels(hotelsWithSerial);
       } else {
@@ -84,7 +116,7 @@ const OfflineHotelsTable = () => {
     }
 
     try {
-      const response = await axios.delete(`${baseurl}/offline-hotels/${hotelId}`);
+      const response = await axios.delete(`${baseurl}/api/offline-hotels/${hotelId}`);
       
       if (response.data.success) {
         alert('Hotel deleted successfully');
@@ -106,18 +138,23 @@ const OfflineHotelsTable = () => {
   // Format price with currency
   const formatPrice = (price) => {
     if (!price) return '—';
+    const numericPrice = typeof price === 'string' ? parseFloat(price.replace(/,/g, '')) : price;
+    if (isNaN(numericPrice)) return price;
+    
     return new Intl.NumberFormat('en-IN', {
       style: 'currency',
       currency: 'INR',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0
-    }).format(price);
+    }).format(numericPrice);
   };
 
   // Get star rating as stars
   const getStarRating = (rating) => {
     if (!rating) return '—';
-    return '★'.repeat(rating) + '☆'.repeat(5 - rating);
+    const stars = parseInt(rating);
+    if (isNaN(stars)) return rating;
+    return '★'.repeat(stars) + '☆'.repeat(5 - stars);
   };
 
   // Define table columns
@@ -157,7 +194,7 @@ const OfflineHotelsTable = () => {
       key: 'star_rating',
       title: 'Rating',
       render: (item) => (
-        <span className="text-warning" title={`${item.star_rating} Star`}>
+        <span className="text-warning" title={`${item.star_rating || 3} Star`}>
           {getStarRating(item.star_rating)}
         </span>
       ),
@@ -208,29 +245,46 @@ const OfflineHotelsTable = () => {
       key: 'amenities',
       title: 'Amenities',
       render: (item) => {
-        if (!item.amenities) return '—';
-        const amenitiesList = item.amenities.split(',').slice(0, 3);
+        const amenitiesData = formatAmenities(item.amenities, 3);
+        
+        if (amenitiesData === '—') return '—';
+        
         return (
-          <span title={item.amenities}>
-            {amenitiesList.join(', ')}{item.amenities.split(',').length > 3 ? '...' : ''}
+          <span title={amenitiesData.full}>
+            {amenitiesData.display}
+            {amenitiesData.hasMore && (
+              <span className="text-muted ms-1">
+                +{amenitiesData.remaining} more
+              </span>
+            )}
           </span>
         );
       },
-      style: { maxWidth: '200px' }
+      style: { maxWidth: '250px' }
     },
     {
       key: 'meal_plan',
       title: 'Meal Plan',
-      render: (item) => item.meal_plan_description || 'Room Only',
-      style: { textAlign: 'center' }
+      render: (item) => {
+        const mealPlan = item.meal_plan_description;
+        if (!mealPlan) return <span className="text-muted">Room Only</span>;
+        // Truncate if too long
+        return mealPlan.length > 30 ? mealPlan.substring(0, 30) + '...' : mealPlan;
+      },
+      style: { textAlign: 'center', maxWidth: '150px' }
     },
     {
       key: 'status',
       title: 'Status',
       render: (item) => {
         const status = item.status || 'Available';
+        let badgeClass = 'bg-success';
+        if (status === 'Limited Availability') badgeClass = 'bg-warning';
+        else if (status === 'Booked') badgeClass = 'bg-danger';
+        else if (status === 'Under Renovation') badgeClass = 'bg-secondary';
+        
         return (
-          <span className={`badge ${status === 'Available' ? 'bg-success' : 'bg-warning'}`}>
+          <span className={`badge ${badgeClass}`}>
             {status}
           </span>
         );
@@ -242,16 +296,17 @@ const OfflineHotelsTable = () => {
       title: 'Guests',
       render: (item) => (
         <span>
-          {item.adults || 0} Adults, {item.children || 0} Children
-          {item.pets ? ', Pets' : ''}
+          {item.adults || 0} A, {item.children || 0} C
+          {item.pets ? ' 🐾' : ''}
         </span>
       ),
-      style: { textAlign: 'center', minWidth: '120px' }
+      style: { textAlign: 'center', minWidth: '100px' }
     },
     {
       key: 'created_at',
       title: 'Added On',
-      render: (item) => formatDate(item.created_at)
+      render: (item) => formatDate(item.created_at),
+      style: { minWidth: '100px' }
     },
     {
       key: 'actions',
