@@ -21,7 +21,7 @@ const AddBungalow = () => {
   const { id } = useParams();
   const isEditMode = !!id;
 
-  const TAB_LIST = ['basic', 'images', 'overview', 'bungalowRate', 'inclusiveExclusive', 'placesNearby', 'bookingPolicy', 'cancellationPolicy'];
+  const TAB_LIST = ['basic', 'images', 'overview', 'bungalowRate', 'inclusiveExclusive', 'placesNearby', 'amenities', 'bookingPolicy', 'cancellationPolicy'];
   const BUNGALOW_RATE_SUB_TABS = ['weekDayRate', 'weekendRate', 'longHolidays', 'festivalHolidays'];
 
   const [activeTab, setActiveTab] = useState('basic');
@@ -34,15 +34,22 @@ const AddBungalow = () => {
   const [formData, setFormData] = useState({
     bungalow_code: '',
     name: '',
+    city_name: '',
+    duration: '',
     price: '',
     bungalow_rate: '',
     overview: '',
     inclusive: '',
     exclusive: '',
-    places_nearby: '',
+    amenities: '',
     booking_policy: '',
     cancellation_policy: ''
   });
+
+  // Q&A structure for Places Nearby (similar to Exhibition About tab)
+  const [placesNearbyQA, setPlacesNearbyQA] = useState([
+    { id: Date.now(), question: '', answer: '' }
+  ]);
 
   // Description texts for each rate type
   const [rateDescriptions, setRateDescriptions] = useState({
@@ -136,15 +143,26 @@ const AddBungalow = () => {
       setFormData({
         bungalow_code: data.bungalow.bungalow_code || '',
         name: data.bungalow.name || '',
+        city_name: data.bungalow.city_name || '',
+        duration: data.bungalow.duration || '',
         price: data.bungalow.price || '',
         bungalow_rate: data.bungalow.bungalow_rate || '',
         overview: data.bungalow.overview || '',
         inclusive: data.bungalow.inclusive || '',
         exclusive: data.bungalow.exclusive || '',
-        places_nearby: data.bungalow.places_nearby || '',
+        amenities: data.bungalow.amenities || '',
         booking_policy: data.bungalow.booking_policy || '',
         cancellation_policy: data.bungalow.cancellation_policy || ''
       });
+
+      // Load places nearby Q&A if available
+      if (data.bungalow.places_nearby_qa && data.bungalow.places_nearby_qa.length > 0) {
+        setPlacesNearbyQA(data.bungalow.places_nearby_qa.map((qa, index) => ({
+          id: Date.now() + index,
+          question: qa.question,
+          answer: qa.answer
+        })));
+      }
 
       // Load rate descriptions if available
       if (data.rate_descriptions) {
@@ -174,6 +192,32 @@ const AddBungalow = () => {
   const handleBasicChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  // Places Nearby Q&A Handlers (similar to Exhibition About tab)
+  const handlePlacesNearbyQAChange = (e, index) => {
+    const { name, value } = e.target;
+    const updatedQA = [...placesNearbyQA];
+    
+    if (name === 'question' || name === 'answer') {
+      updatedQA[index] = {
+        ...updatedQA[index],
+        [name]: value
+      };
+      setPlacesNearbyQA(updatedQA);
+    }
+  };
+
+  const addNewPlacesNearbyQA = () => {
+    const newQA = { id: Date.now(), question: '', answer: '' };
+    setPlacesNearbyQA([...placesNearbyQA, newQA]);
+  };
+
+  const removePlacesNearbyQA = (index) => {
+    if (placesNearbyQA.length > 1) {
+      const updatedQA = placesNearbyQA.filter((_, i) => i !== index);
+      setPlacesNearbyQA(updatedQA);
+    }
   };
 
   // Use useCallback with empty dependency array to keep function reference stable
@@ -446,6 +490,16 @@ const AddBungalow = () => {
       setActiveTab('basic');
       return;
     }
+    if (!formData.city_name.trim()) {
+      setError('City name is required');
+      setActiveTab('basic');
+      return;
+    }
+    if (!formData.duration.trim()) {
+      setError('Duration is required');
+      setActiveTab('basic');
+      return;
+    }
     if (!formData.price) {
       setError('Price is required');
       setActiveTab('basic');
@@ -455,10 +509,21 @@ const AddBungalow = () => {
     try {
       setLoading(true);
       
+      // Prepare Q&A data for places nearby
+      const validPlacesNearbyQA = placesNearbyQA.filter(qa => 
+        qa.question.trim() !== '' && qa.answer.trim() !== ''
+      );
+      
+      const bungalowData = {
+        ...formData,
+        ...rateDescriptions,
+        places_nearby_qa: validPlacesNearbyQA
+      };
+      
       const response = await fetch(`${baseurl}/api/bungalows`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...formData, ...rateDescriptions })
+        body: JSON.stringify(bungalowData)
       });
 
       if (!response.ok) throw new Error('Failed to create bungalow');
@@ -505,10 +570,21 @@ const AddBungalow = () => {
     try {
       setLoading(true);
       
+      // Prepare Q&A data for places nearby
+      const validPlacesNearbyQA = placesNearbyQA.filter(qa => 
+        qa.question.trim() !== '' && qa.answer.trim() !== ''
+      );
+      
+      const bungalowData = {
+        ...formData,
+        ...rateDescriptions,
+        places_nearby_qa: validPlacesNearbyQA
+      };
+      
       const response = await fetch(`${baseurl}/api/bungalows/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...formData, ...rateDescriptions })
+        body: JSON.stringify(bungalowData)
       });
 
       if (!response.ok) throw new Error('Failed to update bungalow');
@@ -706,7 +782,36 @@ const AddBungalow = () => {
                 <Row>
                   <Col md={6}>
                     <Form.Group className="mb-3">
-                      <Form.Label>Price (₹) *</Form.Label>
+                      <Form.Label>City Name *</Form.Label>
+                      <Form.Control
+                        type="text"
+                        name="city_name"
+                        value={formData.city_name}
+                        onChange={handleBasicChange}
+                        placeholder="Enter city name"
+                      />
+                    </Form.Group>
+                  </Col>
+                  <Col md={6}>
+                    <Form.Group className="mb-3">
+                      <Form.Label>Duration (Days & Nights) *</Form.Label>
+                      <Form.Control
+                        type="text"
+                        name="duration"
+                        value={formData.duration}
+                        onChange={handleBasicChange}
+                        placeholder="e.g., 4N/5D"
+                      />
+                      <Form.Text className="text-muted">
+                        Format: 4N/5D (4 Nights / 5 Days)
+                      </Form.Text>
+                    </Form.Group>
+                  </Col>
+                </Row>
+                <Row>
+                  <Col md={6}>
+                    <Form.Group className="mb-3">
+                      <Form.Label>Tour Price (₹) *</Form.Label>
                       <Form.Control
                         type="number"
                         name="price"
@@ -952,19 +1057,88 @@ const AddBungalow = () => {
                 </Row>
               </Tab>
 
-              {/* Places Nearby Tab */}
+              {/* Places Nearby Tab with Q&A Section */}
               <Tab eventKey="placesNearby" title="Places Nearby">
-                <Form.Group className="mb-3">
-                  <Form.Label>Places Nearby Description</Form.Label>
-                  <Form.Control
-                    as="textarea"
-                    rows={8}
-                    name="places_nearby"
-                    value={formData.places_nearby}
-                    onChange={handleBasicChange}
-                    placeholder="Enter places nearby description..."
-                  />
-                </Form.Group>
+                <div className="places-nearby-section">
+                  <div className="section-header mb-3">
+                    <h5>Places Nearby - Questions & Answers</h5>
+                  </div>
+
+                  {/* Q&A Section (similar to Exhibition About tab) */}
+                  <div className="qa-section mb-4">
+                    <div className="qa-header d-flex justify-content-between align-items-center mb-3">
+                      <h6 className="mb-0">Questions & Answers</h6>
+                      <Button 
+                        variant="outline-primary" 
+                        size="sm"
+                        onClick={addNewPlacesNearbyQA}
+                      >
+                        <PlusCircle className="me-1" /> Add New Question
+                      </Button>
+                    </div>
+
+                    {placesNearbyQA.map((item, index) => (
+                      <Card key={item.id} className="qa-item mb-3">
+                        <Card.Body>
+                          <div className="qa-item-header d-flex justify-content-between align-items-center mb-2">
+                            <span className="fw-bold">Question {index + 1}</span>
+                            {placesNearbyQA.length > 1 && (
+                              <Button
+                                variant="outline-danger"
+                                size="sm"
+                                onClick={() => removePlacesNearbyQA(index)}
+                              >
+                                <XCircle size={16} className="me-1" /> Remove
+                              </Button>
+                            )}
+                          </div>
+                          
+                          <Form.Group className="mb-3">
+                            <Form.Label>Question</Form.Label>
+                            <Form.Control
+                              type="text"
+                              placeholder="e.g., How far is the nearest beach?"
+                              value={item.question}
+                              onChange={(e) => handlePlacesNearbyQAChange(e, index)}
+                              name="question"
+                            />
+                          </Form.Group>
+                          
+                          <Form.Group>
+                            <Form.Label>Answer</Form.Label>
+                            <Form.Control
+                              as="textarea"
+                              rows={3}
+                              placeholder="e.g., The nearest beach is Alibaug Beach, located just 2 km away..."
+                              value={item.answer}
+                              onChange={(e) => handlePlacesNearbyQAChange(e, index)}
+                              name="answer"
+                            />
+                          </Form.Group>
+                        </Card.Body>
+                      </Card>
+                    ))}
+                  </div>
+                </div>
+              </Tab>
+
+              {/* Amenities Tab */}
+              <Tab eventKey="amenities" title="Amenities">
+                <div className="amenities-section">
+                  <Form.Group className="mb-4">
+                    <div className="section-header mb-3">
+                      <h5>Amenities & Facilities</h5>
+                    </div>
+                    <Form.Control
+                      as="textarea"
+                      rows={12}
+                      name="amenities"
+                      value={formData.amenities}
+                      onChange={handleBasicChange}
+                      placeholder=""
+                    />
+                  </Form.Group>
+                </div>
               </Tab>
 
               {/* Booking Policy Tab */}
@@ -1006,13 +1180,7 @@ const AddBungalow = () => {
             {/* Navigation Buttons */}
             <div className="d-flex justify-content-between gap-2 mt-4">
               <div>
-                {/* <Button
-                  variant="secondary"
-                  onClick={() => navigate('/bungalows')}
-                  disabled={loading}
-                >
-                  Cancel
-                </Button> */}
+                {/* Empty div for spacing */}
               </div>
               
               <div className="d-flex gap-2">

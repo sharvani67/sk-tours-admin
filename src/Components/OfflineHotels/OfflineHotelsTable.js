@@ -52,7 +52,7 @@ const OfflineHotelsTable = () => {
     setLoading(true);
     setError('');
     try {
-      const response = await axios.get(`${baseurl}/offline-hotels`);
+      const response = await axios.get(`${baseurl}/api/offline-hotels`);
       
       if (response.data.success) {
         // Add serial numbers to the data

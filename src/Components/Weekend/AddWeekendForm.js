@@ -21,19 +21,22 @@ const AddWeekendGateway = () => {
   const { id } = useParams();
   const isEditMode = !!id;
 
-  // Updated TAB_LIST - Added tourCost tab back
-  const TAB_LIST = ['basic', 'images', 'overview', 'tourCost', 'inclusiveExclusive', 'placesNearby', 'bookingPolicy', 'cancellationPolicy', 'related'];
+  // Updated TAB_LIST - removed related tab, added amenities
+  const TAB_LIST = ['basic', 'images', 'overview', 'tourCost', 'inclusiveExclusive', 'placesNearby', 'amenities', 'bookingPolicy', 'cancellationPolicy'];
 
   const [activeTab, setActiveTab] = useState('basic');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  // Basic Details - WITH tour cost fields
+  // Basic Details - WITH tour cost fields and amenities
   const [formData, setFormData] = useState({
     gateway_code: '',
     name: '',
+    city_name: '',
+    duration: '',
     price: '',
+    emi_price: '',
     per_pax_twin: '',
     per_pax_triple: '',
     child_with_bed: '',
@@ -43,10 +46,15 @@ const AddWeekendGateway = () => {
     overview: '',
     inclusive: '',
     exclusive: '',
-    places_nearby: '',
+    amenities: '',
     booking_policy: '',
     cancellation_policy: ''
   });
+
+  // Q&A structure for Places Nearby (similar to Exhibition About tab)
+  const [placesNearbyQA, setPlacesNearbyQA] = useState([
+    { id: Date.now(), question: '', answer: '' }
+  ]);
 
   // Weekend Booking Form State
   const [bookingForm, setBookingForm] = useState({
@@ -74,21 +82,6 @@ const AddWeekendGateway = () => {
   const [replacementFile, setReplacementFile] = useState(null);
   const [replacementPreview, setReplacementPreview] = useState(null);
 
-  // Related Gateways
-  const [relatedGateways, setRelatedGateways] = useState([]);
-  const [relatedItem, setRelatedItem] = useState({
-    related_name: '',
-    related_price: '',
-    related_image: '',
-    related_image_file: null,
-    sort_order: 0,
-    relation_id: null
-  });
-  const [relatedImagePreview, setRelatedImagePreview] = useState(null);
-  const [editingRelated, setEditingRelated] = useState(null);
-  const [showRelatedForm, setShowRelatedForm] = useState(false);
-  const [allGateways, setAllGateways] = useState([]);
-
   // Cities List
   const cities = [
     'Alibaug', 'Aamby Valley', 'Goa', 'Igatpuri', 'Karjat', 
@@ -101,7 +94,6 @@ const AddWeekendGateway = () => {
     } else {
       getNextGatewayCode();
     }
-    loadAllGateways();
   }, [id]);
 
   // Update child boxes when number of children changes
@@ -121,26 +113,6 @@ const AddWeekendGateway = () => {
     
     setChildDetails(newChildren);
   }, [bookingForm.no_of_child]);
-
-  useEffect(() => {
-    return () => {
-      if (relatedImagePreview && relatedImagePreview.startsWith('blob:')) {
-        URL.revokeObjectURL(relatedImagePreview);
-      }
-    };
-  }, [relatedImagePreview]);
-
-  const loadAllGateways = async () => {
-    try {
-      const response = await fetch(`${baseurl}/api/weekend-gateways`);
-      if (response.ok) {
-        const data = await response.json();
-        setAllGateways(data);
-      }
-    } catch (err) {
-      console.error('Failed to load gateways for dropdown:', err);
-    }
-  };
 
   const getNextGatewayCode = async () => {
     try {
@@ -168,7 +140,10 @@ const AddWeekendGateway = () => {
       setFormData({
         gateway_code: data.gateway.gateway_code || '',
         name: data.gateway.name || '',
+        city_name: data.gateway.city_name || '',
+        duration: data.gateway.duration || '',
         price: data.gateway.price || '',
+        emi_price: data.gateway.emi_price || '',
         per_pax_twin: data.gateway.per_pax_twin || '',
         per_pax_triple: data.gateway.per_pax_triple || '',
         child_with_bed: data.gateway.child_with_bed || '',
@@ -178,10 +153,19 @@ const AddWeekendGateway = () => {
         overview: data.gateway.overview || '',
         inclusive: data.gateway.inclusive || '',
         exclusive: data.gateway.exclusive || '',
-        places_nearby: data.gateway.places_nearby || '',
+        amenities: data.gateway.amenities || '',
         booking_policy: data.gateway.booking_policy || '',
         cancellation_policy: data.gateway.cancellation_policy || ''
       });
+
+      // Load places nearby Q&A if available
+      if (data.gateway.places_nearby_qa && data.gateway.places_nearby_qa.length > 0) {
+        setPlacesNearbyQA(data.gateway.places_nearby_qa.map((qa, index) => ({
+          id: Date.now() + index,
+          question: qa.question,
+          answer: qa.answer
+        })));
+      }
 
       const imagesWithFullUrl = (data.images || []).map(img => ({
         ...img,
@@ -190,16 +174,6 @@ const AddWeekendGateway = () => {
           : `${baseurl}${img.image_url}`
       }));
       setExistingImages(imagesWithFullUrl);
-      
-      const relatedWithFullUrl = (data.related_gateways || []).map(rel => ({
-        ...rel,
-        related_image: rel.related_image && !rel.related_image.startsWith('blob:')
-          ? (rel.related_image.startsWith('http') 
-              ? rel.related_image 
-              : `${baseurl}${rel.related_image}`)
-          : null
-      }));
-      setRelatedGateways(relatedWithFullUrl);
       
     } catch (err) {
       setError('Failed to load gateway data: ' + err.message);
@@ -211,6 +185,32 @@ const AddWeekendGateway = () => {
   const handleBasicChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  // Places Nearby Q&A Handlers (similar to Exhibition About tab)
+  const handlePlacesNearbyQAChange = (e, index) => {
+    const { name, value } = e.target;
+    const updatedQA = [...placesNearbyQA];
+    
+    if (name === 'question' || name === 'answer') {
+      updatedQA[index] = {
+        ...updatedQA[index],
+        [name]: value
+      };
+      setPlacesNearbyQA(updatedQA);
+    }
+  };
+
+  const addNewPlacesNearbyQA = () => {
+    const newQA = { id: Date.now(), question: '', answer: '' };
+    setPlacesNearbyQA([...placesNearbyQA, newQA]);
+  };
+
+  const removePlacesNearbyQA = (index) => {
+    if (placesNearbyQA.length > 1) {
+      const updatedQA = placesNearbyQA.filter((_, i) => i !== index);
+      setPlacesNearbyQA(updatedQA);
+    }
   };
 
   // Weekend Booking Form Handlers
@@ -428,152 +428,20 @@ const AddWeekendGateway = () => {
     if (!response.ok) throw new Error('Failed to upload images');
   };
 
-  // Related Gateway Handlers
-  const handleRelatedChange = (e) => {
-    const { name, value } = e.target;
-    setRelatedItem(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleRelatedImageChange = (e) => {
-    const file = e.target.files ? e.target.files[0] : null;
-    
-    if (relatedImagePreview && relatedImagePreview.startsWith('blob:')) {
-      URL.revokeObjectURL(relatedImagePreview);
-    }
-    
-    if (file) {
-      const preview = URL.createObjectURL(file);
-      setRelatedImagePreview(preview);
-      setRelatedItem(prev => ({
-        ...prev,
-        related_image: preview,
-        related_image_file: file
-      }));
-    } else {
-      setRelatedImagePreview(null);
-      setRelatedItem(prev => ({
-        ...prev,
-        related_image: '',
-        related_image_file: null
-      }));
-    }
-  };
-
-  const handleSelectRelatedGateway = (e) => {
-    const selectedId = e.target.value;
-    if (!selectedId) return;
-    
-    const selected = allGateways.find(g => g.gateway_id === parseInt(selectedId));
-    if (selected) {
-      setRelatedItem({
-        related_name: selected.name,
-        related_price: selected.price,
-        related_image: selected.main_image || '',
-        related_image_file: null,
-        sort_order: relatedGateways.length,
-        relation_id: null
-      });
-      setRelatedImagePreview(selected.main_image 
-        ? (selected.main_image.startsWith('http') 
-            ? selected.main_image 
-            : `${baseurl}${selected.main_image}`)
-        : null);
-    }
-  };
-
-  const uploadRelatedImage = async (gatewayId, imageFile) => {
-    if (!imageFile) return null;
-
-    const formData = new FormData();
-    formData.append('image', imageFile);
-
-    const response = await fetch(`${baseurl}/api/weekend-gateways/upload-related/${gatewayId}`, {
-      method: 'POST',
-      body: formData
-    });
-
-    if (!response.ok) throw new Error('Failed to upload related image');
-    
-    const data = await response.json();
-    return data.image_url;
-  };
-
-  const addRelatedGateway = () => {
-    if (!relatedItem.related_name.trim()) {
-      alert('Please enter a gateway name');
-      return;
-    }
-    
-    const newRelated = {
-      ...relatedItem,
-      sort_order: relatedGateways.length,
-      relation_id: null
-    };
-    
-    setRelatedGateways(prev => [...prev, newRelated]);
-    resetRelatedForm();
-    setShowRelatedForm(false);
-  };
-
-  const editRelatedGateway = (idx) => {
-    const itemToEdit = relatedGateways[idx];
-    setEditingRelated({ ...itemToEdit, index: idx });
-    setRelatedItem({
-      ...itemToEdit,
-      related_image_file: null
-    });
-    setRelatedImagePreview(itemToEdit.related_image || null);
-    setShowRelatedForm(true);
-  };
-
-  const updateRelatedGateway = () => {
-    if (!editingRelated) return;
-    
-    const updated = [...relatedGateways];
-    updated[editingRelated.index] = { 
-      ...relatedItem, 
-      sort_order: editingRelated.index,
-      relation_id: editingRelated.relation_id
-    };
-    setRelatedGateways(updated);
-    
-    resetRelatedForm();
-    setShowRelatedForm(false);
-  };
-
-  const deleteRelatedGateway = (idx) => {
-    const confirmDelete = window.confirm('Are you sure you want to remove this related gateway?');
-    if (confirmDelete) {
-      setRelatedGateways(prev => prev.filter((_, i) => i !== idx));
-    }
-  };
-
-  const cancelRelatedForm = () => {
-    resetRelatedForm();
-    setShowRelatedForm(false);
-  };
-
-  const resetRelatedForm = () => {
-    if (relatedImagePreview && relatedImagePreview.startsWith('blob:')) {
-      URL.revokeObjectURL(relatedImagePreview);
-    }
-    
-    setEditingRelated(null);
-    setRelatedItem({
-      related_name: '',
-      related_price: '',
-      related_image: '',
-      related_image_file: null,
-      sort_order: 0,
-      relation_id: null
-    });
-    setRelatedImagePreview(null);
-  };
-
   // Save Functions
   const createGateway = async () => {
     if (!formData.name.trim()) {
       setError('Gateway name is required');
+      setActiveTab('basic');
+      return;
+    }
+    if (!formData.city_name.trim()) {
+      setError('City name is required');
+      setActiveTab('basic');
+      return;
+    }
+    if (!formData.duration.trim()) {
+      setError('Duration is required');
       setActiveTab('basic');
       return;
     }
@@ -586,10 +454,20 @@ const AddWeekendGateway = () => {
     try {
       setLoading(true);
       
+      // Prepare Q&A data for places nearby
+      const validPlacesNearbyQA = placesNearbyQA.filter(qa => 
+        qa.question.trim() !== '' && qa.answer.trim() !== ''
+      );
+      
+      const gatewayData = {
+        ...formData,
+        places_nearby_qa: validPlacesNearbyQA
+      };
+      
       const response = await fetch(`${baseurl}/api/weekend-gateways`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(gatewayData)
       });
 
       if (!response.ok) throw new Error('Failed to create gateway');
@@ -599,30 +477,6 @@ const AddWeekendGateway = () => {
 
       if (imageFiles.length > 0) {
         await uploadImages(gatewayId);
-      }
-
-      if (relatedGateways.length > 0) {
-        for (let i = 0; i < relatedGateways.length; i++) {
-          const related = relatedGateways[i];
-          
-          let imageUrl = null;
-          if (related.related_image_file) {
-            imageUrl = await uploadRelatedImage(gatewayId, related.related_image_file);
-          } else if (related.related_image && !related.related_image.startsWith('blob:')) {
-            imageUrl = related.related_image;
-          }
-          
-          await fetch(`${baseurl}/api/weekend-gateways/related/${gatewayId}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              related_name: related.related_name,
-              related_price: related.related_price,
-              related_image: imageUrl,
-              sort_order: i
-            })
-          });
-        }
       }
 
       setSuccess('Weekend Gateway created successfully!');
@@ -644,65 +498,26 @@ const AddWeekendGateway = () => {
     try {
       setLoading(true);
       
+      // Prepare Q&A data for places nearby
+      const validPlacesNearbyQA = placesNearbyQA.filter(qa => 
+        qa.question.trim() !== '' && qa.answer.trim() !== ''
+      );
+      
+      const gatewayData = {
+        ...formData,
+        places_nearby_qa: validPlacesNearbyQA
+      };
+      
       const response = await fetch(`${baseurl}/api/weekend-gateways/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(gatewayData)
       });
 
       if (!response.ok) throw new Error('Failed to update gateway');
 
       if (imageFiles.length > 0) {
         await uploadImages(id);
-      }
-
-      const relatedResponse = await fetch(`${baseurl}/api/weekend-gateways/related/${id}`);
-      const existingRelated = await relatedResponse.json();
-
-      for (const existing of existingRelated) {
-        const stillExists = relatedGateways.some(r => r.relation_id === existing.relation_id);
-        if (!stillExists && existing.relation_id) {
-          await fetch(`${baseurl}/api/weekend-gateways/related/${existing.relation_id}`, {
-            method: 'DELETE'
-          });
-        }
-      }
-
-      for (let i = 0; i < relatedGateways.length; i++) {
-        const related = relatedGateways[i];
-        
-        let imageUrl = related.related_image;
-        if (related.related_image_file) {
-          imageUrl = await uploadRelatedImage(id, related.related_image_file);
-        } else if (related.related_image && !related.related_image.startsWith('blob:')) {
-          imageUrl = related.related_image;
-        } else {
-          imageUrl = null;
-        }
-        
-        if (related.relation_id) {
-          await fetch(`${baseurl}/api/weekend-gateways/related/${related.relation_id}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              related_name: related.related_name,
-              related_price: related.related_price,
-              related_image: imageUrl,
-              sort_order: i
-            })
-          });
-        } else {
-          await fetch(`${baseurl}/api/weekend-gateways/related/${id}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              related_name: related.related_name,
-              related_price: related.related_price,
-              related_image: imageUrl,
-              sort_order: i
-            })
-          });
-        }
       }
 
       setSuccess('Weekend Gateway updated successfully!');
@@ -786,9 +601,36 @@ const AddWeekendGateway = () => {
                   </Col>
                 </Row>
                 <Row>
-                  <Col md={6}>
+                  <Col md={4}>
                     <Form.Group className="mb-3">
-                      <Form.Label>Price (₹) *</Form.Label>
+                      <Form.Label>City Name *</Form.Label>
+                      <Form.Control
+                        type="text"
+                        name="city_name"
+                        value={formData.city_name}
+                        onChange={handleBasicChange}
+                        placeholder="Enter city name"
+                      />
+                    </Form.Group>
+                  </Col>
+                  <Col md={4}>
+                    <Form.Group className="mb-3">
+                      <Form.Label>Duration (Days & Nights) *</Form.Label>
+                      <Form.Control
+                        type="text"
+                        name="duration"
+                        value={formData.duration}
+                        onChange={handleBasicChange}
+                        placeholder="e.g., 4N/5D"
+                      />
+                      <Form.Text className="text-muted">
+                        Format: 4N/5D (4 Nights / 5 Days)
+                      </Form.Text>
+                    </Form.Group>
+                  </Col>
+                  <Col md={4}>
+                    <Form.Group className="mb-3">
+                      <Form.Label>Tour Price (₹) *</Form.Label>
                       <Form.Control
                         type="number"
                         name="price"
@@ -796,6 +638,23 @@ const AddWeekendGateway = () => {
                         onChange={handleBasicChange}
                         placeholder="Enter price per night"
                       />
+                    </Form.Group>
+                  </Col>
+                </Row>
+                <Row>
+                  <Col md={6}>
+                    <Form.Group className="mb-3">
+                      <Form.Label>EMI Price (₹)</Form.Label>
+                      <Form.Control
+                        type="number"
+                        name="emi_price"
+                        value={formData.emi_price}
+                        onChange={handleBasicChange}
+                        placeholder="Enter EMI price (optional)"
+                      />
+                      <Form.Text className="text-muted">
+                        Monthly EMI amount if applicable
+                      </Form.Text>
                     </Form.Group>
                   </Col>
                 </Row>
@@ -968,7 +827,7 @@ const AddWeekendGateway = () => {
                 </Form.Group>
               </Tab>
 
-              {/* Tour Cost Tab (RESTORED) */}
+              {/* Tour Cost Tab */}
               <Tab eventKey="tourCost" title="Tour Cost">
                 <Card>
                   <Card.Header>Tour Cost Details</Card.Header>
@@ -1094,19 +953,104 @@ const AddWeekendGateway = () => {
                 </Row>
               </Tab>
 
-              {/* Places Nearby Tab */}
+              {/* Places Nearby Tab with Q&A Section */}
               <Tab eventKey="placesNearby" title="Places Nearby">
-                <Form.Group className="mb-3">
-                  <Form.Label>Places Nearby Description</Form.Label>
-                  <Form.Control
-                    as="textarea"
-                    rows={8}
-                    name="places_nearby"
-                    value={formData.places_nearby}
-                    onChange={handleBasicChange}
-                    placeholder="Enter places nearby description..."
-                  />
-                </Form.Group>
+                <div className="places-nearby-section">
+                  <div className="section-header mb-3">
+                    <h5>Places Nearby - Questions & Answers</h5>
+                  </div>
+
+                  {/* Q&A Section (similar to Exhibition About tab) */}
+                  <div className="qa-section mb-4">
+                    <div className="qa-header d-flex justify-content-between align-items-center mb-3">
+                      <h6 className="mb-0">Questions & Answers</h6>
+                      <Button 
+                        variant="outline-primary" 
+                        size="sm"
+                        onClick={addNewPlacesNearbyQA}
+                      >
+                        <PlusCircle className="me-1" /> Add New Question
+                      </Button>
+                    </div>
+
+                    {placesNearbyQA.map((item, index) => (
+                      <Card key={item.id} className="qa-item mb-3">
+                        <Card.Body>
+                          <div className="qa-item-header d-flex justify-content-between align-items-center mb-2">
+                            <span className="fw-bold">Question {index + 1}</span>
+                            {placesNearbyQA.length > 1 && (
+                              <Button
+                                variant="outline-danger"
+                                size="sm"
+                                onClick={() => removePlacesNearbyQA(index)}
+                              >
+                                <XCircle size={16} className="me-1" /> Remove
+                              </Button>
+                            )}
+                          </div>
+                          
+                          <Form.Group className="mb-3">
+                            <Form.Label>Question</Form.Label>
+                            <Form.Control
+                              type="text"
+                              placeholder="e.g., What are the nearby attractions?"
+                              value={item.question}
+                              onChange={(e) => handlePlacesNearbyQAChange(e, index)}
+                              name="question"
+                            />
+                          </Form.Group>
+                          
+                          <Form.Group>
+                            <Form.Label>Answer</Form.Label>
+                            <Form.Control
+                              as="textarea"
+                              rows={3}
+                              placeholder="e.g., The gateway is close to beaches, forts, and local markets..."
+                              value={item.answer}
+                              onChange={(e) => handlePlacesNearbyQAChange(e, index)}
+                              name="answer"
+                            />
+                          </Form.Group>
+                        </Card.Body>
+                      </Card>
+                    ))}
+                  </div>
+                </div>
+              </Tab>
+
+              {/* Amenities Tab */}
+              <Tab eventKey="amenities" title="Amenities">
+                <div className="amenities-section">
+                  <Form.Group className="mb-4">
+                    <div className="section-header mb-3">
+                      <h5>Amenities & Facilities</h5>
+                    </div>
+                    <Form.Control
+                      as="textarea"
+                      rows={12}
+                      name="amenities"
+                      value={formData.amenities}
+                      onChange={handleBasicChange}
+                      placeholder={`Enter amenities and facilities available at the weekend gateway...
+Examples:
+• Swimming Pool
+• Spa & Wellness Center
+• Multi-cuisine Restaurant
+• Bar & Lounge
+• Kids Play Area
+• Free Wi-Fi
+• Parking Space
+• 24/7 Room Service
+• Travel Desk
+• Laundry Service`}
+                      style={{ 
+                        fontFamily: 'inherit', 
+                        lineHeight: '1.6',
+                        whiteSpace: 'pre-wrap'
+                      }}
+                    />
+                  </Form.Group>
+                </div>
               </Tab>
 
               {/* Booking Policy Tab */}
@@ -1143,234 +1087,31 @@ const AddWeekendGateway = () => {
                   </Form.Text>
                 </Form.Group>
               </Tab>
-
-              {/* Related Gateways Tab */}
-              <Tab eventKey="related" title="Related Gateways">
-                {!showRelatedForm ? (
-                  <div className="mb-3">
-                    <Button
-                      variant="primary"
-                      onClick={() => {
-                        resetRelatedForm();
-                        setShowRelatedForm(true);
-                      }}
-                    >
-                      <PlusCircle className="me-2" /> Add Related Gateway
-                    </Button>
-                  </div>
-                ) : (
-                  <Card className="mb-4">
-                    <Card.Header>
-                      <div className="d-flex justify-content-between align-items-center">
-                        <h5 className="mb-0">{editingRelated ? 'Edit Related Gateway' : 'Add New Related Gateway'}</h5>
-                        <Button variant="outline-secondary" size="sm" onClick={cancelRelatedForm}>
-                          <XCircle size={16} /> Cancel
-                        </Button>
-                      </div>
-                    </Card.Header>
-                    <Card.Body>
-                      <Form>
-                        <Row>
-                          <Col md={12}>
-                            <Form.Group className="mb-3">
-                              <Form.Label>Select from existing gateways (optional)</Form.Label>
-                              <Form.Select
-                                onChange={handleSelectRelatedGateway}
-                                value=""
-                              >
-                                <option value="">-- Choose a gateway --</option>
-                                {allGateways
-                                  .filter(g => isEditMode ? g.gateway_id !== parseInt(id) : true)
-                                  .map(g => (
-                                    <option key={g.gateway_id} value={g.gateway_id}>
-                                      {g.name} - ₹{parseFloat(g.price).toLocaleString('en-IN')}
-                                    </option>
-                                  ))}
-                              </Form.Select>
-                              <Form.Text className="text-muted">
-                                Or enter custom details below
-                              </Form.Text>
-                            </Form.Group>
-                          </Col>
-                        </Row>
-
-                        <Row>
-                          <Col md={6}>
-                            <Form.Group className="mb-3">
-                              <Form.Label>Name *</Form.Label>
-                              <Form.Control
-                                type="text"
-                                name="related_name"
-                                value={relatedItem.related_name}
-                                onChange={handleRelatedChange}
-                                placeholder="Enter gateway name"
-                              />
-                            </Form.Group>
-                          </Col>
-                          <Col md={6}>
-                            <Form.Group className="mb-3">
-                              <Form.Label>Price (₹)</Form.Label>
-                              <Form.Control
-                                type="number"
-                                name="related_price"
-                                value={relatedItem.related_price}
-                                onChange={handleRelatedChange}
-                                placeholder="Enter price"
-                              />
-                            </Form.Group>
-                          </Col>
-                        </Row>
-
-                        <Row>
-                          <Col md={12}>
-                            <Form.Group className="mb-3">
-                              <Form.Label>Image</Form.Label>
-                              <Form.Control
-                                type="file"
-                                onChange={handleRelatedImageChange}
-                                accept="image/jpeg,image/jpg,image/png,image/webp"
-                              />
-                              {relatedImagePreview && (
-                                <div className="mt-3 text-center">
-                                  <p className="mb-2">Preview:</p>
-                                  <img
-                                    src={relatedImagePreview}
-                                    alt="preview"
-                                    style={{
-                                      maxWidth: '200px',
-                                      maxHeight: '200px',
-                                      objectFit: 'cover',
-                                      borderRadius: '8px',
-                                      border: '1px solid #ddd'
-                                    }}
-                                    onError={(e) => {
-                                      e.target.onerror = null;
-                                      e.target.src = 'https://via.placeholder.com/200?text=Image+Not+Found';
-                                    }}
-                                  />
-                                </div>
-                              )}
-                            </Form.Group>
-                          </Col>
-                        </Row>
-
-                        <div className="d-flex gap-2 justify-content-end">
-                          <Button variant="secondary" onClick={cancelRelatedForm}>
-                            Cancel
-                          </Button>
-                          <Button 
-                            variant="primary" 
-                            onClick={editingRelated ? updateRelatedGateway : addRelatedGateway}
-                            disabled={!relatedItem.related_name.trim()}
-                          >
-                            {editingRelated ? 'Update' : 'Add'} Related Gateway
-                          </Button>
-                        </div>
-                      </Form>
-                    </Card.Body>
-                  </Card>
-                )}
-
-                {relatedGateways.length > 0 ? (
-                  <Table striped bordered hover responsive>
-                    <thead>
-                      <tr>
-                        <th>#</th>
-                        <th>Name</th>
-                        <th>Price (₹)</th>
-                        <th>Image</th>
-                        <th>Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {relatedGateways.map((rel, idx) => (
-                        <tr key={rel.relation_id || idx}>
-                          <td>{idx + 1}</td>
-                          <td>{rel.related_name}</td>
-                          <td>₹{parseFloat(rel.related_price || 0).toLocaleString('en-IN')}</td>
-                          <td>
-                            {rel.related_image ? (
-                              <img
-                                src={rel.related_image}
-                                alt={rel.related_name}
-                                style={{
-                                  width: '50px',
-                                  height: '50px',
-                                  objectFit: 'cover',
-                                  borderRadius: '4px'
-                                }}
-                                onError={(e) => {
-                                  e.target.onerror = null;
-                                  e.target.style.display = 'none';
-                                  const parent = e.target.parentNode;
-                                  if (parent) {
-                                    const placeholder = document.createElement('span');
-                                    placeholder.className = 'text-muted';
-                                    placeholder.innerText = 'No image';
-                                    parent.appendChild(placeholder);
-                                  }
-                                }}
-                              />
-                            ) : (
-                              <span className="text-muted">No image</span>
-                            )}
-                          </td>
-                          <td>
-                            <div className="d-flex gap-1">
-                              <Button
-                                size="sm"
-                                variant="outline-warning"
-                                onClick={() => editRelatedGateway(idx)}
-                                title="Edit"
-                              >
-                                <Pencil size={14} />
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="outline-danger"
-                                onClick={() => deleteRelatedGateway(idx)}
-                                title="Delete"
-                              >
-                                <Trash size={14} />
-                              </Button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </Table>
-                ) : (
-                  !showRelatedForm && (
-                    <p className="text-muted text-center py-4">No related gateways added yet</p>
-                  )
-                )}
-              </Tab>
             </Tabs>
 
-            <div className="d-flex justify-content-end gap-2 mt-4">
-              <Button
-                variant="secondary"
-                onClick={() => navigate('/weekend-gateways')}
-                disabled={loading}
-              >
-                Cancel
-              </Button>
+            {/* Navigation Buttons */}
+            <div className="d-flex justify-content-between gap-2 mt-4">
+              <div>
+                {/* Empty div for spacing */}
+              </div>
+              
+              <div className="d-flex gap-2">
+                <Button
+                  variant="secondary"
+                  onClick={goBack}
+                  disabled={activeTab === 'basic' || loading}
+                >
+                  Back
+                </Button>
 
-              <Button
-                variant="secondary"
-                onClick={goBack}
-                disabled={activeTab === 'basic' || loading}
-              >
-                Back
-              </Button>
-
-              <Button
-                variant="primary"
-                onClick={isLastTab ? handleSave : goNext}
-                disabled={loading}
-              >
-                {loading ? 'Saving...' : isLastTab ? (isEditMode ? 'Update Gateway' : 'Save Gateway') : 'Next'}
-              </Button>
+                <Button
+                  variant="primary"
+                  onClick={isLastTab ? handleSave : goNext}
+                  disabled={loading}
+                >
+                  {loading ? 'Saving...' : isLastTab ? (isEditMode ? 'Update Gateway' : 'Save Gateway') : 'Next'}
+                </Button>
+              </div>
             </div>
           </Card.Body>
         </Card>

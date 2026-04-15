@@ -7,6 +7,7 @@ import { baseurl } from '../../Api/Baseurl';
 import { useNavigate, useParams } from 'react-router-dom';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
+import "./OfflineFlights.css"
 
 function OfflineFlights() {
   const [bookingType, setBookingType] = useState('oneWay');
@@ -510,15 +511,19 @@ function OfflineFlights() {
                   <Form.Group>
                     <Form.Label>Departure Date <span className="text-danger">*</span></Form.Label>
                     <div className="date-picker-wrapper">
-                      <DatePicker
-                        selected={departureDate}
-                        onChange={(date) => setDepartureDate(date)}
-                        dateFormat="dd/MM/yyyy"
-                        className="form-control"
-                        placeholderText="Select departure date"
-                        minDate={new Date()}
-                        required
-                      />
+                     <DatePicker
+                          selected={departureDate}
+                          onChange={(date) => setDepartureDate(date)}
+                          dateFormat="dd/MM/yyyy"
+                          className="form-control"
+                          placeholderText="Select departure date"
+                          minDate={new Date()}
+                          required
+                          popperPlacement="bottom-start"
+                          portalId="root"
+                          popperClassName="offline-datepicker-popper"
+                          calendarClassName="offline-datepicker-calendar"
+                        />
                     </div>
                   </Form.Group>
                 </Col>
@@ -527,15 +532,19 @@ function OfflineFlights() {
                     <Form.Label>Return Date {bookingType === 'roundTrip' && <span className="text-danger">*</span>}</Form.Label>
                     <div className="date-picker-wrapper">
                       <DatePicker
-                        selected={returnDate}
-                        onChange={(date) => setReturnDate(date)}
-                        dateFormat="dd/MM/yyyy"
-                        className="form-control"
-                        placeholderText="Select return date"
-                        minDate={departureDate || new Date()}
-                        disabled={bookingType === 'oneWay'}
-                        required={bookingType === 'roundTrip'}
-                      />
+                          selected={returnDate}
+                          onChange={(date) => setReturnDate(date)}
+                          dateFormat="dd/MM/yyyy"
+                          className="form-control"
+                          placeholderText="Select return date"
+                          minDate={departureDate || new Date()}
+                          disabled={bookingType === 'oneWay'}
+                          required={bookingType === 'roundTrip'}
+                          popperPlacement="bottom-start"
+                          portalId="root"
+                          popperClassName="offline-datepicker-popper"
+                          calendarClassName="offline-datepicker-calendar"
+                        />
                     </div>
                     {bookingType === 'oneWay' && (
                       <Form.Text className="text-muted">
