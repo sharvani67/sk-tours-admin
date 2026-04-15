@@ -14,14 +14,14 @@ import {
 import { useNavigate, useParams } from 'react-router-dom';
 import Navbar from '../../Shared/Navbar/Navbar';
 import { baseurl } from '../../Api/Baseurl';
-import { Pencil, Trash, PlusCircle, XCircle, Tree } from 'react-bootstrap-icons';
+import { Pencil, Trash, PlusCircle, XCircle } from 'react-bootstrap-icons';
 
 const AddOneDayPicnic = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const isEditMode = !!id;
 
-  const TAB_LIST = ['basic', 'images', 'overview', 'propertyRate', 'inclusiveExclusive', 'placesNearby', 'bookingPolicy', 'cancellationPolicy', 'related'];
+  const TAB_LIST = ['basic', 'images', 'overview', 'propertyRate', 'inclusiveExclusive', 'placesNearby', 'amenities', 'bookingPolicy', 'cancellationPolicy'];
 
   const [activeTab, setActiveTab] = useState('basic');
   const [loading, setLoading] = useState(false);
@@ -32,15 +32,22 @@ const AddOneDayPicnic = () => {
   const [formData, setFormData] = useState({
     picnic_code: '',
     name: '',
+    city_name: '',
+    duration: '',
     price: '',
     property_rate: '',
     overview: '',
     inclusive: '',
     exclusive: '',
-    places_nearby: '',
+    amenities: '',
     booking_policy: '',
     cancellation_policy: ''
   });
+
+  // Q&A structure for Places Nearby (similar to Exhibition About tab)
+  const [placesNearbyQA, setPlacesNearbyQA] = useState([
+    { id: Date.now(), question: '', answer: '' }
+  ]);
 
   // Booking Form State
   const [bookingForm, setBookingForm] = useState({
@@ -65,21 +72,6 @@ const AddOneDayPicnic = () => {
   const [replacementFile, setReplacementFile] = useState(null);
   const [replacementPreview, setReplacementPreview] = useState(null);
 
-  // Related Picnics
-  const [relatedPicnics, setRelatedPicnics] = useState([]);
-  const [relatedItem, setRelatedItem] = useState({
-    related_name: '',
-    related_price: '',
-    related_image: '',
-    related_image_file: null,
-    sort_order: 0,
-    relation_id: null
-  });
-  const [relatedImagePreview, setRelatedImagePreview] = useState(null);
-  const [editingRelated, setEditingRelated] = useState(null);
-  const [showRelatedForm, setShowRelatedForm] = useState(false);
-  const [allPicnics, setAllPicnics] = useState([]);
-
   // Cities List (same as bungalows)
   const cities = [
     'Alibaug', 'Aamby Valley', 'Goa', 'Igatpuri', 'Karjat', 
@@ -93,7 +85,6 @@ const AddOneDayPicnic = () => {
     } else {
       getNextPicnicCode();
     }
-    loadAllPicnics();
   }, [id]);
 
   // Update guest boxes when number of people changes
@@ -113,27 +104,6 @@ const AddOneDayPicnic = () => {
     
     setGuestDetails(newGuests);
   }, [bookingForm.no_of_people]);
-
-  // Cleanup object URLs
-  useEffect(() => {
-    return () => {
-      if (relatedImagePreview && relatedImagePreview.startsWith('blob:')) {
-        URL.revokeObjectURL(relatedImagePreview);
-      }
-    };
-  }, [relatedImagePreview]);
-
-  const loadAllPicnics = async () => {
-    try {
-      const response = await fetch(`${baseurl}/api/one-day-picnic`);
-      if (response.ok) {
-        const data = await response.json();
-        setAllPicnics(data);
-      }
-    } catch (err) {
-      console.error('Failed to load picnics for dropdown:', err);
-    }
-  };
 
   const getNextPicnicCode = async () => {
     try {
@@ -167,15 +137,26 @@ const AddOneDayPicnic = () => {
       setFormData({
         picnic_code: data.picnic.picnic_code || '',
         name: data.picnic.name || '',
+        city_name: data.picnic.city_name || '',
+        duration: data.picnic.duration || '',
         price: data.picnic.price || '',
         property_rate: data.picnic.property_rate || '',
         overview: data.picnic.overview || '',
         inclusive: data.picnic.inclusive || '',
         exclusive: data.picnic.exclusive || '',
-        places_nearby: data.picnic.places_nearby || '',
+        amenities: data.picnic.amenities || '',
         booking_policy: data.picnic.booking_policy || '',
         cancellation_policy: data.picnic.cancellation_policy || ''
       });
+
+      // Load places nearby Q&A if available
+      if (data.picnic.places_nearby_qa && data.picnic.places_nearby_qa.length > 0) {
+        setPlacesNearbyQA(data.picnic.places_nearby_qa.map((qa, index) => ({
+          id: Date.now() + index,
+          question: qa.question,
+          answer: qa.answer
+        })));
+      }
 
       // Update booking form with picnic code
       setBookingForm(prev => ({
@@ -192,30 +173,6 @@ const AddOneDayPicnic = () => {
       }));
       setExistingImages(imagesWithFullUrl);
       
-      // Fix related picnic image URLs
-      if (data.related_picnics && data.related_picnics.length > 0) {
-        console.log('Related picnics from API:', data.related_picnics);
-        
-        const relatedWithFullUrl = data.related_picnics.map(rel => ({
-          ...rel,
-          relation_id: rel.relation_id,
-          related_name: rel.related_name,
-          related_price: rel.related_price,
-          related_image: rel.related_image && !rel.related_image.startsWith('blob:')
-            ? (rel.related_image.startsWith('http') 
-                ? rel.related_image 
-                : `${baseurl}${rel.related_image}`)
-            : null,
-          sort_order: rel.sort_order || 0
-        }));
-        
-        console.log('Processed related picnics:', relatedWithFullUrl);
-        setRelatedPicnics(relatedWithFullUrl);
-      } else {
-        console.log('No related picnics found');
-        setRelatedPicnics([]);
-      }
-      
     } catch (err) {
       setError('Failed to load picnic data: ' + err.message);
     } finally {
@@ -226,6 +183,32 @@ const AddOneDayPicnic = () => {
   const handleBasicChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  // Places Nearby Q&A Handlers (similar to Exhibition About tab)
+  const handlePlacesNearbyQAChange = (e, index) => {
+    const { name, value } = e.target;
+    const updatedQA = [...placesNearbyQA];
+    
+    if (name === 'question' || name === 'answer') {
+      updatedQA[index] = {
+        ...updatedQA[index],
+        [name]: value
+      };
+      setPlacesNearbyQA(updatedQA);
+    }
+  };
+
+  const addNewPlacesNearbyQA = () => {
+    const newQA = { id: Date.now(), question: '', answer: '' };
+    setPlacesNearbyQA([...placesNearbyQA, newQA]);
+  };
+
+  const removePlacesNearbyQA = (index) => {
+    if (placesNearbyQA.length > 1) {
+      const updatedQA = placesNearbyQA.filter((_, i) => i !== index);
+      setPlacesNearbyQA(updatedQA);
+    }
   };
 
   // Booking Form Handlers
@@ -470,158 +453,20 @@ const AddOneDayPicnic = () => {
     if (!response.ok) throw new Error('Failed to upload images');
   };
 
-  // Related Picnic Handlers
-  const handleRelatedChange = (e) => {
-    const { name, value } = e.target;
-    setRelatedItem(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleRelatedImageChange = (e) => {
-    const file = e.target.files ? e.target.files[0] : null;
-    
-    if (relatedImagePreview && relatedImagePreview.startsWith('blob:')) {
-      URL.revokeObjectURL(relatedImagePreview);
-    }
-    
-    if (file) {
-      const preview = URL.createObjectURL(file);
-      setRelatedImagePreview(preview);
-      setRelatedItem(prev => ({
-        ...prev,
-        related_image: preview,
-        related_image_file: file
-      }));
-    } else {
-      setRelatedImagePreview(null);
-      setRelatedItem(prev => ({
-        ...prev,
-        related_image: '',
-        related_image_file: null
-      }));
-    }
-  };
-
-  const handleSelectRelatedPicnic = (e) => {
-    const selectedId = e.target.value;
-    if (!selectedId) return;
-    
-    const selected = allPicnics.find(p => p.picnic_id === parseInt(selectedId));
-    if (selected) {
-      setRelatedItem({
-        related_name: selected.name,
-        related_price: selected.price,
-        related_image: selected.main_image || '',
-        related_image_file: null,
-        sort_order: relatedPicnics.length,
-        relation_id: null
-      });
-      setRelatedImagePreview(selected.main_image 
-        ? (selected.main_image.startsWith('http') 
-            ? selected.main_image 
-            : `${baseurl}${selected.main_image}`)
-        : null);
-    }
-  };
-
-  const uploadRelatedImage = async (picnicId, imageFile) => {
-    if (!imageFile) return null;
-
-    const formData = new FormData();
-    formData.append('image', imageFile);
-
-    const response = await fetch(`${baseurl}/api/one-day-picnic/upload-related/${picnicId}`, {
-      method: 'POST',
-      body: formData
-    });
-
-    if (!response.ok) throw new Error('Failed to upload related image');
-    
-    const data = await response.json();
-    return data.image_url;
-  };
-
-  const addRelatedPicnic = () => {
-    if (!relatedItem.related_name.trim()) {
-      alert('Please enter a picnic name');
-      return;
-    }
-    
-    const newRelated = {
-      ...relatedItem,
-      sort_order: relatedPicnics.length,
-      relation_id: null // Ensure new items don't have an ID
-    };
-    
-    setRelatedPicnics(prev => [...prev, newRelated]);
-    resetRelatedForm();
-    setShowRelatedForm(false);
-  };
-
-  const editRelatedPicnic = (idx) => {
-    const itemToEdit = relatedPicnics[idx];
-    console.log('Editing related picnic:', itemToEdit);
-    
-    setEditingRelated({ ...itemToEdit, index: idx });
-    setRelatedItem({
-      related_name: itemToEdit.related_name || '',
-      related_price: itemToEdit.related_price || '',
-      related_image: itemToEdit.related_image || '',
-      related_image_file: null,
-      sort_order: itemToEdit.sort_order || 0,
-      relation_id: itemToEdit.relation_id || null
-    });
-    setRelatedImagePreview(itemToEdit.related_image || null);
-    setShowRelatedForm(true);
-  };
-
-  const updateRelatedPicnic = () => {
-    if (!editingRelated) return;
-    
-    const updated = [...relatedPicnics];
-    updated[editingRelated.index] = { 
-      ...relatedItem, 
-      sort_order: editingRelated.index,
-      relation_id: editingRelated.relation_id
-    };
-    setRelatedPicnics(updated);
-    
-    resetRelatedForm();
-    setShowRelatedForm(false);
-  };
-
-  const deleteRelatedPicnic = (idx) => {
-    const confirmDelete = window.confirm('Are you sure you want to remove this related picnic?');
-    if (confirmDelete) {
-      setRelatedPicnics(prev => prev.filter((_, i) => i !== idx));
-    }
-  };
-
-  const cancelRelatedForm = () => {
-    resetRelatedForm();
-    setShowRelatedForm(false);
-  };
-
-  const resetRelatedForm = () => {
-    if (relatedImagePreview && relatedImagePreview.startsWith('blob:')) {
-      URL.revokeObjectURL(relatedImagePreview);
-    }
-    
-    setEditingRelated(null);
-    setRelatedItem({
-      related_name: '',
-      related_price: '',
-      related_image: '',
-      related_image_file: null,
-      sort_order: 0,
-      relation_id: null
-    });
-    setRelatedImagePreview(null);
-  };
-
   // Save Functions
   const createPicnic = async () => {
     if (!formData.name.trim()) {
       setError('Picnic name is required');
+      setActiveTab('basic');
+      return;
+    }
+    if (!formData.city_name.trim()) {
+      setError('City name is required');
+      setActiveTab('basic');
+      return;
+    }
+    if (!formData.duration.trim()) {
+      setError('Duration is required');
       setActiveTab('basic');
       return;
     }
@@ -634,10 +479,20 @@ const AddOneDayPicnic = () => {
     try {
       setLoading(true);
       
+      // Prepare Q&A data for places nearby
+      const validPlacesNearbyQA = placesNearbyQA.filter(qa => 
+        qa.question.trim() !== '' && qa.answer.trim() !== ''
+      );
+      
+      const picnicData = {
+        ...formData,
+        places_nearby_qa: validPlacesNearbyQA
+      };
+      
       const response = await fetch(`${baseurl}/api/one-day-picnic`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(picnicData)
       });
 
       if (!response.ok) throw new Error('Failed to create picnic');
@@ -647,30 +502,6 @@ const AddOneDayPicnic = () => {
 
       if (imageFiles.length > 0) {
         await uploadImages(picnicId);
-      }
-
-      if (relatedPicnics.length > 0) {
-        for (let i = 0; i < relatedPicnics.length; i++) {
-          const related = relatedPicnics[i];
-          
-          let imageUrl = null;
-          if (related.related_image_file) {
-            imageUrl = await uploadRelatedImage(picnicId, related.related_image_file);
-          } else if (related.related_image && !related.related_image.startsWith('blob:')) {
-            imageUrl = related.related_image;
-          }
-          
-          await fetch(`${baseurl}/api/one-day-picnic/related/${picnicId}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              related_name: related.related_name,
-              related_price: related.related_price,
-              related_image: imageUrl,
-              sort_order: i
-            })
-          });
-        }
       }
 
       setSuccess('One Day Picnic created successfully!');
@@ -692,70 +523,26 @@ const AddOneDayPicnic = () => {
     try {
       setLoading(true);
       
+      // Prepare Q&A data for places nearby
+      const validPlacesNearbyQA = placesNearbyQA.filter(qa => 
+        qa.question.trim() !== '' && qa.answer.trim() !== ''
+      );
+      
+      const picnicData = {
+        ...formData,
+        places_nearby_qa: validPlacesNearbyQA
+      };
+      
       const response = await fetch(`${baseurl}/api/one-day-picnic/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(picnicData)
       });
 
       if (!response.ok) throw new Error('Failed to update picnic');
 
       if (imageFiles.length > 0) {
         await uploadImages(id);
-      }
-
-      const relatedResponse = await fetch(`${baseurl}/api/one-day-picnic/related/${id}`);
-      const existingRelated = await relatedResponse.json();
-
-      // Delete related picnics that are no longer in the list
-      for (const existing of existingRelated) {
-        const stillExists = relatedPicnics.some(r => r.relation_id === existing.relation_id);
-        if (!stillExists && existing.relation_id) {
-          await fetch(`${baseurl}/api/one-day-picnic/related/${existing.relation_id}`, {
-            method: 'DELETE'
-          });
-        }
-      }
-
-      // Update or create related picnics
-      for (let i = 0; i < relatedPicnics.length; i++) {
-        const related = relatedPicnics[i];
-        
-        let imageUrl = related.related_image;
-        if (related.related_image_file) {
-          imageUrl = await uploadRelatedImage(id, related.related_image_file);
-        } else if (related.related_image && !related.related_image.startsWith('blob:')) {
-          // Keep existing image URL
-          imageUrl = related.related_image;
-        } else {
-          imageUrl = null;
-        }
-        
-        if (related.relation_id) {
-          // Update existing
-          await fetch(`${baseurl}/api/one-day-picnic/related/${related.relation_id}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              related_name: related.related_name,
-              related_price: related.related_price,
-              related_image: imageUrl,
-              sort_order: i
-            })
-          });
-        } else {
-          // Create new
-          await fetch(`${baseurl}/api/one-day-picnic/related/${id}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              related_name: related.related_name,
-              related_price: related.related_price,
-              related_image: imageUrl,
-              sort_order: i
-            })
-          });
-        }
       }
 
       setSuccess('One Day Picnic updated successfully!');
@@ -841,7 +628,36 @@ const AddOneDayPicnic = () => {
                 <Row>
                   <Col md={6}>
                     <Form.Group className="mb-3">
-                      <Form.Label>Price (₹) *</Form.Label>
+                      <Form.Label>City Name *</Form.Label>
+                      <Form.Control
+                        type="text"
+                        name="city_name"
+                        value={formData.city_name}
+                        onChange={handleBasicChange}
+                        placeholder="Enter city name"
+                      />
+                    </Form.Group>
+                  </Col>
+                  <Col md={6}>
+                    <Form.Group className="mb-3">
+                      <Form.Label>Duration (Days & Nights) *</Form.Label>
+                      <Form.Control
+                        type="text"
+                        name="duration"
+                        value={formData.duration}
+                        onChange={handleBasicChange}
+                        placeholder="e.g., 4N/5D"
+                      />
+                      <Form.Text className="text-muted">
+                        Format: 4N/5D (4 Nights / 5 Days)
+                      </Form.Text>
+                    </Form.Group>
+                  </Col>
+                </Row>
+                <Row>
+                  <Col md={6}>
+                    <Form.Group className="mb-3">
+                      <Form.Label>Tour Price (₹) *</Form.Label>
                       <Form.Control
                         type="number"
                         name="price"
@@ -1021,7 +837,7 @@ const AddOneDayPicnic = () => {
                 </Form.Group>
               </Tab>
 
-              {/* Property Rate Tab (NEW) */}
+              {/* Property Rate Tab */}
               <Tab eventKey="propertyRate" title="Property Rate">
                 <Form.Group className="mb-3">
                   <Form.Label>Property Rate Details</Form.Label>
@@ -1071,19 +887,102 @@ const AddOneDayPicnic = () => {
                 </Row>
               </Tab>
 
-              {/* Places Nearby Tab */}
+              {/* Places Nearby Tab with Q&A Section */}
               <Tab eventKey="placesNearby" title="Places Nearby">
-                <Form.Group className="mb-3">
-                  <Form.Label>Places Nearby Description</Form.Label>
-                  <Form.Control
-                    as="textarea"
-                    rows={8}
-                    name="places_nearby"
-                    value={formData.places_nearby}
-                    onChange={handleBasicChange}
-                    placeholder="Enter places nearby description..."
-                  />
-                </Form.Group>
+                <div className="places-nearby-section">
+                  <div className="section-header mb-3">
+                    <h5>Places Nearby - Questions & Answers</h5>
+                  </div>
+
+                  {/* Q&A Section (similar to Exhibition About tab) */}
+                  <div className="qa-section mb-4">
+                    <div className="qa-header d-flex justify-content-between align-items-center mb-3">
+                      <h6 className="mb-0">Questions & Answers</h6>
+                      <Button 
+                        variant="outline-primary" 
+                        size="sm"
+                        onClick={addNewPlacesNearbyQA}
+                      >
+                        <PlusCircle className="me-1" /> Add New Question
+                      </Button>
+                    </div>
+
+                    {placesNearbyQA.map((item, index) => (
+                      <Card key={item.id} className="qa-item mb-3">
+                        <Card.Body>
+                          <div className="qa-item-header d-flex justify-content-between align-items-center mb-2">
+                            <span className="fw-bold">Question {index + 1}</span>
+                            {placesNearbyQA.length > 1 && (
+                              <Button
+                                variant="outline-danger"
+                                size="sm"
+                                onClick={() => removePlacesNearbyQA(index)}
+                              >
+                                <XCircle size={16} className="me-1" /> Remove
+                              </Button>
+                            )}
+                          </div>
+                          
+                          <Form.Group className="mb-3">
+                            <Form.Label>Question</Form.Label>
+                            <Form.Control
+                              type="text"
+                              placeholder="e.g., How far is the nearest beach?"
+                              value={item.question}
+                              onChange={(e) => handlePlacesNearbyQAChange(e, index)}
+                              name="question"
+                            />
+                          </Form.Group>
+                          
+                          <Form.Group>
+                            <Form.Label>Answer</Form.Label>
+                            <Form.Control
+                              as="textarea"
+                              rows={3}
+                              placeholder="e.g., The nearest beach is Alibaug Beach, located just 2 km away..."
+                              value={item.answer}
+                              onChange={(e) => handlePlacesNearbyQAChange(e, index)}
+                              name="answer"
+                            />
+                          </Form.Group>
+                        </Card.Body>
+                      </Card>
+                    ))}
+                  </div>
+                </div>
+              </Tab>
+
+              {/* Amenities Tab */}
+              <Tab eventKey="amenities" title="Amenities">
+                <div className="amenities-section">
+                  <Form.Group className="mb-4">
+                    <div className="section-header mb-3">
+                      <h5>Amenities & Facilities</h5>
+                    </div>
+                    <Form.Control
+                      as="textarea"
+                      rows={12}
+                      name="amenities"
+                      value={formData.amenities}
+                      onChange={handleBasicChange}
+                      placeholder={`Enter amenities and facilities available at the picnic spot...
+Examples:
+• Swimming Pool
+• Rain Dance
+• Kids Play Area
+• Restaurant
+• Parking Space
+• Changing Rooms
+• First Aid
+• Security`}
+                      style={{ 
+                        fontFamily: 'inherit', 
+                        lineHeight: '1.6',
+                        whiteSpace: 'pre-wrap'
+                      }}
+                    />
+                  </Form.Group>
+                </div>
               </Tab>
 
               {/* Booking Policy Tab */}
@@ -1103,7 +1002,7 @@ const AddOneDayPicnic = () => {
                 </Col>
               </Tab>
 
-              {/* Cancellation Policy Tab (NEW) */}
+              {/* Cancellation Policy Tab */}
               <Tab eventKey="cancellationPolicy" title="Cancellation Policy">
                 <Form.Group className="mb-3">
                   <Form.Label>Cancellation Policy Details</Form.Label>
@@ -1120,228 +1019,31 @@ const AddOneDayPicnic = () => {
                   </Form.Text>
                 </Form.Group>
               </Tab>
-
-              {/* Related Picnics Tab */}
-              <Tab eventKey="related" title="Related Picnics">
-                {!showRelatedForm ? (
-                  <div className="mb-3">
-                    <Button
-                      variant="primary"
-                      onClick={() => {
-                        resetRelatedForm();
-                        setShowRelatedForm(true);
-                      }}
-                    >
-                      <PlusCircle className="me-2" /> Add Related Picnic
-                    </Button>
-                  </div>
-                ) : (
-                  <Card className="mb-4">
-                    <Card.Header>
-                      <div className="d-flex justify-content-between align-items-center">
-                        <h5 className="mb-0">{editingRelated ? 'Edit Related Picnic' : 'Add New Related Picnic'}</h5>
-                        <Button variant="outline-secondary" size="sm" onClick={cancelRelatedForm}>
-                          <XCircle size={16} /> Cancel
-                        </Button>
-                      </div>
-                    </Card.Header>
-                    <Card.Body>
-                      <Form>
-                        <Row>
-                          <Col md={12}>
-                            <Form.Group className="mb-3">
-                              <Form.Label>Select from existing picnics (optional)</Form.Label>
-                              <Form.Select
-                                onChange={handleSelectRelatedPicnic}
-                                value=""
-                              >
-                                <option value="">-- Choose a picnic --</option>
-                                {allPicnics
-                                  .filter(p => isEditMode ? p.picnic_id !== parseInt(id) : true)
-                                  .map(p => (
-                                    <option key={p.picnic_id} value={p.picnic_id}>
-                                      {p.name} - ₹{parseFloat(p.price).toLocaleString('en-IN')}
-                                    </option>
-                                  ))}
-                              </Form.Select>
-                              <Form.Text className="text-muted">
-                                Or enter custom details below
-                              </Form.Text>
-                            </Form.Group>
-                          </Col>
-                        </Row>
-
-                        <Row>
-                          <Col md={6}>
-                            <Form.Group className="mb-3">
-                              <Form.Label>Name *</Form.Label>
-                              <Form.Control
-                                type="text"
-                                name="related_name"
-                                value={relatedItem.related_name}
-                                onChange={handleRelatedChange}
-                                placeholder="Enter picnic name"
-                              />
-                            </Form.Group>
-                          </Col>
-                          <Col md={6}>
-                            <Form.Group className="mb-3">
-                              <Form.Label>Price (₹)</Form.Label>
-                              <Form.Control
-                                type="number"
-                                name="related_price"
-                                value={relatedItem.related_price}
-                                onChange={handleRelatedChange}
-                                placeholder="Enter price"
-                              />
-                            </Form.Group>
-                          </Col>
-                        </Row>
-
-                        <Row>
-                          <Col md={12}>
-                            <Form.Group className="mb-3">
-                              <Form.Label>Image</Form.Label>
-                              <Form.Control
-                                type="file"
-                                onChange={handleRelatedImageChange}
-                                accept="image/jpeg,image/jpg,image/png,image/webp"
-                              />
-                              {relatedImagePreview && (
-                                <div className="mt-3 text-center">
-                                  <p className="mb-2">Preview:</p>
-                                  <img
-                                    src={relatedImagePreview}
-                                    alt="preview"
-                                    style={{
-                                      maxWidth: '200px',
-                                      maxHeight: '200px',
-                                      objectFit: 'cover',
-                                      borderRadius: '8px',
-                                      border: '1px solid #ddd'
-                                    }}
-                                    onError={(e) => {
-                                      e.target.onerror = null;
-                                      e.target.src = 'https://via.placeholder.com/200?text=Image+Not+Found';
-                                    }}
-                                  />
-                                </div>
-                              )}
-                            </Form.Group>
-                          </Col>
-                        </Row>
-
-                        <div className="d-flex gap-2 justify-content-end">
-                          <Button variant="secondary" onClick={cancelRelatedForm}>
-                            Cancel
-                          </Button>
-                          <Button 
-                            variant="primary" 
-                            onClick={editingRelated ? updateRelatedPicnic : addRelatedPicnic}
-                            disabled={!relatedItem.related_name.trim()}
-                          >
-                            {editingRelated ? 'Update' : 'Add'} Related Picnic
-                          </Button>
-                        </div>
-                      </Form>
-                    </Card.Body>
-                  </Card>
-                )}
-
-                {relatedPicnics.length > 0 ? (
-                  <Table striped bordered hover responsive>
-                    <thead>
-                      <tr>
-                        <th>#</th>
-                        <th>Name</th>
-                        <th>Price (₹)</th>
-                        <th>Image</th>
-                        <th>Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {relatedPicnics.map((rel, idx) => (
-                        <tr key={rel.relation_id || idx}>
-                          <td>{idx + 1}</td>
-                          <td>{rel.related_name}</td>
-                          <td>₹{parseFloat(rel.related_price || 0).toLocaleString('en-IN')}</td>
-                          <td>
-                            {rel.related_image ? (
-                              <img
-                                src={rel.related_image}
-                                alt={rel.related_name}
-                                style={{
-                                  width: '50px',
-                                  height: '50px',
-                                  objectFit: 'cover',
-                                  borderRadius: '4px'
-                                }}
-                                onError={(e) => {
-                                  e.target.onerror = null;
-                                  e.target.src = 'https://via.placeholder.com/50?text=No+Image';
-                                }}
-                              />
-                            ) : (
-                              <span className="text-muted">No image</span>
-                            )}
-                          </td>
-                          <td>
-                            <div className="d-flex gap-1">
-                              <Button
-                                size="sm"
-                                variant="outline-warning"
-                                onClick={() => editRelatedPicnic(idx)}
-                                title="Edit"
-                              >
-                                <Pencil size={14} />
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="outline-danger"
-                                onClick={() => deleteRelatedPicnic(idx)}
-                                title="Delete"
-                              >
-                                <Trash size={14} />
-                              </Button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </Table>
-                ) : (
-                  !showRelatedForm && (
-                    <p className="text-muted text-center py-4">No related picnics added yet</p>
-                  )
-                )}
-              </Tab>
             </Tabs>
 
             {/* Navigation Buttons */}
-            <div className="d-flex justify-content-end gap-2 mt-4">
-              <Button
-                variant="secondary"
-                onClick={() => navigate('/one-day-picnic')}
-                disabled={loading}
-              >
-                Cancel
-              </Button>
+            <div className="d-flex justify-content-between gap-2 mt-4">
+              <div>
+                {/* Empty div for spacing */}
+              </div>
+              
+              <div className="d-flex gap-2">
+                <Button
+                  variant="secondary"
+                  onClick={goBack}
+                  disabled={activeTab === 'basic' || loading}
+                >
+                  Back
+                </Button>
 
-              <Button
-                variant="secondary"
-                onClick={goBack}
-                disabled={activeTab === 'basic' || loading}
-              >
-                Back
-              </Button>
-
-              <Button
-                variant="primary"
-                onClick={isLastTab ? handleSave : goNext}
-                disabled={loading}
-              >
-                {loading ? 'Saving...' : isLastTab ? (isEditMode ? 'Update Picnic' : 'Save Picnic') : 'Next'}
-              </Button>
+                <Button
+                  variant="primary"
+                  onClick={isLastTab ? handleSave : goNext}
+                  disabled={loading}
+                >
+                  {loading ? 'Saving...' : isLastTab ? (isEditMode ? 'Update Picnic' : 'Save Picnic') : 'Next'}
+                </Button>
+              </div>
             </div>
           </Card.Body>
         </Card>
