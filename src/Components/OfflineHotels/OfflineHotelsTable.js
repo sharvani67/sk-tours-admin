@@ -84,7 +84,7 @@ const OfflineHotelsTable = () => {
     }
 
     try {
-      const response = await axios.delete(`${baseurl}/offline-hotels/${hotelId}`);
+      const response = await axios.delete(`${baseurl}/api/offline-hotels/${hotelId}`);
       
       if (response.data.success) {
         alert('Hotel deleted successfully');
