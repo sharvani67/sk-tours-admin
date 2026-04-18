@@ -1078,7 +1078,7 @@ function OfflineHotels() {
                   </Col>
                   <Col md={3}>
                     <Form.Group>
-                      <Form.Label>Price Per Adult (₹) <span className="text-danger">*</span></Form.Label>
+                      <Form.Label>Room Price(₹) <span className="text-danger">*</span></Form.Label>
                       <InputGroup>
                         <InputGroup.Text>₹</InputGroup.Text>
                         <Form.Control
@@ -1090,7 +1090,7 @@ function OfflineHotels() {
                       </InputGroup>
                     </Form.Group>
                   </Col>
-                  <Col md={3}>
+                  {/* <Col md={3}>
                     <Form.Group>
                       <Form.Label>Price Per Child (₹)</Form.Label>
                       <InputGroup>
@@ -1106,7 +1106,7 @@ function OfflineHotels() {
                         Leave empty if children stay free
                       </Form.Text>
                     </Form.Group>
-                  </Col>
+                  </Col> */}
                 </Row>
 
                 <Row className="mb-3">
