@@ -92,6 +92,15 @@ const getImageUrl = (imagePath) => {
   return `${baseurl}${cleanPath}`;
 };
 
+// Helper function to safely format total amount
+const formatTotalAmount = (amount) => {
+  if (amount === null || amount === undefined || isNaN(amount)) {
+    return '0.00';
+  }
+  const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
+  return numAmount.toFixed(2);
+};
+
 function OfflineHotels() {
   const navigate = useNavigate();
   const { id } = useParams();
@@ -280,6 +289,11 @@ function OfflineHotels() {
         // Set children ages
         setChildrenAges(ensureArray(hotelData.children_ages));
 
+        // Ensure totalAmount is a number
+        const totalAmount = hotelData.total_amount 
+          ? parseFloat(hotelData.total_amount) 
+          : 0;
+
         // Set hotel details
         setHotelDetails({
           hotelName: hotelData.hotel_name || '',
@@ -291,7 +305,7 @@ function OfflineHotels() {
           totalRatings: hotelData.total_ratings || 0,
           price: hotelData.price || '',
           pricePerChild: hotelData.price_per_child || '',
-          totalAmount: hotelData.total_amount || 0,
+          totalAmount: totalAmount,
           taxes: hotelData.taxes || '',
           amenities: ensureArray(hotelData.amenities),
           status: hotelData.status || 'Available',
@@ -1814,7 +1828,7 @@ function OfflineHotels() {
                       <InputGroup.Text>₹</InputGroup.Text>
                       <Form.Control
                         type="text"
-                        value={hotelDetails.totalAmount.toFixed(2)}
+                        value={formatTotalAmount(hotelDetails.totalAmount)}
                         readOnly
                         className="bg-light"
                       />

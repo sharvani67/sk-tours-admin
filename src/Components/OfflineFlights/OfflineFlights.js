@@ -97,6 +97,11 @@ function OfflineFlights() {
           setReturnDate(new Date(flightData.return_date));
         }
         
+        // Ensure totalAmount is a number
+        const totalAmount = flightData.total_amount 
+          ? parseFloat(flightData.total_amount) 
+          : 0;
+        
         setFlightDetails({
           fromCountry: 'IN',
           fromCity: flightData.from_city || '',
@@ -122,7 +127,7 @@ function OfflineFlights() {
           mealsIncluded: flightData.meals_included === 1 || flightData.meals_included === true,
           pricePerAdult: flightData.price_per_adult || '',
           pricePerChild: flightData.price_per_child || '',
-          totalAmount: flightData.total_amount || 0,
+          totalAmount: totalAmount,
         });
 
         setSelectedFromAirport(flightData.from_airport_code || '');
@@ -359,6 +364,15 @@ function OfflineFlights() {
     });
     setSuccess('');
     setError('');
+  };
+
+  // Helper function to safely format total amount
+  const formatTotalAmount = (amount) => {
+    if (amount === null || amount === undefined || isNaN(amount)) {
+      return '0.00';
+    }
+    const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
+    return numAmount.toFixed(2);
   };
 
   if (fetchLoading) {
@@ -800,7 +814,7 @@ function OfflineFlights() {
                       <InputGroup.Text>₹</InputGroup.Text>
                       <Form.Control
                         type="text"
-                        value={flightDetails.totalAmount.toFixed(2)}
+                        value={formatTotalAmount(flightDetails.totalAmount)}
                         readOnly
                         className="bg-light"
                       />
