@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Card, Form, Row, Col, Button, Alert, Spinner } from 'react-bootstrap';
+import { Container, Card, Form, Row, Col, Button, Alert, Spinner, InputGroup } from 'react-bootstrap';
 import Navbar from '../../Shared/Navbar/Navbar';
 import { indianAirports } from './airports';
 import axios from 'axios';
@@ -55,7 +55,21 @@ function OfflineFlights() {
     refundableStatusDescription: '', 
     mealsIncluded: false,
     pricePerAdult: '',
+    pricePerChild: '',
+    totalAmount: 0,
   });
+
+  // Calculate total amount whenever relevant fields change
+  useEffect(() => {
+    const adultTotal = (flightDetails.adults || 0) * (parseFloat(flightDetails.pricePerAdult) || 0);
+    const childTotal = (flightDetails.children || 0) * (parseFloat(flightDetails.pricePerChild) || 0);
+    const total = adultTotal + childTotal;
+    
+    setFlightDetails(prev => ({
+      ...prev,
+      totalAmount: total
+    }));
+  }, [flightDetails.adults, flightDetails.children, flightDetails.pricePerAdult, flightDetails.pricePerChild]);
 
   useEffect(() => {
     if (id) {
@@ -83,6 +97,11 @@ function OfflineFlights() {
           setReturnDate(new Date(flightData.return_date));
         }
         
+        // Ensure totalAmount is a number
+        const totalAmount = flightData.total_amount 
+          ? parseFloat(flightData.total_amount) 
+          : 0;
+        
         setFlightDetails({
           fromCountry: 'IN',
           fromCity: flightData.from_city || '',
@@ -107,6 +126,8 @@ function OfflineFlights() {
           refundableStatusDescription: flightData.refundable_status_description || '',
           mealsIncluded: flightData.meals_included === 1 || flightData.meals_included === true,
           pricePerAdult: flightData.price_per_adult || '',
+          pricePerChild: flightData.price_per_child || '',
+          totalAmount: totalAmount,
         });
 
         setSelectedFromAirport(flightData.from_airport_code || '');
@@ -338,9 +359,20 @@ function OfflineFlights() {
       refundableStatusDescription: '',
       mealsIncluded: false,
       pricePerAdult: '',
+      pricePerChild: '',
+      totalAmount: 0,
     });
     setSuccess('');
     setError('');
+  };
+
+  // Helper function to safely format total amount
+  const formatTotalAmount = (amount) => {
+    if (amount === null || amount === undefined || isNaN(amount)) {
+      return '0.00';
+    }
+    const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
+    return numAmount.toFixed(2);
   };
 
   if (fetchLoading) {
@@ -733,17 +765,63 @@ function OfflineFlights() {
                     />
                   </Form.Group>
                 </Col>
+              </Row>
+
+              {/* Pricing Section */}
+              <Row className="mb-3">
                 <Col md={4}>
-                  <Form.Group className="mb-3">
+                  <Form.Group>
                     <Form.Label>Price Per Adult (₹) <span className="text-danger">*</span></Form.Label>
-                    <Form.Control
-                      type="number"
-                      name="pricePerAdult"
-                      placeholder="6848"
-                      value={flightDetails.pricePerAdult}
-                      onChange={handleFlightDetailChange}
-                      required
-                    />
+                    <InputGroup>
+                      <InputGroup.Text>₹</InputGroup.Text>
+                      <Form.Control
+                        type="number"
+                        name="pricePerAdult"
+                        placeholder="Enter price per adult"
+                        value={flightDetails.pricePerAdult}
+                        onChange={handleFlightDetailChange}
+                        required
+                        min="0"
+                        step="0.01"
+                      />
+                    </InputGroup>
+                  </Form.Group>
+                </Col>
+                <Col md={4}>
+                  <Form.Group>
+                    <Form.Label>Price Per Child (₹)</Form.Label>
+                    <InputGroup>
+                      <InputGroup.Text>₹</InputGroup.Text>
+                      <Form.Control
+                        type="number"
+                        name="pricePerChild"
+                        placeholder="Enter price per child"
+                        value={flightDetails.pricePerChild}
+                        onChange={handleFlightDetailChange}
+                        min="0"
+                        step="0.01"
+                      />
+                    </InputGroup>
+                    <Form.Text className="text-muted">
+                      Optional - Leave empty if children travel free
+                    </Form.Text>
+                  </Form.Group>
+                </Col>
+                <Col md={4}>
+                  <Form.Group>
+                    <Form.Label>Total Amount (₹)</Form.Label>
+                    <InputGroup>
+                      <InputGroup.Text>₹</InputGroup.Text>
+                      <Form.Control
+                        type="text"
+                        value={formatTotalAmount(flightDetails.totalAmount)}
+                        readOnly
+                        className="bg-light"
+                      />
+                    </InputGroup>
+                    <Form.Text className="text-muted">
+                      Auto-calculated: (Adults × Adult Price) + (Children × Child Price)
+                    </Form.Text>
                   </Form.Group>
                 </Col>
               </Row>
