@@ -268,7 +268,7 @@ const AdminVideoManager = () => {
 
             <form onSubmit={handleSubmit} className="video-form">
               <div className="form-group">
-                <label>Video File *</label>
+                <label className='text-white'>Video File *</label>
                 <div className="file-upload-area">
                   <input
                     ref={fileInputRef}
@@ -279,7 +279,7 @@ const AdminVideoManager = () => {
                     id="video-upload"
                     required={!editingId}
                   />
-                  <label htmlFor="video-upload" className="file-upload-label">
+                  {/* <label htmlFor="video-upload" className="file-upload-label">
                     <div className="upload-icon">📁</div>
                     <p className="file-name">
                       {fileInputRef.current?.files[0]?.name || 'Click to select video'}
@@ -287,7 +287,18 @@ const AdminVideoManager = () => {
                     <p className="file-help">
                       {editingId ? 'Leave empty to keep current video' : 'MP4, WebM, OGG, MOV, AVI, MKV (Max 500MB)'}
                     </p>
-                  </label>
+                  </label> */}
+                  <label htmlFor="video-upload" className="file-upload-label text-white">
+  <div className="upload-icon">📁</div>
+  <p className="file-name text-white">
+    {fileInputRef.current?.files[0]?.name || 'Click to select video'}
+  </p>
+  <p className="file-help text-white">
+    {editingId 
+      ? 'Leave empty to keep current video' 
+      : 'MP4, WebM, OGG, MOV, AVI, MKV (Max 500MB)'}
+  </p>
+</label>
                 </div>
               </div>
 

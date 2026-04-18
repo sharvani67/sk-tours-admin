@@ -1,3 +1,718 @@
+// import React, { useState, useEffect, useRef } from "react";
+// import {
+//   Container,
+//   Row,
+//   Col,
+//   Dropdown,
+//   Nav,
+//   Offcanvas,
+//   Badge,
+// } from "react-bootstrap";
+// import {
+//   FiMenu, FiHome, FiUsers, FiUser, FiLogOut, FiX, FiBell, FiClock,
+//   FiFlag, FiMap, FiMapPin, FiGift, FiArchive, FiAnchor, FiSettings, FiLayers,
+//   FiVideo, FiInfo, FiGlobe, FiMessageSquare, FiDollarSign, FiBriefcase, FiFileText,
+// } from "react-icons/fi";
+
+// import { useNavigate, useLocation } from "react-router-dom";
+// import "./Sidebar.css";
+// import { FaIdCard } from "react-icons/fa";
+// import { FaCircleUser } from "react-icons/fa6";
+
+// const Navbar = ({ children }) => {
+//   const [expandedSections, setExpandedSections] = useState({});
+//   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+//   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
+//   const [showMobileMenu, setShowMobileMenu] = useState(false);
+//   const [notificationCount, setNotificationCount] = useState(0);
+//   const [notifications, setNotifications] = useState([]);
+//   const [loading, setLoading] = useState(false);
+//   const [showNotifications, setShowNotifications] = useState(false);
+//   const vendorData = JSON.parse(localStorage.getItem("admin_user"));
+//   const firstName = vendorData?.admin_name || "Admin";
+//   const notificationsRef = useRef(null);
+
+//   const navigate = useNavigate();
+//   const location = useLocation();
+
+//   // Close notifications when clicking outside
+//   useEffect(() => {
+//     const handleClickOutside = (event) => {
+//       if (notificationsRef.current && !notificationsRef.current.contains(event.target)) {
+//         setShowNotifications(false);
+//       }
+//     };
+
+//     document.addEventListener("mousedown", handleClickOutside);
+//     return () => {
+//       document.removeEventListener("mousedown", handleClickOutside);
+//     };
+//   }, []);
+
+//   // Handle window resize to manage sidebar state
+//   useEffect(() => {
+//     const handleResize = () => {
+//       if (window.innerWidth >= 768) {
+//         setShowMobileSidebar(false);
+//         setShowMobileMenu(false);
+//       }
+//     };
+
+//     window.addEventListener('resize', handleResize);
+//     return () => window.removeEventListener('resize', handleResize);
+//   }, []);
+
+//   const toggleSection = (section) => {
+//     setExpandedSections((prev) => ({
+//       ...prev,
+//       [section]: !prev[section],
+//     }));
+//   };
+
+//   const toggleSidebar = () => {
+//     if (window.innerWidth >= 768) {
+//       setIsSidebarOpen(!isSidebarOpen);
+//     } else {
+//       setShowMobileSidebar(!showMobileSidebar);
+//     }
+//   };
+
+//   const isActiveNavItem = (item) => {
+//     if (item.matchPaths) {
+//       return item.matchPaths.some((path) => location.pathname.includes(path));
+//     }
+//     return (
+//       location.pathname === item.path ||
+//       location.pathname.startsWith(`${item.path}/`)
+//     );
+//   };
+
+//   const navStructure = [
+//     {
+//       label: "Add Videos",
+//       path: "/add-video",
+//       icon: <FiVideo className="sidebar-icon" />
+//     },
+//     // {
+//     //   label: "Advance Cruise Booking",
+//     //   path: "/advanced-cruise-bookings",
+//     //   icon: <FiSettings className="sidebar-icon" />,
+//     //   matchPaths: ["/advanced-cruise-bookings"],
+//     // },
+//     {
+//       label: "Bungalows",
+//       path: "/bungalows",
+//       icon: <FiHome className="sidebar-icon" />,
+//       matchPaths: ["/bungalows", "/add-bungalow", "/edit-bungalow"],
+//     },
+//     {
+//       label: "Carousel Images",
+//       path: "/carousel-images",
+//       icon: <FaCircleUser className="sidebar-icon" />,
+//     },
+//     {
+//       label: "Contact Us",
+//       path: "/contact-us",
+//       icon: <FiUsers className="sidebar-icon" />,
+//       matchPaths: ["/contact-us"],
+//     },
+//     {
+//       label: "Countries",
+//       path: "/countries",
+//       icon: <FiFlag className="sidebar-icon" />,
+//       matchPaths: ["/countries"],
+//     },
+//     // {
+//     //   label: "Cruise Bookings",
+//     //   path: "/cruise-bookings",
+//     //   icon: <FiAnchor className="sidebar-icon" />,
+//     //   matchPaths: ["/cruise-bookings"],
+//     // },
+//     {
+//       label: "Dashboard",
+//       path: "/dashboard",
+//       icon: <FiHome className="sidebar-icon" />
+//     },
+//     {
+//       label: "Destinations",
+//       path: "/destinations",
+//       icon: <FiMapPin className="sidebar-icon" />,
+//       matchPaths: ["/destinations", "/add-destination"],
+//     },
+//     // ========== DOM TOURS DROPDOWN ==========
+//     {
+//       label: "DOM Tours",
+//       icon: <FiMap className="sidebar-icon" />,
+//       children: [
+//         {
+//           label: "DOM-Group-Tours",
+//           path: "/group-tours",
+//           matchPaths: ["/group-tours", "/add-group-tour"],
+//         },
+//         {
+//           label: "DOM-Honeymoon Tours",
+//           path: "/honeymoon-tours",
+//           matchPaths: ["/honeymoon-tours", "/add-honeymoon-tour"],
+//         },
+//         {
+//           label: "DOM-Individual-Tours",
+//           path: "/tours",
+//           matchPaths: ["/tours", "/add-tour"],
+//         },
+//         {
+//           label: "DOM-Ladies Special Tours",
+//           path: "/ladies-special-tours",
+//           matchPaths: ["/ladies-special-tours", "/add-ladies-special-tour"],
+//         },
+//         {
+//           label: "DOM-Senior Citizen Tours",
+//           path: "/senior-citizen-tours",
+//           matchPaths: ["/senior-citizen-tours", "/add-senior-citizen-tour"],
+//         },
+//         {
+//           label: "DOM-Student Tours",
+//           path: "/student-tours",
+//           matchPaths: ["/student-tours", "/add-student-tour"],
+//         },
+//         {
+//           label: "DOM-Sports Tours",
+//           path: "/sports-tours",
+//           matchPaths: ["/sports-tours", "/add-sports-tour", "/edit-sports-tour"],
+//         },
+//         {
+//           label: "DOM-Festival Tours",
+//           path: "/festival-tours",
+//           matchPaths: ["/festival-tours", "/add-festival-tour", "/edit-festival-tour"],
+//         },
+//       ],
+//     },
+//     // ========== END DOM TOURS ==========
+    
+//     // ========== INTL TOURS DROPDOWN ==========
+//     {
+//       label: "INTL Tours",
+//       icon: <FiGlobe className="sidebar-icon" />,
+//       children: [
+//         {
+//           label: "INTL-Group-Tours",
+//           path: "/intl-group-tours",
+//           matchPaths: ["/intl-group-tours", "/intl-add-group-tour"],
+//         },
+//         {
+//           label: "INTL-Honeymoon Tours",
+//           path: "/intl-honeymoon-tours",
+//           matchPaths: ["/intl-honeymoon-tours", "/intl-add-honeymoon-tour"],
+//         },
+//         {
+//           label: "INTL-Individual-Tours",
+//           path: "/intl-tours",
+//           matchPaths: ["/intl-tours", "/intl-add-tour"],
+//         },
+//         {
+//           label: "INTL-Ladies-Special-Tours",
+//           path: "/intl-ladies-special-tours",
+//           matchPaths: ["/intl-ladies-special-tours", "/intl-add-ladies-special-tour"],
+//         },
+//         {
+//           label: "INTL-Senior-Citizen-Tours",
+//           path: "/intl-senior-citizen-tours",
+//           matchPaths: ["/intl-senior-citizen-tours", "/intl-add-senior-citizen-tour"],
+//         },
+//         {
+//           label: "INTL-Student-Tours",
+//           path: "/intl-student-tours",
+//           matchPaths: ["/intl-student-tours", "/intl-add-student-tour"],
+//         },
+//         {
+//           label: "INTL-Sports Tours",
+//           path: "/intl-sports-tours",
+//           matchPaths: ["/intl-sports-tours", "/intl-add-sports-tour", "/intl-edit-sports-tour"],
+//         },
+//         {
+//           label: "INTL-Festival Tours",
+//           path: "/intl-festival-tours",
+//           matchPaths: ["/intl-festival-tours", "/intl-add-festival-tour", "/intl-edit-festival-tour"],
+//         },
+//       ],
+//     },
+//     // ========== END INTL TOURS ==========
+
+//     // {
+//     //   label: "Enquiries",
+//     //   path: "/enquiries",
+//     //   icon: <FiMessageSquare className="sidebar-icon" />,
+//     //   matchPaths: ["/enquiries"],
+//     // },
+//     {
+//       label: "Exhibition",
+//       path: "/exhibition",
+//       icon: <FiArchive className="sidebar-icon" />,
+//       matchPaths: [
+//         "/exhibition",
+//         "/about-exhibition",
+//         "/domestic-exhibitions",
+//         "/international-exhibitions",
+//         "/add-exhibition/domestic",
+//         "/add-exhibition/international",
+//         "/add-exhibition-faq",
+//         "/edit-exhibition/domestic/:id",
+//         "/edit-exhibition/international/:id",
+//         "/edit-exhibition-faq/:id"
+//       ],
+//       submenu: [
+//         {
+//           label: "About Exhibition",
+//           path: "/about-exhibition",
+//           icon: <FiInfo className="sidebar-icon" />,
+//         },
+//         {
+//           label: "Domestic Exhibition",
+//           path: "/domestic-exhibitions",
+//           icon: <FiHome className="sidebar-icon" />,
+//         },
+//         {
+//           label: "International Exhibition",
+//           path: "/international-exhibitions",
+//           icon: <FiGlobe className="sidebar-icon" />,
+//         },
+//       ],
+//     },
+//     {
+//       label: "International Countries",
+//       path: "/intl-countries",
+//       icon: <FiFlag className="sidebar-icon" />,
+//       matchPaths: ["/intl-countries", "/intl-add-countries"],
+//     },
+//     {
+//       label: "International Destinations",
+//       path: "/intl-destinations",
+//       icon: <FiMapPin className="sidebar-icon" />,
+//       matchPaths: ["/intl-destinations", "/intl-add-destination"],
+//     },
+//     {
+//       label: "Mice",
+//       path: "/mice",
+//       icon: <FiBriefcase className="sidebar-icon" />
+//     },
+//     {
+//       label: "Offline Flights",
+//       path: "/offline-flights-table",
+//       icon: <FiMap className="sidebar-icon" />
+//     },
+//     {
+//       label: "Offline Hotels",
+//       path: "/offline-hotels-table",
+//       icon: <FiMap className="sidebar-icon" />
+//     },
+//     {
+//       label: "One Day Picnic",
+//       path: "/one-day-picnic",
+//       icon: <FiMap className="sidebar-icon" />,
+//       matchPaths: ["/one-day-picnic", "/add-one-day-picnic", "/edit-one-day-picnic"],
+//     },
+//     {
+//       label: "PopUp Leads",
+//       path: "/leadspopup",
+//       icon: <FaCircleUser className="sidebar-icon" />,
+//     },
+//     // {
+//     //   label: "Tours-categories",
+//     //   path: "/categories-tours",
+//     //   icon: <FiMap className="sidebar-icon" />,
+//     //   matchPaths: ["/categories-tour", "/add-category"],
+//     // },
+//     {
+//       label: "Visa Appointments",
+//       path: "/visa-appointments",
+//       icon: <FiMapPin className="sidebar-icon" />,
+//       matchPaths: ["/visa-appointments"],
+//     },
+//     {
+//       label: "Vendors",
+//       path: "/vendors",
+//       icon: <FiHome className="sidebar-icon" />,
+//     },
+//     {
+//       label: "Vendor Categories",
+//       path: "/category-table",
+//       icon: <FiLayers className="sidebar-icon" />,
+//     },
+//     {
+//       label: "Weekend Gate Way",
+//       path: "/weekend-gateways",
+//       icon: <FiClock className="sidebar-icon" />,
+//       matchPaths: ["/weekend-gateways", "/add-weekend-gateway", "/edit-weekend-gateway"],
+//     },
+//     {
+//       label: "FlightTax",
+//       path: "/Flighttax",
+//       icon: <FiMap className="sidebar-icon" />,
+//       matchPaths: ["/Flighttax", "/addflighttax"],
+//     },
+//     {
+//       label: "Passport",
+//       path: "/Passport",
+//       icon: <FiMap className="sidebar-icon" />,
+//       matchPaths: ["/Passport", "/addPassport"],
+//     },
+//     {
+//       label: "Forms",
+//       icon: <FiFileText className="sidebar-icon" />,
+//       children: [
+//         { label: "Booking Forms", path: "/Bookingtable" },
+//         { label: "Oneday Forms", path: "/onedaypicnictable" },
+//         { label: "Weekend Forms", path: "/weekendtable" }
+//       ],
+//     },
+//     {
+//       label: "Transactions",
+//       path: "/transactions",
+//       icon: <FiDollarSign className="sidebar-icon" />,
+//       matchPaths: ["/transactions"],
+//     },
+//   ];
+
+//   const handleNavClick = (label, path) => {
+//     if (path) {
+//       navigate(path);
+//       setShowMobileMenu(false);
+//       setShowMobileSidebar(false);
+//     }
+//   };
+
+//   return (
+//     <div className="d-flex flex-column vh-100">
+//       {/* Header */}
+//       <header className="header shadow-sm">
+//         <Container fluid>
+//           <Row className="align-items-center justify-content-between">
+//             <Col xs="auto">
+//               <div className="d-flex align-items-center">
+//                 {/* Desktop sidebar toggle */}
+//                 <div className="d-none d-md-block">
+//                   <div
+//                     className="navbar-logo"
+//                     onClick={toggleSidebar}
+//                     style={{ cursor: "pointer" }}
+//                   >
+//                     <FiMenu size={20} className="me-2" />
+//                     <i className="fas fa-anchor me-2"></i>
+//                     <span className="navbar-brand mb-0">SK Tours</span>
+//                   </div>
+//                 </div>
+
+//                 {/* Mobile logo (no click functionality) */}
+//                 <div className="d-md-none">
+//                   <div className="navbar-logo">
+//                     <i className="fas fa-anchor me-2"></i>
+//                     <span className="navbar-brand mb-0">Sk Tours</span>
+//                   </div>
+//                 </div>
+//               </div>
+//             </Col>
+
+//             <Col xs="auto" className="d-none d-md-block">
+//               {/* Desktop dropdown */}
+//               <div className="d-flex align-items-center gap-2 justify-content-end navbar-icons">
+//                 {/* Notification Bell Icon with Dropdown */}
+//                 <div
+//                   className="notification-container position-relative"
+//                   ref={notificationsRef}
+//                 >
+//                   <div
+//                     className="notification-icon"
+//                     style={{ cursor: 'pointer' }}
+//                   >
+//                     <FiBell size={20} className="notification-bell" />
+//                     {notificationCount > 0 && (
+//                       <Badge bg="danger" className="badge-count">
+//                         {notificationCount > 99 ? '99+' : notificationCount}
+//                       </Badge>
+//                     )}
+//                     {loading && (
+//                       <Badge bg="secondary" className="badge-count">
+//                         ...
+//                       </Badge>
+//                     )}
+//                   </div>
+//                 </div>
+
+//                 <Dropdown align="end">
+//                   <Dropdown.Toggle
+//                     variant="light"
+//                     className="d-flex align-items-center border-0 bg-transparent"
+//                   >
+//                     <span className="me-2 fw-semibold">{firstName}</span>
+//                   </Dropdown.Toggle>
+//                   <Dropdown.Menu>
+//                     <Dropdown.Item href="/admin-profile">Profile</Dropdown.Item>
+//                     <Dropdown.Item href="/reset-password">Reset Password</Dropdown.Item>
+//                     <Dropdown.Item
+//                       onClick={() => {
+//                         localStorage.removeItem("admin_user");
+//                         navigate("/");
+//                       }}
+//                     >
+//                       Logout
+//                     </Dropdown.Item>
+//                   </Dropdown.Menu>
+//                 </Dropdown>
+//               </div>
+//             </Col>
+
+//             {/* Mobile menu icons */}
+//             <Col xs="auto" className="d-md-none">
+//               <div className="d-flex align-items-center gap-3">
+//                 {/* Notification Bell Icon for Mobile */}
+//                 <div
+//                   className="notification-icon"
+//                   style={{ cursor: 'pointer', position: 'relative' }}
+//                 >
+//                   <FiBell size={20} className="notification-bell" />
+//                   {notificationCount > 0 && (
+//                     <Badge bg="danger" className="badge-count">
+//                       {notificationCount > 99 ? '99+' : notificationCount}
+//                     </Badge>
+//                   )}
+//                   {loading && (
+//                     <Badge bg="secondary" className="badge-count">
+//                       ...
+//                     </Badge>
+//                   )}
+//                 </div>
+
+//                 {/* Mobile sidebar toggle */}
+//                 <FiMenu
+//                   size={24}
+//                   style={{ cursor: "pointer" }}
+//                   onClick={() => setShowMobileSidebar(true)}
+//                 />
+//                 {/* Mobile profile menu */}
+//                 <FiUser
+//                   size={24}
+//                   style={{ cursor: "pointer" }}
+//                   onClick={() => setShowMobileMenu(true)}
+//                 />
+//               </div>
+//             </Col>
+//           </Row>
+//         </Container>
+//       </header>
+
+//       {/* Sidebar + Main */}
+//       <div className="d-flex flex-grow-1 overflow-hidden">
+//         {/* Desktop Sidebar */}
+//         <div
+//           className={`sidebar d-none d-md-flex flex-column p-3 ${
+//             isSidebarOpen ? "sidebar-open" : "sidebar-closed"
+//           }`}
+//         >
+//           <Nav className="flex-column">
+//             {navStructure.map((item, index) => (
+//               <div key={index}>
+//                 <Nav.Link
+//                   className={`sidebar-link ${isActiveNavItem(item) ? "active" : ""}`}
+//                   onClick={() => {
+//                     if (item.children) {
+//                       toggleSection(item.label);
+//                     } else {
+//                       handleNavClick(item.label, item.path);
+//                     }
+//                   }}
+//                 >
+//                   <div className="d-flex align-items-center justify-content-between">
+//                     <div className="d-flex align-items-center">
+//                       {item.icon}
+//                       <span className="ms-2 sidebar-label">{item.label}</span>
+//                     </div>
+//                     {item.children && (
+//                       <span>{expandedSections[item.label] ? "▾" : "▸"}</span>
+//                     )}
+//                   </div>
+//                 </Nav.Link>
+
+//                 {/* Submenu for children */}
+//                 {item.children && expandedSections[item.label] && (
+//                   <div className="submenu ms-4">
+//                     {item.children.map((child, i) => (
+//                       <Nav.Link
+//                         key={i}
+//                         className={`sidebar-link ${
+//                           isActiveNavItem(child) ? "active" : ""
+//                         }`}
+//                         onClick={() => handleNavClick(child.label, child.path)}
+//                       >
+//                         {child.label}
+//                       </Nav.Link>
+//                     ))}
+//                   </div>
+//                 )}
+
+//                 {/* Submenu for submenu property (for Exhibition) */}
+//                 {item.submenu && expandedSections[item.label] && (
+//                   <div className="submenu ms-4">
+//                     {item.submenu.map((child, i) => (
+//                       <Nav.Link
+//                         key={i}
+//                         className={`sidebar-link ${
+//                           isActiveNavItem(child) ? "active" : ""
+//                         }`}
+//                         onClick={() => handleNavClick(child.label, child.path)}
+//                       >
+//                         {child.label}
+//                       </Nav.Link>
+//                     ))}
+//                   </div>
+//                 )}
+//               </div>
+//             ))}
+//           </Nav>
+//         </div>
+
+//         {/* Main Content */}
+//         <main className={`main-content flex-grow-1 p-4 overflow-auto ${
+//           isSidebarOpen ? 'sidebar-open' : 'sidebar-collapsed'
+//         }`}>
+//           {children}
+//         </main>
+//       </div>
+
+//       {/* Mobile Sidebar Offcanvas */}
+//       <Offcanvas
+//         show={showMobileSidebar}
+//         onHide={() => setShowMobileSidebar(false)}
+//         placement="start"
+//         className="mobile-sidebar-offcanvas"
+//       >
+//         <Offcanvas.Header>
+//           <Offcanvas.Title>
+//             <div className="navbar-logo">
+//               <i className="fas fa-anchor me-2"></i>
+//               <span>a2zships</span>
+//             </div>
+//           </Offcanvas.Title>
+//           <button
+//             type="button"
+//             className="btn-close"
+//             onClick={() => setShowMobileSidebar(false)}
+//           >
+//             <FiX size={20} />
+//           </button>
+//         </Offcanvas.Header>
+//         <Offcanvas.Body className="p-0">
+//           <Nav className="flex-column">
+//             {navStructure.map((item, index) => (
+//               <div key={index}>
+//                 <Nav.Link
+//                   className={`sidebar-link ${
+//                     isActiveNavItem(item) ? "active" : ""
+//                   }`}
+//                   onClick={() => {
+//                     if (item.children) {
+//                       toggleSection(item.label);
+//                     } else {
+//                       handleNavClick(item.label, item.path);
+//                     }
+//                   }}
+//                 >
+//                   <div className="d-flex align-items-center justify-content-between">
+//                     <div className="d-flex align-items-center">
+//                       {item.icon}
+//                       <span className="ms-2">{item.label}</span>
+//                     </div>
+//                     {item.children && (
+//                       <span>{expandedSections[item.label] ? "▾" : "▸"}</span>
+//                     )}
+//                   </div>
+//                 </Nav.Link>
+
+//                 {/* Mobile submenu for children */}
+//                 {item.children && expandedSections[item.label] && (
+//                   <div className="submenu ms-4">
+//                     {item.children.map((child, i) => (
+//                       <Nav.Link
+//                         key={i}
+//                         className={`sidebar-link ${
+//                           isActiveNavItem(child) ? "active" : ""
+//                         }`}
+//                         onClick={() => handleNavClick(child.label, child.path)}
+//                       >
+//                         {child.label}
+//                       </Nav.Link>
+//                     ))}
+//                   </div>
+//                 )}
+
+//                 {/* Mobile submenu for submenu property */}
+//                 {item.submenu && expandedSections[item.label] && (
+//                   <div className="submenu ms-4">
+//                     {item.submenu.map((child, i) => (
+//                       <Nav.Link
+//                         key={i}
+//                         className={`sidebar-link ${
+//                           isActiveNavItem(child) ? "active" : ""
+//                         }`}
+//                         onClick={() => handleNavClick(child.label, child.path)}
+//                       >
+//                         {child.label}
+//                       </Nav.Link>
+//                     ))}
+//                   </div>
+//                 )}
+//               </div>
+//             ))}
+//           </Nav>
+//         </Offcanvas.Body>
+//       </Offcanvas>
+
+//       {/* Mobile Profile Menu Offcanvas */}
+//       <Offcanvas
+//         show={showMobileMenu}
+//         onHide={() => setShowMobileMenu(false)}
+//         placement="end"
+//         className="mobile-profile-offcanvas"
+//       >
+//         <Offcanvas.Header closeButton>
+//           <Offcanvas.Title>{firstName}</Offcanvas.Title>
+//         </Offcanvas.Header>
+//         <Offcanvas.Body>
+//           <Nav className="flex-column">
+//             <Nav.Link onClick={() => {
+//               navigate("/admin-profile");
+//               setShowMobileMenu(false);
+//             }}>
+//               <FiUser className="me-2" /> Profile
+//             </Nav.Link>
+//             <Nav.Link onClick={() => {
+//               navigate("/reset-password");
+//               setShowMobileMenu(false);
+//             }}>
+//               Reset Password
+//             </Nav.Link>
+//             <hr />
+//             <Nav.Link
+//               className="logout-link"
+//               onClick={() => {
+//                 localStorage.removeItem("admin_user");
+//                 navigate("/login");
+//               }}
+//             >
+//               <FiLogOut className="me-2" /> Logout
+//             </Nav.Link>
+//           </Nav>
+//         </Offcanvas.Body>
+//       </Offcanvas>
+//     </div>
+//   );
+// };
+
+// export default Navbar;
+
+
+
+
+
+
 import React, { useState, useEffect, useRef } from "react";
 import {
   Container,
@@ -10,14 +725,21 @@ import {
 } from "react-bootstrap";
 import {
   FiMenu, FiHome, FiUsers, FiUser, FiLogOut, FiX, FiBell, FiClock,
-  FiFlag, FiMap, FiMapPin, FiGift, FiArchive, FiAnchor, FiSettings,FiLayers, 
-  FiVideo, FiInfo, FiGlobe, FiMessageSquare, FiDollarSign, FiBriefcase,FiFileText ,
+  FiFlag, FiMap, FiMapPin, FiGift, FiArchive, FiAnchor, FiSettings, FiLayers,
+  FiVideo, FiInfo, FiGlobe, FiMessageSquare, FiDollarSign, FiBriefcase, FiFileText,
 } from "react-icons/fi";
 
 import { useNavigate, useLocation } from "react-router-dom";
 import "./Sidebar.css";
 import { FaIdCard } from "react-icons/fa";
 import { FaCircleUser } from "react-icons/fa6";
+
+// Import your logo - change the path to match your actual logo location
+import logo from "../../assets/sk-tour.png"; // Adjust this path based on your folder structure
+// Alternative paths based on where your logo is located:
+// import logo from "./assets/logo.png";
+// import logo from "../images/logo.png";
+// import logo from "/src/assets/logo.png";
 
 const Navbar = ({ children }) => {
   const [expandedSections, setExpandedSections] = useState({});
@@ -34,7 +756,6 @@ const Navbar = ({ children }) => {
 
   const navigate = useNavigate();
   const location = useLocation();
-
 
   // Close notifications when clicking outside
   useEffect(() => {
@@ -89,307 +810,265 @@ const Navbar = ({ children }) => {
   };
 
   const navStructure = [
-  { 
-    label: "Add Videos", 
-    path: "/add-video", 
-    icon: <FiVideo className="sidebar-icon" /> 
-  },
-  {
-    label: "Advance Cruise Booking",
-    path: "/advanced-cruise-bookings",
-    icon: <FiSettings className="sidebar-icon" />,
-    matchPaths: ["/advanced-cruise-bookings"],
-  },
-   { 
-    label: "Bungalows", 
-    path: "/bungalows", 
-    icon: <FiHome className="sidebar-icon" />,
-    matchPaths: ["/bungalows", "/add-bungalow", "/edit-bungalow"],
-  },
-  {
-    label: "Carousel Images",
-    path: "/carousel-images",
-    icon: <FaCircleUser className="sidebar-icon" />,
-  },
-  {
-    label: "Contact Us",
-    path: "/contact-us",
-    icon: <FiUsers className="sidebar-icon" />,
-    matchPaths: ["/contact-us"],
-  },
-  {
-    label: "Countries",
-    path: "/countries",
-    icon: <FiFlag className="sidebar-icon" />,
-    matchPaths: ["/countries"],
-  },
-  {
-    label: "Cruise Bookings",
-    path: "/cruise-bookings",
-    icon: <FiAnchor className="sidebar-icon" />,
-    matchPaths: ["/cruise-bookings"],
-  },
-  { 
-    label: "Dashboard", 
-    path: "/dashboard", 
-    icon: <FiHome className="sidebar-icon" /> 
-  },
-  {
-    label: "Destinations",
-    path: "/destinations",
-    icon: <FiMapPin className="sidebar-icon" />,
-    matchPaths: ["/destinations", "/add-destination"],
-  },
-  {
-    label: "DOM-Group-Tours", 
-    path: "/group-tours",
-    icon: <FiUsers className="sidebar-icon" />, 
-    matchPaths: ["/group-tours", "/add-group-tour"],
-  },
-  {
-    label: "DOM-Honeymoon Tours",
-    path: "/honeymoon-tours",
-    icon: <FiMap className="sidebar-icon" />,
-    matchPaths: ["/honeymoon-tours", "/add-honeymoon-tour"],
-  },
-  {
-    label: "DOM-Individual-Tours",
-    path: "/tours",
-    icon: <FiMap className="sidebar-icon" />,
-    matchPaths: ["/tours", "/add-tour"],
-  },
-  {
-    label: "DOM-Ladies Special Tours",
-    path: "/ladies-special-tours",
-    icon: <FiUsers className="sidebar-icon" />,
-    matchPaths: ["/ladies-special-tours", "/add-ladies-special-tour"],
-  },
-  {
-    label: "DOM-Senior Citizen Tours",
-    path: "/senior-citizen-tours",
-    icon: <FiUsers className="sidebar-icon" />,
-    matchPaths: ["/senior-citizen-tours", "/add-senior-citizen-tour"],
-  },
-  {
-    label: "DOM-Student Tours",
-    path: "/student-tours",
-    icon: <FiUsers className="sidebar-icon" />,
-    matchPaths: ["/student-tours", "/add-student-tour"],
-  },
+    {
+      label: "Add Videos",
+      path: "/add-video",
+      icon: <FiVideo className="sidebar-icon" />
+    },
+    {
+      label: "Bungalows",
+      path: "/bungalows",
+      icon: <FiHome className="sidebar-icon" />,
+      matchPaths: ["/bungalows", "/add-bungalow", "/edit-bungalow"],
+    },
+    {
+      label: "Carousel Images",
+      path: "/carousel-images",
+      icon: <FaCircleUser className="sidebar-icon" />,
+    },
+    {
+      label: "Contact Us",
+      path: "/contact-us",
+      icon: <FiUsers className="sidebar-icon" />,
+      matchPaths: ["/contact-us"],
+    },
+    {
+      label: "Countries",
+      path: "/countries",
+      icon: <FiFlag className="sidebar-icon" />,
+      matchPaths: ["/countries"],
+    },
+    {
+      label: "Dashboard",
+      path: "/dashboard",
+      icon: <FiHome className="sidebar-icon" />
+    },
+    {
+      label: "Destinations",
+      path: "/destinations",
+      icon: <FiMapPin className="sidebar-icon" />,
+      matchPaths: ["/destinations", "/add-destination"],
+    },
+    // ========== DOM TOURS DROPDOWN ==========
+    {
+      label: "DOM Tours",
+      icon: <FiMap className="sidebar-icon" />,
+      children: [
+        {
+          label: "DOM-Group-Tours",
+          path: "/group-tours",
+          matchPaths: ["/group-tours", "/add-group-tour"],
+        },
+        {
+          label: "DOM-Honeymoon Tours",
+          path: "/honeymoon-tours",
+          matchPaths: ["/honeymoon-tours", "/add-honeymoon-tour"],
+        },
+        {
+          label: "DOM-Individual-Tours",
+          path: "/tours",
+          matchPaths: ["/tours", "/add-tour"],
+        },
+        {
+          label: "DOM-Ladies Special Tours",
+          path: "/ladies-special-tours",
+          matchPaths: ["/ladies-special-tours", "/add-ladies-special-tour"],
+        },
+        {
+          label: "DOM-Senior Citizen Tours",
+          path: "/senior-citizen-tours",
+          matchPaths: ["/senior-citizen-tours", "/add-senior-citizen-tour"],
+        },
+        {
+          label: "DOM-Student Tours",
+          path: "/student-tours",
+          matchPaths: ["/student-tours", "/add-student-tour"],
+        },
+        {
+          label: "DOM-Sports Tours",
+          path: "/sports-tours",
+          matchPaths: ["/sports-tours", "/add-sports-tour", "/edit-sports-tour"],
+        },
+        {
+          label: "DOM-Festival Tours",
+          path: "/festival-tours",
+          matchPaths: ["/festival-tours", "/add-festival-tour", "/edit-festival-tour"],
+        },
+      ],
+    },
+    // ========== END DOM TOURS ==========
+    
+    // ========== INTL TOURS DROPDOWN ==========
+    {
+      label: "INTL Tours",
+      icon: <FiGlobe className="sidebar-icon" />,
+      children: [
+        {
+          label: "INTL-Group-Tours",
+          path: "/intl-group-tours",
+          matchPaths: ["/intl-group-tours", "/intl-add-group-tour"],
+        },
+        {
+          label: "INTL-Honeymoon Tours",
+          path: "/intl-honeymoon-tours",
+          matchPaths: ["/intl-honeymoon-tours", "/intl-add-honeymoon-tour"],
+        },
+        {
+          label: "INTL-Individual-Tours",
+          path: "/intl-tours",
+          matchPaths: ["/intl-tours", "/intl-add-tour"],
+        },
+        {
+          label: "INTL-Ladies-Special-Tours",
+          path: "/intl-ladies-special-tours",
+          matchPaths: ["/intl-ladies-special-tours", "/intl-add-ladies-special-tour"],
+        },
+        {
+          label: "INTL-Senior-Citizen-Tours",
+          path: "/intl-senior-citizen-tours",
+          matchPaths: ["/intl-senior-citizen-tours", "/intl-add-senior-citizen-tour"],
+        },
+        {
+          label: "INTL-Student-Tours",
+          path: "/intl-student-tours",
+          matchPaths: ["/intl-student-tours", "/intl-add-student-tour"],
+        },
+        {
+          label: "INTL-Sports Tours",
+          path: "/intl-sports-tours",
+          matchPaths: ["/intl-sports-tours", "/intl-add-sports-tour", "/intl-edit-sports-tour"],
+        },
+        {
+          label: "INTL-Festival Tours",
+          path: "/intl-festival-tours",
+          matchPaths: ["/intl-festival-tours", "/intl-add-festival-tour", "/intl-edit-festival-tour"],
+        },
+      ],
+    },
+    // ========== END INTL TOURS ==========
 
-  {
-    label: "DOM-Sports Tours",
-    path: "/sports-tours",
-    icon: <FiUsers className="sidebar-icon" />,
-    matchPaths: ["/sports-tours", "/add-sports-tour", "/edit-sports-tour"],
-  },
-  // NEW: DOM-Festival Tours
-  {
-    label: "DOM-Festival Tours",
-    path: "/festival-tours",
-    icon: <FiGift className="sidebar-icon" />,
-    matchPaths: ["/festival-tours", "/add-festival-tour", "/edit-festival-tour"],
-  },
-
-  
-  {
-    label: "Enquiries",
-    path: "/enquiries",
-    icon: <FiMessageSquare className="sidebar-icon" />,
-    matchPaths: ["/enquiries"],
-  },
-  {
-    label: "Exhibition",
-    path: "/exhibition",
-    icon: <FiArchive className="sidebar-icon" />,
-    matchPaths: [
-      "/exhibition",
-      "/about-exhibition",
-      "/domestic-exhibitions",
-      "/international-exhibitions",
-      "/add-exhibition/domestic",
-      "/add-exhibition/international",
-      "/add-exhibition-faq",
-      "/edit-exhibition/domestic/:id",
-      "/edit-exhibition/international/:id",
-      "/edit-exhibition-faq/:id"
-    ],
-    submenu: [
-      {
-        label: "About Exhibition",
-        path: "/about-exhibition",
-        icon: <FiInfo className="sidebar-icon" />,
-      },
-      {
-        label: "Domestic Exhibition",
-        path: "/domestic-exhibitions",
-        icon: <FiHome className="sidebar-icon" />,
-      },
-      {
-        label: "International Exhibition",
-        path: "/international-exhibitions",
-        icon: <FiGlobe className="sidebar-icon" />,
-      },
-    ],
-  },
-  {
-    label: "INTL-Group-Tours", 
-    path: "/intl-group-tours",
-    icon: <FiUsers className="sidebar-icon" />, 
-    matchPaths: ["/intl-group-tours", "/intl-add-group-tour"],
-  },
-  {
-    label: "INTL-Honeymoon Tours",
-    path: "/intl-honeymoon-tours",
-    icon: <FiMap className="sidebar-icon" />,
-    matchPaths: ["/intl-honeymoon-tours", "/intl-add-honeymoon-tour"],
-  },
-  {
-    label: "INTL-Individual-Tours",
-    path: "/intl-tours",
-    icon: <FiMap className="sidebar-icon" />,
-    matchPaths: ["/intl-tours", "/intl-add-tour"],
-  },
-  {
-    label: "INTL-Ladies-Special-Tours",
-    path: "/intl-ladies-special-tours",
-    icon: <FiUsers className="sidebar-icon" />,
-    matchPaths: ["/intl-ladies-special-tours", "/intl-add-ladies-special-tour"],
-  },
-  {
-    label: "INTL-Senior-Citizen-Tours",
-    path: "/intl-senior-citizen-tours",
-    icon: <FiUsers className="sidebar-icon" />,
-    matchPaths: ["/intl-senior-citizen-tours", "/intl-add-senior-citizen-tour"],
-  },
-  {
-    label: "INTL-Student-Tours",
-    path: "/intl-student-tours",
-    icon: <FiUsers className="sidebar-icon" />,
-    matchPaths: ["/intl-student-tours", "/intl-add-student-tour"],
-  },
-
-    // NEW: INTL-Sports Tours
-  {
-    label: "INTL-Sports Tours",
-    path: "/intl-sports-tours",
-    icon: <FiUsers className="sidebar-icon" />,
-    matchPaths: ["/intl-sports-tours", "/intl-add-sports-tour", "/intl-edit-sports-tour"],
-  },
-  // NEW: INTL-Festival Tours
-  {
-    label: "INTL-Festival Tours",
-    path: "/intl-festival-tours",
-    icon: <FiGift className="sidebar-icon" />,
-    matchPaths: ["/intl-festival-tours", "/intl-add-festival-tour", "/intl-edit-festival-tour"],
-  },
-
-  {
-    label: "International Countries",
-    path: "/intl-countries",
-    icon: <FiFlag className="sidebar-icon" />,
-    matchPaths: ["/intl-countries","/intl-add-countries"],
-  },
-  {
-    label: "International Destinations",
-    path: "/intl-destinations",
-    icon: <FiMapPin className="sidebar-icon" />,
-    matchPaths: ["/intl-destinations", "/intl-add-destination"],
-  },
-  { 
-    label: "Mice", 
-    path: "/mice", 
-    icon: <FiBriefcase className="sidebar-icon" /> 
-  },
-  { 
-    label: "Offline Flights", 
-    path: "/offline-flights-table", 
-    icon: <FiMap className="sidebar-icon" /> 
-  },
-   { 
-    label: "Offline Hotels", 
-    path: "/offline-hotels-table", 
-    icon: <FiMap className="sidebar-icon" /> 
-  },
-
-   // NEW: One Day Picnic
-  { 
-    label: "One Day Picnic", 
-    path: "/one-day-picnic", 
-    icon: <FiMap className="sidebar-icon" />,
-    matchPaths: ["/one-day-picnic", "/add-one-day-picnic", "/edit-one-day-picnic"],
-  },
-  
-  // {
-  //   label: "Payments",
-  //   path: "/payments",
-  //   icon: <FiDollarSign className="sidebar-icon" />,
-  //   matchPaths: ["/payments"],
-  // },
-
-  
-  {
-    label: "PopUp Leads",
-    path: "/leadspopup",
-    icon: <FaCircleUser className="sidebar-icon" />,
-  },
-  {
-    label: "Tours-categories",
-    path: "/categories-tours",
-    icon: <FiMap className="sidebar-icon" />,
-    matchPaths: ["/categories-tour","/add-category"],
-  },
-  {
-    label: "Visa Appointments",
-    path: "/visa-appointments",
-    icon: <FiMapPin className="sidebar-icon" />,
-    matchPaths: ["/visa-appointments"],
-  },
-  {
-  label: "Vendors",
-  path: "/vendors",
-  icon: <FiHome  className="sidebar-icon" />,
-},
-{
-  label: "Vendor Categories",
-  path: "/category-table",
-  icon: <FiLayers className="sidebar-icon" />,
-},
- { 
-    label: "Weekend Gate Way", 
-    path: "/weekend-gateways", 
-    icon: <FiClock className="sidebar-icon" />,
-    matchPaths: ["/weekend-gateways", "/add-weekend-gateway", "/edit-weekend-gateway"],
-  },
-   { 
-    label: "FlightTax", 
-    path: "/Flighttax", 
-    icon: <FiMap className="sidebar-icon" />,
-    matchPaths: ["/Flighttax", "/addflighttax", ],
-  },
-     { 
-    label: "Passport", 
-    path: "/Passport", 
-    icon: <FiMap className="sidebar-icon" />,
-    matchPaths: ["/Passport", "/addPassport", ],
-  },
-{
-  label: "Forms",
-  icon: <FiFileText className="sidebar-icon" />,
-  children: [
-    { label: "Booking Forms", path: "/Bookingtable" },
-    { label: "Oneday Forms", path: "/onedaypicnictable" },
-    { label: "Weekend Forms", path: "/weekendtable" }
-  ]
-},
-{
-  label: "Transactions",
-  path: "/transactions",
-  icon: <FiDollarSign className="sidebar-icon" />,
-  matchPaths: ["/transactions"],
-},
-];
-
+    {
+      label: "Exhibition",
+      path: "/exhibition",
+      icon: <FiArchive className="sidebar-icon" />,
+      matchPaths: [
+        "/exhibition",
+        "/about-exhibition",
+        "/domestic-exhibitions",
+        "/international-exhibitions",
+        "/add-exhibition/domestic",
+        "/add-exhibition/international",
+        "/add-exhibition-faq",
+        "/edit-exhibition/domestic/:id",
+        "/edit-exhibition/international/:id",
+        "/edit-exhibition-faq/:id"
+      ],
+      submenu: [
+        {
+          label: "About Exhibition",
+          path: "/about-exhibition",
+          icon: <FiInfo className="sidebar-icon" />,
+        },
+        {
+          label: "Domestic Exhibition",
+          path: "/domestic-exhibitions",
+          icon: <FiHome className="sidebar-icon" />,
+        },
+        {
+          label: "International Exhibition",
+          path: "/international-exhibitions",
+          icon: <FiGlobe className="sidebar-icon" />,
+        },
+      ],
+    },
+    {
+      label: "International Countries",
+      path: "/intl-countries",
+      icon: <FiFlag className="sidebar-icon" />,
+      matchPaths: ["/intl-countries", "/intl-add-countries"],
+    },
+    {
+      label: "International Destinations",
+      path: "/intl-destinations",
+      icon: <FiMapPin className="sidebar-icon" />,
+      matchPaths: ["/intl-destinations", "/intl-add-destination"],
+    },
+    {
+      label: "Mice",
+      path: "/mice",
+      icon: <FiBriefcase className="sidebar-icon" />
+    },
+    {
+      label: "Offline Flights",
+      path: "/offline-flights-table",
+      icon: <FiMap className="sidebar-icon" />
+    },
+    {
+      label: "Offline Hotels",
+      path: "/offline-hotels-table",
+      icon: <FiMap className="sidebar-icon" />
+    },
+    {
+      label: "One Day Picnic",
+      path: "/one-day-picnic",
+      icon: <FiMap className="sidebar-icon" />,
+      matchPaths: ["/one-day-picnic", "/add-one-day-picnic", "/edit-one-day-picnic"],
+    },
+    {
+      label: "PopUp Leads",
+      path: "/leadspopup",
+      icon: <FaCircleUser className="sidebar-icon" />,
+    },
+    {
+      label: "Visa Appointments",
+      path: "/visa-appointments",
+      icon: <FiMapPin className="sidebar-icon" />,
+      matchPaths: ["/visa-appointments"],
+    },
+    {
+      label: "Vendors",
+      path: "/vendors",
+      icon: <FiHome className="sidebar-icon" />,
+    },
+    {
+      label: "Vendor Categories",
+      path: "/category-table",
+      icon: <FiLayers className="sidebar-icon" />,
+    },
+    {
+      label: "Weekend Gate Way",
+      path: "/weekend-gateways",
+      icon: <FiClock className="sidebar-icon" />,
+      matchPaths: ["/weekend-gateways", "/add-weekend-gateway", "/edit-weekend-gateway"],
+    },
+    {
+      label: "FlightTax",
+      path: "/Flighttax",
+      icon: <FiMap className="sidebar-icon" />,
+      matchPaths: ["/Flighttax", "/addflighttax"],
+    },
+    {
+      label: "Passport",
+      path: "/Passport",
+      icon: <FiMap className="sidebar-icon" />,
+      matchPaths: ["/Passport", "/addPassport"],
+    },
+    {
+      label: "Forms",
+      icon: <FiFileText className="sidebar-icon" />,
+      children: [
+        { label: "Booking Forms", path: "/Bookingtable" },
+        { label: "Oneday Forms", path: "/onedaypicnictable" },
+        { label: "Weekend Forms", path: "/weekendtable" }
+      ],
+    },
+    {
+      label: "Transactions",
+      path: "/transactions",
+      icon: <FiDollarSign className="sidebar-icon" />,
+      matchPaths: ["/transactions"],
+    },
+  ];
 
   const handleNavClick = (label, path) => {
     if (path) {
@@ -415,16 +1094,25 @@ const Navbar = ({ children }) => {
                     style={{ cursor: "pointer" }}
                   >
                     <FiMenu size={20} className="me-2" />
-                    <i className="fas fa-anchor me-2"></i>
-                    <span className="navbar-brand mb-0">SK Tours</span>
+                    {/* Logo Image */}
+                    <img 
+                      src={logo} 
+                      alt="SK Tours Logo" 
+                      className="navbar-logo-img"
+                    />
+                    {/* <span className="navbar-brand mb-0 ms-2">SK Tours</span> */}
                   </div>
                 </div>
-                
-                {/* Mobile logo (no click functionality) */}
+
+                {/* Mobile logo */}
                 <div className="d-md-none">
                   <div className="navbar-logo">
-                    <i className="fas fa-anchor me-2"></i>
-                    <span className="navbar-brand mb-0">Sk Tours</span>
+                    <img 
+                      src={logo} 
+                      alt="SK Tours Logo" 
+                      className="navbar-logo-img"
+                    />
+                    <span className="navbar-brand mb-0 ms-2">SK Tours</span>
                   </div>
                 </div>
               </div>
@@ -434,12 +1122,12 @@ const Navbar = ({ children }) => {
               {/* Desktop dropdown */}
               <div className="d-flex align-items-center gap-2 justify-content-end navbar-icons">
                 {/* Notification Bell Icon with Dropdown */}
-                <div 
+                <div
                   className="notification-container position-relative"
                   ref={notificationsRef}
                 >
-                  <div 
-                    className="notification-icon" 
+                  <div
+                    className="notification-icon"
                     style={{ cursor: 'pointer' }}
                   >
                     <FiBell size={20} className="notification-bell" />
@@ -455,7 +1143,7 @@ const Navbar = ({ children }) => {
                     )}
                   </div>
                 </div>
-                
+
                 <Dropdown align="end">
                   <Dropdown.Toggle
                     variant="light"
@@ -464,8 +1152,8 @@ const Navbar = ({ children }) => {
                     <span className="me-2 fw-semibold">{firstName}</span>
                   </Dropdown.Toggle>
                   <Dropdown.Menu>
-                    <Dropdown.Item href="/admin-profile">Profile</Dropdown.Item>
-                    <Dropdown.Item href="/reset-password">Reset Password</Dropdown.Item>
+                    {/* <Dropdown.Item href="/admin-profile">Profile</Dropdown.Item>
+                    <Dropdown.Item href="/reset-password">Reset Password</Dropdown.Item> */}
                     <Dropdown.Item
                       onClick={() => {
                         localStorage.removeItem("admin_user");
@@ -483,9 +1171,8 @@ const Navbar = ({ children }) => {
             <Col xs="auto" className="d-md-none">
               <div className="d-flex align-items-center gap-3">
                 {/* Notification Bell Icon for Mobile */}
-                <div 
-                  className="notification-icon" 
-          
+                <div
+                  className="notification-icon"
                   style={{ cursor: 'pointer', position: 'relative' }}
                 >
                   <FiBell size={20} className="notification-bell" />
@@ -500,7 +1187,7 @@ const Navbar = ({ children }) => {
                     </Badge>
                   )}
                 </div>
-                
+
                 {/* Mobile sidebar toggle */}
                 <FiMenu
                   size={24}
@@ -528,47 +1215,64 @@ const Navbar = ({ children }) => {
           }`}
         >
           <Nav className="flex-column">
-          {navStructure.map((item, index) => (
-  <div key={index}>
-    <Nav.Link
-      className={`sidebar-link ${isActiveNavItem(item) ? "active" : ""}`}
-      onClick={() => {
-        if (item.children) {
-          toggleSection(item.label);
-        } else {
-          handleNavClick(item.label, item.path);
-        }
-      }}
-    >
-      <div className="d-flex align-items-center justify-content-between">
-        <div className="d-flex align-items-center">
-          {item.icon}
-          <span className="ms-2 sidebar-label">{item.label}</span>
-        </div>
-        {item.children && (
-          <span>{expandedSections[item.label] ? "▾" : "▸"}</span>
-        )}
-      </div>
-    </Nav.Link>
+            {navStructure.map((item, index) => (
+              <div key={index}>
+                <Nav.Link
+                  className={`sidebar-link ${isActiveNavItem(item) ? "active" : ""}`}
+                  onClick={() => {
+                    if (item.children) {
+                      toggleSection(item.label);
+                    } else {
+                      handleNavClick(item.label, item.path);
+                    }
+                  }}
+                >
+                  <div className="d-flex align-items-center justify-content-between">
+                    <div className="d-flex align-items-center">
+                      {item.icon}
+                      <span className="ms-2 sidebar-label">{item.label}</span>
+                    </div>
+                    {item.children && (
+                      <span>{expandedSections[item.label] ? "▾" : "▸"}</span>
+                    )}
+                  </div>
+                </Nav.Link>
 
-    {/* Submenu */}
-    {item.children && expandedSections[item.label] && (
-      <div className="submenu ms-4">
-        {item.children.map((child, i) => (
-          <Nav.Link
-            key={i}
-            className={`sidebar-link ${
-              isActiveNavItem(child) ? "active" : ""
-            }`}
-            onClick={() => handleNavClick(child.label, child.path)}
-          >
-            {child.label}
-          </Nav.Link>
-        ))}
-      </div>
-    )}
-  </div>
-))}
+                {/* Submenu for children */}
+                {item.children && expandedSections[item.label] && (
+                  <div className="submenu ms-4">
+                    {item.children.map((child, i) => (
+                      <Nav.Link
+                        key={i}
+                        className={`sidebar-link ${
+                          isActiveNavItem(child) ? "active" : ""
+                        }`}
+                        onClick={() => handleNavClick(child.label, child.path)}
+                      >
+                        {child.label}
+                      </Nav.Link>
+                    ))}
+                  </div>
+                )}
+
+                {/* Submenu for submenu property (for Exhibition) */}
+                {item.submenu && expandedSections[item.label] && (
+                  <div className="submenu ms-4">
+                    {item.submenu.map((child, i) => (
+                      <Nav.Link
+                        key={i}
+                        className={`sidebar-link ${
+                          isActiveNavItem(child) ? "active" : ""
+                        }`}
+                        onClick={() => handleNavClick(child.label, child.path)}
+                      >
+                        {child.label}
+                      </Nav.Link>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
           </Nav>
         </div>
 
@@ -590,8 +1294,12 @@ const Navbar = ({ children }) => {
         <Offcanvas.Header>
           <Offcanvas.Title>
             <div className="navbar-logo">
-              <i className="fas fa-anchor me-2"></i>
-              <span>a2zships</span>
+              <img 
+                src={logo} 
+                alt="SK Tours Logo" 
+                className="navbar-logo-img"
+              />
+              <span className="ms-2">SK Tours</span>
             </div>
           </Offcanvas.Title>
           <button
@@ -605,18 +1313,64 @@ const Navbar = ({ children }) => {
         <Offcanvas.Body className="p-0">
           <Nav className="flex-column">
             {navStructure.map((item, index) => (
-              <Nav.Link
-                key={index}
-                className={`sidebar-link ${
-                  isActiveNavItem(item) ? "active" : ""
-                }`}
-                onClick={() => handleNavClick(item.label, item.path)}
-              >
-                <div className="d-flex align-items-center">
-                  {item.icon}
-                  <span className="ms-2">{item.label}</span>
-                </div>
-              </Nav.Link>
+              <div key={index}>
+                <Nav.Link
+                  className={`sidebar-link ${
+                    isActiveNavItem(item) ? "active" : ""
+                  }`}
+                  onClick={() => {
+                    if (item.children) {
+                      toggleSection(item.label);
+                    } else {
+                      handleNavClick(item.label, item.path);
+                    }
+                  }}
+                >
+                  <div className="d-flex align-items-center justify-content-between">
+                    <div className="d-flex align-items-center">
+                      {item.icon}
+                      <span className="ms-2">{item.label}</span>
+                    </div>
+                    {item.children && (
+                      <span>{expandedSections[item.label] ? "▾" : "▸"}</span>
+                    )}
+                  </div>
+                </Nav.Link>
+
+                {/* Mobile submenu for children */}
+                {item.children && expandedSections[item.label] && (
+                  <div className="submenu ms-4">
+                    {item.children.map((child, i) => (
+                      <Nav.Link
+                        key={i}
+                        className={`sidebar-link ${
+                          isActiveNavItem(child) ? "active" : ""
+                        }`}
+                        onClick={() => handleNavClick(child.label, child.path)}
+                      >
+                        {child.label}
+                      </Nav.Link>
+                    ))}
+                  </div>
+                )}
+
+                {/* Mobile submenu for submenu property */}
+                {item.submenu && expandedSections[item.label] && (
+                  <div className="submenu ms-4">
+                    {item.submenu.map((child, i) => (
+                      <Nav.Link
+                        key={i}
+                        className={`sidebar-link ${
+                          isActiveNavItem(child) ? "active" : ""
+                        }`}
+                        onClick={() => handleNavClick(child.label, child.path)}
+                      >
+                        {child.label}
+                      </Nav.Link>
+                    ))}
+                  </div>
+                )}
+              </div>
             ))}
           </Nav>
         </Offcanvas.Body>
@@ -661,6 +1415,6 @@ const Navbar = ({ children }) => {
       </Offcanvas>
     </div>
   );
-}; 
+};
 
 export default Navbar;
