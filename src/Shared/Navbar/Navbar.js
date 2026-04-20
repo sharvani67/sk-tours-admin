@@ -1053,6 +1053,12 @@ const Navbar = ({ children }) => {
       icon: <FiMap className="sidebar-icon" />,
       matchPaths: ["/Passport", "/addPassport"],
     },
+       {
+      label: "Insurance",
+      path: "/insurancetable",
+      icon: <FiMap className="sidebar-icon" />,
+      matchPaths: ["/insurancetable", "/insuranceform"],
+    },
     {
       label: "Forms",
       icon: <FiFileText className="sidebar-icon" />,

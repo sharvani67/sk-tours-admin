@@ -169,6 +169,8 @@ import WeekendTable from "./Components/BookingForms/WeekendTable";
 
 // In your App.js or routing file
 import Transactions from "./Components/Transactions/Transactions";
+import InsuranceForm from "./Components/Tours/Insurance/InsuranceForm.js";
+import InsuranceTable from "./Components/Tours/Insurance/InsuranceTable.js";
 
 
 function App() {
@@ -390,7 +392,10 @@ function App() {
 <Route path="/weekendtable" element={<WeekendTable />} />
 
 <Route path="/transactions" element={<Transactions />} />
+<Route path="/insuranceform" element={<InsuranceForm />} />
 
+<Route path="/insuranceform/:id" element={<InsuranceForm />} />
+<Route path="/insurancetable" element={<InsuranceTable />} />
               
 
       </Routes>
