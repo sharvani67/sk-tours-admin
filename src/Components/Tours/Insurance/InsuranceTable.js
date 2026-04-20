@@ -57,7 +57,7 @@ const InsuranceTable = () => {
 
     try {
       // ✅ 2. Delete from backend
-      const response = await fetch(`${baseurl}/api/insurance/insurance/${insuranceId}`, {
+      const response = await fetch(`${baseurl}/insurance/${insuranceId}`, {
         method: "DELETE"
       });
 
