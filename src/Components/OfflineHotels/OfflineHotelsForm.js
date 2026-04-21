@@ -87,18 +87,8 @@ const ensureArray = (value) => {
 const getImageUrl = (imagePath) => {
   if (!imagePath) return '';
   if (imagePath.startsWith('http')) return imagePath;
-  // Remove any leading slash to avoid double slashes
   const cleanPath = imagePath.startsWith('/') ? imagePath : `/${imagePath}`;
   return `${baseurl}${cleanPath}`;
-};
-
-// Helper function to safely format total amount
-const formatTotalAmount = (amount) => {
-  if (amount === null || amount === undefined || isNaN(amount)) {
-    return '0.00';
-  }
-  const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
-  return numAmount.toFixed(2);
 };
 
 function OfflineHotels() {
@@ -116,7 +106,6 @@ function OfflineHotels() {
   const [additionalImageFiles, setAdditionalImageFiles] = useState([]);
   const [additionalImagePreviews, setAdditionalImagePreviews] = useState([]);
   const [existingImages, setExistingImages] = useState([]);
-  // Track deleted existing images for backend processing
   const [deletedExistingImages, setDeletedExistingImages] = useState([]);
 
   // Hotel Search Details
@@ -136,7 +125,7 @@ function OfflineHotels() {
   // Children ages state
   const [childrenAges, setChildrenAges] = useState([]);
 
-  // Hotel Details
+  // Hotel Details - WITHOUT price, pricePerChild, totalAmount, taxes
   const [hotelDetails, setHotelDetails] = useState({
     hotelName: '',
     location: '',
@@ -145,10 +134,6 @@ function OfflineHotels() {
     additionalImages: [],
     rating: 0,
     totalRatings: 0,
-    price: '',
-    pricePerChild: '',
-    totalAmount: 0,
-    taxes: '',
     amenities: [],
     status: 'Available',
     freeStayForKids: false,
@@ -163,16 +148,15 @@ function OfflineHotels() {
   const [customAmenities, setCustomAmenities] = useState([]);
   const [newAmenityInput, setNewAmenityInput] = useState('');
 
-  // Description Content
+  // Description Content - WITHOUT taxesDescription
   const [descriptions, setDescriptions] = useState({
     overview: '',
     hotelFacilities: '',
     airportTransfers: '',
-    mealPlan: '',
-    taxesDescription: ''
+    mealPlan: ''
   });
 
-  // Default empty room types data
+  // Default empty room types data - WITH price field
   const getDefaultRoomTypesData = () => ({
     standard: {
       enabled: true,
@@ -181,7 +165,6 @@ function OfflineHotels() {
           id: Date.now(),
           roomType: 'Standard Room Non AC',
           price: '',
-          pricePerChild: '',
           amenities: ['Free WiFi'],
           maxOccupancy: 2,
           bedType: 'Double Bed',
@@ -202,7 +185,6 @@ function OfflineHotels() {
           id: Date.now() + 1,
           roomType: 'Deluxe Room With AC',
           price: '',
-          pricePerChild: '',
           amenities: ['Free WiFi', 'Air Conditioning'],
           maxOccupancy: 2,
           bedType: 'Queen Bed',
@@ -223,7 +205,6 @@ function OfflineHotels() {
           id: Date.now() + 2,
           roomType: 'Luxury Suite With AC',
           price: '',
-          pricePerChild: '',
           amenities: ['Free WiFi', 'Air Conditioning', 'Mini Bar'],
           maxOccupancy: 3,
           bedType: 'King Bed',
@@ -241,18 +222,6 @@ function OfflineHotels() {
 
   // Room Types Data
   const [roomTypesData, setRoomTypesData] = useState(getDefaultRoomTypesData());
-
-  // Calculate total amount whenever relevant fields change
-  useEffect(() => {
-    const adultTotal = (searchDetails.adults || 0) * (parseFloat(hotelDetails.price) || 0);
-    const childTotal = (searchDetails.children || 0) * (parseFloat(hotelDetails.pricePerChild) || 0);
-    const total = adultTotal + childTotal;
-    
-    setHotelDetails(prev => ({
-      ...prev,
-      totalAmount: total
-    }));
-  }, [searchDetails.adults, searchDetails.children, hotelDetails.price, hotelDetails.pricePerChild]);
 
   // Fetch hotel data if editing
   useEffect(() => {
@@ -289,11 +258,6 @@ function OfflineHotels() {
         // Set children ages
         setChildrenAges(ensureArray(hotelData.children_ages));
 
-        // Ensure totalAmount is a number
-        const totalAmount = hotelData.total_amount 
-          ? parseFloat(hotelData.total_amount) 
-          : 0;
-
         // Set hotel details
         setHotelDetails({
           hotelName: hotelData.hotel_name || '',
@@ -303,10 +267,6 @@ function OfflineHotels() {
           additionalImages: ensureArray(hotelData.additional_images),
           rating: parseFloat(hotelData.rating) || 0,
           totalRatings: hotelData.total_ratings || 0,
-          price: hotelData.price || '',
-          pricePerChild: hotelData.price_per_child || '',
-          totalAmount: totalAmount,
-          taxes: hotelData.taxes || '',
           amenities: ensureArray(hotelData.amenities),
           status: hotelData.status || 'Available',
           freeStayForKids: hotelData.free_stay_for_kids === 1 || hotelData.free_stay_for_kids === true,
@@ -325,22 +285,19 @@ function OfflineHotels() {
           overview: hotelData.overview_description || '',
           hotelFacilities: hotelData.hotel_facilities_description || '',
           airportTransfers: hotelData.airport_transfers_description || '',
-          mealPlan: hotelData.meal_plan_description || '',
-          taxesDescription: hotelData.taxes_description || ''
+          mealPlan: hotelData.meal_plan_description || ''
         });
 
         // Set room types data if available
         if (hotelData.room_types_data) {
           const roomData = { ...hotelData.room_types_data };
           
-          // Ensure all categories exist
           ['standard', 'deluxe', 'luxury'].forEach(category => {
             if (!roomData[category]) {
               roomData[category] = { enabled: false, hotels: [] };
             }
           });
           
-          // Process each category
           Object.keys(roomData).forEach(category => {
             if (roomData[category] && roomData[category].hotels) {
               roomData[category].hotels = roomData[category].hotels.map((hotel, index) => {
@@ -353,7 +310,6 @@ function OfflineHotels() {
                   id: hotelId,
                   roomType: hotel.roomType || hotel.room_name || '',
                   price: hotel.price || '',
-                  pricePerChild: hotel.pricePerChild || '',
                   amenities: ensureArray(hotel.amenities),
                   maxOccupancy: hotel.maxOccupancy || hotel.max_occupancy || 2,
                   bedType: hotel.bedType || hotel.bed_type || '',
@@ -542,24 +498,18 @@ function OfflineHotels() {
 
   // Remove additional image
   const removeAdditionalImage = (index) => {
-    // Check if this is an existing image (index < existingImages.length)
     if (index < existingImages.length) {
-      // Track as deleted
       setDeletedExistingImages(prev => [...prev, existingImages[index]]);
-      
-      // Remove from existing images
       const newExisting = [...existingImages];
       newExisting.splice(index, 1);
       setExistingImages(newExisting);
     } else {
-      // Remove from new files (adjust index)
       const fileIndex = index - existingImages.length;
       const newFiles = [...additionalImageFiles];
       newFiles.splice(fileIndex, 1);
       setAdditionalImageFiles(newFiles);
     }
     
-    // Remove preview
     const newPreviews = [...additionalImagePreviews];
     newPreviews.splice(index, 1);
     setAdditionalImagePreviews(newPreviews);
@@ -619,24 +569,20 @@ function OfflineHotels() {
           
           const existingImagesCount = (hotel.images || []).length;
           
-          // Create new arrays
           let newImages = [...(hotel.images || [])];
           let newImagePreviews = [...(hotel.imagePreviews || [])];
           let newImageFiles = [...(hotel.imageFiles || [])];
           let newDeletedImages = [...(hotel.deletedImages || [])];
           
           if (imageIndex < existingImagesCount) {
-            // Removing an existing database image
             const deletedImagePath = newImages[imageIndex];
             newDeletedImages.push(deletedImagePath);
             newImages.splice(imageIndex, 1);
           } else {
-            // Removing a newly uploaded image
             const fileIndex = imageIndex - existingImagesCount;
             newImageFiles.splice(fileIndex, 1);
           }
           
-          // Remove the preview at the specified index
           newImagePreviews.splice(imageIndex, 1);
           
           return {
@@ -693,7 +639,6 @@ function OfflineHotels() {
       roomType: roomType === 'standard' ? 'Standard Room' : 
                 roomType === 'deluxe' ? 'Deluxe Room With AC' : 'Luxury Suite With AC',
       price: '',
-      pricePerChild: '',
       amenities: defaultAmenities,
       maxOccupancy: 2,
       bedType: '',
@@ -747,10 +692,6 @@ function OfflineHotels() {
       setError('Please enter hotel name');
       return false;
     }
-    if (!hotelDetails.price) {
-      setError('Please enter price per adult');
-      return false;
-    }
     return true;
   };
 
@@ -771,7 +712,6 @@ function OfflineHotels() {
           const { imagePreviews, imageFiles, deletedImages, ...hotelWithoutImages } = hotel;
           return {
             ...hotelWithoutImages,
-            pricePerChild: hotel.pricePerChild || null,
             images: hotel.images || [],
             deletedImages: hotel.deletedImages || []
           };
@@ -851,14 +791,11 @@ function OfflineHotels() {
       formData.append('customAmenities', JSON.stringify(customAmenities));
       formData.append('descriptions', JSON.stringify(descriptions));
       
-      // Append deleted existing images for hotel
       formData.append('deletedExistingImages', JSON.stringify(deletedExistingImages));
       
-      // Prepare and append room types data
       const cleanedRoomData = prepareRoomTypesDataForSubmit();
       formData.append('roomTypesData', JSON.stringify(cleanedRoomData));
       
-      // Append deleted room images
       const deletedRoomImages = collectDeletedRoomImages();
       formData.append('deletedRoomImages', JSON.stringify(deletedRoomImages));
       
@@ -872,7 +809,6 @@ function OfflineHotels() {
         });
       }
       
-      // Append room images with metadata
       const roomImageFiles = collectRoomImageFiles();
       roomImageFiles.forEach((item) => {
         formData.append('roomImages', item.file);
@@ -945,10 +881,6 @@ function OfflineHotels() {
         additionalImages: [],
         rating: 0,
         totalRatings: 0,
-        price: '',
-        pricePerChild: '',
-        totalAmount: 0,
-        taxes: '',
         amenities: [],
         status: 'Available',
         freeStayForKids: false,
@@ -964,8 +896,7 @@ function OfflineHotels() {
         overview: '',
         hotelFacilities: '',
         airportTransfers: '',
-        mealPlan: '',
-        taxesDescription: ''
+        mealPlan: ''
       });
       setRoomTypesData(getDefaultRoomTypesData());
       setMainImageFile(null);
@@ -1028,7 +959,7 @@ function OfflineHotels() {
     );
   };
 
-  // Render Room Type Section
+  // Render Room Type Section - WITH price field
   const renderRoomTypeSection = (roomType, title, color) => {
     const data = roomTypesData[roomType] || { enabled: false, hotels: [] };
     
@@ -1065,7 +996,7 @@ function OfflineHotels() {
                 </div>
                 
                 <Row className="mb-3">
-                  <Col md={6}>
+                  <Col md={8}>
                     <Form.Group>
                       <Form.Label>Room Type Name <span className="text-danger">*</span></Form.Label>
                       <Form.Control
@@ -1076,37 +1007,20 @@ function OfflineHotels() {
                       />
                     </Form.Group>
                   </Col>
-                  <Col md={3}>
+                  <Col md={4}>
                     <Form.Group>
-                      <Form.Label>Room Price(₹) <span className="text-danger">*</span></Form.Label>
+                      <Form.Label>Room Price (₹) <span className="text-danger">*</span></Form.Label>
                       <InputGroup>
                         <InputGroup.Text>₹</InputGroup.Text>
                         <Form.Control
                           type="text"
-                          placeholder="1,044"
+                          placeholder="e.g., 1,044"
                           value={hotel.price || ''}
                           onChange={(e) => handleRoomHotelChange(roomType, index, 'price', e.target.value)}
                         />
                       </InputGroup>
                     </Form.Group>
                   </Col>
-                  {/* <Col md={3}>
-                    <Form.Group>
-                      <Form.Label>Price Per Child (₹)</Form.Label>
-                      <InputGroup>
-                        <InputGroup.Text>₹</InputGroup.Text>
-                        <Form.Control
-                          type="text"
-                          placeholder="Optional"
-                          value={hotel.pricePerChild || ''}
-                          onChange={(e) => handleRoomHotelChange(roomType, index, 'pricePerChild', e.target.value)}
-                        />
-                      </InputGroup>
-                      <Form.Text className="text-muted">
-                        Leave empty if children stay free
-                      </Form.Text>
-                    </Form.Group>
-                  </Col> */}
                 </Row>
 
                 <Row className="mb-3">
@@ -1211,7 +1125,6 @@ function OfflineHotels() {
                       </Form.Text>
                     </Form.Group>
                     
-                    {/* Display existing and newly uploaded room images */}
                     {(hotel.imagePreviews && hotel.imagePreviews.length > 0) && (
                       <Row className="mt-3">
                         {hotel.imagePreviews.map((preview, imgIndex) => (
@@ -1781,77 +1694,7 @@ function OfflineHotels() {
                 </Col>
               </Row>
 
-              {/* Pricing Section */}
-              <Row className="mb-3">
-                <Col md={3}>
-                  <Form.Group>
-                    <Form.Label>Price Per Adult (₹) <span className="text-danger">*</span></Form.Label>
-                    <InputGroup>
-                      <InputGroup.Text>₹</InputGroup.Text>
-                      <Form.Control
-                        type="number"
-                        name="price"
-                        placeholder="Enter price per adult"
-                        value={hotelDetails.price}
-                        onChange={handleHotelDetailChange}
-                        required
-                        min="0"
-                        step="0.01"
-                      />
-                    </InputGroup>
-                  </Form.Group>
-                </Col>
-                <Col md={3}>
-                  <Form.Group>
-                    <Form.Label>Price Per Child (₹)</Form.Label>
-                    <InputGroup>
-                      <InputGroup.Text>₹</InputGroup.Text>
-                      <Form.Control
-                        type="number"
-                        name="pricePerChild"
-                        placeholder="Enter price per child"
-                        value={hotelDetails.pricePerChild}
-                        onChange={handleHotelDetailChange}
-                        min="0"
-                        step="0.01"
-                      />
-                    </InputGroup>
-                    <Form.Text className="text-muted">
-                      Optional - Leave empty if children stay free
-                    </Form.Text>
-                  </Form.Group>
-                </Col>
-                <Col md={3}>
-                  <Form.Group>
-                    <Form.Label>Total Amount (₹)</Form.Label>
-                    <InputGroup>
-                      <InputGroup.Text>₹</InputGroup.Text>
-                      <Form.Control
-                        type="text"
-                        value={formatTotalAmount(hotelDetails.totalAmount)}
-                        readOnly
-                        className="bg-light"
-                      />
-                    </InputGroup>
-                    <Form.Text className="text-muted">
-                      Auto-calculated: (Adults × Adult Price) + (Children × Child Price)
-                    </Form.Text>
-                  </Form.Group>
-                </Col>
-                <Col md={3}>
-                  <Form.Group>
-                    <Form.Label>Taxes & Fees (₹)</Form.Label>
-                    <Form.Control
-                      type="text"
-                      name="taxes"
-                      placeholder="1,205"
-                      value={hotelDetails.taxes}
-                      onChange={handleHotelDetailChange}
-                    />
-                  </Form.Group>
-                </Col>
-              </Row>
-
+              {/* Pricing Section - Original Price and Sale Price only */}
               <Row className="mb-3">
                 <Col md={6}>
                   <Form.Group>
@@ -1940,9 +1783,6 @@ function OfflineHotels() {
                   <Nav.Item>
                     <Nav.Link eventKey="meal">Meal Plan</Nav.Link>
                   </Nav.Item>
-                  <Nav.Item>
-                    <Nav.Link eventKey="taxes">Taxes</Nav.Link>
-                  </Nav.Item>
                 </Nav>
 
                 <Tab.Content>
@@ -2001,20 +1841,6 @@ function OfflineHotels() {
                       />
                     </Form.Group>
                   </Tab.Pane>
-
-                  <Tab.Pane eventKey="taxes">
-                    <Form.Group>
-                      <Form.Label>Taxes Description</Form.Label>
-                      <Form.Control
-                        as="textarea"
-                        rows={6}
-                        name="taxesDescription"
-                        placeholder="Describe tax details: GST, service charges, city tax, resort fees, etc..."
-                        value={descriptions.taxesDescription}
-                        onChange={handleDescriptionChange}
-                      />
-                    </Form.Group>
-                  </Tab.Pane>
                 </Tab.Content>
               </Tab.Container>
             </Card.Body>
@@ -2027,7 +1853,7 @@ function OfflineHotels() {
             </Card.Header>
             <Card.Body>
               <p className="text-muted mb-4">
-                Configure room types for this hotel. Reference format: Deluxe Room Non AC with Complimentary Wi-Fi Starting @ ₹1,044
+                Configure room types for this hotel. Each room type has its own pricing.
               </p>
               
               {renderRoomTypeSection('standard', 'Standard', '#6c757d')}
