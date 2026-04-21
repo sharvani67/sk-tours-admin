@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Card, Form, Row, Col, Button, Alert, Spinner, InputGroup } from 'react-bootstrap';
 import Navbar from '../../Shared/Navbar/Navbar';
-import { indianAirports } from './airports';
 import axios from 'axios';
 import { baseurl } from '../../Api/Baseurl';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -11,8 +10,6 @@ import "./OfflineFlights.css"
 
 function OfflineFlights() {
   const [bookingType, setBookingType] = useState('oneWay');
-  const [selectedFromAirport, setSelectedFromAirport] = useState('');
-  const [selectedToAirport, setSelectedToAirport] = useState('');
   const [loading, setLoading] = useState(false);
   const [fetchLoading, setFetchLoading] = useState(false);
   const [error, setError] = useState('');
@@ -23,20 +20,13 @@ function OfflineFlights() {
   // Date picker states
   const [departureDate, setDepartureDate] = useState(null);
   const [returnDate, setReturnDate] = useState(null);
-  
-  // Get unique cities from airports
-  const indianCities = [...new Set(indianAirports.map(airport => airport.city))].sort();
-  
-  const getAirportsByCity = (city) => {
-    return indianAirports.filter(airport => airport.city === city);
-  };
 
   const [flightDetails, setFlightDetails] = useState({
-    fromCountry: 'IN',
+    fromCountry: '',
     fromCity: '',
     fromAirport: '',
     fromAirportCode: '',
-    toCountry: 'IN',
+    toCountry: '',
     toCity: '',
     toAirport: '',
     toAirportCode: '',
@@ -103,11 +93,11 @@ function OfflineFlights() {
           : 0;
         
         setFlightDetails({
-          fromCountry: 'IN',
+          fromCountry: flightData.from_country || '',
           fromCity: flightData.from_city || '',
           fromAirport: flightData.from_airport || '',
           fromAirportCode: flightData.from_airport_code || '',
-          toCountry: 'IN',
+          toCountry: flightData.to_country || '',
           toCity: flightData.to_city || '',
           toAirport: flightData.to_airport || '',
           toAirportCode: flightData.to_airport_code || '',
@@ -129,9 +119,6 @@ function OfflineFlights() {
           pricePerChild: flightData.price_per_child || '',
           totalAmount: totalAmount,
         });
-
-        setSelectedFromAirport(flightData.from_airport_code || '');
-        setSelectedToAirport(flightData.to_airport_code || '');
       }
     } catch (err) {
       console.error('Error fetching flight data:', err);
@@ -142,20 +129,36 @@ function OfflineFlights() {
   };
 
   const validateForm = () => {
+    if (!flightDetails.fromCountry) {
+      setError('Please enter departure country');
+      return false;
+    }
     if (!flightDetails.fromCity) {
-      setError('Please select departure city');
+      setError('Please enter departure city');
+      return false;
+    }
+    if (!flightDetails.fromAirport) {
+      setError('Please enter departure airport');
       return false;
     }
     if (!flightDetails.fromAirportCode) {
-      setError('Please select departure airport');
+      setError('Please enter departure airport code');
+      return false;
+    }
+    if (!flightDetails.toCountry) {
+      setError('Please enter arrival country');
       return false;
     }
     if (!flightDetails.toCity) {
-      setError('Please select arrival city');
+      setError('Please enter arrival city');
+      return false;
+    }
+    if (!flightDetails.toAirport) {
+      setError('Please enter arrival airport');
       return false;
     }
     if (!flightDetails.toAirportCode) {
-      setError('Please select arrival airport');
+      setError('Please enter arrival airport code');
       return false;
     }
     if (!departureDate) {
@@ -187,54 +190,6 @@ function OfflineFlights() {
       ...prev,
       [name]: type === 'checkbox' ? checked : value
     }));
-  };
-
-  const handleFromCityChange = (e) => {
-    const city = e.target.value;
-    setFlightDetails(prev => ({
-      ...prev,
-      fromCity: city,
-      fromAirport: '',
-      fromAirportCode: ''
-    }));
-    setSelectedFromAirport('');
-  };
-
-  const handleToCityChange = (e) => {
-    const city = e.target.value;
-    setFlightDetails(prev => ({
-      ...prev,
-      toCity: city,
-      toAirport: '',
-      toAirportCode: ''
-    }));
-    setSelectedToAirport('');
-  };
-
-  const handleFromAirportChange = (e) => {
-    const airportCode = e.target.value;
-    const selectedAirport = indianAirports.find(airport => airport.code === airportCode);
-    if (selectedAirport) {
-      setFlightDetails(prev => ({
-        ...prev,
-        fromAirport: selectedAirport.airport,
-        fromAirportCode: selectedAirport.code
-      }));
-      setSelectedFromAirport(airportCode);
-    }
-  };
-
-  const handleToAirportChange = (e) => {
-    const airportCode = e.target.value;
-    const selectedAirport = indianAirports.find(airport => airport.code === airportCode);
-    if (selectedAirport) {
-      setFlightDetails(prev => ({
-        ...prev,
-        toAirport: selectedAirport.airport,
-        toAirportCode: selectedAirport.code
-      }));
-      setSelectedToAirport(airportCode);
-    }
   };
 
   const handleTravellerChange = (type, operation) => {
@@ -331,16 +286,14 @@ function OfflineFlights() {
 
   const resetForm = () => {
     setBookingType('oneWay');
-    setSelectedFromAirport('');
-    setSelectedToAirport('');
     setDepartureDate(null);
     setReturnDate(null);
     setFlightDetails({
-      fromCountry: 'IN',
+      fromCountry: '',
       fromCity: '',
       fromAirport: '',
       fromAirportCode: '',
-      toCountry: 'IN',
+      toCountry: '',
       toCity: '',
       toAirport: '',
       toAirportCode: '',
@@ -444,47 +397,56 @@ function OfflineFlights() {
 
               {/* From Section */}
               <Row className="mb-3">
-                <Col md={5}>
+                <Col md={3}>
                   <Form.Group>
-                    <Form.Label>From City <span className="text-danger">*</span></Form.Label>
-                    <Form.Select
-                      value={flightDetails.fromCity}
-                      onChange={handleFromCityChange}
+                    <Form.Label>From Country <span className="text-danger">*</span></Form.Label>
+                    <Form.Control
+                      type="text"
+                      name="fromCountry"
+                      placeholder="e.g., India, USA, UAE"
+                      value={flightDetails.fromCountry}
+                      onChange={handleFlightDetailChange}
                       required
-                    >
-                      <option value="">Select City</option>
-                      {indianCities.map(city => (
-                        <option key={city} value={city}>{city}</option>
-                      ))}
-                    </Form.Select>
+                    />
                   </Form.Group>
                 </Col>
-                <Col md={5}>
+                <Col md={3}>
                   <Form.Group>
-                    <Form.Label>Airport <span className="text-danger">*</span></Form.Label>
-                    <Form.Select
-                      value={selectedFromAirport}
-                      onChange={handleFromAirportChange}
-                      disabled={!flightDetails.fromCity}
+                    <Form.Label>From City <span className="text-danger">*</span></Form.Label>
+                    <Form.Control
+                      type="text"
+                      name="fromCity"
+                      placeholder="e.g., Mumbai, Dubai, New York"
+                      value={flightDetails.fromCity}
+                      onChange={handleFlightDetailChange}
                       required
-                    >
-                      <option value="">Select Airport</option>
-                      {flightDetails.fromCity && getAirportsByCity(flightDetails.fromCity).map(airport => (
-                        <option key={airport.code} value={airport.code}>
-                          {airport.airport} ({airport.code})
-                        </option>
-                      ))}
-                    </Form.Select>
+                    />
+                  </Form.Group>
+                </Col>
+                <Col md={4}>
+                  <Form.Group>
+                    <Form.Label>Airport Name <span className="text-danger">*</span></Form.Label>
+                    <Form.Control
+                      type="text"
+                      name="fromAirport"
+                      placeholder="e.g., Chhatrapati Shivaji International Airport"
+                      value={flightDetails.fromAirport}
+                      onChange={handleFlightDetailChange}
+                      required
+                    />
                   </Form.Group>
                 </Col>
                 <Col md={2}>
                   <Form.Group>
-                    <Form.Label>Airport Code</Form.Label>
+                    <Form.Label>Airport Code <span className="text-danger">*</span></Form.Label>
                     <Form.Control
                       type="text"
+                      name="fromAirportCode"
+                      placeholder="e.g., BOM"
                       value={flightDetails.fromAirportCode}
-                      readOnly
-                      placeholder="Auto-filled"
+                      onChange={handleFlightDetailChange}
+                      required
+                      style={{ textTransform: 'uppercase' }}
                     />
                   </Form.Group>
                 </Col>
@@ -492,47 +454,56 @@ function OfflineFlights() {
 
               {/* To Section */}
               <Row className="mb-3">
-                <Col md={5}>
+                <Col md={3}>
                   <Form.Group>
-                    <Form.Label>To City <span className="text-danger">*</span></Form.Label>
-                    <Form.Select
-                      value={flightDetails.toCity}
-                      onChange={handleToCityChange}
+                    <Form.Label>To Country <span className="text-danger">*</span></Form.Label>
+                    <Form.Control
+                      type="text"
+                      name="toCountry"
+                      placeholder="e.g., India, USA, UAE"
+                      value={flightDetails.toCountry}
+                      onChange={handleFlightDetailChange}
                       required
-                    >
-                      <option value="">Select City</option>
-                      {indianCities.map(city => (
-                        <option key={city} value={city}>{city}</option>
-                      ))}
-                    </Form.Select>
+                    />
                   </Form.Group>
                 </Col>
-                <Col md={5}>
+                <Col md={3}>
                   <Form.Group>
-                    <Form.Label>Airport <span className="text-danger">*</span></Form.Label>
-                    <Form.Select
-                      value={selectedToAirport}
-                      onChange={handleToAirportChange}
-                      disabled={!flightDetails.toCity}
+                    <Form.Label>To City <span className="text-danger">*</span></Form.Label>
+                    <Form.Control
+                      type="text"
+                      name="toCity"
+                      placeholder="e.g., Delhi, London, Singapore"
+                      value={flightDetails.toCity}
+                      onChange={handleFlightDetailChange}
                       required
-                    >
-                      <option value="">Select Airport</option>
-                      {flightDetails.toCity && getAirportsByCity(flightDetails.toCity).map(airport => (
-                        <option key={airport.code} value={airport.code}>
-                          {airport.airport} ({airport.code})
-                        </option>
-                      ))}
-                    </Form.Select>
+                    />
+                  </Form.Group>
+                </Col>
+                <Col md={4}>
+                  <Form.Group>
+                    <Form.Label>Airport Name <span className="text-danger">*</span></Form.Label>
+                    <Form.Control
+                      type="text"
+                      name="toAirport"
+                      placeholder="e.g., Indira Gandhi International Airport"
+                      value={flightDetails.toAirport}
+                      onChange={handleFlightDetailChange}
+                      required
+                    />
                   </Form.Group>
                 </Col>
                 <Col md={2}>
                   <Form.Group>
-                    <Form.Label>Airport Code</Form.Label>
+                    <Form.Label>Airport Code <span className="text-danger">*</span></Form.Label>
                     <Form.Control
                       type="text"
+                      name="toAirportCode"
+                      placeholder="e.g., DEL"
                       value={flightDetails.toAirportCode}
-                      readOnly
-                      placeholder="Auto-filled"
+                      onChange={handleFlightDetailChange}
+                      required
+                      style={{ textTransform: 'uppercase' }}
                     />
                   </Form.Group>
                 </Col>
