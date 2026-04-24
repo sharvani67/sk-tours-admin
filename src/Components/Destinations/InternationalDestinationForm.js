@@ -86,18 +86,16 @@ const AddInternationalDestination = () => {
 
     // Validation
     if (!formData.name.trim()) {
-      setError("Destination name is required");
+      alert("Destination name is required");
       return;
     }
     if (!formData.country_id) {
-      setError("Please select an international country");
+      alert("Please select an international country");
       return;
     }
 
     try {
       setLoading(true);
-      setError('');
-      setSuccess('');
 
       const url = isEditMode 
         ? `${baseurl}/api/destinations/${id}`
@@ -116,22 +114,21 @@ const AddInternationalDestination = () => {
       const result = await response.json();
 
       if (response.ok) {
-        const message = isEditMode 
-          ? "International destination updated successfully!" 
-          : "International destination added successfully!";
+        if (isEditMode) {
+          alert("International destination updated successfully!");
+        } else {
+          alert("International destination added successfully!");
+        }
         
-        setSuccess(message);
-
-        setTimeout(() => {
-          navigate('/intl-destinations');
-        }, 1500);
+        navigate('/intl-destinations');
       } else {
-        setError(result.message || result.error || 
-          (isEditMode ? "Failed to update destination" : "Failed to add destination"));
+        const errorMsg = result.message || result.error || 
+          (isEditMode ? "Failed to update destination" : "Failed to add destination");
+        alert(errorMsg);
       }
     } catch (err) {
       console.error("Save destination error:", err);
-      setError(`Error ${isEditMode ? 'updating' : 'adding'} destination. Please try again.`);
+      alert(`Error ${isEditMode ? 'updating' : 'adding'} destination. Please try again.`);
     } finally {
       setLoading(false);
     }

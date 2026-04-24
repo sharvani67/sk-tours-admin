@@ -92,23 +92,21 @@ const AddDestination = () => {
 
   const handleBack = () => navigate('/destinations');
 
-  const handleSubmit = async (e) => {
+const handleSubmit = async (e) => {
     e.preventDefault();
 
     // Validation
     if (!formData.name.trim()) {
-      setError("Destination name is required");
+      alert("Destination name is required");
       return;
     }
     if (!formData.country_id) {
-      setError("Please select a country");
+      alert("Please select a country");
       return;
     }
 
     try {
       setLoading(true);
-      setError('');
-      setSuccess('');
 
       const url = isEditMode 
         ? `${baseurl}/api/destinations/${id}`
@@ -127,22 +125,21 @@ const AddDestination = () => {
       const result = await response.json();
 
       if (response.ok) {
-        const message = isEditMode 
-          ? "Destination updated successfully!" 
-          : "Destination added successfully!";
+        if (isEditMode) {
+          alert("Destination updated successfully!");
+        } else {
+          alert("Destination added successfully!");
+        }
         
-        setSuccess(message);
-
-        setTimeout(() => {
-          navigate('/destinations');
-        }, 1500);
+        navigate('/destinations');
       } else {
-        setError(result.message || result.error || 
-          (isEditMode ? "Failed to update destination" : "Failed to add destination"));
+        const errorMsg = result.message || result.error || 
+          (isEditMode ? "Failed to update destination" : "Failed to add destination");
+        alert(errorMsg);
       }
     } catch (err) {
       console.error("Save destination error:", err);
-      setError(`Error ${isEditMode ? 'updating' : 'adding'} destination. Please try again.`);
+      alert(`Error ${isEditMode ? 'updating' : 'adding'} destination. Please try again.`);
     } finally {
       setLoading(false);
     }

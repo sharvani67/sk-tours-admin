@@ -5,54 +5,6 @@ import axios from 'axios';
 import { baseurl } from '../../Api/Baseurl';
 import { useNavigate, useParams } from 'react-router-dom';
 
-// Country data for dropdown
-const countries = [
-  { id: 1, name: 'India', code: 'IN' },
-  { id: 2, name: 'United Arab Emirates', code: 'AE' },
-  { id: 3, name: 'Thailand', code: 'TH' },
-  { id: 4, name: 'Singapore', code: 'SG' },
-  { id: 5, name: 'Malaysia', code: 'MY' },
-  { id: 6, name: 'Indonesia', code: 'ID' },
-  { id: 7, name: 'Sri Lanka', code: 'LK' },
-  { id: 8, name: 'Maldives', code: 'MV' },
-  { id: 9, name: 'Nepal', code: 'NP' },
-  { id: 10, name: 'Bhutan', code: 'BT' },
-  { id: 11, name: 'Bangladesh', code: 'BD' },
-  { id: 12, name: 'Myanmar', code: 'MM' },
-  { id: 13, name: 'Vietnam', code: 'VN' },
-  { id: 14, name: 'Cambodia', code: 'KH' },
-  { id: 15, name: 'Laos', code: 'LA' },
-  { id: 16, name: 'Philippines', code: 'PH' },
-  { id: 17, name: 'China', code: 'CN' },
-  { id: 18, name: 'Japan', code: 'JP' },
-  { id: 19, name: 'South Korea', code: 'KR' },
-  { id: 20, name: 'Turkey', code: 'TR' },
-  { id: 21, name: 'Egypt', code: 'EG' },
-  { id: 22, name: 'South Africa', code: 'ZA' },
-  { id: 23, name: 'Kenya', code: 'KE' },
-  { id: 24, name: 'Mauritius', code: 'MU' },
-  { id: 25, name: 'Seychelles', code: 'SC' },
-  { id: 26, name: 'United Kingdom', code: 'GB' },
-  { id: 27, name: 'France', code: 'FR' },
-  { id: 28, name: 'Italy', code: 'IT' },
-  { id: 29, name: 'Spain', code: 'ES' },
-  { id: 30, name: 'Switzerland', code: 'CH' },
-  { id: 31, name: 'Germany', code: 'DE' },
-  { id: 32, name: 'Netherlands', code: 'NL' },
-  { id: 33, name: 'Greece', code: 'GR' },
-  { id: 34, name: 'Portugal', code: 'PT' },
-  { id: 35, name: 'Austria', code: 'AT' },
-  { id: 36, name: 'United States', code: 'US' },
-  { id: 37, name: 'Canada', code: 'CA' },
-  { id: 38, name: 'Mexico', code: 'MX' },
-  { id: 39, name: 'Brazil', code: 'BR' },
-  { id: 40, name: 'Argentina', code: 'AR' },
-  { id: 41, name: 'Australia', code: 'AU' },
-  { id: 42, name: 'New Zealand', code: 'NZ' },
-  { id: 43, name: 'Fiji', code: 'FJ' },
-  { id: 44, name: 'Russia', code: 'RU' }
-];
-
 // Predefined Amenities
 const COMMON_AMENITIES = [
   'Free WiFi', 'Air Conditioning', 'TV', 'Room Service', 'Wardrobe'
@@ -673,7 +625,7 @@ function OfflineHotels() {
   // Validation function
   const validateForm = () => {
     if (!searchDetails.country) {
-      setError('Please select a country');
+      setError('Please enter a country');
       return false;
     }
     if (!searchDetails.city) {
@@ -1226,19 +1178,17 @@ function OfflineHotels() {
                 <Col md={6}>
                   <Form.Group>
                     <Form.Label>Country <span className="text-danger">*</span></Form.Label>
-                    <Form.Select
+                    <Form.Control
+                      type="text"
                       name="country"
+                      placeholder="e.g., India, United States, UAE"
                       value={searchDetails.country}
                       onChange={handleSearchChange}
                       required
-                    >
-                      <option value="">Select Country</option>
-                      {countries.map(country => (
-                        <option key={country.id} value={country.name}>
-                          {country.name}
-                        </option>
-                      ))}
-                    </Form.Select>
+                    />
+                    <Form.Text className="text-muted">
+                      Enter country name manually
+                    </Form.Text>
                   </Form.Group>
                 </Col>
                 <Col md={6}>
@@ -1290,6 +1240,21 @@ function OfflineHotels() {
                       value={searchDetails.checkOutDate}
                       onChange={handleSearchChange}
                       required
+                    />
+                  </Form.Group>
+                </Col>
+              </Row>
+
+              <Row className="mb-3">
+                <Col md={6}>
+                  <Form.Group>
+                    <Form.Label>Specific Location (Optional)</Form.Label>
+                    <Form.Control
+                      type="text"
+                      name="location"
+                      placeholder="e.g., Near Beach, Downtown"
+                      value={searchDetails.location}
+                      onChange={handleSearchChange}
                     />
                   </Form.Group>
                 </Col>

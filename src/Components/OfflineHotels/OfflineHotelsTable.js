@@ -137,8 +137,13 @@ const OfflineHotelsTable = () => {
 
   // Format price with currency
   const formatPrice = (price) => {
-    if (!price) return '—';
-    const numericPrice = typeof price === 'string' ? parseFloat(price.replace(/,/g, '')) : price;
+    if (!price && price !== 0) return '—';
+    
+    // Remove commas and parse as float
+    const numericPrice = typeof price === 'string' 
+      ? parseFloat(price.replace(/,/g, '')) 
+      : price;
+    
     if (isNaN(numericPrice)) return price;
     
     return new Intl.NumberFormat('en-IN', {
@@ -201,24 +206,42 @@ const OfflineHotelsTable = () => {
       style: { textAlign: 'center', minWidth: '100px' }
     },
     {
-      key: 'price',
-      title: 'Price/Night',
-      render: (item) => (
-        <div>
-          <span className="fw-bold text-success">
-            {formatPrice(item.price)}
-          </span>
-          {item.sale_price && (
-            <div>
-              <small className="text-muted text-decoration-line-through">
+      key: 'pricing',
+      title: 'Pricing',
+      render: (item) => {
+        const hasSalePrice = item.sale_price && item.sale_price !== '';
+        const hasOriginalPrice = item.original_price && item.original_price !== '';
+        
+        return (
+          <div>
+            {hasSalePrice ? (
+              <span className="fw-bold text-success">
+                {formatPrice(item.sale_price)}
+              </span>
+            ) : hasOriginalPrice ? (
+              <span className="fw-bold text-success">
                 {formatPrice(item.original_price)}
-              </small>
-              <span className="badge bg-danger ms-1">Sale</span>
-            </div>
-          )}
-        </div>
-      ),
-      style: { textAlign: 'right', fontWeight: 'bold' }
+              </span>
+            ) : (
+              <span className="text-muted">—</span>
+            )}
+            
+            {hasSalePrice && hasOriginalPrice && (
+              <div>
+                <small className="text-muted text-decoration-line-through">
+                  {formatPrice(item.original_price)}
+                </small>
+                <span className="badge bg-danger ms-1">Sale</span>
+              </div>
+            )}
+            
+            {item.limited_time_sale === 1 && (
+              <span className="badge bg-warning text-dark mt-1">Limited Time</span>
+            )}
+          </div>
+        );
+      },
+      style: { textAlign: 'right', minWidth: '130px' }
     },
     {
       key: 'rooms',

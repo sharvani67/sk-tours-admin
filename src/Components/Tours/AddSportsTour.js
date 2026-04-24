@@ -1813,15 +1813,33 @@ useEffect(() => {
 }, [replacementPreview]);
 
 
- const handleSaveClick = () => {
+const handleSaveClick = () => {
   if (isLastTab) {
-    if (isEditMode) {
-      updateTour();
-    } else {
-      createTour();
+    // This is the "Save All" / "Update All" button
+    const message = isEditMode 
+      ? 'Are you sure you want to update this sports tour with all changes?'
+      : 'Are you sure you want to save this sports tour and all its details?';
+    
+    if (window.confirm(message)) {
+      if (isEditMode) {
+        updateTour();
+      } else {
+        createTour();
+      }
     }
   } else {
-    goNext();
+    // This is "Save & Continue" button
+    const message = isEditMode
+      ? 'Save current tab changes and continue to next tab?'
+      : 'Save current tab and continue to next tab?';
+    
+    if (window.confirm(message)) {
+      goNext();
+      setSuccess(`${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} saved successfully!`);
+      
+      // Clear success message after 3 seconds
+      setTimeout(() => setSuccess(''), 3000);
+    }
   }
 };
 

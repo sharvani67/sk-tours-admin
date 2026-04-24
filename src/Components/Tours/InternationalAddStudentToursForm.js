@@ -750,33 +750,53 @@ const handleTouristVisaRemarksChange = (e) => {
 
 
 // Edit Tourist Visa
+// Replace the existing editTouristVisa function with this:
 const editTouristVisa = (idx) => {
   const item = touristVisaItems[idx];
   setTouristVisaForm({ description: item.description });
-  setTouristVisaItems(prev => prev.filter((_, i) => i !== idx));
+  setEditingItem(item);
+  setEditingType('touristVisa');
+  setEditIndex(idx);
+  setEditingVisaItemId(idx);
 };
 
+
 // Edit Transit Visa
+
+// Replace the existing editTransitVisa function with this:
 const editTransitVisa = (idx) => {
   const item = transitVisaItems[idx];
   setTransitVisaForm({ description: item.description });
-  setTransitVisaItems(prev => prev.filter((_, i) => i !== idx));
+  setEditingItem(item);
+  setEditingType('transitVisa');
+  setEditIndex(idx);
+  setEditingVisaItemId(idx);
 };
 
+
 // Edit Business Visa
+
+// Replace the existing editBusinessVisa function with this:
 const editBusinessVisa = (idx) => {
   const item = businessVisaItems[idx];
   setBusinessVisaForm({ description: item.description });
-  setBusinessVisaItems(prev => prev.filter((_, i) => i !== idx));
+  setEditingItem(item);
+  setEditingType('businessVisa');
+  setEditIndex(idx);
+  setEditingVisaItemId(idx);
 };
 
 // Edit Photo
+
+// Replace the existing editPhoto function with this:
 const editPhoto = (idx) => {
   const item = photoItems[idx];
   setPhotoForm({ description: item.description });
-  setPhotoItems(prev => prev.filter((_, i) => i !== idx));
+  setEditingItem(item);
+  setEditingType('photo');
+  setEditIndex(idx);
+  setEditingVisaItemId(idx);
 };
-
 
 // Edit Visa Form Item
 const editVisaFormItem = (index) => {
@@ -873,41 +893,79 @@ const handleVisaFormFileChangeWithEdit = async (index, action, file) => {
 
 
 // Add Tourist Visa
+// Replace the existing addTouristVisa function with this:
 const addTouristVisa = () => {
   const trimmed = touristVisaForm.description.trim();
   if (!trimmed) return;
   
-  setTouristVisaItems(prev => [...prev, { description: trimmed }]);
+  if (editingType === 'touristVisa' && editIndex !== -1) {
+    const updated = [...touristVisaItems];
+    updated[editIndex] = { description: trimmed };
+    setTouristVisaItems(updated);
+  } else {
+    setTouristVisaItems(prev => [...prev, { description: trimmed }]);
+  }
+  
   setTouristVisaForm({ description: '' });
+  resetEditing();
 };
 
 // Add Transit Visa
+
+// Replace the existing addTransitVisa function with this:
 const addTransitVisa = () => {
   const trimmed = transitVisaForm.description.trim();
   if (!trimmed) return;
   
-  setTransitVisaItems(prev => [...prev, { description: trimmed }]);
+  if (editingType === 'transitVisa' && editIndex !== -1) {
+    const updated = [...transitVisaItems];
+    updated[editIndex] = { description: trimmed };
+    setTransitVisaItems(updated);
+  } else {
+    setTransitVisaItems(prev => [...prev, { description: trimmed }]);
+  }
+  
   setTransitVisaForm({ description: '' });
+  resetEditing();
 };
 
 // Add Business Visa
+
+// Replace the existing addBusinessVisa function with this:
 const addBusinessVisa = () => {
   const trimmed = businessVisaForm.description.trim();
   if (!trimmed) return;
   
-  setBusinessVisaItems(prev => [...prev, { description: trimmed }]);
+  if (editingType === 'businessVisa' && editIndex !== -1) {
+    const updated = [...businessVisaItems];
+    updated[editIndex] = { description: trimmed };
+    setBusinessVisaItems(updated);
+  } else {
+    setBusinessVisaItems(prev => [...prev, { description: trimmed }]);
+  }
+  
   setBusinessVisaForm({ description: '' });
+  resetEditing();
 };
 
 // Add Photo
+
+// Replace the existing addPhoto function with this:
 const addPhoto = () => {
   const trimmed = photoForm.description.trim();
   if (!trimmed) return;
   
-  setPhotoItems(prev => [...prev, { description: trimmed }]);
+  if (editingType === 'photo' && editIndex !== -1) {
+    const updated = [...photoItems];
+    updated[editIndex] = { description: trimmed };
+    setPhotoItems(updated);
+  } else {
+    setPhotoItems(prev => [...prev, { description: trimmed }]);
+  }
+  
   setPhotoForm({ description: '' });
+  resetEditing();
 };
-
 
 // Remove Tourist Visa
 const removeTouristVisa = (idx) => {
@@ -1017,33 +1075,52 @@ const handleSubmissionChange = (index, field, value) => {
     setTransportItem(prev => ({ ...prev, [name]: value }));
   };
 
-  const addTransportRow = () => {
-    if (!transportItem.airline || !transportItem.flight_no || !transportItem.from_city || !transportItem.to_city) {
-      return;
-    }
+// Replace the existing addTransportRow function with this:
+const addTransportRow = () => {
+  if (!transportItem.airline || !transportItem.flight_no || !transportItem.from_city || !transportItem.to_city) {
+    return;
+  }
 
-    setTransports(prev => [...prev, { ...transportItem, sort_order: prev.length + 1 }]);
+  if (editingTransportIndex !== -1) {
+    // Update existing transport
+    const updatedTransports = [...transports];
+    updatedTransports[editingTransportIndex] = { ...transportItem };
+    setTransports(updatedTransports);
+    setEditingTransportIndex(-1);
+    setSuccess('Transport updated successfully');
+  } else {
+    // Add new transport
+    setTransports(prev => [...prev, { 
+      ...transportItem, 
+      sort_order: prev.length + 1 
+    }]);
+    setSuccess('Transport added successfully');
+  }
 
-    setTransportItem({
-      description: '',
-      airline: '',
-      flight_no: '',
-      from_city: '',
-      from_date: '',
-      from_time: '',
-      to_city: '',
-      to_date: '',
-      to_time: '',
-      via: '',
-      sort_order: transports.length + 2
-    });
-  };
+  // Reset form
+  setTransportItem({
+    description: '',
+    airline: '',
+    flight_no: '',
+    from_city: '',
+    from_date: '',
+    from_time: '',
+    to_city: '',
+    to_date: '',
+    to_time: '',
+    via: '',
+    sort_order: transports.length + 1
+  });
+};
 
-  const editTransportRow = (idx) => {
-    const item = transports[idx];
-    setTransportItem(item);
-    setTransports(prev => prev.filter((_, i) => i !== idx));
-  };
+// Replace the existing editTransportRow function with this:
+const editTransportRow = (idx) => {
+  const item = transports[idx];
+  setTransportItem(item);
+  setEditingTransportIndex(idx); // Set editing index instead of removing
+};
+
+
 
 const removeTransportRow = (idx) => {
   const confirmDelete = window.confirm('Are you sure you want to remove this transport?');
@@ -1059,23 +1136,42 @@ const removeTransportRow = (idx) => {
   const [poiAmount, setPoiAmount] = useState("");
   const [bookingPois, setBookingPois] = useState([]);
 
-  const addPoi = () => {
-    const txt = poiText.trim();
-    if (!txt) return;
+  // Replace the existing addPoi function with this:
+const addPoi = () => {
+  const txt = poiText.trim();
+  if (!txt) return;
+  
+  if (editingBookingPoiIndex !== -1) {
+    // Update existing booking POI
+    const updatedPois = [...bookingPois];
+    updatedPois[editingBookingPoiIndex] = { 
+      item: poiText, 
+      amount_details: poiAmount, 
+      sort_order: editingBookingPoiIndex + 1 
+    };
+    setBookingPois(updatedPois);
+    setEditingBookingPoiIndex(-1);
+    setSuccess('Booking policy updated successfully');
+  } else {
+    // Add new booking POI
     setBookingPois([
       ...bookingPois,
       { item: poiText, amount_details: poiAmount, sort_order: bookingPois.length + 1 }
     ]);
-    setPoiText('');
-    setPoiAmount("");
-  };
+    setSuccess('Booking policy added successfully');
+  }
+  
+  setPoiText('');
+  setPoiAmount("");
+};
 
-  const editPoi = (idx) => {
-    const poi = bookingPois[idx];
-    setPoiText(poi.item);
-    setPoiAmount(poi.amount_details);
-    setBookingPois(prev => prev.filter((_, i) => i !== idx));
-  };
+ // Replace the existing editPoi function with this:
+const editPoi = (idx) => {
+  const poi = bookingPois[idx];
+  setPoiText(poi.item);
+  setPoiAmount(poi.amount_details);
+  setEditingBookingPoiIndex(idx); // Set editing index instead of removing
+};
 
 const removePoi = (idx) => {
   const confirmDelete = window.confirm('Are you sure you want to remove this booking POI?');
@@ -1100,17 +1196,35 @@ const removePoi = (idx) => {
     setCancelItem(prev => ({ ...prev, [name]: value }));
   };
 
-  const addCancelRow = () => {
-    if (!cancelItem.cancellation_policy.trim()) return;
+ // Replace the existing addCancelRow function with this:
+const addCancelRow = () => {
+  if (!cancelItem.cancellation_policy.trim()) return;
+  
+  if (editingCancellationIndex !== -1) {
+    // Update existing cancellation policy
+    const updatedPolicies = [...cancelPolicies];
+    updatedPolicies[editingCancellationIndex] = { 
+      ...cancelItem, 
+      sort_order: editingCancellationIndex + 1 
+    };
+    setCancelPolicies(updatedPolicies);
+    setEditingCancellationIndex(-1);
+    setSuccess('Cancellation policy updated successfully');
+  } else {
+    // Add new cancellation policy
     setCancelPolicies(prev => [...prev, { ...cancelItem, sort_order: prev.length + 1 }]);
-    setCancelItem({ cancellation_policy: "", charges: "", sort_order: cancelPolicies.length + 2 });
-  };
+    setSuccess('Cancellation policy added successfully');
+  }
+  
+  setCancelItem({ cancellation_policy: "", charges: "", sort_order: cancelPolicies.length + 2 });
+};
 
-  const editCancelRow = (idx) => {
-    const policy = cancelPolicies[idx];
-    setCancelItem(policy);
-    setCancelPolicies(prev => prev.filter((_, i) => i !== idx));
-  };
+  // Replace the existing editCancelRow function with this:
+const editCancelRow = (idx) => {
+  const policy = cancelPolicies[idx];
+  setCancelItem(policy);
+  setEditingCancellationIndex(idx); // Set editing index instead of removing
+};
 
 const removeCancelRow = (idx) => {
   const confirmDelete = window.confirm('Are you sure you want to remove this cancellation policy?');
@@ -1194,18 +1308,34 @@ useEffect(() => {
   const [instructionText, setInstructionText] = useState('');
   const [instructions, setInstructions] = useState([]);
 
-  const addInstruction = () => {
-    const txt = instructionText.trim();
-    if (!txt) return;
+ // Replace the existing addInstruction function with this:
+const addInstruction = () => {
+  const txt = instructionText.trim();
+  if (!txt) return;
+  
+  if (editingInstructionIndex !== -1) {
+    // Update existing instruction
+    const updatedInstructions = [...instructions];
+    updatedInstructions[editingInstructionIndex] = txt;
+    setInstructions(updatedInstructions);
+    setEditingInstructionIndex(-1);
+    setSuccess('Instruction updated successfully');
+  } else {
+    // Add new instruction
     setInstructions(prev => [...prev, txt]);
-    setInstructionText('');
-  };
+    setSuccess('Instruction added successfully');
+  }
+  
+  setInstructionText('');
+};
 
-  const editInstruction = (idx) => {
-    const instruction = instructions[idx];
-    setInstructionText(instruction);
-    setInstructions(prev => prev.filter((_, i) => i !== idx));
-  };
+  // Replace the existing editInstruction function with this:
+const editInstruction = (idx) => {
+  const instruction = instructions[idx];
+  setInstructionText(instruction);
+  setEditingInstructionIndex(idx); // Set editing index instead of removing
+};
+
 
  const removeInstruction = (idx) => {
   const confirmDelete = window.confirm('Are you sure you want to remove this instruction?');
