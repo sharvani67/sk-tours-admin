@@ -61,19 +61,17 @@ const AddInternationalCountry = () => {
 
   const handleBack = () => navigate('/intl-countries');
 
-  const   handleSubmit = async (e) => {
+ const handleSubmit = async (e) => {
     e.preventDefault();
 
     // Basic validation
     if (!formData.name.trim()) {
-      setError("Country name is required");
+      alert("Country name is required");
       return;
     }
 
     try {
       setLoading(true);
-      setError('');
-      setSuccess('');
 
       const url = isEditMode 
         ? `${baseurl}/api/countries/${id}`
@@ -95,22 +93,21 @@ const AddInternationalCountry = () => {
       const result = await response.json();
 
       if (response.ok) {
-        const message = isEditMode 
-          ? "International country updated successfully!" 
-          : "International country added successfully!";
+        if (isEditMode) {
+          alert("International country updated successfully!");
+        } else {
+          alert("International country added successfully!");
+        }
         
-        setSuccess(message);
-
-        setTimeout(() => {
-          navigate('/intl-countries');
-        }, 1500);
+        navigate('/intl-countries');
       } else {
-        setError(result.message || result.error || 
-          (isEditMode ? "Failed to update country" : "Failed to add country"));
+        const errorMsg = result.message || result.error || 
+          (isEditMode ? "Failed to update country" : "Failed to add country");
+        alert(errorMsg);
       }
     } catch (err) {
       console.error("Save country error:", err);
-      setError(`Error ${isEditMode ? 'updating' : 'adding'} country. Please try again.`);
+      alert(`Error ${isEditMode ? 'updating' : 'adding'} country. Please try again.`);
     } finally {
       setLoading(false);
     }

@@ -1680,19 +1680,37 @@ if (imageFiles.length > 0) {
     }
   };
 
-  const handleSaveClick = () => {
-    autoAddBeforeNext();
+ const handleSaveClick = () => {
+  autoAddBeforeNext();
 
-    if (isLastTab) {
+  if (isLastTab) {
+    // This is the "Save All" / "Update All" button
+    const message = isEditMode 
+      ? 'Are you sure you want to update this honeymoon tour with all changes?'
+      : 'Are you sure you want to save this honeymoon tour and all its details?';
+    
+    if (window.confirm(message)) {
       if (isEditMode) {
         updateTour();
       } else {
         createTour();
       }
-    } else {
-      goNext();
     }
-  };
+  } else {
+    // This is "Save & Continue" button
+    const message = isEditMode
+      ? 'Save current tab changes and continue to next tab?'
+      : 'Save current tab and continue to next tab?';
+    
+    if (window.confirm(message)) {
+      goNext();
+      setSuccess(`${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} saved successfully!`);
+      
+      // Clear success message after 3 seconds
+      setTimeout(() => setSuccess(''), 3000);
+    }
+  }
+};
 
   const handleDepartureDateSelect = (e) => {
     const departureDate = e.target.value;

@@ -1815,13 +1815,50 @@ useEffect(() => {
 
  const handleSaveClick = () => {
   if (isLastTab) {
-    if (isEditMode) {
-      updateTour();
-    } else {
-      createTour();
+    // Alert for "Save All" or "Update All" button
+    const confirmMessage = isEditMode 
+      ? 'Are you sure you want to update this tour with all changes?' 
+      : 'Are you sure you want to save this tour with all data?';
+    
+    const confirmed = window.confirm(confirmMessage);
+    
+    if (confirmed) {
+      if (isEditMode) {
+        updateTour();
+      } else {
+        createTour();
+      }
     }
   } else {
-    goNext();
+    // Alert for "Save & Continue" button
+    const tabNames = {
+      'basic': 'Basic Details',
+      'itineraries': 'Itineraries',
+      'departures': 'Departures',
+      'costs': 'Tour Cost',
+      'optionalTours': 'Optional Tours',
+      'emiOptions': 'EMI Options',
+      'inclusions': 'Inclusions',
+      'exclusions': 'Exclusions',
+      'transport': 'Flights',
+      'hotels': 'Hotels',
+      'bookingPoi': 'Booking POI',
+      'cancellation': 'Cancellation Policy',
+      'instructions': 'Instructions',
+      'images': 'Images'
+    };
+    
+    const currentTabName = tabNames[activeTab] || activeTab;
+    const nextTabIndex = TAB_LIST.indexOf(activeTab) + 1;
+    const nextTabName = nextTabIndex < TAB_LIST.length ? tabNames[TAB_LIST[nextTabIndex]] : 'Next';
+    
+    const confirmed = window.confirm(
+      `Do you want to save the ${currentTabName} data and continue to ${nextTabName}?`
+    );
+    
+    if (confirmed) {
+      goNext();
+    }
   }
 };
 

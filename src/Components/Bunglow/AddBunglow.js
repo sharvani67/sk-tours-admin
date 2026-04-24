@@ -484,7 +484,7 @@ const AddBungalow = () => {
     }
   };
 
-  const createBungalow = async () => {
+   const createBungalow = async () => {
     if (!formData.name.trim()) {
       setError('Bungalow name is required');
       setActiveTab('basic');
@@ -505,6 +505,10 @@ const AddBungalow = () => {
       setActiveTab('basic');
       return;
     }
+
+    // Add confirmation alert before creating
+    const confirmSave = window.confirm('Are you sure you want to save this new bungalow?');
+    if (!confirmSave) return;
 
     try {
       setLoading(true);
@@ -567,6 +571,10 @@ const AddBungalow = () => {
       return;
     }
 
+    // Add confirmation alert before updating
+    const confirmSave = window.confirm('Are you sure you want to update this bungalow?');
+    if (!confirmSave) return;
+
     try {
       setLoading(true);
       
@@ -605,6 +613,7 @@ const AddBungalow = () => {
     }
   };
 
+
   const handleSave = () => {
     if (isEditMode) {
       updateBungalow();
@@ -613,7 +622,11 @@ const AddBungalow = () => {
     }
   };
 
-  const handleSaveAndContinue = async () => {
+const handleSaveAndContinue = async () => {
+    // Add confirmation alert before saving and continuing
+    const confirmContinue = window.confirm('Are you sure you want to save and continue to the next tab?');
+    if (!confirmContinue) return;
+    
     // Save the current rate description data
     if (isEditMode && id) {
       try {
@@ -637,6 +650,9 @@ const AddBungalow = () => {
   };
 
   const goBack = () => {
+    const confirmBack = window.confirm('Are you sure you want to go back? Any unsaved changes in this tab will be lost.');
+    if (!confirmBack) return;
+    
     const currentIndex = TAB_LIST.indexOf(activeTab);
     if (currentIndex > 0) {
       setActiveTab(TAB_LIST[currentIndex - 1]);
@@ -644,6 +660,9 @@ const AddBungalow = () => {
   };
 
   const goNext = () => {
+    const confirmNext = window.confirm('Are you sure you want to proceed to the next tab? Any unsaved changes will be preserved.');
+    if (!confirmNext) return;
+    
     const currentIndex = TAB_LIST.indexOf(activeTab);
     if (currentIndex < TAB_LIST.length - 1) {
       setActiveTab(TAB_LIST[currentIndex + 1]);
@@ -1247,19 +1266,22 @@ const AddBungalow = () => {
                       </Button>
                       
                       {isLastSubTab && (
-                        <Button
-                          variant="primary"
-                          onClick={() => {
-                            const currentMainTabIndex = TAB_LIST.indexOf(activeTab);
-                            if (currentMainTabIndex < TAB_LIST.length - 1) {
-                              setActiveTab(TAB_LIST[currentMainTabIndex + 1]);
-                            }
-                          }}
-                          disabled={loading}
-                        >
-                          Next Tab
-                        </Button>
-                      )}
+    <Button
+      variant="primary"
+      onClick={() => {
+        const confirmNext = window.confirm('Are you sure you want to proceed to the next tab? Any unsaved changes will be preserved.');
+        if (!confirmNext) return;
+        
+        const currentMainTabIndex = TAB_LIST.indexOf(activeTab);
+        if (currentMainTabIndex < TAB_LIST.length - 1) {
+          setActiveTab(TAB_LIST[currentMainTabIndex + 1]);
+        }
+      }}
+      disabled={loading}
+    >
+      Next Tab
+    </Button>
+  )}
                     </div>
                   </>
                 )}

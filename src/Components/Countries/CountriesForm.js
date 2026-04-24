@@ -70,6 +70,14 @@ const AddCountry = () => {
       return;
     }
 
+    // Add confirmation alert before saving
+    const confirmMessage = isEditMode 
+      ? 'Are you sure you want to update this domestic country?' 
+      : 'Are you sure you want to add this domestic country?';
+    
+    const confirmSave = window.confirm(confirmMessage);
+    if (!confirmSave) return;
+
     try {
       setLoading(true);
       setError('');
