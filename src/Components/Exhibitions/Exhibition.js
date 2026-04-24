@@ -56,118 +56,144 @@ function Exhibition() {
     fetchData();
   }, []);
 
-  const fetchData = async () => {
-    setLoading(true);
-    setError('');
-    
-    try {
-      // Fetch about exhibition
-      const aboutResponse = await fetch(`${baseurl}/api/exhibitions/about`);
-      if (aboutResponse.ok) {
-        const aboutData = await aboutResponse.json();
-        setAboutExhibition(aboutData);
-      }
-
-      // Fetch domestic exhibitions
-      const domesticResponse = await fetch(`${baseurl}/api/exhibitions/domestic`);
-      if (domesticResponse.ok) {
-        const domesticData = await domesticResponse.json();
-        setDomesticExhibitions(domesticData);
-      }
-
-      // Fetch international exhibitions
-      const intlResponse = await fetch(`${baseurl}/api/exhibitions/international`);
-      if (intlResponse.ok) {
-        const intlData = await intlResponse.json();
-        setInternationalExhibitions(intlData);
-      }
-    } catch (err) {
-      console.error('Error fetching exhibition data:', err);
-      setError('Error fetching exhibition data. Please try again.');
-    } finally {
-      setLoading(false);
+const fetchData = async () => {
+  setLoading(true);
+  setError('');
+  
+  try {
+    // Fetch about exhibition
+    const aboutResponse = await fetch(`${baseurl}/api/exhibitions/about`);
+    if (aboutResponse.ok) {
+      const aboutData = await aboutResponse.json();
+      setAboutExhibition(aboutData);
     }
-  };
 
-  // Fetch single domestic exhibition for editing
-  const fetchDomesticExhibition = async (id) => {
-    try {
-      const response = await fetch(`${baseurl}/api/exhibitions/domestic/${id}`);
-      if (response.ok) {
-        const data = await response.json();
-        setDomesticForm({
-          id: data.id,
-          domestic_category_name: data.domestic_category_name,
-          cities: data.cities || []
+    // Fetch domestic exhibitions - handle grouped response
+    const domesticResponse = await fetch(`${baseurl}/api/exhibitions/domestic`);
+    if (domesticResponse.ok) {
+      const domesticData = await domesticResponse.json();
+      
+      // Check if response is grouped object or array
+      let domesticArray = [];
+      if (domesticData && typeof domesticData === 'object' && !Array.isArray(domesticData)) {
+        // Grouped format: { "Pharma": [...], "Furniture": [...], etc. }
+        Object.keys(domesticData).forEach(categoryName => {
+          domesticArray.push(...domesticData[categoryName]);
         });
-        
-        // Set single city data if cities exist (only first city)
-        if (data.cities && data.cities.length > 0) {
-          const city = data.cities[0];
-          setSingleCity({
-            id: city.id,
-            stateName: city.state_name || '',
-            countryName: city.country_name || '',
-            cityName: city.city_name,
-            price: city.price,
-            image: null,
-            imagePreview: city.image ? `${baseurl}/uploads/exhibition/${city.image}` : '',
-            existingImage: city.image || ''
-          });
-          setShowCitySection(true);
-        } else {
-          resetSingleCity();
-          setShowCitySection(false);
-        }
-        
-        setActiveTab('domestic');
-        setShowForm(true);
+      } else if (Array.isArray(domesticData)) {
+        // Old array format
+        domesticArray = domesticData;
       }
-    } catch (err) {
-      console.error('Error fetching domestic exhibition:', err);
-      setError('Error fetching exhibition data. Please try again.');
+      
+      setDomesticExhibitions(domesticArray);
     }
-  };
 
-  // Fetch single international exhibition for editing
-  const fetchInternationalExhibition = async (id) => {
-    try {
-      const response = await fetch(`${baseurl}/api/exhibitions/international/${id}`);
-      if (response.ok) {
-        const data = await response.json();
-        setInternationalForm({
-          id: data.id,
-          international_category_name: data.international_category_name,
-          cities: data.cities || []
+    // Fetch international exhibitions - handle grouped response
+    const intlResponse = await fetch(`${baseurl}/api/exhibitions/international`);
+    if (intlResponse.ok) {
+      const intlData = await intlResponse.json();
+      
+      // Check if response is grouped object or array
+      let intlArray = [];
+      if (intlData && typeof intlData === 'object' && !Array.isArray(intlData)) {
+        // Grouped format
+        Object.keys(intlData).forEach(categoryName => {
+          intlArray.push(...intlData[categoryName]);
         });
-        
-        // Set single city data if cities exist (only first city)
-        if (data.cities && data.cities.length > 0) {
-          const city = data.cities[0];
-          setSingleCity({
-            id: city.id,
-            stateName: city.state_name || '',
-            countryName: city.country_name || '',
-            cityName: city.city_name,
-            price: city.price,
-            image: null,
-            imagePreview: city.image ? `${baseurl}/uploads/exhibition/${city.image}` : '',
-            existingImage: city.image || ''
-          });
-          setShowCitySection(true);
-        } else {
-          resetSingleCity();
-          setShowCitySection(false);
-        }
-        
-        setActiveTab('international');
-        setShowForm(true);
+      } else if (Array.isArray(intlData)) {
+        // Old array format
+        intlArray = intlData;
       }
-    } catch (err) {
-      console.error('Error fetching international exhibition:', err);
-      setError('Error fetching exhibition data. Please try again.');
+      
+      setInternationalExhibitions(intlArray);
     }
-  };
+  } catch (err) {
+    console.error('Error fetching exhibition data:', err);
+    setError('Error fetching exhibition data. Please try again.');
+  } finally {
+    setLoading(false);
+  }
+};
+
+// Also update the fetchDomesticExhibition and fetchInternationalExhibition functions
+// to handle the new grouped format when fetching a single exhibition
+const fetchDomesticExhibition = async (id) => {
+  try {
+    const response = await fetch(`${baseurl}/api/exhibitions/domestic/${id}`);
+    if (response.ok) {
+      const data = await response.json();
+      setDomesticForm({
+        id: data.id,
+        domestic_category_name: data.domestic_category_name,
+        cities: data.cities || []
+      });
+      
+      // Set single city data if cities exist (only first city)
+      if (data.cities && data.cities.length > 0) {
+        const city = data.cities[0];
+        setSingleCity({
+          id: city.id,
+          stateName: city.state_name || '',
+          countryName: city.country_name || '',
+          cityName: city.city_name,
+          price: city.price,
+          image: null,
+          imagePreview: city.image ? `${baseurl}/uploads/exhibition/${city.image}` : '',
+          existingImage: city.image || ''
+        });
+        setShowCitySection(true);
+      } else {
+        resetSingleCity();
+        setShowCitySection(false);
+      }
+      
+      setActiveTab('domestic');
+      setShowForm(true);
+    }
+  } catch (err) {
+    console.error('Error fetching domestic exhibition:', err);
+    setError('Error fetching exhibition data. Please try again.');
+  }
+};
+
+const fetchInternationalExhibition = async (id) => {
+  try {
+    const response = await fetch(`${baseurl}/api/exhibitions/international/${id}`);
+    if (response.ok) {
+      const data = await response.json();
+      setInternationalForm({
+        id: data.id,
+        international_category_name: data.international_category_name,
+        cities: data.cities || []
+      });
+      
+      // Set single city data if cities exist (only first city)
+      if (data.cities && data.cities.length > 0) {
+        const city = data.cities[0];
+        setSingleCity({
+          id: city.id,
+          stateName: city.state_name || '',
+          countryName: city.country_name || '',
+          cityName: city.city_name,
+          price: city.price,
+          image: null,
+          imagePreview: city.image ? `${baseurl}/uploads/exhibition/${city.image}` : '',
+          existingImage: city.image || ''
+        });
+        setShowCitySection(true);
+      } else {
+        resetSingleCity();
+        setShowCitySection(false);
+      }
+      
+      setActiveTab('international');
+      setShowForm(true);
+    }
+  } catch (err) {
+    console.error('Error fetching international exhibition:', err);
+    setError('Error fetching exhibition data. Please try again.');
+  }
+};
 
   // View exhibition details
   const viewExhibition = (exhibition) => {

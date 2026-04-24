@@ -126,100 +126,127 @@ function Mice() {
     fetchData();
   }, []);
 
-  const fetchData = async () => {
-    setLoading(true);
-    setError('');
-    
+
+const fetchData = async () => {
+  setLoading(true);
+  setError('');
+  
+  try {
+    // Fetch MICE Main
     try {
-      // Fetch MICE Main
-      try {
-        const mainResponse = await fetch(`${baseurl}/api/mice/main`);
-        if (mainResponse.ok) {
-          const mainData = await mainResponse.json();
-          setMiceMain(mainData);
-        }
-      } catch (err) {
-        console.error('Error fetching main:', err);
-      }
-
-      try {
-        const freeFlowResponse = await fetch(`${baseurl}/api/mice/freeflow`);
-        if (freeFlowResponse.ok) {
-          const freeFlowData = await freeFlowResponse.json();
-          setMiceFreeFlow(freeFlowData);
-        }
-      } catch (err) {
-        console.error('Error fetching freeflow:', err);
-      }
-
-      // Fetch Domestic Mice
-      try {
-        const domesticResponse = await fetch(`${baseurl}/api/mice/domestic`);
-        if (domesticResponse.ok) {
-          const domesticData = await domesticResponse.json();
-          setDomesticMice(domesticData);
-        }
-      } catch (err) {
-        console.error('Error fetching domestic mice:', err);
-      }
-
-      // Fetch International Mice
-      try {
-        const internationalResponse = await fetch(`${baseurl}/api/mice/international`);
-        if (internationalResponse.ok) {
-          const internationalData = await internationalResponse.json();
-          setInternationalMice(internationalData);
-        }
-      } catch (err) {
-        console.error('Error fetching international mice:', err);
-      }
-
-      try {
-        const clientsResponse = await fetch(`${baseurl}/api/mice/clients`);
-        if (clientsResponse.ok) {
-          const clientsData = await clientsResponse.json();
-          setOurClients(clientsData);
-        }
-      } catch (err) {
-        console.error('Error fetching clients:', err);
-      }
-
-      try {
-        const venuesResponse = await fetch(`${baseurl}/api/mice/venues`);
-        if (venuesResponse.ok) {
-          const venuesData = await venuesResponse.json();
-          setVenues(venuesData);
-        }
-      } catch (err) {
-        console.error('Error fetching venues:', err);
-      }
-
-      try {
-        const galleryResponse = await fetch(`${baseurl}/api/mice/gallery`);
-        if (galleryResponse.ok) {
-          const galleryData = await galleryResponse.json();
-          setMiceGallery(galleryData);
-        }
-      } catch (err) {
-        console.error('Error fetching gallery:', err);
-      }
-
-      try {
-        const eventsResponse = await fetch(`${baseurl}/api/mice/events`);
-        if (eventsResponse.ok) {
-          const eventsData = await eventsResponse.json();
-          setUpcomingEvents(eventsData);
-        }
-      } catch (err) {
-        console.error('Error fetching events:', err);
+      const mainResponse = await fetch(`${baseurl}/api/mice/main`);
+      if (mainResponse.ok) {
+        const mainData = await mainResponse.json();
+        setMiceMain(mainData);
       }
     } catch (err) {
-      console.error('Error fetching MICE data:', err);
-      setError('Error fetching MICE data. Please refresh the page.');
-    } finally {
-      setLoading(false);
+      console.error('Error fetching main:', err);
     }
-  };
+
+    try {
+      const freeFlowResponse = await fetch(`${baseurl}/api/mice/freeflow`);
+      if (freeFlowResponse.ok) {
+        const freeFlowData = await freeFlowResponse.json();
+        setMiceFreeFlow(freeFlowData);
+      }
+    } catch (err) {
+      console.error('Error fetching freeflow:', err);
+    }
+
+    // Fetch Domestic Mice - FIXED:
+    try {
+      const domesticResponse = await fetch(`${baseurl}/api/mice/domestic`);
+      if (domesticResponse.ok) {
+        const domesticData = await domesticResponse.json();
+        
+        // Transform the grouped data into an array format that your component expects
+        const transformedData = [];
+        for (const [stateName, cities] of Object.entries(domesticData)) {
+          cities.forEach(city => {
+            transformedData.push({
+              ...city,
+              state_name: stateName
+            });
+          });
+        }
+        setDomesticMice(transformedData);
+      }
+    } catch (err) {
+      console.error('Error fetching domestic mice:', err);
+    }
+
+    // Fetch International Mice - similar fix if needed
+    try {
+      const internationalResponse = await fetch(`${baseurl}/api/mice/international`);
+      if (internationalResponse.ok) {
+        const internationalData = await internationalResponse.json();
+        
+        // Transform grouped data if your international API also returns grouped data
+        let transformedInternational = internationalData;
+        if (internationalData && !Array.isArray(internationalData)) {
+          transformedInternational = [];
+          for (const [countryName, cities] of Object.entries(internationalData)) {
+            cities.forEach(city => {
+              transformedInternational.push({
+                ...city,
+                country_name: countryName
+              });
+            });
+          }
+        }
+        setInternationalMice(transformedInternational);
+      }
+    } catch (err) {
+      console.error('Error fetching international mice:', err);
+    }
+
+    // Rest of your fetch code remains the same...
+    try {
+      const clientsResponse = await fetch(`${baseurl}/api/mice/clients`);
+      if (clientsResponse.ok) {
+        const clientsData = await clientsResponse.json();
+        setOurClients(clientsData);
+      }
+    } catch (err) {
+      console.error('Error fetching clients:', err);
+    }
+
+    try {
+      const venuesResponse = await fetch(`${baseurl}/api/mice/venues`);
+      if (venuesResponse.ok) {
+        const venuesData = await venuesResponse.json();
+        setVenues(venuesData);
+      }
+    } catch (err) {
+      console.error('Error fetching venues:', err);
+    }
+
+    try {
+      const galleryResponse = await fetch(`${baseurl}/api/mice/gallery`);
+      if (galleryResponse.ok) {
+        const galleryData = await galleryResponse.json();
+        setMiceGallery(galleryData);
+      }
+    } catch (err) {
+      console.error('Error fetching gallery:', err);
+    }
+
+    try {
+      const eventsResponse = await fetch(`${baseurl}/api/mice/events`);
+      if (eventsResponse.ok) {
+        const eventsData = await eventsResponse.json();
+        setUpcomingEvents(eventsData);
+      }
+    } catch (err) {
+      console.error('Error fetching events:', err);
+    }
+  } catch (err) {
+    console.error('Error fetching MICE data:', err);
+    setError('Error fetching MICE data. Please refresh the page.');
+  } finally {
+    setLoading(false);
+  }
+};
 
 const fetchDomesticMice = async (id) => {
   setLoading(true);
