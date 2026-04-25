@@ -15,11 +15,11 @@ const ExhibitionBasicDetails = () => {
   const [success, setSuccess] = useState('');
   const [showCitySection, setShowCitySection] = useState(false);
   
-  // Basic form data
+  // Basic form data - ONLY category name (NOT exhibition title)
   const [formData, setFormData] = useState({
     id: id || null,
-    domestic_category_name: '',
-    international_category_name: '',
+    domestic_category_name: '', // CATEGORY NAME ONLY
+    international_category_name: '', // CATEGORY NAME ONLY
     cities: []
   });
   
@@ -48,9 +48,10 @@ const ExhibitionBasicDetails = () => {
       const data = await response.json();
       
       if (type === 'domestic') {
+        // Set ONLY the category name, NOT the title
         setFormData({
           id: data.id,
-          domestic_category_name: data.domestic_category_name
+          domestic_category_name: data.domestic_category_name || ''
         });
         
         if (data.cities && data.cities.length > 0) {
@@ -67,9 +68,10 @@ const ExhibitionBasicDetails = () => {
           setShowCitySection(true);
         }
       } else {
+        // Set ONLY the category name, NOT the title
         setFormData({
           id: data.id,
-          international_category_name: data.international_category_name
+          international_category_name: data.international_category_name || ''
         });
         
         if (data.cities && data.cities.length > 0) {
@@ -154,112 +156,147 @@ const ExhibitionBasicDetails = () => {
     }
   };
   
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
+ const handleSubmit = async (e) => {
+  e.preventDefault();
+  setLoading(true);
+  setError('');
+  
+  if (type === 'domestic' && !formData.domestic_category_name.trim()) {
+    setError('Please enter category name');
+    setLoading(false);
+    return;
+  }
+  
+  if (type === 'international' && !formData.international_category_name.trim()) {
+    setError('Please enter category name');
+    setLoading(false);
+    return;
+  }
+  
+  const formDataToSend = new FormData();
+  
+  if (type === 'domestic') {
+    // For domestic: preserve original category name
+    let categoryName = formData.domestic_category_name.trim();
     
-    if (type === 'domestic' && !formData.domestic_category_name.trim()) {
-      setError('Please enter category name');
+    if (isEditMode && formData.id) {
+      try {
+        const checkResponse = await fetch(`${baseurl}/api/exhibitions/domestic/${formData.id}`);
+        if (checkResponse.ok) {
+          const originalData = await checkResponse.json();
+          // Use the original category name from the database
+          categoryName = originalData.domestic_category_name;
+          console.log(`📌 Preserving domestic category: "${categoryName}"`);
+        }
+      } catch (err) {
+        console.error('Error fetching original category:', err);
+      }
+    }
+    
+    formDataToSend.append('domestic_category_name', categoryName);
+  } else {
+    // For international: preserve original category name
+    let categoryName = formData.international_category_name.trim();
+    
+    if (isEditMode && formData.id) {
+      try {
+        const checkResponse = await fetch(`${baseurl}/api/exhibitions/international/${formData.id}`);
+        if (checkResponse.ok) {
+          const originalData = await checkResponse.json();
+          // Use the original category name from the database
+          categoryName = originalData.international_category_name;
+          console.log(`📌 Preserving international category: "${categoryName}"`);
+        }
+      } catch (err) {
+        console.error('Error fetching original category:', err);
+      }
+    }
+    
+    formDataToSend.append('international_category_name', categoryName);
+  }
+  
+  // Rest of your city handling code remains the same...
+  if (showCitySection && cityEntries.length > 0) {
+    const validEntries = cityEntries.filter(entry => 
+      entry.cityName.trim() !== '' && entry.price > 0
+    );
+    
+    if (validEntries.length === 0) {
+      setError('Please fill in city details or disable cities section');
       setLoading(false);
       return;
     }
-    
-    if (type === 'international' && !formData.international_category_name.trim()) {
-      setError('Please enter category name');
-      setLoading(false);
-      return;
-    }
-    
-    const formDataToSend = new FormData();
     
     if (type === 'domestic') {
-      formDataToSend.append('domestic_category_name', formData.domestic_category_name.trim());
+      const stateNames = validEntries.map(entry => entry.stateName.trim());
+      const cityNames = validEntries.map(entry => entry.cityName.trim());
+      const prices = validEntries.map(entry => entry.price);
+      const existingImages = validEntries.map(entry => entry.existingImage || '').filter(img => img !== '');
+      const existingCityIds = validEntries.map(entry => entry.id).filter(id => typeof id === 'number');
+      
+      formDataToSend.append('stateNames', JSON.stringify(stateNames));
+      formDataToSend.append('cityNames', JSON.stringify(cityNames));
+      formDataToSend.append('prices', JSON.stringify(prices));
+      formDataToSend.append('existingImages', JSON.stringify(existingImages));
+      formDataToSend.append('existingCityIds', JSON.stringify(existingCityIds));
     } else {
-      formDataToSend.append('international_category_name', formData.international_category_name.trim());
+      const countryNames = validEntries.map(entry => entry.countryName.trim());
+      const cityNames = validEntries.map(entry => entry.cityName.trim());
+      const prices = validEntries.map(entry => entry.price);
+      const existingImages = validEntries.map(entry => entry.existingImage || '').filter(img => img !== '');
+      const existingCityIds = validEntries.map(entry => entry.id).filter(id => typeof id === 'number');
+      
+      formDataToSend.append('countryNames', JSON.stringify(countryNames));
+      formDataToSend.append('cityNames', JSON.stringify(cityNames));
+      formDataToSend.append('prices', JSON.stringify(prices));
+      formDataToSend.append('existingImages', JSON.stringify(existingImages));
+      formDataToSend.append('existingCityIds', JSON.stringify(existingCityIds));
     }
     
-    if (showCitySection && cityEntries.length > 0) {
-      const validEntries = cityEntries.filter(entry => 
-        entry.cityName.trim() !== '' && entry.price > 0
-      );
-      
-      if (validEntries.length === 0) {
-        setError('Please fill in city details or disable cities section');
-        setLoading(false);
-        return;
+    validEntries.forEach(entry => {
+      if (entry.image) {
+        formDataToSend.append('images', entry.image);
       }
-      
-      if (type === 'domestic') {
-        const stateNames = validEntries.map(entry => entry.stateName.trim());
-        const cityNames = validEntries.map(entry => entry.cityName.trim());
-        const prices = validEntries.map(entry => entry.price);
-        const existingImages = validEntries.map(entry => entry.existingImage || '').filter(img => img !== '');
-        const existingCityIds = validEntries.map(entry => entry.id).filter(id => typeof id === 'number');
-        
-        formDataToSend.append('stateNames', JSON.stringify(stateNames));
-        formDataToSend.append('cityNames', JSON.stringify(cityNames));
-        formDataToSend.append('prices', JSON.stringify(prices));
-        formDataToSend.append('existingImages', JSON.stringify(existingImages));
-        formDataToSend.append('existingCityIds', JSON.stringify(existingCityIds));
-      } else {
-        const countryNames = validEntries.map(entry => entry.countryName.trim());
-        const cityNames = validEntries.map(entry => entry.cityName.trim());
-        const prices = validEntries.map(entry => entry.price);
-        const existingImages = validEntries.map(entry => entry.existingImage || '').filter(img => img !== '');
-        const existingCityIds = validEntries.map(entry => entry.id).filter(id => typeof id === 'number');
-        
-        formDataToSend.append('countryNames', JSON.stringify(countryNames));
-        formDataToSend.append('cityNames', JSON.stringify(cityNames));
-        formDataToSend.append('prices', JSON.stringify(prices));
-        formDataToSend.append('existingImages', JSON.stringify(existingImages));
-        formDataToSend.append('existingCityIds', JSON.stringify(existingCityIds));
-      }
-      
-      validEntries.forEach(entry => {
-        if (entry.image) {
-          formDataToSend.append('images', entry.image);
-        }
+    });
+  } else {
+    formDataToSend.append('cityNames', JSON.stringify([]));
+    formDataToSend.append('prices', JSON.stringify([]));
+  }
+  
+  try {
+    let response;
+    
+    if (isEditMode && formData.id) {
+      response = await fetch(`${baseurl}/api/exhibitions/${type}/${formData.id}`, {
+        method: 'PUT',
+        body: formDataToSend
       });
     } else {
-      formDataToSend.append('cityNames', JSON.stringify([]));
-      formDataToSend.append('prices', JSON.stringify([]));
+      response = await fetch(`${baseurl}/api/exhibitions/${type}`, {
+        method: 'POST',
+        body: formDataToSend
+      });
     }
     
-    try {
-      let response;
+    const result = await response.json();
+    
+    if (response.ok) {
+      setSuccess(isEditMode ? 'Exhibition updated successfully!' : 'Exhibition added successfully!');
       
-      if (isEditMode && formData.id) {
-        response = await fetch(`${baseurl}/api/exhibitions/${type}/${formData.id}`, {
-          method: 'PUT',
-          body: formDataToSend
-        });
-      } else {
-        response = await fetch(`${baseurl}/api/exhibitions/${type}`, {
-          method: 'POST',
-          body: formDataToSend
-        });
-      }
-      
-      const result = await response.json();
-      
-      if (response.ok) {
-        setSuccess(isEditMode ? 'Exhibition updated successfully!' : 'Exhibition added successfully!');
-        
-        setTimeout(() => {
-          const exhibitionId = result.id || formData.id;
-          navigate(`/exhibition/details/${exhibitionId}/${type}`);
-        }, 1500);
-      } else {
-        setError(result.error || 'Error processing request');
-      }
-    } catch (err) {
-      console.error('Error submitting form:', err);
-      setError('Error submitting form. Please try again.');
-    } finally {
-      setLoading(false);
+      setTimeout(() => {
+        const exhibitionId = result.id || formData.id;
+        navigate(`/exhibition/details/${exhibitionId}/${type}`);
+      }, 1500);
+    } else {
+      setError(result.error || 'Error processing request');
     }
-  };
+  } catch (err) {
+    console.error('Error submitting form:', err);
+    setError('Error submitting form. Please try again.');
+  } finally {
+    setLoading(false);
+  }
+};
   
   const handleCancel = () => {
     navigate('/exhibition');
@@ -280,7 +317,7 @@ const ExhibitionBasicDetails = () => {
     <Navbar>
       <Container>
         <h2 className="mb-4">
-          {isEditMode ? 'Edit Exhibition Basic Details' : 'Add New Exhibition'}
+          {isEditMode ? 'Edit Exhibition - Basic Details' : 'Add New Exhibition'}
         </h2>
         
         {error && <Alert variant="danger">{error}</Alert>}
@@ -290,14 +327,17 @@ const ExhibitionBasicDetails = () => {
           <Card.Body>
             <form onSubmit={handleSubmit}>
               <div className="mb-4">
-                <Form.Label>Category Name *</Form.Label>
+                <Form.Label><strong>Exhibition Category Name *</strong></Form.Label>
                 <Form.Control
                   type="text"
-                  placeholder="e.g., Agriculture, Pharmaceutical, Furniture"
+                  placeholder="e.g., Agriculture, Pharmaceutical, Furniture, Domestic Plastics"
                   value={type === 'domestic' ? formData.domestic_category_name : formData.international_category_name}
                   onChange={handleCategoryChange}
                   required
                 />
+                <Form.Text className="text-muted">
+                  This is the category/type of exhibition (e.g., "Domestic Plastics", "Pharma", "Furniture")
+                </Form.Text>
               </div>
               
               <div className="mb-4">

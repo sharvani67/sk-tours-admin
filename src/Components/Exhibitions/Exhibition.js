@@ -343,171 +343,199 @@ const fetchInternationalExhibition = async (id) => {
   };
 
   const handleDomesticSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
+  e.preventDefault();
+  setLoading(true);
+  setError('');
 
-    // Validate form
-    if (!domesticForm.domestic_category_name.trim()) {
-      setError('Please enter category name');
+  // Validate form
+  if (!domesticForm.domestic_category_name.trim()) {
+    setError('Please enter category name');
+    setLoading(false);
+    return;
+  }
+
+  const formData = new FormData();
+  
+  // IMPORTANT: Always use the original category name for editing
+  // Don't modify the category name when editing
+  let categoryName = domesticForm.domestic_category_name.trim();
+  
+  // If this is an edit, check if it's the "Plastics" issue
+  if (domesticForm.id) {
+    // Check the original exhibition to see if it was "Plastics"
+    const originalExhibition = domesticExhibitions.find(e => e.id === domesticForm.id);
+    if (originalExhibition && originalExhibition.domestic_category_name === "Plastics") {
+      // Keep it as "Plastics", don't change to "Domestic Plastics"
+      categoryName = "Plastics";
+    }
+  }
+  
+  formData.append('domestic_category_name', categoryName);
+  
+  // Handle single city if it exists
+  if (showCitySection && singleCity.cityName.trim() !== '') {
+    if (!singleCity.cityName.trim()) {
+      setError('Please enter city name');
       setLoading(false);
       return;
     }
 
-    const formData = new FormData();
-    formData.append('domestic_category_name', domesticForm.domestic_category_name.trim());
-    
-    // Handle single city if it exists
-    if (showCitySection && singleCity.cityName.trim() !== '') {
-      if (!singleCity.cityName.trim()) {
-        setError('Please enter city name');
-        setLoading(false);
-        return;
-      }
-
-      if (!domesticForm.id && !singleCity.image && !singleCity.existingImage) {
-        setError('Please upload an image for the city');
-        setLoading(false);
-        return;
-      }
-
-      // Prepare single city data
-      formData.append('stateNames', JSON.stringify([singleCity.stateName.trim()]));
-      formData.append('cityNames', JSON.stringify([singleCity.cityName.trim()]));
-      formData.append('prices', JSON.stringify([singleCity.price]));
-      formData.append('existingImages', JSON.stringify([singleCity.existingImage || '']));
-      formData.append('existingCityIds', JSON.stringify([singleCity.id || '']));
-      
-      if (singleCity.image) {
-        formData.append('images', singleCity.image);
-      }
-    } else {
-      formData.append('cityNames', JSON.stringify([]));
-      formData.append('prices', JSON.stringify([]));
-      formData.append('existingCityIds', JSON.stringify([]));
-    }
-
-    try {
-      let response;
-      
-      if (domesticForm.id) {
-        response = await fetch(`${baseurl}/api/exhibitions/domestic/${domesticForm.id}`, {
-          method: 'PUT',
-          body: formData
-        });
-      } else {
-        response = await fetch(`${baseurl}/api/exhibitions/domestic`, {
-          method: 'POST',
-          body: formData
-        });
-      }
-
-      const result = await response.json();
-
-      if (response.ok) {
-        alert(domesticForm.id ? 'Exhibition updated successfully!' : 'Exhibition added successfully!');
-        fetchData();
-        resetForms();
-        setShowForm(false);
-        
-        if (!domesticForm.id && result.id) {
-          navigate(`/exhibition/details/${result.id}/domestic`);
-        } else if (domesticForm.id) {
-          navigate(`/exhibition/details/${domesticForm.id}/domestic`);
-        }
-      } else {
-        setError(result.error || 'Error processing request');
-      }
-    } catch (err) {
-      console.error('Error submitting form:', err);
-      setError('Error submitting form. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleInternationalSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
-
-    if (!internationalForm.international_category_name.trim()) {
-      setError('Please enter category name');
+    if (!domesticForm.id && !singleCity.image && !singleCity.existingImage) {
+      setError('Please upload an image for the city');
       setLoading(false);
       return;
     }
 
-    const formData = new FormData();
-    formData.append('international_category_name', internationalForm.international_category_name.trim());
+    formData.append('stateNames', JSON.stringify([singleCity.stateName.trim()]));
+    formData.append('cityNames', JSON.stringify([singleCity.cityName.trim()]));
+    formData.append('prices', JSON.stringify([singleCity.price]));
+    formData.append('existingImages', JSON.stringify([singleCity.existingImage || '']));
+    formData.append('existingCityIds', JSON.stringify([singleCity.id || '']));
     
-    // Handle single city if it exists
-    if (showCitySection && singleCity.cityName.trim() !== '') {
-      if (!singleCity.cityName.trim()) {
-        setError('Please enter city name');
-        setLoading(false);
-        return;
-      }
+    if (singleCity.image) {
+      formData.append('images', singleCity.image);
+    }
+  } else {
+    formData.append('cityNames', JSON.stringify([]));
+    formData.append('prices', JSON.stringify([]));
+    formData.append('existingCityIds', JSON.stringify([]));
+  }
 
-      if (!internationalForm.id && !singleCity.image && !singleCity.existingImage) {
-        setError('Please upload an image for the city');
-        setLoading(false);
-        return;
-      }
-
-      // Prepare single city data
-      formData.append('countryNames', JSON.stringify([singleCity.countryName.trim()]));
-      formData.append('cityNames', JSON.stringify([singleCity.cityName.trim()]));
-      formData.append('prices', JSON.stringify([singleCity.price]));
-      formData.append('existingImages', JSON.stringify([singleCity.existingImage || '']));
-      formData.append('existingCityIds', JSON.stringify([singleCity.id || '']));
-      
-      if (singleCity.image) {
-        formData.append('images', singleCity.image);
-      }
+  try {
+    let response;
+    
+    if (domesticForm.id) {
+      // For update, always use PUT
+      response = await fetch(`${baseurl}/api/exhibitions/domestic/${domesticForm.id}`, {
+        method: 'PUT',
+        body: formData
+      });
     } else {
-      formData.append('cityNames', JSON.stringify([]));
-      formData.append('prices', JSON.stringify([]));
-      formData.append('existingCityIds', JSON.stringify([]));
+      response = await fetch(`${baseurl}/api/exhibitions/domestic`, {
+        method: 'POST',
+        body: formData
+      });
     }
 
-    try {
-      let response;
+    const result = await response.json();
+
+    if (response.ok) {
+      alert(domesticForm.id ? 'Exhibition updated successfully!' : 'Exhibition added successfully!');
+      await fetchData(); // Wait for data to refresh
+      resetForms();
+      setShowForm(false);
       
-      if (internationalForm.id) {
-        response = await fetch(`${baseurl}/api/exhibitions/international/${internationalForm.id}`, {
-          method: 'PUT',
-          body: formData
-        });
-      } else {
-        response = await fetch(`${baseurl}/api/exhibitions/international`, {
-          method: 'POST',
-          body: formData
-        });
-      }
-
-      const result = await response.json();
-
-      if (response.ok) {
-        alert(internationalForm.id ? 'Exhibition updated successfully!' : 'Exhibition added successfully!');
-        fetchData();
-        resetForms();
-        setShowForm(false);
-        
-        if (!internationalForm.id && result.id) {
-          navigate(`/exhibition/details/${result.id}/international`);
-        } else if (internationalForm.id) {
-          navigate(`/exhibition/details/${internationalForm.id}/international`);
-        }
-      } else {
-        setError(result.error || 'Error processing request');
-      }
-    } catch (err) {
-      console.error('Error submitting form:', err);
-      setError('Error submitting form. Please try again.');
-    } finally {
-      setLoading(false);
+      // Navigate with the correct ID
+      const exhibitionId = domesticForm.id || result.id;
+      // Always use 'domestic' as the type
+      navigate(`/exhibition/details/${exhibitionId}/domestic`);
+    } else {
+      setError(result.error || 'Error processing request');
     }
-  };
+  } catch (err) {
+    console.error('Error submitting form:', err);
+    setError('Error submitting form. Please try again.');
+  } finally {
+    setLoading(false);
+  }
+};
+
+const handleInternationalSubmit = async (e) => {
+  e.preventDefault();
+  setLoading(true);
+  setError('');
+
+  if (!internationalForm.international_category_name.trim()) {
+    setError('Please enter category name');
+    setLoading(false);
+    return;
+  }
+
+  const formData = new FormData();
+  
+  // IMPORTANT: Always use the original category name for editing
+  let categoryName = internationalForm.international_category_name.trim();
+  
+  // If this is an edit, check if the original name should be preserved
+  if (internationalForm.id) {
+    // Check the original exhibition to get its real category name
+    const originalExhibition = internationalExhibitions.find(e => e.id === internationalForm.id);
+    if (originalExhibition) {
+      // Use the original category name from the database, don't change it
+      categoryName = originalExhibition.international_category_name;
+      console.log(`📌 Preserving original international category name: "${categoryName}"`);
+    }
+  }
+  
+  formData.append('international_category_name', categoryName);
+  
+  // Handle single city if it exists
+  if (showCitySection && singleCity.cityName.trim() !== '') {
+    if (!singleCity.cityName.trim()) {
+      setError('Please enter city name');
+      setLoading(false);
+      return;
+    }
+
+    if (!internationalForm.id && !singleCity.image && !singleCity.existingImage) {
+      setError('Please upload an image for the city');
+      setLoading(false);
+      return;
+    }
+
+    // Prepare single city data
+    formData.append('countryNames', JSON.stringify([singleCity.countryName.trim()]));
+    formData.append('cityNames', JSON.stringify([singleCity.cityName.trim()]));
+    formData.append('prices', JSON.stringify([singleCity.price]));
+    formData.append('existingImages', JSON.stringify([singleCity.existingImage || '']));
+    formData.append('existingCityIds', JSON.stringify([singleCity.id || '']));
+    
+    if (singleCity.image) {
+      formData.append('images', singleCity.image);
+    }
+  } else {
+    formData.append('cityNames', JSON.stringify([]));
+    formData.append('prices', JSON.stringify([]));
+    formData.append('existingCityIds', JSON.stringify([]));
+  }
+
+  try {
+    let response;
+    
+    if (internationalForm.id) {
+      // For update, always use PUT
+      response = await fetch(`${baseurl}/api/exhibitions/international/${internationalForm.id}`, {
+        method: 'PUT',
+        body: formData
+      });
+    } else {
+      response = await fetch(`${baseurl}/api/exhibitions/international`, {
+        method: 'POST',
+        body: formData
+      });
+    }
+
+    const result = await response.json();
+
+    if (response.ok) {
+      alert(internationalForm.id ? 'Exhibition updated successfully!' : 'Exhibition added successfully!');
+      await fetchData(); // Wait for data to refresh
+      resetForms();
+      setShowForm(false);
+      
+      // Navigate with the correct ID
+      const exhibitionId = internationalForm.id || result.id;
+      navigate(`/exhibition/details/${exhibitionId}/international`);
+    } else {
+      setError(result.error || 'Error processing request');
+    }
+  } catch (err) {
+    console.error('Error submitting form:', err);
+    setError('Error submitting form. Please try again.');
+  } finally {
+    setLoading(false);
+  }
+};
 
   // Delete handlers
   const handleDeleteDomestic = async (id) => {

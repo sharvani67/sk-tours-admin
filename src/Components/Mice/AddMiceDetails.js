@@ -270,19 +270,19 @@ const AddMiceDetails = () => {
   const [replacementPreview, setReplacementPreview] = useState(null);
 
   // Auto-sync Mice Name with the first city's City Name
-  useEffect(() => {
-    if (!isEditMode && cityEntries.length > 0) {
-      const firstCity = cityEntries[0];
-      if (firstCity && firstCity.cityName && firstCity.cityName.trim() !== '') {
-        if (!formData.mice_name || formData.mice_name === '') {
-          setFormData(prev => ({
-            ...prev,
-            mice_name: firstCity.cityName.trim()
-          }));
-        }
-      }
-    }
-  }, [cityEntries, isEditMode, formData.mice_name]);
+  // useEffect(() => {
+  //   if (!isEditMode && cityEntries.length > 0) {
+  //     const firstCity = cityEntries[0];
+  //     if (firstCity && firstCity.cityName && firstCity.cityName.trim() !== '') {
+  //       if (!formData.mice_name || formData.mice_name === '') {
+  //         setFormData(prev => ({
+  //           ...prev,
+  //           mice_name: firstCity.cityName.trim()
+  //         }));
+  //       }
+  //     }
+  //   }
+  // }, [cityEntries, isEditMode, formData.mice_name]);
 
   // Set default city entry on component mount for new records
   useEffect(() => {
@@ -344,18 +344,18 @@ const AddMiceDetails = () => {
       entry.id === id ? { ...entry, [field]: value } : entry
     ));
     
-    if (!isEditMode && field === 'cityName') {
-      const updatedEntries = cityEntries.map(entry => 
-        entry.id === id ? { ...entry, [field]: value } : entry
-      );
-      const firstCityWithName = updatedEntries.find(entry => entry.cityName && entry.cityName.trim() !== '');
-      if (firstCityWithName && firstCityWithName.cityName) {
-        setFormData(prev => ({
-          ...prev,
-          mice_name: firstCityWithName.cityName.trim()
-        }));
-      }
-    }
+    // if (!isEditMode && field === 'cityName') {
+    //   const updatedEntries = cityEntries.map(entry => 
+    //     entry.id === id ? { ...entry, [field]: value } : entry
+    //   );
+    //   const firstCityWithName = updatedEntries.find(entry => entry.cityName && entry.cityName.trim() !== '');
+    //   if (firstCityWithName && firstCityWithName.cityName) {
+    //     setFormData(prev => ({
+    //       ...prev,
+    //       mice_name: firstCityWithName.cityName.trim()
+    //     }));
+    //   }
+    // }
   };
 
   const handleCityImageChange = (id, e) => {
@@ -1408,7 +1408,7 @@ const AddMiceDetails = () => {
         if (data.mice_city) {
           setFormData(prev => ({
             ...prev,
-            mice_name: data.mice_city.city_name || '',
+            // mice_name: data.mice_city.city_name || '',
             mice_type: currentMiceType
           }));
           
@@ -1443,6 +1443,7 @@ const AddMiceDetails = () => {
           const tour = data.tours[0];
           setFormData(prev => ({
             ...prev,
+             mice_name: tour.title || '',
             overview: tour.overview || '',
             duration_days: tour.duration_days || '',
             base_price_adult: tour.base_price_adult || '',
@@ -1623,12 +1624,6 @@ const AddMiceDetails = () => {
 
     if (validEntries.length === 0) {
       setError('Please fill in city details (City Name is required)');
-      setActiveTab('basic');
-      return;
-    }
-
-    if (!formData.mice_name || formData.mice_name.trim() === '') {
-      setError('Mice Name is required');
       setActiveTab('basic');
       return;
     }
@@ -2150,14 +2145,14 @@ const AddMiceDetails = () => {
             <Tabs activeKey={activeTab} onSelect={(k) => setActiveTab(k)} className="mb-4">
               {/* Basic Tab */}
               <Tab eventKey="basic" title="Basic Details">
-                <Alert variant="info" className="mb-3">
+                {/* <Alert variant="info" className="mb-3"> */}
                   <small>
-                    <strong>Note:</strong> The "Mice Name" will be automatically set to the first City Name you enter.
+                    {/* <strong>Note:</strong> The "Mice Name" will be automatically set to the first City Name you enter. */}
                     {!isEditMode && cityEntries[0]?.cityName && (
                       <span> Current Mice Name: <strong>{formData.mice_name}</strong></span>
                     )}
                   </small>
-                </Alert>
+                {/* </Alert> */}
 
                 <Row>
                   <Col md={6}>
@@ -2169,13 +2164,13 @@ const AddMiceDetails = () => {
                         value={formData.mice_name}
                         onChange={handleBasicChange}
                         placeholder="Enter exhibition name"
-                        readOnly={!isEditMode}
+                        // readOnly={!isEditMode}
                       />
-                      {!isEditMode && (
+                      {/* {!isEditMode && (
                         <Form.Text className="text-muted">
                           Mice name will be automatically set to the city name you enter below
                         </Form.Text>
-                      )}
+                      )} */}
                     </Form.Group>
 
                     <Row className="g-3 mb-3">
