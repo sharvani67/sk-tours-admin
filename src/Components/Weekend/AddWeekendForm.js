@@ -529,13 +529,22 @@ const AddWeekendGateway = () => {
     }
   };
 
-  const handleSave = () => {
+ const handleSave = () => {
+  // For Save All/Update All operations
+  const confirmMessage = isEditMode 
+    ? 'Are you sure you want to update this weekend gateway with all changes?'
+    : 'Are you sure you want to save this weekend gateway with all data?';
+  
+  const confirmed = window.confirm(confirmMessage);
+  
+  if (confirmed) {
     if (isEditMode) {
       updateGateway();
     } else {
       createGateway();
     }
-  };
+  }
+};
 
   const goBack = () => {
     const currentIndex = TAB_LIST.indexOf(activeTab);

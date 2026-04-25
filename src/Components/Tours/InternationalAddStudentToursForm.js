@@ -2942,37 +2942,101 @@ const visaData = {
   return uploadedForms;
 };
 
+
 const handleSaveClick = () => {
+  // Check if we're on the last tab (Save All/Update All)
   if (isLastTab) {
-    if (isEditMode) {
-      updateTour();
-    } else {
-      createTour();
+    // For Save All or Update All operations
+    const confirmMessage = isEditMode 
+      ? 'Are you sure you want to update this student tour with all changes?'
+      : 'Are you sure you want to save this student tour with all data?';
+    
+    const confirmed = window.confirm(confirmMessage);
+    
+    if (confirmed) {
+      if (isEditMode) {
+        updateTour();
+      } else {
+        createTour();
+      }
     }
   } else {
-    // Check if current visa subtab is complete before moving on
+    // For Save & Continue operations - show alert before saving and moving to next tab
+    let currentTabName = '';
+    let nextTabName = 'Next';
+    
+    // Handle visa subtabs
     if (activeTab === 'visa') {
-      // Remove mandatory validation - visa sections can be empty
-      // Simply allow navigation to next tab/subtab
       const currentSubTabIndex = visaSubTabs.indexOf(activeVisaSubTab);
-      
-      // If current subtab is not the last one
-      if (currentSubTabIndex < visaSubTabs.length - 1) {
-        // Move to next visa subtab
-        setActiveVisaSubTab(visaSubTabs[currentSubTabIndex + 1]);
-      } else {
-        // All visa subtabs are done, move to booking
-        const currentIndex = TAB_LIST.indexOf(activeTab);
-        if (currentIndex < TAB_LIST.length - 1) {
-          setActiveTab(TAB_LIST[currentIndex + 1]); // Move to bookingPoi
+      if (currentSubTabIndex >= 0) {
+        const visaTabNames = {
+          'tourist': 'Tourist Visa',
+          'transit': 'Transit Visa',
+          'business': 'Business Visa',
+          'form': 'Visa Form',
+          'photo': 'Photo',
+          'fees': 'Visa Fees',
+          'submission': 'Submission & Pick Up'
+        };
+        currentTabName = visaTabNames[activeVisaSubTab] || activeVisaSubTab;
+        
+        if (currentSubTabIndex < visaSubTabs.length - 1) {
+          nextTabName = visaTabNames[visaSubTabs[currentSubTabIndex + 1]] || 'Next';
+        } else {
+          nextTabName = 'Booking POI';
         }
       }
-      return;
+    } else {
+      // Regular tabs
+      const tabNames = {
+        'basic': 'Basic Details',
+        'itineraries': 'Itineraries',
+        'departures': 'Departures & Costs',
+        'optionalTours': 'Optional Tours',
+        'emiOptions': 'EMI Options',
+        'inclusions': 'Inclusions',
+        'exclusions': 'Exclusions',
+        'transport': 'Flights',
+        'hotels': 'Hotels',
+        'visa': 'Visa',
+        'bookingPoi': 'Booking POI',
+        'cancellation': 'Cancellation Policy',
+        'instructions': 'Instructions',
+        'images': 'Images'
+      };
+      
+      currentTabName = tabNames[activeTab] || activeTab;
+      
+      const nextTabIndex = TAB_LIST.indexOf(activeTab) + 1;
+      if (nextTabIndex < TAB_LIST.length) {
+        nextTabName = tabNames[TAB_LIST[nextTabIndex]] || 'Next';
+      }
     }
     
-    goNext();
+    // Show confirmation alert for Save & Continue
+    const confirmMessage = `Do you want to save the ${currentTabName} data and continue to ${nextTabName}?`;
+    const confirmed = window.confirm(confirmMessage);
+    
+    if (confirmed) {
+      // Navigate to next tab or subtab
+      if (activeTab === 'visa') {
+        const currentSubTabIndex = visaSubTabs.indexOf(activeVisaSubTab);
+        
+        if (currentSubTabIndex < visaSubTabs.length - 1) {
+          setActiveVisaSubTab(visaSubTabs[currentSubTabIndex + 1]);
+        } else {
+          const currentIndex = TAB_LIST.indexOf(activeTab);
+          if (currentIndex < TAB_LIST.length - 1) {
+            setActiveTab(TAB_LIST[currentIndex + 1]);
+          }
+        }
+      } else {
+        goNext();
+      }
+    }
   }
 };
+
   // Dynamic "+ Add ..." button for bottom bar
   const getAddConfigForTab = (tabKey) => {
     switch (tabKey) {

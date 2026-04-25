@@ -1904,13 +1904,96 @@ const AddMiceDetails = () => {
 
   const isLastTab = activeTab === TAB_LIST[TAB_LIST.length - 1];
 
-  const handleSaveClick = () => {
-    if (isLastTab) {
+ const handleSaveClick = () => {
+  // Check if we're on the last tab (Save All/Update All)
+  if (isLastTab) {
+    // For Save All or Update All operations
+    const confirmMessage = isEditMode 
+      ? 'Are you sure you want to update this MICE tour with all changes?'
+      : 'Are you sure you want to save this MICE tour with all data?';
+    
+    const confirmed = window.confirm(confirmMessage);
+    
+    if (confirmed) {
       saveMiceDetails();
-    } else {
-      goNext();
     }
-  };
+  } else {
+    // For Save & Continue operations - show alert before saving and moving to next tab
+    let currentTabName = '';
+    let nextTabName = 'Next';
+    
+    // Handle visa subtabs
+    if (activeTab === 'visa') {
+      const currentSubTabIndex = visaSubTabs.indexOf(activeVisaSubTab);
+      if (currentSubTabIndex >= 0) {
+        const visaTabNames = {
+          'tourist': 'Tourist Visa',
+          'transit': 'Transit Visa',
+          'business': 'Business Visa',
+          'form': 'Visa Form',
+          'currency': 'Currency',
+          'fees': 'Visa Fees',
+          'submission': 'Submission & Pick Up'
+        };
+        currentTabName = visaTabNames[activeVisaSubTab] || activeVisaSubTab;
+        
+        if (currentSubTabIndex < visaSubTabs.length - 1) {
+          nextTabName = visaTabNames[visaSubTabs[currentSubTabIndex + 1]] || 'Next';
+        } else {
+          nextTabName = 'Booking POI';
+        }
+      }
+    } else {
+      // Regular tabs
+      const tabNames = {
+        'basic': 'Basic Details',
+        'itineraries': 'Itineraries',
+        'departures': 'Departures',
+        'tourCost': 'Tour Cost',
+        'optionalTours': 'Optional Tours',
+        'emiOptions': 'EMI Options',
+        'inclusions': 'Inclusions',
+        'exclusions': 'Exclusions',
+        'transport': 'Transport',
+        'hotels': 'Hotels',
+        'visa': 'Visa',
+        'bookingPoi': 'Booking POI',
+        'cancellation': 'Cancellation Policy',
+        'instructions': 'Instructions',
+        'images': 'Images'
+      };
+      
+      currentTabName = tabNames[activeTab] || activeTab;
+      
+      const nextTabIndex = TAB_LIST.indexOf(activeTab) + 1;
+      if (nextTabIndex < TAB_LIST.length) {
+        nextTabName = tabNames[TAB_LIST[nextTabIndex]] || 'Next';
+      }
+    }
+    
+    // Show confirmation alert for Save & Continue
+    const confirmMessage = `Do you want to save the ${currentTabName} data and continue to ${nextTabName}?`;
+    const confirmed = window.confirm(confirmMessage);
+    
+    if (confirmed) {
+      // Navigate to next tab or subtab
+      if (activeTab === 'visa') {
+        const currentSubTabIndex = visaSubTabs.indexOf(activeVisaSubTab);
+        
+        if (currentSubTabIndex < visaSubTabs.length - 1) {
+          setActiveVisaSubTab(visaSubTabs[currentSubTabIndex + 1]);
+        } else {
+          const currentIndex = TAB_LIST.indexOf(activeTab);
+          if (currentIndex < TAB_LIST.length - 1) {
+            setActiveTab(TAB_LIST[currentIndex + 1]);
+          }
+        }
+      } else {
+        goNext();
+      }
+    }
+  }
+};
 
   const getAddConfigForTab = (tabKey) => {
     switch (tabKey) {

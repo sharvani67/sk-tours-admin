@@ -554,27 +554,38 @@ const AddOneDayPicnic = () => {
     }
   };
 
-  const handleSave = () => {
+ // Update the goNext and goBack functions
+const goNext = () => {
+  const currentIndex = TAB_LIST.indexOf(activeTab);
+  if (currentIndex < TAB_LIST.length - 1) {
+    setActiveTab(TAB_LIST[currentIndex + 1]);
+  }
+};
+
+const goBack = () => {
+  const currentIndex = TAB_LIST.indexOf(activeTab);
+  if (currentIndex > 0) {
+    setActiveTab(TAB_LIST[currentIndex - 1]);
+  }
+};
+
+// Replace the existing handleSave function with this:
+const handleSave = () => {
+  // For Save All/Update All operations
+  const confirmMessage = isEditMode 
+    ? 'Are you sure you want to update this one day picnic with all changes?'
+    : 'Are you sure you want to save this one day picnic with all data?';
+  
+  const confirmed = window.confirm(confirmMessage);
+  
+  if (confirmed) {
     if (isEditMode) {
       updatePicnic();
     } else {
       createPicnic();
     }
-  };
-
-  const goBack = () => {
-    const currentIndex = TAB_LIST.indexOf(activeTab);
-    if (currentIndex > 0) {
-      setActiveTab(TAB_LIST[currentIndex - 1]);
-    }
-  };
-
-  const goNext = () => {
-    const currentIndex = TAB_LIST.indexOf(activeTab);
-    if (currentIndex < TAB_LIST.length - 1) {
-      setActiveTab(TAB_LIST[currentIndex + 1]);
-    }
-  };
+  }
+};
 
   const isLastTab = activeTab === TAB_LIST[TAB_LIST.length - 1];
 
