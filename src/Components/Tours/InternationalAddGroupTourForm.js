@@ -382,14 +382,17 @@ const handleLoanAmountChange = (value) => {
     return;
   }
   
-  if (editingType === 'hotel' && editIndex !== -1) {
+    if (editingHotelIndex !== -1) {
     // Update existing item
     const updated = [...hotelRows];
-    updated[editIndex] = { ...hotelItem };
+    updated[editingHotelIndex] = { ...hotelItem };
     setHotelRows(updated);
+    setEditingHotelIndex(-1); // Reset editing index
+    setSuccess('Hotel updated successfully');
   } else {
     // Add new item
     setHotelRows(prev => [...prev, { ...hotelItem }]);
+    setSuccess('Hotel added successfully');
   }
   
   // Reset form
@@ -403,14 +406,22 @@ const handleLoanAmountChange = (value) => {
   });
   
   // Reset editing context
-  resetEditing();
+  // resetEditing();
 };
 
   // Edit hotel row - FIXED
+// Edit hotel row
 const editHotelRow = (idx) => {
   const item = hotelRows[idx];
-  setHotelItem(item);
-  setEditingHotelIndex(idx);
+  setHotelItem({
+    city: item.city || '',
+    nights: item.nights || '',
+    standard_hotel_name: item.standard_hotel_name || '',
+    deluxe_hotel_name: item.deluxe_hotel_name || '',
+    executive_hotel_name: item.executive_hotel_name || '',
+    remarks: item.remarks || ''
+  });
+  setEditingHotelIndex(idx); // Set editing index
 };
 
 const removeHotelRow = (idx) => {
