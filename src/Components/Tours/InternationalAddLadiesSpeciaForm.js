@@ -102,11 +102,6 @@ const AddLadiesTour = () => {
   const [instructionOption1, setInstructionOption1] = useState('');
   const [instructionOption2, setInstructionOption2] = useState('');
   
-  // For Departure Description
-  const [departureActiveOption, setDepartureActiveOption] = useState('option1');
-  const [departureOption1, setDepartureOption1] = useState('');
-  const [departureOption2, setDepartureOption2] = useState('');
-  
   // For Visa Remarks
   const [visaRemarksActiveOption, setVisaRemarksActiveOption] = useState('option1');
   const [visaRemarksOption1, setVisaRemarksOption1] = useState('');
@@ -128,7 +123,7 @@ const AddLadiesTour = () => {
   const [categories, setCategories] = useState([]);
   const [destinations, setDestinations] = useState([]);
 
-  // BASIC DETAILS
+  // BASIC DETAILS - REMOVED departure_description fields
   const [formData, setFormData] = useState({
     tour_code: '',
     tour_type: "ladiesspecial",
@@ -162,9 +157,6 @@ const AddLadiesTour = () => {
     optional_tour_remarks: "",
     optional_tour_remarks_option1: "",
     optional_tour_remarks_option2: "",
-    departure_description: "",
-    departure_description_option1: "",
-    departure_description_option2: "",
     instruction_description: "",
     instruction_description_option1: "",
     instruction_description_option2: "",
@@ -194,7 +186,7 @@ const AddLadiesTour = () => {
   ];
 
   // =======================
-  // DEPARTURES FOR LADIES SPECIAL TOURS
+  // DEPARTURES FOR LADIES SPECIAL TOURS - NO DESCRIPTION FIELD
   // =======================
   const [ladiesDepartureForm, setLadiesDepartureForm] = useState({
     start_date: '',
@@ -202,7 +194,6 @@ const AddLadiesTour = () => {
     status: 'Available',
     total_seats: 40,
     booked_seats: 0,
-    description: '',
     three_star_twin: '',
     three_star_triple: '',
     three_star_child_with_bed: '',
@@ -1522,10 +1513,6 @@ const AddLadiesTour = () => {
       setInstructionOption1("Please carry valid ID proof. Reporting time is 2 hours before departure. Carry comfortable clothing and walking shoes. Follow the itinerary timings strictly. Carry necessary medications.");
       setInstructionOption2("Passport required for international travel. Visa assistance available. Travel insurance is mandatory. Medical fitness certificate required for adventure activities. Emergency contact numbers provided.");
       
-      // Departure Description
-      setDepartureOption1("Standard departure with regular transfers and shared sightseeing. Departure dates are fixed and subject to minimum group size of 6 persons. Check-in time 12 PM and check-out time 10 AM.");
-      setDepartureOption2("Premium departure with private transfers and exclusive sightseeing. Flexible departure dates available for minimum 2 persons. Early check-in and late check-out available on request.");
-      
       // Visa Remarks
       setVisaRemarksOption1("Visa requirements are subject to change based on embassy regulations. Processing time may vary. It is recommended to apply at least 3-4 weeks before departure. All documents must be original and valid for at least 6 months from the date of return.");
       setVisaRemarksOption2("Express visa processing available for additional fee. Visa on arrival available for eligible nationalities. E-visa facility available online. 24/7 visa support available. Dedicated visa concierge service.");
@@ -1539,10 +1526,9 @@ const AddLadiesTour = () => {
       setEmiRemarksActiveOption('option1');
       setOptionalTourRemarksActiveOption('option1');
       setInstructionActiveOption('option1');
-      setDepartureActiveOption('option1');
       setVisaRemarksActiveOption('option1');
       
-      // Set form data with prefilled values
+      // Set form data with prefilled values - REMOVED departure_description fields
       setFormData(prev => ({
         ...prev,
         cost_remarks: "Please note that while the tour price has been indicated, it may vary if you choose dates closer to departure or during periods when the season transitions from low to high. We therefore kindly request you to confirm the final tour price before proceeding with your booking and to mention the tour code when inquiring to receive the exact cost. Child pricing is calculated based on the standard hotel category, and if you choose Deluxe or Executive accommodations, child rates may be adjusted accordingly.",
@@ -1569,9 +1555,6 @@ const AddLadiesTour = () => {
         instruction_description: "Please carry valid ID proof. Reporting time is 2 hours before departure. Carry comfortable clothing and walking shoes. Follow the itinerary timings strictly. Carry necessary medications.",
         instruction_description_option1: "Please carry valid ID proof. Reporting time is 2 hours before departure. Carry comfortable clothing and walking shoes. Follow the itinerary timings strictly. Carry necessary medications.",
         instruction_description_option2: "Passport required for international travel. Visa assistance available. Travel insurance is mandatory. Medical fitness certificate required for adventure activities. Emergency contact numbers provided.",
-        departure_description: "Standard departure with regular transfers and shared sightseeing. Departure dates are fixed and subject to minimum group size of 6 persons. Check-in time 12 PM and check-out time 10 AM.",
-        departure_description_option1: "Standard departure with regular transfers and shared sightseeing. Departure dates are fixed and subject to minimum group size of 6 persons. Check-in time 12 PM and check-out time 10 AM.",
-        departure_description_option2: "Premium departure with private transfers and exclusive sightseeing. Flexible departure dates available for minimum 2 persons. Early check-in and late check-out available on request.",
         visa_remarks: "Visa requirements are subject to change based on embassy regulations. Processing time may vary. It is recommended to apply at least 3-4 weeks before departure. All documents must be original and valid for at least 6 months from the date of return.",
         visa_remarks_option1: "Visa requirements are subject to change based on embassy regulations. Processing time may vary. It is recommended to apply at least 3-4 weeks before departure. All documents must be original and valid for at least 6 months from the date of return.",
         visa_remarks_option2: "Express visa processing available for additional fee. Visa on arrival available for eligible nationalities. E-visa facility available online. 24/7 visa support available. Dedicated visa concierge service."
@@ -1788,18 +1771,6 @@ const AddLadiesTour = () => {
           instructionDescActive = firstInstruction.item_active || 'option1';
         }
         
-        let departureDescValue = '';
-        let departureDescOpt1 = '';
-        let departureDescOpt2 = '';
-        let departureDescActive = 'option1';
-        if (data.departures && data.departures.length > 0) {
-          const firstDeparture = data.departures[0];
-          departureDescValue = firstDeparture.description || '';
-          departureDescOpt1 = firstDeparture.description_option1 || '';
-          departureDescOpt2 = firstDeparture.description_option2 || '';
-          departureDescActive = firstDeparture.description_active || 'option1';
-        }
-        
         let visaRemarksValue = '';
         let visaRemarksOpt1 = '';
         let visaRemarksOpt2 = '';
@@ -1845,10 +1816,6 @@ const AddLadiesTour = () => {
         setInstructionOption2(instructionDescOpt2 || instructionDescValue);
         setInstructionActiveOption(instructionDescActive);
         
-        setDepartureOption1(departureDescOpt1 || departureDescValue);
-        setDepartureOption2(departureDescOpt2 || departureDescValue);
-        setDepartureActiveOption(departureDescActive);
-        
         setVisaRemarksOption1(visaRemarksOpt1 || visaRemarksValue);
         setVisaRemarksOption2(visaRemarksOpt2 || visaRemarksValue);
         setVisaRemarksActiveOption(visaRemarksActive);
@@ -1889,9 +1856,6 @@ const AddLadiesTour = () => {
           instruction_description: instructionDescValue,
           instruction_description_option1: instructionDescOpt1 || instructionDescValue,
           instruction_description_option2: instructionDescOpt2 || instructionDescValue,
-          departure_description: departureDescValue,
-          departure_description_option1: departureDescOpt1 || departureDescValue,
-          departure_description_option2: departureDescOpt2 || departureDescValue,
           visa_remarks: visaRemarksValue,
           visa_remarks_option1: visaRemarksOpt1 || visaRemarksValue,
           visa_remarks_option2: visaRemarksOpt2 || visaRemarksValue
@@ -1908,7 +1872,7 @@ const AddLadiesTour = () => {
           setItineraries(formattedItineraries);
         }
 
-        // Load departures with description options
+        // Load departures - NO DESCRIPTION FIELD
         if (data.departures && Array.isArray(data.departures)) {
           const formattedDepartures = data.departures.map(dept => ({
             start_date: dept.start_date ? dept.start_date.split('T')[0] : '',
@@ -1916,10 +1880,6 @@ const AddLadiesTour = () => {
             status: dept.status || 'Available',
             total_seats: dept.total_seats || 40,
             booked_seats: dept.booked_seats || 0,
-            description: dept.description || '',
-            description_option1: dept.description_option1 || '',
-            description_option2: dept.description_option2 || '',
-            description_active: dept.description_active || 'option1',
             three_star_twin: dept.three_star_twin || '',
             three_star_triple: dept.three_star_triple || '',
             three_star_child_with_bed: dept.three_star_child_with_bed || '',
@@ -2320,14 +2280,6 @@ const AddLadiesTour = () => {
     setFormData(prev => ({ ...prev, instruction_description: value }));
   };
 
-  const handleDepartureDescriptionOptionChange = (option, value) => {
-    if (option === 'option1') {
-      setDepartureOption1(value);
-    } else {
-      setDepartureOption2(value);
-    }
-  };
-
   const handleVisaRemarksOptionChange = (option, value) => {
     if (option === 'option1') {
       setVisaRemarksOption1(value);
@@ -2348,7 +2300,7 @@ const AddLadiesTour = () => {
     setFormData(prev => ({ ...prev, visa_remarks: value }));
   };
 
-  // DEPARTURE FORM CHANGE
+  // DEPARTURE FORM CHANGE - NO DESCRIPTION FIELD
   const handleGroupDepartureChange = (e) => {
     const { name, value } = e.target;
     const numericFields = [
@@ -2369,10 +2321,8 @@ const AddLadiesTour = () => {
     }));
   };
 
-  // UPDATED: handleAddDeparture - saves based on active option tab
+  // UPDATED: handleAddDeparture - NO DESCRIPTION FIELD
   const handleAddDeparture = () => {
-    const currentDescription = departureActiveOption === 'option1' ? departureOption1 : departureOption2;
-    
     if (!ladiesDepartureForm.start_date || !ladiesDepartureForm.end_date) {
       setError('Please enter both start and end dates');
       return;
@@ -2385,10 +2335,6 @@ const AddLadiesTour = () => {
       status: ladiesDepartureForm.status || 'Available',
       total_seats: ladiesDepartureForm.total_seats || 40,
       booked_seats: ladiesDepartureForm.booked_seats || 0,
-      description: currentDescription,
-      description_option1: departureOption1,
-      description_option2: departureOption2,
-      description_active: departureActiveOption,
       three_star_twin: ladiesDepartureForm.three_star_twin ? Number(ladiesDepartureForm.three_star_twin) : null,
       three_star_triple: ladiesDepartureForm.three_star_triple ? Number(ladiesDepartureForm.three_star_triple) : null,
       three_star_child_with_bed: ladiesDepartureForm.three_star_child_with_bed ? Number(ladiesDepartureForm.three_star_child_with_bed) : null,
@@ -2426,7 +2372,6 @@ const AddLadiesTour = () => {
       status: 'Available',
       total_seats: 40,
       booked_seats: 0,
-      description: '',
       three_star_twin: '',
       three_star_triple: '',
       three_star_child_with_bed: '',
@@ -2456,7 +2401,6 @@ const AddLadiesTour = () => {
       status: departure.status || 'Available',
       total_seats: departure.total_seats || 40,
       booked_seats: departure.booked_seats || 0,
-      description: departure.description || '',
       three_star_twin: departure.three_star_twin || '',
       three_star_triple: departure.three_star_triple || '',
       three_star_child_with_bed: departure.three_star_child_with_bed || '',
@@ -2477,24 +2421,13 @@ const AddLadiesTour = () => {
       five_star_single: departure.five_star_single || ''
     });
     
-    // Set the active option based on saved data
-    if (departure.description_active) {
-      setDepartureActiveOption(departure.description_active);
-    }
-    if (departure.description_option1) {
-      setDepartureOption1(departure.description_option1);
-    }
-    if (departure.description_option2) {
-      setDepartureOption2(departure.description_option2);
-    }
-    
     setEditingDepartureIndex(idx);
   };
 
   const handleRemoveDeparture = (idx) => {
     const confirmDelete = window.confirm('Are you sure you want to remove this departure?');
     if (confirmDelete) {
-      setDepartures(prev => prev.filter((_, i) => i !== idx));
+      setDepartures((prev) => prev.filter((_, i) => i !== idx));
       if (editingDepartureIndex === idx) {
         setEditingDepartureIndex(-1);
         setLadiesDepartureForm({
@@ -2503,7 +2436,6 @@ const AddLadiesTour = () => {
           status: 'Available',
           total_seats: 40,
           booked_seats: 0,
-          description: '',
           three_star_twin: '',
           three_star_triple: '',
           three_star_child_with_bed: '',
@@ -2741,7 +2673,6 @@ const AddLadiesTour = () => {
         cancellation_remarks_active: cancellationRemarksActiveOption,
         optional_tour_remarks_active: optionalTourRemarksActiveOption,
         instruction_description_active: instructionActiveOption,
-        departure_description_active: departureActiveOption,
         visa_remarks_active: visaRemarksActiveOption,
         cost_remarks_option1: costRemarksOption1,
         cost_remarks_option2: costRemarksOption2,
@@ -2759,8 +2690,6 @@ const AddLadiesTour = () => {
         optional_tour_remarks_option2: optionalTourRemarksOption2,
         instruction_description_option1: instructionOption1,
         instruction_description_option2: instructionOption2,
-        departure_description_option1: departureOption1,
-        departure_description_option2: departureOption2,
         visa_remarks_option1: visaRemarksOption1,
         visa_remarks_option2: visaRemarksOption2
       };
@@ -2813,7 +2742,7 @@ const AddLadiesTour = () => {
         });
       }
 
-      // Save departures with description options
+      // Save departures - NO DESCRIPTION FIELD
       if (departures.length > 0) {
         const formattedDepartures = departures.map(dept => ({
           tour_type: 'ladiesspecial',
@@ -2822,10 +2751,6 @@ const AddLadiesTour = () => {
           status: dept.status,
           total_seats: dept.total_seats || 40,
           booked_seats: dept.booked_seats || 0,
-          description: dept.description || null,
-          description_option1: departureOption1,
-          description_option2: departureOption2,
-          description_active: departureActiveOption,
           adult_price: dept.three_star_twin || 0,
           three_star_twin: dept.three_star_twin || null,
           three_star_triple: dept.three_star_triple || null,
@@ -3110,7 +3035,6 @@ const AddLadiesTour = () => {
         cancellation_remarks_active: cancellationRemarksActiveOption,
         optional_tour_remarks_active: optionalTourRemarksActiveOption,
         instruction_description_active: instructionActiveOption,
-        departure_description_active: departureActiveOption,
         visa_remarks_active: visaRemarksActiveOption,
         cost_remarks_option1: costRemarksOption1,
         cost_remarks_option2: costRemarksOption2,
@@ -3128,8 +3052,6 @@ const AddLadiesTour = () => {
         optional_tour_remarks_option2: optionalTourRemarksOption2,
         instruction_description_option1: instructionOption1,
         instruction_description_option2: instructionOption2,
-        departure_description_option1: departureOption1,
-        departure_description_option2: departureOption2,
         visa_remarks_option1: visaRemarksOption1,
         visa_remarks_option2: visaRemarksOption2
       };
@@ -3161,7 +3083,7 @@ const AddLadiesTour = () => {
         });
       }
 
-      // Save departures with description options
+      // Save departures - NO DESCRIPTION FIELD
       if (departures.length > 0) {
         const formattedDepartures = departures.map(dept => ({
           tour_type: 'ladiesspecial',
@@ -3170,10 +3092,6 @@ const AddLadiesTour = () => {
           status: dept.status,
           total_seats: dept.total_seats || 40,
           booked_seats: dept.booked_seats || 0,
-          description: dept.description || null,
-          description_option1: departureOption1,
-          description_option2: departureOption2,
-          description_active: departureActiveOption,
           adult_price: dept.three_star_twin || 0,
           three_star_twin: dept.three_star_twin || null,
           three_star_triple: dept.three_star_triple || null,
@@ -3909,23 +3827,9 @@ const AddLadiesTour = () => {
                 )}
               </Tab>
 
-              {/* ====== DEPARTURES & COSTS TAB ====== */}
+              {/* ====== DEPARTURES & COSTS TAB ====== - NO DESCRIPTION FIELD */}
               <Tab eventKey="departures" title="Departures & Costs">
                 <div>
-                  {/* Departure Description with Option Tabs */}
-                  <Form.Group className="mb-4">
-                    <OptionTabs
-                      activeOption={departureActiveOption}
-                      onOptionChange={setDepartureActiveOption}
-                      option1Value={departureOption1}
-                      option2Value={departureOption2}
-                      onOption1Change={(val) => handleDepartureDescriptionOptionChange('option1', val)}
-                      onOption2Change={(val) => handleDepartureDescriptionOptionChange('option2', val)}
-                      placeholder="Enter departure description for Option 1"
-                      label="Departure Description"
-                    />
-                  </Form.Group>
-
                   {/* Departure Dates Section */}
                   <Row className="mb-4">
                     <h5>Add Departure with Costs</h5>
@@ -4310,7 +4214,6 @@ const AddLadiesTour = () => {
                         status: 'Available',
                         total_seats: 40,
                         booked_seats: 0,
-                        description: '',
                         three_star_twin: '',
                         three_star_triple: '',
                         three_star_child_with_bed: '',

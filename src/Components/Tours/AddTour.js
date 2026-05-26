@@ -115,35 +115,7 @@ const AddTour = () => {
     overview: '',
     base_price_adult: '',
     emi_price: '',
-    is_international: 0,
-    // These will store which option is active and the values
-    cost_remarks: "",
-    cost_remarks_option1: "",
-    cost_remarks_option2: "",
-    hotel_remarks: "",
-    hotel_remarks_option1: "",
-    hotel_remarks_option2: "",
-    transport_remarks: "",
-    transport_remarks_option1: "",
-    transport_remarks_option2: "",
-    booking_poi_remarks: "",
-    booking_poi_remarks_option1: "",
-    booking_poi_remarks_option2: "",
-    cancellation_remarks: "",
-    cancellation_remarks_option1: "",
-    cancellation_remarks_option2: "",
-    emi_remarks: "",
-    emi_remarks_option1: "",
-    emi_remarks_option2: "",
-    optional_tour_remarks: "",
-    optional_tour_remarks_option1: "",
-    optional_tour_remarks_option2: "",
-    departure_description: "",
-    departure_description_option1: "",
-    departure_description_option2: "",
-    instruction_description: "",
-    instruction_description_option1: "",
-    instruction_description_option2: ""
+    is_international: 0
   });
 
   // DEPARTURES
@@ -521,8 +493,9 @@ const AddTour = () => {
     const newItem = { 
       ...departureForm, 
       description: currentDescription,
-      // Also store which option was used
-      description_option: departureActiveOption
+      description_option1: departureOption1,
+      description_option2: departureOption2,
+      description_active: departureActiveOption
     };
     
     if (editingType === 'departure' && editIndex !== -1) {
@@ -548,7 +521,13 @@ const AddTour = () => {
   const addCostRow = () => {
     if (!tourCostItem.pax) return;
     
-    const newItem = { ...tourCostItem };
+    const newItem = { 
+      ...tourCostItem,
+      cost_remarks: costRemarksActiveOption === 'option1' ? costRemarksOption1 : costRemarksOption2,
+      cost_remarks_option1: costRemarksOption1,
+      cost_remarks_option2: costRemarksOption2,
+      cost_remarks_active: costRemarksActiveOption
+    };
     
     if (editingType === 'cost' && editIndex !== -1) {
       const updated = [...tourCosts];
@@ -573,7 +552,13 @@ const AddTour = () => {
   const addOptionalTourRow = () => {
     if (!optionalTourItem.tour_name.trim()) return;
 
-    const processedItem = { ...optionalTourItem };
+    const processedItem = { 
+      ...optionalTourItem,
+      optional_remarks: optionalTourRemarksActiveOption === 'option1' ? optionalTourRemarksOption1 : optionalTourRemarksOption2,
+      optional_remarks_option1: optionalTourRemarksOption1,
+      optional_remarks_option2: optionalTourRemarksOption2,
+      optional_remarks_active: optionalTourRemarksActiveOption
+    };
 
     if (editingType === 'optionalTour' && editIndex !== -1) {
       const updated = [...optionalTours];
@@ -594,12 +579,20 @@ const AddTour = () => {
   const addHotelRow = () => {
     if (!hotelItem.city.trim()) return;
     
+    const newItem = {
+      ...hotelItem,
+      hotel_remarks: hotelRemarksActiveOption === 'option1' ? hotelRemarksOption1 : hotelRemarksOption2,
+      hotel_remarks_option1: hotelRemarksOption1,
+      hotel_remarks_option2: hotelRemarksOption2,
+      hotel_remarks_active: hotelRemarksActiveOption
+    };
+    
     if (editingType === 'hotel' && editIndex !== -1) {
       const updated = [...hotelRows];
-      updated[editIndex] = { ...hotelItem };
+      updated[editIndex] = newItem;
       setHotelRows(updated);
     } else {
-      setHotelRows(prev => [...prev, { ...hotelItem }]);
+      setHotelRows(prev => [...prev, newItem]);
     }
 
     setHotelItem({
@@ -616,12 +609,20 @@ const AddTour = () => {
   const addTransportRow = () => {
     if (!transportItem.description.trim()) return;
     
+    const newItem = {
+      description: transportItem.description.trim(),
+      flight_remarks: flightRemarksActiveOption === 'option1' ? flightRemarksOption1 : flightRemarksOption2,
+      flight_remarks_option1: flightRemarksOption1,
+      flight_remarks_option2: flightRemarksOption2,
+      flight_remarks_active: flightRemarksActiveOption
+    };
+    
     if (editingType === 'transport' && editIndex !== -1) {
       const updated = [...transports];
-      updated[editIndex] = { description: transportItem.description.trim() };
+      updated[editIndex] = newItem;
       setTransports(updated);
     } else {
-      setTransports(prev => [...prev, { description: transportItem.description.trim() }]);
+      setTransports(prev => [...prev, newItem]);
     }
 
     setTransportItem({ description: '' });
@@ -664,7 +665,14 @@ const AddTour = () => {
     const txt = poiText.trim();
     if (!txt) return;
     
-    const newPoi = { item: poiText, amount_details: poiAmount };
+    const newPoi = { 
+      item: poiText, 
+      amount_details: poiAmount,
+      booking_remarks: bookingPoiRemarksActiveOption === 'option1' ? bookingPoiRemarksOption1 : bookingPoiRemarksOption2,
+      booking_remarks_option1: bookingPoiRemarksOption1,
+      booking_remarks_option2: bookingPoiRemarksOption2,
+      booking_remarks_active: bookingPoiRemarksActiveOption
+    };
     
     if (editingType === 'poi' && editIndex !== -1) {
       const updated = [...bookingPois];
@@ -682,12 +690,20 @@ const AddTour = () => {
   const addCancelRow = () => {
     if (!cancelItem.cancellation_policy.trim()) return;
     
+    const newItem = {
+      ...cancelItem,
+      cancellation_remarks: cancellationRemarksActiveOption === 'option1' ? cancellationRemarksOption1 : cancellationRemarksOption2,
+      cancellation_remarks_option1: cancellationRemarksOption1,
+      cancellation_remarks_option2: cancellationRemarksOption2,
+      cancellation_remarks_active: cancellationRemarksActiveOption
+    };
+    
     if (editingType === 'cancellation' && editIndex !== -1) {
       const updated = [...cancelPolicies];
-      updated[editIndex] = { ...cancelItem };
+      updated[editIndex] = newItem;
       setCancelPolicies(updated);
     } else {
-      setCancelPolicies(prev => [...prev, { ...cancelItem }]);
+      setCancelPolicies(prev => [...prev, newItem]);
     }
     
     setCancelItem({ cancellation_policy: "", charges: "" });
@@ -699,6 +715,13 @@ const AddTour = () => {
     const currentInstruction = instructionActiveOption === 'option1' ? instructionOption1 : instructionOption2;
     const txt = currentInstruction.trim();
     if (!txt) return;
+    
+    const newItem = {
+      item: txt,
+      item_option1: instructionOption1,
+      item_option2: instructionOption2,
+      item_active: instructionActiveOption
+    };
     
     if (editingType === 'instruction' && editIndex !== -1) {
       const updated = [...instructions];
@@ -841,7 +864,7 @@ const AddTour = () => {
     setCancelItem(prev => ({ ...prev, [name]: value }));
   };
 
-  // BASIC DETAILS CHANGE - UPDATED to handle option fields
+  // BASIC DETAILS CHANGE
   const handleBasicChange = (e) => {
     const { name, value } = e.target;
     const numericFields = [
@@ -865,147 +888,91 @@ const AddTour = () => {
   const handleCostRemarksOptionChange = (option, value) => {
     if (option === 'option1') {
       setCostRemarksOption1(value);
-      if (costRemarksActiveOption === 'option1') {
-        setFormData(prev => ({ ...prev, cost_remarks: value }));
-      }
     } else {
       setCostRemarksOption2(value);
-      if (costRemarksActiveOption === 'option2') {
-        setFormData(prev => ({ ...prev, cost_remarks: value }));
-      }
     }
   };
 
   const handleCostRemarksActiveChange = (option) => {
     setCostRemarksActiveOption(option);
-    const value = option === 'option1' ? costRemarksOption1 : costRemarksOption2;
-    setFormData(prev => ({ ...prev, cost_remarks: value }));
   };
 
   // Handlers for Optional Tour Remarks with option tabs
   const handleOptionalTourRemarksOptionChange = (option, value) => {
     if (option === 'option1') {
       setOptionalTourRemarksOption1(value);
-      if (optionalTourRemarksActiveOption === 'option1') {
-        setFormData(prev => ({ ...prev, optional_tour_remarks: value }));
-      }
     } else {
       setOptionalTourRemarksOption2(value);
-      if (optionalTourRemarksActiveOption === 'option2') {
-        setFormData(prev => ({ ...prev, optional_tour_remarks: value }));
-      }
     }
   };
 
   const handleOptionalTourRemarksActiveChange = (option) => {
     setOptionalTourRemarksActiveOption(option);
-    const value = option === 'option1' ? optionalTourRemarksOption1 : optionalTourRemarksOption2;
-    setFormData(prev => ({ ...prev, optional_tour_remarks: value }));
   };
 
   // Handlers for EMI Remarks with option tabs
   const handleEmiRemarksOptionChange = (option, value) => {
     if (option === 'option1') {
       setEmiRemarksOption1(value);
-      if (emiRemarksActiveOption === 'option1') {
-        setFormData(prev => ({ ...prev, emi_remarks: value }));
-      }
     } else {
       setEmiRemarksOption2(value);
-      if (emiRemarksActiveOption === 'option2') {
-        setFormData(prev => ({ ...prev, emi_remarks: value }));
-      }
     }
   };
 
   const handleEmiRemarksActiveChange = (option) => {
     setEmiRemarksActiveOption(option);
-    const value = option === 'option1' ? emiRemarksOption1 : emiRemarksOption2;
-    setFormData(prev => ({ ...prev, emi_remarks: value }));
   };
 
   // Handlers for Flight Remarks with option tabs
   const handleFlightRemarksOptionChange = (option, value) => {
     if (option === 'option1') {
       setFlightRemarksOption1(value);
-      if (flightRemarksActiveOption === 'option1') {
-        setFormData(prev => ({ ...prev, transport_remarks: value }));
-      }
     } else {
       setFlightRemarksOption2(value);
-      if (flightRemarksActiveOption === 'option2') {
-        setFormData(prev => ({ ...prev, transport_remarks: value }));
-      }
     }
   };
 
   const handleFlightRemarksActiveChange = (option) => {
     setFlightRemarksActiveOption(option);
-    const value = option === 'option1' ? flightRemarksOption1 : flightRemarksOption2;
-    setFormData(prev => ({ ...prev, transport_remarks: value }));
   };
 
   // Handlers for Hotel Remarks with option tabs
   const handleHotelRemarksOptionChange = (option, value) => {
     if (option === 'option1') {
       setHotelRemarksOption1(value);
-      if (hotelRemarksActiveOption === 'option1') {
-        setFormData(prev => ({ ...prev, hotel_remarks: value }));
-      }
     } else {
       setHotelRemarksOption2(value);
-      if (hotelRemarksActiveOption === 'option2') {
-        setFormData(prev => ({ ...prev, hotel_remarks: value }));
-      }
     }
   };
 
   const handleHotelRemarksActiveChange = (option) => {
     setHotelRemarksActiveOption(option);
-    const value = option === 'option1' ? hotelRemarksOption1 : hotelRemarksOption2;
-    setFormData(prev => ({ ...prev, hotel_remarks: value }));
   };
 
   // Handlers for Booking Policy Remarks with option tabs
   const handleBookingPoiRemarksOptionChange = (option, value) => {
     if (option === 'option1') {
       setBookingPoiRemarksOption1(value);
-      if (bookingPoiRemarksActiveOption === 'option1') {
-        setFormData(prev => ({ ...prev, booking_poi_remarks: value }));
-      }
     } else {
       setBookingPoiRemarksOption2(value);
-      if (bookingPoiRemarksActiveOption === 'option2') {
-        setFormData(prev => ({ ...prev, booking_poi_remarks: value }));
-      }
     }
   };
 
   const handleBookingPoiRemarksActiveChange = (option) => {
     setBookingPoiRemarksActiveOption(option);
-    const value = option === 'option1' ? bookingPoiRemarksOption1 : bookingPoiRemarksOption2;
-    setFormData(prev => ({ ...prev, booking_poi_remarks: value }));
   };
 
   // Handlers for Cancellation Remarks with option tabs
   const handleCancellationRemarksOptionChange = (option, value) => {
     if (option === 'option1') {
       setCancellationRemarksOption1(value);
-      if (cancellationRemarksActiveOption === 'option1') {
-        setFormData(prev => ({ ...prev, cancellation_remarks: value }));
-      }
     } else {
       setCancellationRemarksOption2(value);
-      if (cancellationRemarksActiveOption === 'option2') {
-        setFormData(prev => ({ ...prev, cancellation_remarks: value }));
-      }
     }
   };
 
   const handleCancellationRemarksActiveChange = (option) => {
     setCancellationRemarksActiveOption(option);
-    const value = option === 'option1' ? cancellationRemarksOption1 : cancellationRemarksOption2;
-    setFormData(prev => ({ ...prev, cancellation_remarks: value }));
   };
 
   // Handlers for Departure Description with option tabs
@@ -1024,6 +991,10 @@ const AddTour = () => {
     } else {
       setInstructionOption2(value);
     }
+  };
+
+  const handleInstructionActiveChange = (option) => {
+    setInstructionActiveOption(option);
   };
 
   const handleDepartureChange = (e) => {
@@ -1060,6 +1031,8 @@ const AddTour = () => {
   const handleImageChange = (e) => {
     const files = e.target.files ? Array.from(e.target.files) : [];
     setImageFiles(files);
+    const previews = files.map((file) => URL.createObjectURL(file));
+    setImagePreviews(previews);
   };
 
   const handleReplacementFileChange = (e) => {
@@ -1239,388 +1212,236 @@ const AddTour = () => {
     loadDropdownsAndTourCode();
   }, [id]);
 
- 
-const loadTourData = async () => {
-  try {
-    setLoading(true);
-    setError('');
-    
-    const response = await fetch(`${baseurl}/api/tours/tour/full/individual/${id}`);
-    if (!response.ok) throw new Error('Failed to fetch tour data');
-    
-    const data = await response.json();
-    
-    if (data.success) {
-      const basic = data.basic_details;
+  const loadTourData = async () => {
+    try {
+      setLoading(true);
+      setError('');
       
-      // ========================
-      // LOAD REMARKS WITH BOTH OPTIONS FROM CHILD TABLES
-      // ========================
+      const response = await fetch(`${baseurl}/api/tours/tour/full/individual/${id}`);
+      if (!response.ok) throw new Error('Failed to fetch tour data');
       
-      // 1. Cost Remarks - Get both options from tour_costs table
-      let costRemarksValue = '';
-      let costRemarksOpt1 = '';
-      let costRemarksOpt2 = '';
-      let costRemarksActive = 'option1';
+      const data = await response.json();
       
-      if (data.costs && data.costs.length > 0) {
-        const firstCost = data.costs[0];
-        costRemarksValue = firstCost.cost_remarks || '';
-        costRemarksOpt1 = firstCost.cost_remarks_option1 || '';
-        costRemarksOpt2 = firstCost.cost_remarks_option2 || '';
-        costRemarksActive = firstCost.cost_remarks_active || 'option1';
-      }
-      
-      // 2. Hotel Remarks - Get both options from tour_hotels table
-      let hotelRemarksValue = '';
-      let hotelRemarksOpt1 = '';
-      let hotelRemarksOpt2 = '';
-      let hotelRemarksActive = 'option1';
-      
-      if (data.hotels && data.hotels.length > 0) {
-        const firstHotel = data.hotels[0];
-        hotelRemarksValue = firstHotel.hotel_remarks || '';
-        hotelRemarksOpt1 = firstHotel.hotel_remarks_option1 || '';
-        hotelRemarksOpt2 = firstHotel.hotel_remarks_option2 || '';
-        hotelRemarksActive = firstHotel.hotel_remarks_active || 'option1';
-      }
-      
-      // 3. Transport Remarks - Get both options from tour_transports table
-      let transportRemarksValue = '';
-      let transportRemarksOpt1 = '';
-      let transportRemarksOpt2 = '';
-      let transportRemarksActive = 'option1';
-      
-      if (data.transport && data.transport.length > 0) {
-        const firstTransport = data.transport[0];
-        transportRemarksValue = firstTransport.flight_remarks || '';
-        transportRemarksOpt1 = firstTransport.flight_remarks_option1 || '';
-        transportRemarksOpt2 = firstTransport.flight_remarks_option2 || '';
-        transportRemarksActive = firstTransport.flight_remarks_active || 'option1';
-      }
-      
-      // 4. Booking POI Remarks - Get both options from tour_booking_poi table
-      let bookingRemarksValue = '';
-      let bookingRemarksOpt1 = '';
-      let bookingRemarksOpt2 = '';
-      let bookingRemarksActive = 'option1';
-      
-      if (data.booking_poi && data.booking_poi.length > 0) {
-        const firstPoi = data.booking_poi[0];
-        bookingRemarksValue = firstPoi.booking_remarks || '';
-        bookingRemarksOpt1 = firstPoi.booking_remarks_option1 || '';
-        bookingRemarksOpt2 = firstPoi.booking_remarks_option2 || '';
-        bookingRemarksActive = firstPoi.booking_remarks_active || 'option1';
-      }
-      
-      // 5. Cancellation Remarks - Get both options from tour_cancellation_policies table
-      let cancellationRemarksValue = '';
-      let cancellationRemarksOpt1 = '';
-      let cancellationRemarksOpt2 = '';
-      let cancellationRemarksActive = 'option1';
-      
-      if (data.cancellation_policies && data.cancellation_policies.length > 0) {
-        const firstPolicy = data.cancellation_policies[0];
-        cancellationRemarksValue = firstPolicy.cancellation_remarks || '';
-        cancellationRemarksOpt1 = firstPolicy.cancellation_remarks_option1 || '';
-        cancellationRemarksOpt2 = firstPolicy.cancellation_remarks_option2 || '';
-        cancellationRemarksActive = firstPolicy.cancellation_remarks_active || 'option1';
-      }
-      
-      // 6. Optional Tour Remarks - Get both options from optional_tours table
-      let optionalRemarksValue = '';
-      let optionalRemarksOpt1 = '';
-      let optionalRemarksOpt2 = '';
-      let optionalRemarksActive = 'option1';
-      
-      if (data.optional_tours && data.optional_tours.length > 0) {
-        const firstOptional = data.optional_tours[0];
-        optionalRemarksValue = firstOptional.optional_remarks || '';
-        optionalRemarksOpt1 = firstOptional.optional_remarks_option1 || '';
-        optionalRemarksOpt2 = firstOptional.optional_remarks_option2 || '';
-        optionalRemarksActive = firstOptional.optional_remarks_active || 'option1';
-      }
-      
-      // 7. EMI Remarks - Get both options from emi_options table
-      let emiRemarksValue = '';
-      let emiRemarksOpt1 = '';
-      let emiRemarksOpt2 = '';
-      let emiRemarksActive = 'option1';
-      
-      if (data.emi_options && data.emi_options.length > 0) {
-        const firstEmi = data.emi_options[0];
-        emiRemarksValue = firstEmi.emi_remarks || '';
-        emiRemarksOpt1 = firstEmi.emi_remarks_option1 || '';
-        emiRemarksOpt2 = firstEmi.emi_remarks_option2 || '';
-        emiRemarksActive = firstEmi.emi_remarks_active || 'option1';
-      }
-      
-      // 8. Departure Description - Get both options from tour_departures table
-      let departureDescValue = '';
-      let departureDescOpt1 = '';
-      let departureDescOpt2 = '';
-      let departureDescActive = 'option1';
-      
-      if (data.departures && data.departures.length > 0) {
-        const firstDeparture = data.departures[0];
-        departureDescValue = firstDeparture.description || '';
-        departureDescOpt1 = firstDeparture.description_option1 || '';
-        departureDescOpt2 = firstDeparture.description_option2 || '';
-        departureDescActive = firstDeparture.description_active || 'option1';
-      }
-      
-      // 9. Instruction Description - Get both options from tour_instructions table
-      let instructionDescValue = '';
-      let instructionDescOpt1 = '';
-      let instructionDescOpt2 = '';
-      let instructionDescActive = 'option1';
-      
-      if (data.instructions && data.instructions.length > 0) {
-        const firstInstruction = data.instructions[0];
-        instructionDescValue = firstInstruction.item || '';
-        instructionDescOpt1 = firstInstruction.item_option1 || '';
-        instructionDescOpt2 = firstInstruction.item_option2 || '';
-        instructionDescActive = firstInstruction.item_active || 'option1';
-      }
-      
-      // Set state with both options
-      setCostRemarksOption1(costRemarksOpt1 || costRemarksValue);
-      setCostRemarksOption2(costRemarksOpt2 || costRemarksValue);
-      setCostRemarksActiveOption(costRemarksActive);
-      
-      setHotelRemarksOption1(hotelRemarksOpt1 || hotelRemarksValue);
-      setHotelRemarksOption2(hotelRemarksOpt2 || hotelRemarksValue);
-      setHotelRemarksActiveOption(hotelRemarksActive);
-      
-      setFlightRemarksOption1(transportRemarksOpt1 || transportRemarksValue);
-      setFlightRemarksOption2(transportRemarksOpt2 || transportRemarksValue);
-      setFlightRemarksActiveOption(transportRemarksActive);
-      
-      setEmiRemarksOption1(emiRemarksOpt1 || emiRemarksValue);
-      setEmiRemarksOption2(emiRemarksOpt2 || emiRemarksValue);
-      setEmiRemarksActiveOption(emiRemarksActive);
-      
-      setBookingPoiRemarksOption1(bookingRemarksOpt1 || bookingRemarksValue);
-      setBookingPoiRemarksOption2(bookingRemarksOpt2 || bookingRemarksValue);
-      setBookingPoiRemarksActiveOption(bookingRemarksActive);
-      
-      setCancellationRemarksOption1(cancellationRemarksOpt1 || cancellationRemarksValue);
-      setCancellationRemarksOption2(cancellationRemarksOpt2 || cancellationRemarksValue);
-      setCancellationRemarksActiveOption(cancellationRemarksActive);
-      
-      setOptionalTourRemarksOption1(optionalRemarksOpt1 || optionalRemarksValue);
-      setOptionalTourRemarksOption2(optionalRemarksOpt2 || optionalRemarksValue);
-      setOptionalTourRemarksActiveOption(optionalRemarksActive);
-      
-      setDepartureOption1(departureDescOpt1 || departureDescValue);
-      setDepartureOption2(departureDescOpt2 || departureDescValue);
-      setDepartureActiveOption(departureDescActive);
-      
-      setInstructionOption1(instructionDescOpt1 || instructionDescValue);
-      setInstructionOption2(instructionDescOpt2 || instructionDescValue);
-      setInstructionActiveOption(instructionDescActive);
-      
-      setFormData({
-        tour_code: basic.tour_code || '',
-        tour_type: basic.tour_type || 'individual',
-        title: basic.title || '',
-        category_id: basic.category_id || 1,
-        primary_destination_id: basic.primary_destination_id || '',
-        duration_days: basic.duration_days || '',
-        overview: basic.overview || '',
-        base_price_adult: basic.base_price_adult || '',
-        emi_price: basic.emi_price || '',
-        is_international: basic.is_international || 0,
-        cost_remarks: costRemarksValue,
-        cost_remarks_option1: costRemarksOpt1 || costRemarksValue,
-        cost_remarks_option2: costRemarksOpt2 || costRemarksValue,
-        hotel_remarks: hotelRemarksValue,
-        hotel_remarks_option1: hotelRemarksOpt1 || hotelRemarksValue,
-        hotel_remarks_option2: hotelRemarksOpt2 || hotelRemarksValue,
-        transport_remarks: transportRemarksValue,
-        transport_remarks_option1: transportRemarksOpt1 || transportRemarksValue,
-        transport_remarks_option2: transportRemarksOpt2 || transportRemarksValue,
-        booking_poi_remarks: bookingRemarksValue,
-        booking_poi_remarks_option1: bookingRemarksOpt1 || bookingRemarksValue,
-        booking_poi_remarks_option2: bookingRemarksOpt2 || bookingRemarksValue,
-        cancellation_remarks: cancellationRemarksValue,
-        cancellation_remarks_option1: cancellationRemarksOpt1 || cancellationRemarksValue,
-        cancellation_remarks_option2: cancellationRemarksOpt2 || cancellationRemarksValue,
-        emi_remarks: emiRemarksValue,
-        emi_remarks_option1: emiRemarksOpt1 || emiRemarksValue,
-        emi_remarks_option2: emiRemarksOpt2 || emiRemarksValue,
-        optional_tour_remarks: optionalRemarksValue,
-        optional_tour_remarks_option1: optionalRemarksOpt1 || optionalRemarksValue,
-        optional_tour_remarks_option2: optionalRemarksOpt2 || optionalRemarksValue,
-        departure_description: departureDescValue,
-        departure_description_option1: departureDescOpt1 || departureDescValue,
-        departure_description_option2: departureDescOpt2 || departureDescValue,
-        instruction_description: instructionDescValue,
-        instruction_description_option1: instructionDescOpt1 || instructionDescValue,
-        instruction_description_option2: instructionDescOpt2 || instructionDescValue
-      });
-
-      // Load itineraries
-      if (data.itinerary && Array.isArray(data.itinerary)) {
-        const formattedItineraries = data.itinerary.map(item => ({
-          day: item.day,
-          title: item.title,
-          description: item.description || '',
-          meals: item.meals || ''
-        }));
-        setItineraries(formattedItineraries);
-      }
-
-      // Load departures - with both options
-      if (data.departures && Array.isArray(data.departures)) {
-        const formattedDepartures = data.departures.map(dept => ({
-          departure_date: dept.departure_date || '',
-          return_date: dept.return_date || '',
-          adult_price: dept.adult_price || '',
-          child_price: dept.child_price || '',
-          infant_price: dept.infant_price || '',
-          description: dept.description || '',
-          description_option1: dept.description_option1 || '',
-          description_option2: dept.description_option2 || '',
-          description_active: dept.description_active || 'option1',
-          total_seats: dept.total_seats || ''
-        }));
-        setDepartures(formattedDepartures);
-      }
-
-      // Load inclusions
-      if (data.inclusions && Array.isArray(data.inclusions)) {
-        const inclusionItems = data.inclusions.map(inc => inc.item);
-        setInclusions(inclusionItems);
-      }
-
-      // Load exclusions
-      if (data.exclusions && Array.isArray(data.exclusions)) {
-        const exclusionItems = data.exclusions.map(exc => exc.item);
-        setExclusions(exclusionItems);
-      }
-
-      // Load costs - with both options
-      if (data.costs && Array.isArray(data.costs)) {
-        setTourCosts(data.costs);
-      }
-
-      // Load optional tours - with both options
-      if (data.optional_tours && Array.isArray(data.optional_tours)) {
-        setOptionalTours(data.optional_tours);
-      }
-
-      // Load EMI options - with both options
-      if (data.emi_options && Array.isArray(data.emi_options)) {
-        const defaultOptions = [
-          { particulars: 'Per Month Payment', months: 6, loan_amount: '', emi: '' },
-          { particulars: 'Per Month Payment', months: 12, loan_amount: '', emi: '' },
-          { particulars: 'Per Month Payment', months: 18, loan_amount: '', emi: '' },
-          { particulars: 'Per Month Payment', months: 24, loan_amount: '', emi: '' },
-          { particulars: 'Per Month Payment', months: 30, loan_amount: '', emi: '' },
-          { particulars: 'Per Month Payment', months: 36, loan_amount: '', emi: '' },
-          { particulars: 'Per Month Payment', months: 48, loan_amount: '', emi: '' }
-        ];
-
-        const updatedOptions = defaultOptions.map(option => {
-          const existingOption = data.emi_options.find(eo => eo.months === option.months);
-          return existingOption ? {
-            ...option,
-            loan_amount: existingOption.loan_amount || '',
-            emi: existingOption.emi || '',
-            emi_remarks: existingOption.emi_remarks || '',
-            emi_remarks_option1: existingOption.emi_remarks_option1 || '',
-            emi_remarks_option2: existingOption.emi_remarks_option2 || '',
-            emi_remarks_active: existingOption.emi_remarks_active || 'option1'
-          } : option;
+      if (data.success) {
+        const basic = data.basic_details;
+        
+        // Load cost remarks from tour_costs table
+        if (data.costs && data.costs.length > 0) {
+          const firstCost = data.costs[0];
+          setCostRemarksOption1(firstCost.cost_remarks_option1 || '');
+          setCostRemarksOption2(firstCost.cost_remarks_option2 || '');
+          setCostRemarksActiveOption(firstCost.cost_remarks_active || 'option1');
+        }
+        
+        // Load hotel remarks from tour_hotels table
+        if (data.hotels && data.hotels.length > 0) {
+          const firstHotel = data.hotels[0];
+          setHotelRemarksOption1(firstHotel.hotel_remarks_option1 || '');
+          setHotelRemarksOption2(firstHotel.hotel_remarks_option2 || '');
+          setHotelRemarksActiveOption(firstHotel.hotel_remarks_active || 'option1');
+        }
+        
+        // Load transport/flight remarks from tour_transports table
+        if (data.transport && data.transport.length > 0) {
+          const firstTransport = data.transport[0];
+          setFlightRemarksOption1(firstTransport.flight_remarks_option1 || '');
+          setFlightRemarksOption2(firstTransport.flight_remarks_option2 || '');
+          setFlightRemarksActiveOption(firstTransport.flight_remarks_active || 'option1');
+        }
+        
+        // Load EMI remarks from emi_options table
+        if (data.emi_options && data.emi_options.length > 0) {
+          const firstEmi = data.emi_options[0];
+          setEmiRemarksOption1(firstEmi.emi_remarks_option1 || '');
+          setEmiRemarksOption2(firstEmi.emi_remarks_option2 || '');
+          setEmiRemarksActiveOption(firstEmi.emi_remarks_active || 'option1');
+        }
+        
+        // Load booking POI remarks from tour_booking_poi table
+        if (data.booking_poi && data.booking_poi.length > 0) {
+          const firstPoi = data.booking_poi[0];
+          setBookingPoiRemarksOption1(firstPoi.booking_remarks_option1 || '');
+          setBookingPoiRemarksOption2(firstPoi.booking_remarks_option2 || '');
+          setBookingPoiRemarksActiveOption(firstPoi.booking_remarks_active || 'option1');
+        }
+        
+        // Load cancellation remarks from tour_cancellation_policies table
+        if (data.cancellation_policies && data.cancellation_policies.length > 0) {
+          const firstPolicy = data.cancellation_policies[0];
+          setCancellationRemarksOption1(firstPolicy.cancellation_remarks_option1 || '');
+          setCancellationRemarksOption2(firstPolicy.cancellation_remarks_option2 || '');
+          setCancellationRemarksActiveOption(firstPolicy.cancellation_remarks_active || 'option1');
+        }
+        
+        // Load optional tour remarks from optional_tours table
+        if (data.optional_tours && data.optional_tours.length > 0) {
+          const firstOptional = data.optional_tours[0];
+          setOptionalTourRemarksOption1(firstOptional.optional_remarks_option1 || '');
+          setOptionalTourRemarksOption2(firstOptional.optional_remarks_option2 || '');
+          setOptionalTourRemarksActiveOption(firstOptional.optional_remarks_active || 'option1');
+        }
+        
+        // Load departure description from tour_departures table
+        if (data.departures && data.departures.length > 0) {
+          const firstDeparture = data.departures[0];
+          setDepartureOption1(firstDeparture.description_option1 || '');
+          setDepartureOption2(firstDeparture.description_option2 || '');
+          setDepartureActiveOption(firstDeparture.description_active || 'option1');
+        }
+        
+        // Load instructions from tour_instructions table
+        if (data.instructions && data.instructions.length > 0) {
+          const firstInstruction = data.instructions[0];
+          setInstructionOption1(firstInstruction.item_option1 || '');
+          setInstructionOption2(firstInstruction.item_option2 || '');
+          setInstructionActiveOption(firstInstruction.item_active || 'option1');
+        }
+        
+        setFormData({
+          tour_code: basic.tour_code || '',
+          tour_type: basic.tour_type || 'individual',
+          title: basic.title || '',
+          category_id: basic.category_id || 1,
+          primary_destination_id: basic.primary_destination_id || '',
+          duration_days: basic.duration_days || '',
+          overview: basic.overview || '',
+          base_price_adult: basic.base_price_adult || '',
+          emi_price: basic.emi_price || '',
+          is_international: basic.is_international || 0
         });
 
-        setEmiOptions(updatedOptions);
-        
-        const firstEmi = data.emi_options[0];
-        if (firstEmi && firstEmi.loan_amount) {
-          setEmiLoanAmount(firstEmi.loan_amount);
+        // Load itineraries
+        if (data.itinerary && Array.isArray(data.itinerary)) {
+          const formattedItineraries = data.itinerary.map(item => ({
+            day: item.day,
+            title: item.title,
+            description: item.description || '',
+            meals: item.meals || ''
+          }));
+          setItineraries(formattedItineraries);
         }
-      }
 
-      // Load hotels - with both options
-      if (data.hotels && Array.isArray(data.hotels)) {
-        const formattedHotels = data.hotels.map(hotel => ({
-          ...hotel,
-          standard_hotel_name: hotel.standard_hotel_name || '',
-          deluxe_hotel_name: hotel.deluxe_hotel_name || '',
-          executive_hotel_name: hotel.executive_hotel_name || '',
-          hotel_remarks: hotel.hotel_remarks || '',
-          hotel_remarks_option1: hotel.hotel_remarks_option1 || '',
-          hotel_remarks_option2: hotel.hotel_remarks_option2 || '',
-          hotel_remarks_active: hotel.hotel_remarks_active || 'option1'
-        }));
-        setHotelRows(formattedHotels);
-      }
+        // Load departures
+        if (data.departures && Array.isArray(data.departures)) {
+          const formattedDepartures = data.departures.map(dept => ({
+            departure_date: dept.departure_date || '',
+            return_date: dept.return_date || '',
+            adult_price: dept.adult_price || '',
+            child_price: dept.child_price || '',
+            infant_price: dept.infant_price || '',
+            description: dept.description || '',
+            total_seats: dept.total_seats || ''
+          }));
+          setDepartures(formattedDepartures);
+        }
 
-      // Load transport - with both options
-      if (data.transport && Array.isArray(data.transport)) {
-        const formattedTransports = data.transport.map(t => ({
-          description: t.description || '',
-          flight_remarks: t.flight_remarks || '',
-          flight_remarks_option1: t.flight_remarks_option1 || '',
-          flight_remarks_option2: t.flight_remarks_option2 || '',
-          flight_remarks_active: t.flight_remarks_active || 'option1'
-        }));
-        setTransports(formattedTransports);
-      }
+        // Load inclusions
+        if (data.inclusions && Array.isArray(data.inclusions)) {
+          const inclusionItems = data.inclusions.map(inc => inc.item);
+          setInclusions(inclusionItems);
+        }
 
-      // Load booking POI - with both options
-      if (data.booking_poi && Array.isArray(data.booking_poi)) {
-        const formattedPois = data.booking_poi.map(poi => ({
-          item: poi.item,
-          amount_details: poi.amount_details || '',
-          booking_remarks: poi.booking_remarks || '',
-          booking_remarks_option1: poi.booking_remarks_option1 || '',
-          booking_remarks_option2: poi.booking_remarks_option2 || '',
-          booking_remarks_active: poi.booking_remarks_active || 'option1'
-        }));
-        setBookingPois(formattedPois);
-      }
+        // Load exclusions
+        if (data.exclusions && Array.isArray(data.exclusions)) {
+          const exclusionItems = data.exclusions.map(exc => exc.item);
+          setExclusions(exclusionItems);
+        }
 
-      // Load cancellation policies - with both options
-      if (data.cancellation_policies && Array.isArray(data.cancellation_policies)) {
-        const formattedPolicies = data.cancellation_policies.map(policy => ({
-          cancellation_policy: policy.cancellation_policy,
-          charges: policy.charges || '',
-          cancellation_remarks: policy.cancellation_remarks || '',
-          cancellation_remarks_option1: policy.cancellation_remarks_option1 || '',
-          cancellation_remarks_option2: policy.cancellation_remarks_option2 || '',
-          cancellation_remarks_active: policy.cancellation_remarks_active || 'option1'
-        }));
-        setCancelPolicies(formattedPolicies);
-      }
+        // Load costs
+        if (data.costs && Array.isArray(data.costs)) {
+          setTourCosts(data.costs);
+        }
 
-      // Load instructions - with both options
-      if (data.instructions && Array.isArray(data.instructions)) {
-        const formattedInstructions = data.instructions.map(inst => ({
-          item: inst.item,
-          item_option1: inst.item_option1 || '',
-          item_option2: inst.item_option2 || '',
-          item_active: inst.item_active || 'option1'
-        }));
-        // Set instructions as simple array for display, but preserve options
-        setInstructions(formattedInstructions.map(inst => inst.item));
-      }
+        // Load optional tours
+        if (data.optional_tours && Array.isArray(data.optional_tours)) {
+          setOptionalTours(data.optional_tours);
+        }
 
-      // Load images
-      if (data.images && Array.isArray(data.images)) {
-        setExistingImages(data.images);
-      }
+        // Load EMI options
+        if (data.emi_options && Array.isArray(data.emi_options)) {
+          const defaultOptions = [
+            { particulars: 'Per Month Payment', months: 6, loan_amount: '', emi: '' },
+            { particulars: 'Per Month Payment', months: 12, loan_amount: '', emi: '' },
+            { particulars: 'Per Month Payment', months: 18, loan_amount: '', emi: '' },
+            { particulars: 'Per Month Payment', months: 24, loan_amount: '', emi: '' },
+            { particulars: 'Per Month Payment', months: 30, loan_amount: '', emi: '' },
+            { particulars: 'Per Month Payment', months: 36, loan_amount: '', emi: '' },
+            { particulars: 'Per Month Payment', months: 48, loan_amount: '', emi: '' }
+          ];
 
-      setSuccess('Tour data loaded successfully');
+          const updatedOptions = defaultOptions.map(option => {
+            const existingOption = data.emi_options.find(eo => eo.months === option.months);
+            return existingOption ? {
+              ...option,
+              loan_amount: existingOption.loan_amount || '',
+              emi: existingOption.emi || ''
+            } : option;
+          });
+
+          setEmiOptions(updatedOptions);
+          
+          const firstEmi = data.emi_options[0];
+          if (firstEmi && firstEmi.loan_amount) {
+            setEmiLoanAmount(firstEmi.loan_amount);
+          }
+        }
+
+        // Load hotels
+        if (data.hotels && Array.isArray(data.hotels)) {
+          const formattedHotels = data.hotels.map(hotel => ({
+            ...hotel,
+            standard_hotel_name: hotel.standard_hotel_name || '',
+            deluxe_hotel_name: hotel.deluxe_hotel_name || '',
+            executive_hotel_name: hotel.executive_hotel_name || ''
+          }));
+          setHotelRows(formattedHotels);
+        }
+
+        // Load transport
+        if (data.transport && Array.isArray(data.transport)) {
+          const formattedTransports = data.transport.map(t => ({
+            description: t.description || ''
+          }));
+          setTransports(formattedTransports);
+        }
+
+        // Load booking POI
+        if (data.booking_poi && Array.isArray(data.booking_poi)) {
+          const formattedPois = data.booking_poi.map(poi => ({
+            item: poi.item,
+            amount_details: poi.amount_details || ''
+          }));
+          setBookingPois(formattedPois);
+        }
+
+        // Load cancellation policies
+        if (data.cancellation_policies && Array.isArray(data.cancellation_policies)) {
+          const formattedPolicies = data.cancellation_policies.map(policy => ({
+            cancellation_policy: policy.cancellation_policy,
+            charges: policy.charges || ''
+          }));
+          setCancelPolicies(formattedPolicies);
+        }
+
+        // Load instructions
+        if (data.instructions && Array.isArray(data.instructions)) {
+          const formattedInstructions = data.instructions.map(inst => inst.item);
+          setInstructions(formattedInstructions);
+        }
+
+        // Load images
+        if (data.images && Array.isArray(data.images)) {
+          setExistingImages(data.images);
+        }
+
+        setSuccess('Tour data loaded successfully');
+      }
+    } catch (err) {
+      setError('Failed to load tour data: ' + err.message);
+    } finally {
+      setLoading(false);
     }
-  } catch (err) {
-    setError('Failed to load tour data: ' + err.message);
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   // ========================
   // NAVIGATION
@@ -1650,579 +1471,525 @@ const loadTourData = async () => {
   // SAVE FUNCTIONS
   // ========================
 
-const createTour = async () => {
-  if (!formData.tour_code.trim()) {
-    setError('Tour code is required');
-    setActiveTab('basic');
-    return;
-  }
-  if (!formData.title.trim()) {
-    setError('Tour title is required');
-    setActiveTab('basic');
-    return;
-  }
-
-  try {
-    setLoading(true);
-    setError('');
-    setSuccess('');
-
-    // Prepare tour payload with all option fields
-    const completeFormData = {
-      tour_code: formData.tour_code,
-      title: formData.title,
-      tour_type: formData.tour_type || 'individual',
-      primary_destination_id: formData.primary_destination_id,
-      duration_days: Number(formData.duration_days) || 0,
-      overview: formData.overview || '',
-      base_price_adult: Number(formData.base_price_adult) || 0,
-      emi_price: formData.emi_price ? Number(formData.emi_price) : null,
-      is_international: Number(formData.is_international) || 0,
-      status: 1,
-      cost_remarks_active: costRemarksActiveOption,
-      hotel_remarks_active: hotelRemarksActiveOption,
-      transport_remarks_active: flightRemarksActiveOption,
-      emi_remarks_active: emiRemarksActiveOption,
-      booking_poi_remarks_active: bookingPoiRemarksActiveOption,
-      cancellation_remarks_active: cancellationRemarksActiveOption,
-      optional_tour_remarks_active: optionalTourRemarksActiveOption,
-      departure_description_active: departureActiveOption,
-      instruction_description_active: instructionActiveOption,
-      cost_remarks_option1: costRemarksOption1,
-      cost_remarks_option2: costRemarksOption2,
-      hotel_remarks_option1: hotelRemarksOption1,
-      hotel_remarks_option2: hotelRemarksOption2,
-      transport_remarks_option1: flightRemarksOption1,
-      transport_remarks_option2: flightRemarksOption2,
-      emi_remarks_option1: emiRemarksOption1,
-      emi_remarks_option2: emiRemarksOption2,
-      booking_poi_remarks_option1: bookingPoiRemarksOption1,
-      booking_poi_remarks_option2: bookingPoiRemarksOption2,
-      cancellation_remarks_option1: cancellationRemarksOption1,
-      cancellation_remarks_option2: cancellationRemarksOption2,
-      optional_tour_remarks_option1: optionalTourRemarksOption1,
-      optional_tour_remarks_option2: optionalTourRemarksOption2,
-      departure_description_option1: departureOption1,
-      departure_description_option2: departureOption2,
-      instruction_description_option1: instructionOption1,
-      instruction_description_option2: instructionOption2
-    };
-
-    const tourRes = await fetch(`${baseurl}/api/tours`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(completeFormData)
-    });
-
-    if (!tourRes.ok) {
-      const err = await tourRes.json().catch(() => ({}));
-      throw new Error(err.error || 'Failed to create tour');
+  const createTour = async () => {
+    if (!formData.tour_code.trim()) {
+      setError('Tour code is required');
+      setActiveTab('basic');
+      return;
+    }
+    if (!formData.title.trim()) {
+      setError('Tour title is required');
+      setActiveTab('basic');
+      return;
     }
 
-    const tourData = await tourRes.json();
-    const tourId = tourData.tour_id || tourData.id || tourData.insertId;
+    try {
+      setLoading(true);
+      setError('');
+      setSuccess('');
 
-    // Save itineraries
-    if (itineraries.length > 0) {
-      const itineraryPayload = itineraries.map((item) => ({
-        ...item,
-        tour_id: tourId
-      }));
-      await fetch(`${baseurl}/api/itineraries/bulk`, {
+      // Prepare tour payload - only basic fields
+      const completeFormData = {
+        tour_code: formData.tour_code,
+        title: formData.title,
+        tour_type: formData.tour_type || 'individual',
+        primary_destination_id: formData.primary_destination_id,
+        duration_days: Number(formData.duration_days) || 0,
+        overview: formData.overview || '',
+        base_price_adult: Number(formData.base_price_adult) || 0,
+        emi_price: formData.emi_price ? Number(formData.emi_price) : null,
+        is_international: Number(formData.is_international) || 0,
+        status: 1
+      };
+
+      const tourRes = await fetch(`${baseurl}/api/tours`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(itineraryPayload)
+        body: JSON.stringify(completeFormData)
       });
-    }
 
-    // Save departures with both description options
-    if (departures.length > 0) {
-      const departuresWithOptions = departures.map(dep => ({
-        ...dep,
-        tour_type: 'Individual',
-        description_option1: departureOption1,
-        description_option2: departureOption2,
-        description_active: departureActiveOption,
-        description: departureActiveOption === 'option1' ? departureOption1 : departureOption2
-      }));
-      await fetch(`${baseurl}/api/departures/bulk`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tour_id: tourId, departures: departuresWithOptions })
-      });
-    }
-
-    // Save cost rows with both remark options
-    if (tourCosts.length > 0) {
-      const costsWithBothOptions = tourCosts.map(cost => ({
-        ...cost,
-        cost_remarks: costRemarksActiveOption === 'option1' ? costRemarksOption1 : costRemarksOption2,
-        cost_remarks_option1: costRemarksOption1,
-        cost_remarks_option2: costRemarksOption2,
-        cost_remarks_active: costRemarksActiveOption
-      }));
-      await fetch(`${baseurl}/api/tour-costs/bulk`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tour_id: tourId, costs: costsWithBothOptions })
-      });
-    }
-
-    // Save optional tours with both remark options
-    if (optionalTours.length > 0) {
-      const optionalWithBothOptions = optionalTours.map(opt => ({
-        ...opt,
-        optional_remarks: optionalTourRemarksActiveOption === 'option1' ? optionalTourRemarksOption1 : optionalTourRemarksOption2,
-        optional_remarks_option1: optionalTourRemarksOption1,
-        optional_remarks_option2: optionalTourRemarksOption2,
-        optional_remarks_active: optionalTourRemarksActiveOption
-      }));
-      await fetch(`${baseurl}/api/optional-tours/bulk`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tour_id: tourId, optional_tours: optionalWithBothOptions })
-      });
-    }
-
-    // Save EMI options with both remark options
-    if (emiLoanAmount && !isNaN(emiLoanAmount) && emiLoanAmount > 0) {
-      await fetch(`${baseurl}/api/emi-options/emi/bulk`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          tour_id: tourId, 
-          loan_amount: emiLoanAmount,
-          emi_remarks: emiRemarksActiveOption === 'option1' ? emiRemarksOption1 : emiRemarksOption2,
-          emi_remarks_option1: emiRemarksOption1,
-          emi_remarks_option2: emiRemarksOption2,
-          emi_remarks_active: emiRemarksActiveOption
-        })
-      });
-    }
-
-    // Save hotels with both remark options
-    if (hotelRows.length > 0) {
-      const hotelsWithBothOptions = hotelRows.map(hotel => ({
-        ...hotel,
-        hotel_remarks: hotelRemarksActiveOption === 'option1' ? hotelRemarksOption1 : hotelRemarksOption2,
-        hotel_remarks_option1: hotelRemarksOption1,
-        hotel_remarks_option2: hotelRemarksOption2,
-        hotel_remarks_active: hotelRemarksActiveOption
-      }));
-      await fetch(`${baseurl}/api/tour-hotels/bulk`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tour_id: tourId, hotels: hotelsWithBothOptions })
-      });
-    }
-
-    // Save transports with both remark options
-    if (transports.length > 0) {
-      const transportsWithBothOptions = transports.map(transport => ({
-        ...transport,
-        flight_remarks: flightRemarksActiveOption === 'option1' ? flightRemarksOption1 : flightRemarksOption2,
-        flight_remarks_option1: flightRemarksOption1,
-        flight_remarks_option2: flightRemarksOption2,
-        flight_remarks_active: flightRemarksActiveOption
-      }));
-      await fetch(`${baseurl}/api/tour-transports/bulk`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tour_id: tourId, items: transportsWithBothOptions })
-      });
-    }
-
-    // Save inclusions
-    if (inclusions.length > 0) {
-      await fetch(`${baseurl}/api/inclusions/bulk`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tour_id: tourId, items: inclusions })
-      });
-    }
-
-    // Save exclusions
-    if (exclusions.length > 0) {
-      await fetch(`${baseurl}/api/exclusions/bulk`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tour_id: tourId, items: exclusions })
-      });
-    }
-
-    // Save booking POI with both remark options
-    if (bookingPois.length > 0) {
-      const poisWithBothOptions = bookingPois.map(poi => ({
-        ...poi,
-        booking_remarks: bookingPoiRemarksActiveOption === 'option1' ? bookingPoiRemarksOption1 : bookingPoiRemarksOption2,
-        booking_remarks_option1: bookingPoiRemarksOption1,
-        booking_remarks_option2: bookingPoiRemarksOption2,
-        booking_remarks_active: bookingPoiRemarksActiveOption
-      }));
-      await fetch(`${baseurl}/api/tour-booking-poi/bulk`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tour_id: tourId, items: poisWithBothOptions })
-      });
-    }
-
-    // Save cancellation policies with both remark options
-    if (cancelPolicies.length > 0) {
-      const policiesWithBothOptions = cancelPolicies.map(policy => ({
-        ...policy,
-        cancellation_remarks: cancellationRemarksActiveOption === 'option1' ? cancellationRemarksOption1 : cancellationRemarksOption2,
-        cancellation_remarks_option1: cancellationRemarksOption1,
-        cancellation_remarks_option2: cancellationRemarksOption2,
-        cancellation_remarks_active: cancellationRemarksActiveOption
-      }));
-      await fetch(`${baseurl}/api/tour-cancellation/bulk`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tour_id: tourId, policies: policiesWithBothOptions })
-      });
-    }
-
-    // Save instructions with both options
-    if (instructions.length > 0) {
-      const instructionsWithBothOptions = instructions.map(inst => ({
-        item: instructionActiveOption === 'option1' ? instructionOption1 : instructionOption2,
-        item_option1: instructionOption1,
-        item_option2: instructionOption2,
-        item_active: instructionActiveOption
-      }));
-      await fetch(`${baseurl}/api/tour-instructions/bulk`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tour_id: tourId, items: instructionsWithBothOptions })
-      });
-    }
-
-    // Save images
-    if (imageFiles.length > 0) {
-      const formDataImages = new FormData();
-      imageFiles.forEach((file) => {
-        formDataImages.append('images', file);
-      });
-      await fetch(`${baseurl}/api/images/upload/${tourId}`, {
-        method: 'POST',
-        body: formDataImages
-      });
-    }
-
-    setSuccess('Tour created successfully!');
-    setTimeout(() => navigate('/tours'), 1500);
-  } catch (err) {
-    setError(err.message || 'Failed to create tour');
-  } finally {
-    setLoading(false);
-  }
-};
-
-const updateTour = async () => {
-  if (!formData.tour_code.trim()) {
-    setError('Tour code is required');
-    setActiveTab('basic');
-    return;
-  }
-  if (!formData.title.trim()) {
-    setError('Tour title is required');
-    setActiveTab('basic');
-    return;
-  }
-
-  try {
-    setLoading(true);
-    setError('');
-    setSuccess('');
-
-    // Prepare tour update data with all option fields
-    const tourUpdateData = {
-      title: formData.title.trim(),
-      tour_type: formData.tour_type || 'individual',
-      primary_destination_id: formData.primary_destination_id,
-      duration_days: Number(formData.duration_days) || 0,
-      overview: formData.overview || '',
-      base_price_adult: Number(formData.base_price_adult) || 0,
-      emi_price: formData.emi_price ? Number(formData.emi_price) : null,
-      is_international: Number(formData.is_international) || 0,
-      cost_remarks_active: costRemarksActiveOption,
-      hotel_remarks_active: hotelRemarksActiveOption,
-      transport_remarks_active: flightRemarksActiveOption,
-      emi_remarks_active: emiRemarksActiveOption,
-      booking_poi_remarks_active: bookingPoiRemarksActiveOption,
-      cancellation_remarks_active: cancellationRemarksActiveOption,
-      optional_tour_remarks_active: optionalTourRemarksActiveOption,
-      departure_description_active: departureActiveOption,
-      instruction_description_active: instructionActiveOption,
-      cost_remarks_option1: costRemarksOption1,
-      cost_remarks_option2: costRemarksOption2,
-      hotel_remarks_option1: hotelRemarksOption1,
-      hotel_remarks_option2: hotelRemarksOption2,
-      transport_remarks_option1: flightRemarksOption1,
-      transport_remarks_option2: flightRemarksOption2,
-      emi_remarks_option1: emiRemarksOption1,
-      emi_remarks_option2: emiRemarksOption2,
-      booking_poi_remarks_option1: bookingPoiRemarksOption1,
-      booking_poi_remarks_option2: bookingPoiRemarksOption2,
-      cancellation_remarks_option1: cancellationRemarksOption1,
-      cancellation_remarks_option2: cancellationRemarksOption2,
-      optional_tour_remarks_option1: optionalTourRemarksOption1,
-      optional_tour_remarks_option2: optionalTourRemarksOption2,
-      departure_description_option1: departureOption1,
-      departure_description_option2: departureOption2,
-      instruction_description_option1: instructionOption1,
-      instruction_description_option2: instructionOption2
-    };
-
-    const tourRes = await fetch(`${baseurl}/api/tours/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(tourUpdateData)
-    });
-
-    const tourResponse = await tourRes.json();
-    if (!tourRes.ok) {
-      throw new Error(tourResponse.error || tourResponse.message || 'Failed to update tour');
-    }
-
-    // Delete existing data
-    const deleteEndpoints = [
-      `${baseurl}/api/departures/bulk/${id}`,
-      `${baseurl}/api/tour-costs/tour/${id}`,
-      `${baseurl}/api/optional-tours/tour/${id}`,
-      `${baseurl}/api/emi-options/tour/${id}`,
-      `${baseurl}/api/tour-hotels/tour/${id}`,
-      `${baseurl}/api/tour-transports/tour/${id}`,
-      `${baseurl}/api/tour-booking-poi/tour/${id}`,
-      `${baseurl}/api/tour-cancellation/tour/${id}`,
-      `${baseurl}/api/tour-instructions/tour/${id}`,
-      `${baseurl}/api/exclusions/tour/${id}`,
-      `${baseurl}/api/inclusions/tour/${id}`,
-      `${baseurl}/api/itineraries/tour/${id}`
-    ];
-
-    for (const endpoint of deleteEndpoints) {
-      try {
-        await fetch(endpoint, { method: 'DELETE' });
-      } catch (err) {
-        console.warn(`Failed to delete from ${endpoint}:`, err.message);
+      if (!tourRes.ok) {
+        const err = await tourRes.json().catch(() => ({}));
+        throw new Error(err.error || 'Failed to create tour');
       }
-    }
 
-    // Save itineraries
-    if (itineraries.length > 0) {
-      const itineraryPayload = itineraries.map((item) => ({
-        ...item,
-        tour_id: id
-      }));
-      await fetch(`${baseurl}/api/itineraries/bulk`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(itineraryPayload)
-      });
-    }
+      const tourData = await tourRes.json();
+      const tourId = tourData.tour_id || tourData.id || tourData.insertId;
 
-    // Save departures with both description options
-    if (departures.length > 0) {
-      const departuresWithOptions = departures.map(dep => ({
-        ...dep,
-        tour_type: 'Individual',
-        description_option1: departureOption1,
-        description_option2: departureOption2,
-        description_active: departureActiveOption,
-        description: departureActiveOption === 'option1' ? departureOption1 : departureOption2
-      }));
-      await fetch(`${baseurl}/api/departures/bulk`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tour_id: id, departures: departuresWithOptions })
-      });
-    }
-
-    // Save cost rows with both remark options
-    if (tourCosts.length > 0) {
-      const costsWithBothOptions = tourCosts.map(cost => ({
-        ...cost,
-        cost_remarks: costRemarksActiveOption === 'option1' ? costRemarksOption1 : costRemarksOption2,
-        cost_remarks_option1: costRemarksOption1,
-        cost_remarks_option2: costRemarksOption2,
-        cost_remarks_active: costRemarksActiveOption
-      }));
-      await fetch(`${baseurl}/api/tour-costs/bulk`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tour_id: id, costs: costsWithBothOptions })
-      });
-    }
-
-    // Save optional tours with both remark options
-    if (optionalTours.length > 0) {
-      const optionalWithBothOptions = optionalTours.map(opt => ({
-        ...opt,
-        optional_remarks: optionalTourRemarksActiveOption === 'option1' ? optionalTourRemarksOption1 : optionalTourRemarksOption2,
-        optional_remarks_option1: optionalTourRemarksOption1,
-        optional_remarks_option2: optionalTourRemarksOption2,
-        optional_remarks_active: optionalTourRemarksActiveOption
-      }));
-      await fetch(`${baseurl}/api/optional-tours/bulk`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tour_id: id, optional_tours: optionalWithBothOptions })
-      });
-    }
-
-    // Save EMI options with both remark options
-    if (emiLoanAmount && !isNaN(emiLoanAmount) && emiLoanAmount > 0) {
-      await fetch(`${baseurl}/api/emi-options/emi/bulk`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          tour_id: id, 
-          loan_amount: emiLoanAmount,
-          emi_remarks: emiRemarksActiveOption === 'option1' ? emiRemarksOption1 : emiRemarksOption2,
-          emi_remarks_option1: emiRemarksOption1,
-          emi_remarks_option2: emiRemarksOption2,
-          emi_remarks_active: emiRemarksActiveOption
-        })
-      });
-    } else {
-      const validEmiOptions = emiOptions.filter(opt =>
-        opt.loan_amount && opt.loan_amount > 0 && opt.emi && opt.emi > 0
-      );
-      if (validEmiOptions.length > 0) {
-        const emiWithBothOptions = validEmiOptions.map(opt => ({
-          ...opt,
-          emi_remarks: emiRemarksActiveOption === 'option1' ? emiRemarksOption1 : emiRemarksOption2,
-          emi_remarks_option1: emiRemarksOption1,
-          emi_remarks_option2: emiRemarksOption2,
-          emi_remarks_active: emiRemarksActiveOption
+      // Save itineraries
+      if (itineraries.length > 0) {
+        const itineraryPayload = itineraries.map((item) => ({
+          ...item,
+          tour_id: tourId
         }));
+        await fetch(`${baseurl}/api/itineraries/bulk`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(itineraryPayload)
+        });
+      }
+
+      // Save departures with both description options
+      if (departures.length > 0) {
+        const departuresWithOptions = departures.map(dep => ({
+          ...dep,
+          tour_type: 'Individual',
+          description_option1: departureOption1,
+          description_option2: departureOption2,
+          description_active: departureActiveOption,
+          description: departureActiveOption === 'option1' ? departureOption1 : departureOption2
+        }));
+        await fetch(`${baseurl}/api/departures/bulk`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tour_id: tourId, departures: departuresWithOptions })
+        });
+      }
+
+      // Save cost rows with both remark options
+      if (tourCosts.length > 0) {
+        const costsWithBothOptions = tourCosts.map(cost => ({
+          ...cost,
+          cost_remarks: costRemarksActiveOption === 'option1' ? costRemarksOption1 : costRemarksOption2,
+          cost_remarks_option1: costRemarksOption1,
+          cost_remarks_option2: costRemarksOption2,
+          cost_remarks_active: costRemarksActiveOption
+        }));
+        await fetch(`${baseurl}/api/tour-costs/bulk`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tour_id: tourId, costs: costsWithBothOptions })
+        });
+      }
+
+      // Save optional tours with both remark options
+      if (optionalTours.length > 0) {
+        const optionalWithBothOptions = optionalTours.map(opt => ({
+          ...opt,
+          optional_remarks: optionalTourRemarksActiveOption === 'option1' ? optionalTourRemarksOption1 : optionalTourRemarksOption2,
+          optional_remarks_option1: optionalTourRemarksOption1,
+          optional_remarks_option2: optionalTourRemarksOption2,
+          optional_remarks_active: optionalTourRemarksActiveOption
+        }));
+        await fetch(`${baseurl}/api/optional-tours/bulk`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tour_id: tourId, optional_tours: optionalWithBothOptions })
+        });
+      }
+
+      // Save EMI options with both remark options
+      if (emiLoanAmount && !isNaN(emiLoanAmount) && emiLoanAmount > 0) {
         await fetch(`${baseurl}/api/emi-options/emi/bulk`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ tour_id: id, emi_options: emiWithBothOptions })
+          body: JSON.stringify({ 
+            tour_id: tourId, 
+            loan_amount: emiLoanAmount,
+            emi_remarks: emiRemarksActiveOption === 'option1' ? emiRemarksOption1 : emiRemarksOption2,
+            emi_remarks_option1: emiRemarksOption1,
+            emi_remarks_option2: emiRemarksOption2,
+            emi_remarks_active: emiRemarksActiveOption
+          })
         });
       }
+
+      // Save hotels with both remark options
+      if (hotelRows.length > 0) {
+        const hotelsWithBothOptions = hotelRows.map(hotel => ({
+          ...hotel,
+          hotel_remarks: hotelRemarksActiveOption === 'option1' ? hotelRemarksOption1 : hotelRemarksOption2,
+          hotel_remarks_option1: hotelRemarksOption1,
+          hotel_remarks_option2: hotelRemarksOption2,
+          hotel_remarks_active: hotelRemarksActiveOption
+        }));
+        await fetch(`${baseurl}/api/tour-hotels/bulk`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tour_id: tourId, hotels: hotelsWithBothOptions })
+        });
+      }
+
+      // Save transports with both remark options
+      if (transports.length > 0) {
+        const transportsWithBothOptions = transports.map(transport => ({
+          ...transport,
+          flight_remarks: flightRemarksActiveOption === 'option1' ? flightRemarksOption1 : flightRemarksOption2,
+          flight_remarks_option1: flightRemarksOption1,
+          flight_remarks_option2: flightRemarksOption2,
+          flight_remarks_active: flightRemarksActiveOption
+        }));
+        await fetch(`${baseurl}/api/tour-transports/bulk`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tour_id: tourId, items: transportsWithBothOptions })
+        });
+      }
+
+      // Save inclusions
+      if (inclusions.length > 0) {
+        await fetch(`${baseurl}/api/inclusions/bulk`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tour_id: tourId, items: inclusions })
+        });
+      }
+
+      // Save exclusions
+      if (exclusions.length > 0) {
+        await fetch(`${baseurl}/api/exclusions/bulk`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tour_id: tourId, items: exclusions })
+        });
+      }
+
+      // Save booking POI with both remark options
+      if (bookingPois.length > 0) {
+        const poisWithBothOptions = bookingPois.map(poi => ({
+          ...poi,
+          booking_remarks: bookingPoiRemarksActiveOption === 'option1' ? bookingPoiRemarksOption1 : bookingPoiRemarksOption2,
+          booking_remarks_option1: bookingPoiRemarksOption1,
+          booking_remarks_option2: bookingPoiRemarksOption2,
+          booking_remarks_active: bookingPoiRemarksActiveOption
+        }));
+        await fetch(`${baseurl}/api/tour-booking-poi/bulk`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tour_id: tourId, items: poisWithBothOptions })
+        });
+      }
+
+      // Save cancellation policies with both remark options
+      if (cancelPolicies.length > 0) {
+        const policiesWithBothOptions = cancelPolicies.map(policy => ({
+          ...policy,
+          cancellation_remarks: cancellationRemarksActiveOption === 'option1' ? cancellationRemarksOption1 : cancellationRemarksOption2,
+          cancellation_remarks_option1: cancellationRemarksOption1,
+          cancellation_remarks_option2: cancellationRemarksOption2,
+          cancellation_remarks_active: cancellationRemarksActiveOption
+        }));
+        await fetch(`${baseurl}/api/tour-cancellation/bulk`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tour_id: tourId, policies: policiesWithBothOptions })
+        });
+      }
+
+      // Save instructions with both options
+      if (instructions.length > 0) {
+        const instructionsWithBothOptions = instructions.map(inst => ({
+          item: instructionActiveOption === 'option1' ? instructionOption1 : instructionOption2,
+          item_option1: instructionOption1,
+          item_option2: instructionOption2,
+          item_active: instructionActiveOption
+        }));
+        await fetch(`${baseurl}/api/tour-instructions/bulk`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tour_id: tourId, items: instructionsWithBothOptions })
+        });
+      }
+
+      // Save images
+      if (imageFiles.length > 0) {
+        const formDataImages = new FormData();
+        imageFiles.forEach((file) => {
+          formDataImages.append('images', file);
+        });
+        await fetch(`${baseurl}/api/images/upload/${tourId}`, {
+          method: 'POST',
+          body: formDataImages
+        });
+      }
+
+      setSuccess('Tour created successfully!');
+      setTimeout(() => navigate('/tours'), 1500);
+    } catch (err) {
+      setError(err.message || 'Failed to create tour');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateTour = async () => {
+    if (!formData.tour_code.trim()) {
+      setError('Tour code is required');
+      setActiveTab('basic');
+      return;
+    }
+    if (!formData.title.trim()) {
+      setError('Tour title is required');
+      setActiveTab('basic');
+      return;
     }
 
-    // Save hotels with both remark options
-    if (hotelRows.length > 0) {
-      const hotelsWithBothOptions = hotelRows.map(hotel => ({
-        ...hotel,
-        hotel_remarks: hotelRemarksActiveOption === 'option1' ? hotelRemarksOption1 : hotelRemarksOption2,
-        hotel_remarks_option1: hotelRemarksOption1,
-        hotel_remarks_option2: hotelRemarksOption2,
-        hotel_remarks_active: hotelRemarksActiveOption
-      }));
-      await fetch(`${baseurl}/api/tour-hotels/bulk`, {
-        method: 'POST',
+    try {
+      setLoading(true);
+      setError('');
+      setSuccess('');
+
+      // Prepare tour update data - only basic fields
+      const tourUpdateData = {
+        title: formData.title.trim(),
+        tour_type: formData.tour_type || 'individual',
+        primary_destination_id: formData.primary_destination_id,
+        duration_days: Number(formData.duration_days) || 0,
+        overview: formData.overview || '',
+        base_price_adult: Number(formData.base_price_adult) || 0,
+        emi_price: formData.emi_price ? Number(formData.emi_price) : null,
+        is_international: Number(formData.is_international) || 0
+      };
+
+      const tourRes = await fetch(`${baseurl}/api/tours/${id}`, {
+        method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tour_id: id, hotels: hotelsWithBothOptions })
+        body: JSON.stringify(tourUpdateData)
       });
-    }
 
-    // Save transports with both remark options
-    if (transports.length > 0) {
-      const transportsWithBothOptions = transports.map(transport => ({
-        ...transport,
-        flight_remarks: flightRemarksActiveOption === 'option1' ? flightRemarksOption1 : flightRemarksOption2,
-        flight_remarks_option1: flightRemarksOption1,
-        flight_remarks_option2: flightRemarksOption2,
-        flight_remarks_active: flightRemarksActiveOption
-      }));
-      await fetch(`${baseurl}/api/tour-transports/bulk`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tour_id: id, items: transportsWithBothOptions })
-      });
-    }
+      const tourResponse = await tourRes.json();
+      if (!tourRes.ok) {
+        throw new Error(tourResponse.error || tourResponse.message || 'Failed to update tour');
+      }
 
-    // Save inclusions
-    if (inclusions.length > 0) {
-      await fetch(`${baseurl}/api/inclusions/bulk`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tour_id: id, items: inclusions })
-      });
-    }
+      // Delete existing data
+      const deleteEndpoints = [
+        `${baseurl}/api/departures/bulk/${id}`,
+        `${baseurl}/api/tour-costs/tour/${id}`,
+        `${baseurl}/api/optional-tours/tour/${id}`,
+        `${baseurl}/api/emi-options/tour/${id}`,
+        `${baseurl}/api/tour-hotels/tour/${id}`,
+        `${baseurl}/api/tour-transports/tour/${id}`,
+        `${baseurl}/api/tour-booking-poi/tour/${id}`,
+        `${baseurl}/api/tour-cancellation/tour/${id}`,
+        `${baseurl}/api/tour-instructions/tour/${id}`,
+        `${baseurl}/api/exclusions/tour/${id}`,
+        `${baseurl}/api/inclusions/tour/${id}`,
+        `${baseurl}/api/itineraries/tour/${id}`
+      ];
 
-    // Save exclusions
-    if (exclusions.length > 0) {
-      await fetch(`${baseurl}/api/exclusions/bulk`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tour_id: id, items: exclusions })
-      });
-    }
+      for (const endpoint of deleteEndpoints) {
+        try {
+          await fetch(endpoint, { method: 'DELETE' });
+        } catch (err) {
+          console.warn(`Failed to delete from ${endpoint}:`, err.message);
+        }
+      }
 
-    // Save booking POI with both remark options
-    if (bookingPois.length > 0) {
-      const poisWithBothOptions = bookingPois.map(poi => ({
-        ...poi,
-        booking_remarks: bookingPoiRemarksActiveOption === 'option1' ? bookingPoiRemarksOption1 : bookingPoiRemarksOption2,
-        booking_remarks_option1: bookingPoiRemarksOption1,
-        booking_remarks_option2: bookingPoiRemarksOption2,
-        booking_remarks_active: bookingPoiRemarksActiveOption
-      }));
-      await fetch(`${baseurl}/api/tour-booking-poi/bulk`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tour_id: id, items: poisWithBothOptions })
-      });
-    }
+      // Save itineraries
+      if (itineraries.length > 0) {
+        const itineraryPayload = itineraries.map((item) => ({
+          ...item,
+          tour_id: id
+        }));
+        await fetch(`${baseurl}/api/itineraries/bulk`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(itineraryPayload)
+        });
+      }
 
-    // Save cancellation policies with both remark options
-    if (cancelPolicies.length > 0) {
-      const policiesWithBothOptions = cancelPolicies.map(policy => ({
-        ...policy,
-        cancellation_remarks: cancellationRemarksActiveOption === 'option1' ? cancellationRemarksOption1 : cancellationRemarksOption2,
-        cancellation_remarks_option1: cancellationRemarksOption1,
-        cancellation_remarks_option2: cancellationRemarksOption2,
-        cancellation_remarks_active: cancellationRemarksActiveOption
-      }));
-      await fetch(`${baseurl}/api/tour-cancellation/bulk`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tour_id: id, policies: policiesWithBothOptions })
-      });
-    }
+      // Save departures with both description options
+      if (departures.length > 0) {
+        const departuresWithOptions = departures.map(dep => ({
+          ...dep,
+          tour_type: 'Individual',
+          description_option1: departureOption1,
+          description_option2: departureOption2,
+          description_active: departureActiveOption,
+          description: departureActiveOption === 'option1' ? departureOption1 : departureOption2
+        }));
+        await fetch(`${baseurl}/api/departures/bulk`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tour_id: id, departures: departuresWithOptions })
+        });
+      }
 
-    // Save instructions with both options
-    if (instructions.length > 0) {
-      const instructionsWithBothOptions = instructions.map(inst => ({
-        item: instructionActiveOption === 'option1' ? instructionOption1 : instructionOption2,
-        item_option1: instructionOption1,
-        item_option2: instructionOption2,
-        item_active: instructionActiveOption
-      }));
-      await fetch(`${baseurl}/api/tour-instructions/bulk`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tour_id: id, items: instructionsWithBothOptions })
-      });
-    }
+      // Save cost rows with both remark options
+      if (tourCosts.length > 0) {
+        const costsWithBothOptions = tourCosts.map(cost => ({
+          ...cost,
+          cost_remarks: costRemarksActiveOption === 'option1' ? costRemarksOption1 : costRemarksOption2,
+          cost_remarks_option1: costRemarksOption1,
+          cost_remarks_option2: costRemarksOption2,
+          cost_remarks_active: costRemarksActiveOption
+        }));
+        await fetch(`${baseurl}/api/tour-costs/bulk`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tour_id: id, costs: costsWithBothOptions })
+        });
+      }
 
-    // Save images
-    if (imageFiles.length > 0) {
-      const formDataImages = new FormData();
-      imageFiles.forEach((file) => {
-        formDataImages.append('images', file);
-      });
-      await fetch(`${baseurl}/api/images/upload/${id}`, {
-        method: 'POST',
-        body: formDataImages
-      });
-    }
+      // Save optional tours with both remark options
+      if (optionalTours.length > 0) {
+        const optionalWithBothOptions = optionalTours.map(opt => ({
+          ...opt,
+          optional_remarks: optionalTourRemarksActiveOption === 'option1' ? optionalTourRemarksOption1 : optionalTourRemarksOption2,
+          optional_remarks_option1: optionalTourRemarksOption1,
+          optional_remarks_option2: optionalTourRemarksOption2,
+          optional_remarks_active: optionalTourRemarksActiveOption
+        }));
+        await fetch(`${baseurl}/api/optional-tours/bulk`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tour_id: id, optional_tours: optionalWithBothOptions })
+        });
+      }
 
-    setSuccess('Tour updated successfully!');
-    setTimeout(() => navigate('/tours'), 1500);
-  } catch (err) {
-    console.error('Error updating tour:', err);
-    setError(err.message || 'Failed to update tour');
-  } finally {
-    setLoading(false);
-  }
-};
+      // Save EMI options with both remark options
+      if (emiLoanAmount && !isNaN(emiLoanAmount) && emiLoanAmount > 0) {
+        await fetch(`${baseurl}/api/emi-options/emi/bulk`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            tour_id: id, 
+            loan_amount: emiLoanAmount,
+            emi_remarks: emiRemarksActiveOption === 'option1' ? emiRemarksOption1 : emiRemarksOption2,
+            emi_remarks_option1: emiRemarksOption1,
+            emi_remarks_option2: emiRemarksOption2,
+            emi_remarks_active: emiRemarksActiveOption
+          })
+        });
+      } else {
+        const validEmiOptions = emiOptions.filter(opt =>
+          opt.loan_amount && opt.loan_amount > 0 && opt.emi && opt.emi > 0
+        );
+        if (validEmiOptions.length > 0) {
+          const emiWithBothOptions = validEmiOptions.map(opt => ({
+            ...opt,
+            emi_remarks: emiRemarksActiveOption === 'option1' ? emiRemarksOption1 : emiRemarksOption2,
+            emi_remarks_option1: emiRemarksOption1,
+            emi_remarks_option2: emiRemarksOption2,
+            emi_remarks_active: emiRemarksActiveOption
+          }));
+          await fetch(`${baseurl}/api/emi-options/emi/bulk`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ tour_id: id, emi_options: emiWithBothOptions })
+          });
+        }
+      }
+
+      // Save hotels with both remark options
+      if (hotelRows.length > 0) {
+        const hotelsWithBothOptions = hotelRows.map(hotel => ({
+          ...hotel,
+          hotel_remarks: hotelRemarksActiveOption === 'option1' ? hotelRemarksOption1 : hotelRemarksOption2,
+          hotel_remarks_option1: hotelRemarksOption1,
+          hotel_remarks_option2: hotelRemarksOption2,
+          hotel_remarks_active: hotelRemarksActiveOption
+        }));
+        await fetch(`${baseurl}/api/tour-hotels/bulk`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tour_id: id, hotels: hotelsWithBothOptions })
+        });
+      }
+
+      // Save transports with both remark options
+      if (transports.length > 0) {
+        const transportsWithBothOptions = transports.map(transport => ({
+          ...transport,
+          flight_remarks: flightRemarksActiveOption === 'option1' ? flightRemarksOption1 : flightRemarksOption2,
+          flight_remarks_option1: flightRemarksOption1,
+          flight_remarks_option2: flightRemarksOption2,
+          flight_remarks_active: flightRemarksActiveOption
+        }));
+        await fetch(`${baseurl}/api/tour-transports/bulk`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tour_id: id, items: transportsWithBothOptions })
+        });
+      }
+
+      // Save inclusions
+      if (inclusions.length > 0) {
+        await fetch(`${baseurl}/api/inclusions/bulk`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tour_id: id, items: inclusions })
+        });
+      }
+
+      // Save exclusions
+      if (exclusions.length > 0) {
+        await fetch(`${baseurl}/api/exclusions/bulk`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tour_id: id, items: exclusions })
+        });
+      }
+
+      // Save booking POI with both remark options
+      if (bookingPois.length > 0) {
+        const poisWithBothOptions = bookingPois.map(poi => ({
+          ...poi,
+          booking_remarks: bookingPoiRemarksActiveOption === 'option1' ? bookingPoiRemarksOption1 : bookingPoiRemarksOption2,
+          booking_remarks_option1: bookingPoiRemarksOption1,
+          booking_remarks_option2: bookingPoiRemarksOption2,
+          booking_remarks_active: bookingPoiRemarksActiveOption
+        }));
+        await fetch(`${baseurl}/api/tour-booking-poi/bulk`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tour_id: id, items: poisWithBothOptions })
+        });
+      }
+
+      // Save cancellation policies with both remark options
+      if (cancelPolicies.length > 0) {
+        const policiesWithBothOptions = cancelPolicies.map(policy => ({
+          ...policy,
+          cancellation_remarks: cancellationRemarksActiveOption === 'option1' ? cancellationRemarksOption1 : cancellationRemarksOption2,
+          cancellation_remarks_option1: cancellationRemarksOption1,
+          cancellation_remarks_option2: cancellationRemarksOption2,
+          cancellation_remarks_active: cancellationRemarksActiveOption
+        }));
+        await fetch(`${baseurl}/api/tour-cancellation/bulk`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tour_id: id, policies: policiesWithBothOptions })
+        });
+      }
+
+      // Save instructions with both options
+      if (instructions.length > 0) {
+        const instructionsWithBothOptions = instructions.map(inst => ({
+          item: instructionActiveOption === 'option1' ? instructionOption1 : instructionOption2,
+          item_option1: instructionOption1,
+          item_option2: instructionOption2,
+          item_active: instructionActiveOption
+        }));
+        await fetch(`${baseurl}/api/tour-instructions/bulk`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tour_id: id, items: instructionsWithBothOptions })
+        });
+      }
+
+      // Save images
+      if (imageFiles.length > 0) {
+        const formDataImages = new FormData();
+        imageFiles.forEach((file) => {
+          formDataImages.append('images', file);
+        });
+        await fetch(`${baseurl}/api/images/upload/${id}`, {
+          method: 'POST',
+          body: formDataImages
+        });
+      }
+
+      setSuccess('Tour updated successfully!');
+      setTimeout(() => navigate('/tours'), 1500);
+    } catch (err) {
+      console.error('Error updating tour:', err);
+      setError(err.message || 'Failed to update tour');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     return () => {
@@ -2514,6 +2281,7 @@ const updateTour = async () => {
                 </Row>
               </Tab>
 
+              {/* ====== ITINERARIES TAB ====== */}
               <Tab eventKey="itineraries" title="Itineraries">
                 <Row>
                   <Col md={2}>
@@ -2630,6 +2398,7 @@ const updateTour = async () => {
                 )}
               </Tab>
 
+              {/* ====== DEPARTURES TAB ====== */}
               <Tab eventKey="departures" title="Departures">
                 <Form.Group className="mb-3">
                   <Form.Label>Departures Description</Form.Label>
@@ -2685,6 +2454,7 @@ const updateTour = async () => {
                 )}
               </Tab>
 
+              {/* ====== COSTS TAB ====== */}
               <Tab eventKey="costs" title="Tour Cost">
                 <Row className="align-items-end">
                   <Col md={2}>
@@ -2824,6 +2594,7 @@ const updateTour = async () => {
                 )}
               </Tab>
 
+              {/* ====== OPTIONAL TOURS TAB ====== */}
               <Tab eventKey="optionalTours" title="Optional Tour">
                 <Row className="align-items-end">
                   <Col md={4}>
@@ -2924,6 +2695,7 @@ const updateTour = async () => {
                 )}
               </Tab>
 
+              {/* ====== EMI OPTIONS TAB ====== */}
               <Tab eventKey="emiOptions" title="EMI Options">
                 <Card className="mb-4">
                   <Card.Body>
@@ -3065,6 +2837,7 @@ const updateTour = async () => {
                 </Form.Group>
               </Tab>
 
+              {/* ====== INCLUSIONS TAB ====== */}
               <Tab eventKey="inclusions" title="Inclusions">
                 <Form.Group className="mb-3">
                   <Form.Label>Add Inclusion</Form.Label>
@@ -3118,6 +2891,7 @@ const updateTour = async () => {
                 )}
               </Tab>
 
+              {/* ====== EXCLUSIONS TAB ====== */}
               <Tab eventKey="exclusions" title="Exclusions">
                 <Form.Group className="mb-3">
                   <Form.Label>Add Exclusion</Form.Label>
@@ -3171,6 +2945,7 @@ const updateTour = async () => {
                 )}
               </Tab>
 
+              {/* ====== TRANSPORT TAB ====== */}
               <Tab eventKey="transport" title="Flights">
                 <Row className="mt-3">
                   <Col md={12}>
@@ -3242,6 +3017,7 @@ const updateTour = async () => {
                 )}
               </Tab>
 
+              {/* ====== HOTELS TAB ====== */}
               <Tab eventKey="hotels" title="Hotels">
                 <Row className="align-items-end">
                   <Col md={6}>
@@ -3371,6 +3147,7 @@ const updateTour = async () => {
                 )}
               </Tab>
 
+              {/* ====== BOOKING POI TAB ====== */}
               <Tab eventKey="bookingPoi" title="Booking POI">
                 <Form.Group className="mb-3">
                   <Row>
@@ -3453,6 +3230,7 @@ const updateTour = async () => {
                 )}
               </Tab>
 
+              {/* ====== CANCELLATION POLICY TAB ====== */}
               <Tab eventKey="cancellation" title="Cancellation Policy">
                 <Row>
                   <Col md={8}>
@@ -3540,12 +3318,13 @@ const updateTour = async () => {
                 )}
               </Tab>
 
+              {/* ====== INSTRUCTIONS TAB ====== */}
               <Tab eventKey="instructions" title="Instructions">
                 <Form.Group className="mb-3">
                   <Form.Label>Add Instruction</Form.Label>
                   <OptionTabs
                     activeOption={instructionActiveOption}
-                    onOptionChange={setInstructionActiveOption}
+                    onOptionChange={handleInstructionActiveChange}
                     option1Value={instructionOption1}
                     option2Value={instructionOption2}
                     onOption1Change={(val) => handleInstructionOptionChange('option1', val)}
@@ -3595,6 +3374,7 @@ const updateTour = async () => {
                 )}
               </Tab>
 
+              {/* ====== IMAGES TAB ====== */}
               <Tab eventKey="images" title="Images">
                 <Card className="mb-4">
                   <Card.Header>Add New Images</Card.Header>
