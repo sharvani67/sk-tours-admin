@@ -18,6 +18,46 @@ import Navbar from '../../Shared/Navbar/Navbar';
 import { baseurl } from '../../Api/Baseurl';
 import { Pencil, Trash } from 'react-bootstrap-icons';
 
+// ======================
+// OPTIONTABS – moved outside AddTour to avoid losing input focus
+// ======================
+const OptionTabs = ({
+  activeOption,
+  onOptionChange,
+  option1Value,
+  option2Value,
+  onOption1Change,
+  onOption2Change,
+  placeholder
+}) => (
+  <div>
+    <Tabs
+      activeKey={activeOption}
+      onSelect={(k) => onOptionChange(k)}
+      className="mb-3"
+    >
+      <Tab eventKey="option1" title="Option 1">
+        <Form.Control
+          as="textarea"
+          rows={3}
+          value={option1Value}
+          onChange={(e) => onOption1Change(e.target.value)}
+          placeholder={placeholder || "Enter content for Option 1"}
+        />
+      </Tab>
+      <Tab eventKey="option2" title="Option 2">
+        <Form.Control
+          as="textarea"
+          rows={3}
+          value={option2Value}
+          onChange={(e) => onOption2Change(e.target.value)}
+          placeholder={placeholder || "Enter content for Option 2"}
+        />
+      </Tab>
+    </Tabs>
+  </div>
+);
+
 const AddTour = () => {
   const navigate = useNavigate();
   const { id } = useParams();
@@ -60,7 +100,7 @@ const AddTour = () => {
   const [departureOption1, setDepartureOption1] = useState('');
   const [departureOption2, setDepartureOption2] = useState('');
   
-  // For Instructions (Add Instruction)
+  // For Instructions
   const [instructionActiveOption, setInstructionActiveOption] = useState('option1');
   const [instructionOption1, setInstructionOption1] = useState('');
   const [instructionOption2, setInstructionOption2] = useState('');
@@ -343,7 +383,7 @@ const AddTour = () => {
   const [replacementPreview, setReplacementPreview] = useState(null);
 
   // ========================
-  // EDIT FUNCTIONS - FIXED
+  // EDIT FUNCTIONS
   // ========================
 
   const editItinerary = (idx) => {
@@ -446,7 +486,7 @@ const AddTour = () => {
   };
 
   // ========================
-  // ADD FUNCTIONS - FIXED
+  // ADD FUNCTIONS
   // ========================
 
   const handleAddItinerary = () => {
@@ -479,41 +519,6 @@ const AddTour = () => {
       title: '',
       description: '',
       meals: { breakfast: false, lunch: false, dinner: false }
-    });
-    resetEditing();
-  };
-
-  // UPDATED: handleAddDeparture - saves based on active option tab
-  const handleAddDeparture = () => {
-    // Get the current active option value
-    const currentDescription = departureActiveOption === 'option1' ? departureOption1 : departureOption2;
-    
-    if (!currentDescription.trim()) return;
-    
-    const newItem = { 
-      ...departureForm, 
-      description: currentDescription,
-      description_option1: departureOption1,
-      description_option2: departureOption2,
-      description_active: departureActiveOption
-    };
-    
-    if (editingType === 'departure' && editIndex !== -1) {
-      const updated = [...departures];
-      updated[editIndex] = newItem;
-      setDepartures(updated);
-    } else {
-      setDepartures(prev => [...prev, newItem]);
-    }
-
-    setDepartureForm({
-      departure_date: '',
-      return_date: '',
-      adult_price: '',
-      child_price: '',
-      infant_price: '',
-      description: '',
-      total_seats: ''
     });
     resetEditing();
   };
@@ -707,31 +712,6 @@ const AddTour = () => {
     }
     
     setCancelItem({ cancellation_policy: "", charges: "" });
-    resetEditing();
-  };
-
-  // UPDATED: addInstruction - saves based on active option tab
-  const addInstruction = () => {
-    const currentInstruction = instructionActiveOption === 'option1' ? instructionOption1 : instructionOption2;
-    const txt = currentInstruction.trim();
-    if (!txt) return;
-    
-    const newItem = {
-      item: txt,
-      item_option1: instructionOption1,
-      item_option2: instructionOption2,
-      item_active: instructionActiveOption
-    };
-    
-    if (editingType === 'instruction' && editIndex !== -1) {
-      const updated = [...instructions];
-      updated[editIndex] = txt;
-      setInstructions(updated);
-    } else {
-      setInstructions(prev => [...prev, txt]);
-    }
-    
-    setInstructionText('');
     resetEditing();
   };
 
@@ -1287,6 +1267,8 @@ const AddTour = () => {
           setDepartureOption1(firstDeparture.description_option1 || '');
           setDepartureOption2(firstDeparture.description_option2 || '');
           setDepartureActiveOption(firstDeparture.description_active || 'option1');
+          // Also load the departures list
+          setDepartures(data.departures);
         }
         
         // Load instructions from tour_instructions table
@@ -1295,6 +1277,8 @@ const AddTour = () => {
           setInstructionOption1(firstInstruction.item_option1 || '');
           setInstructionOption2(firstInstruction.item_option2 || '');
           setInstructionActiveOption(firstInstruction.item_active || 'option1');
+          // Also load the instructions list
+          setInstructions(data.instructions.map(inst => inst.item));
         }
         
         setFormData({
@@ -1330,7 +1314,10 @@ const AddTour = () => {
             child_price: dept.child_price || '',
             infant_price: dept.infant_price || '',
             description: dept.description || '',
-            total_seats: dept.total_seats || ''
+            total_seats: dept.total_seats || '',
+            description_option1: dept.description_option1 || '',
+            description_option2: dept.description_option2 || '',
+            description_active: dept.description_active || 'option1'
           }));
           setDepartures(formattedDepartures);
         }
@@ -1530,19 +1517,27 @@ const AddTour = () => {
       }
 
       // Save departures with both description options
-      if (departures.length > 0) {
-        const departuresWithOptions = departures.map(dep => ({
-          ...dep,
-          tour_type: 'Individual',
+      // Create a departure entry from the OptionTabs data if description is not empty
+      const currentDepartureDescription = departureActiveOption === 'option1' ? departureOption1 : departureOption2;
+      if (currentDepartureDescription.trim()) {
+        const departureItem = {
+          departure_date: '',
+          return_date: '',
+          adult_price: '',
+          child_price: '',
+          infant_price: '',
+          description: currentDepartureDescription,
           description_option1: departureOption1,
           description_option2: departureOption2,
           description_active: departureActiveOption,
-          description: departureActiveOption === 'option1' ? departureOption1 : departureOption2
-        }));
+          total_seats: '',
+          tour_type: 'Individual'
+        };
+        
         await fetch(`${baseurl}/api/departures/bulk`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ tour_id: tourId, departures: departuresWithOptions })
+          body: JSON.stringify({ tour_id: tourId, departures: [departureItem] })
         });
       }
 
@@ -1592,6 +1587,24 @@ const AddTour = () => {
             emi_remarks_active: emiRemarksActiveOption
           })
         });
+      } else if (emiOptions.length > 0) {
+        const validEmiOptions = emiOptions.filter(opt =>
+          opt.loan_amount && opt.loan_amount > 0 && opt.emi && opt.emi > 0
+        );
+        if (validEmiOptions.length > 0) {
+          const emiWithBothOptions = validEmiOptions.map(opt => ({
+            ...opt,
+            emi_remarks: emiRemarksActiveOption === 'option1' ? emiRemarksOption1 : emiRemarksOption2,
+            emi_remarks_option1: emiRemarksOption1,
+            emi_remarks_option2: emiRemarksOption2,
+            emi_remarks_active: emiRemarksActiveOption
+          }));
+          await fetch(`${baseurl}/api/emi-options/emi/bulk`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ tour_id: tourId, emi_options: emiWithBothOptions })
+          });
+        }
       }
 
       // Save hotels with both remark options
@@ -1677,17 +1690,19 @@ const AddTour = () => {
       }
 
       // Save instructions with both options
-      if (instructions.length > 0) {
-        const instructionsWithBothOptions = instructions.map(inst => ({
-          item: instructionActiveOption === 'option1' ? instructionOption1 : instructionOption2,
+      const currentInstruction = instructionActiveOption === 'option1' ? instructionOption1 : instructionOption2;
+      if (currentInstruction.trim()) {
+        const instructionItem = {
+          item: currentInstruction,
           item_option1: instructionOption1,
           item_option2: instructionOption2,
           item_active: instructionActiveOption
-        }));
+        };
+        
         await fetch(`${baseurl}/api/tour-instructions/bulk`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ tour_id: tourId, items: instructionsWithBothOptions })
+          body: JSON.stringify({ tour_id: tourId, items: [instructionItem] })
         });
       }
 
@@ -1790,19 +1805,26 @@ const AddTour = () => {
       }
 
       // Save departures with both description options
-      if (departures.length > 0) {
-        const departuresWithOptions = departures.map(dep => ({
-          ...dep,
-          tour_type: 'Individual',
+      const currentDepartureDescription = departureActiveOption === 'option1' ? departureOption1 : departureOption2;
+      if (currentDepartureDescription.trim()) {
+        const departureItem = {
+          departure_date: '',
+          return_date: '',
+          adult_price: '',
+          child_price: '',
+          infant_price: '',
+          description: currentDepartureDescription,
           description_option1: departureOption1,
           description_option2: departureOption2,
           description_active: departureActiveOption,
-          description: departureActiveOption === 'option1' ? departureOption1 : departureOption2
-        }));
+          total_seats: '',
+          tour_type: 'Individual'
+        };
+        
         await fetch(`${baseurl}/api/departures/bulk`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ tour_id: id, departures: departuresWithOptions })
+          body: JSON.stringify({ tour_id: id, departures: [departureItem] })
         });
       }
 
@@ -1852,7 +1874,7 @@ const AddTour = () => {
             emi_remarks_active: emiRemarksActiveOption
           })
         });
-      } else {
+      } else if (emiOptions.length > 0) {
         const validEmiOptions = emiOptions.filter(opt =>
           opt.loan_amount && opt.loan_amount > 0 && opt.emi && opt.emi > 0
         );
@@ -1955,17 +1977,19 @@ const AddTour = () => {
       }
 
       // Save instructions with both options
-      if (instructions.length > 0) {
-        const instructionsWithBothOptions = instructions.map(inst => ({
-          item: instructionActiveOption === 'option1' ? instructionOption1 : instructionOption2,
+      const currentInstruction = instructionActiveOption === 'option1' ? instructionOption1 : instructionOption2;
+      if (currentInstruction.trim()) {
+        const instructionItem = {
+          item: currentInstruction,
           item_option1: instructionOption1,
           item_option2: instructionOption2,
           item_active: instructionActiveOption
-        }));
+        };
+        
         await fetch(`${baseurl}/api/tour-instructions/bulk`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ tour_id: id, items: instructionsWithBothOptions })
+          body: JSON.stringify({ tour_id: id, items: [instructionItem] })
         });
       }
 
@@ -2058,10 +2082,8 @@ const AddTour = () => {
           onClick: handleAddItinerary 
         };
       case 'departures':
-        return { 
-          label: editingType === 'departure' ? 'Update Departure' : '+ Add Departure', 
-          onClick: handleAddDeparture 
-        };
+        // Remove the add button for Departures - data is saved on main save
+        return null;
       case 'costs':
         return { 
           label: editingType === 'cost' ? 'Update Cost Row' : '+ Add Cost Row', 
@@ -2103,46 +2125,14 @@ const AddTour = () => {
           onClick: addCancelRow 
         };
       case 'instructions':
-        return { 
-          label: editingType === 'instruction' ? 'Update Instruction' : '+ Add Instruction', 
-          onClick: addInstruction 
-        };
+        // Remove the add button for Instructions - data is saved on main save
+        return null;
       default:
         return null;
     }
   };
 
   const addConfig = getAddConfigForTab(activeTab);
-
-  // Helper component for Option Tabs
-  const OptionTabs = ({ activeOption, onOptionChange, option1Value, option2Value, onOption1Change, onOption2Change, placeholder }) => (
-    <div>
-      <Tabs
-        activeKey={activeOption}
-        onSelect={(k) => onOptionChange(k)}
-        className="mb-3"
-      >
-        <Tab eventKey="option1" title="Option 1">
-          <Form.Control
-            as="textarea"
-            rows={3}
-            value={option1Value}
-            onChange={(e) => onOption1Change(e.target.value)}
-            placeholder={placeholder || "Enter content for Option 1"}
-          />
-        </Tab>
-        <Tab eventKey="option2" title="Option 2">
-          <Form.Control
-            as="textarea"
-            rows={3}
-            value={option2Value}
-            onChange={(e) => onOption2Change(e.target.value)}
-            placeholder={placeholder || "Enter content for Option 2"}
-          />
-        </Tab>
-      </Tabs>
-    </div>
-  );
 
   return (
     <Navbar>
@@ -3321,7 +3311,7 @@ const AddTour = () => {
               {/* ====== INSTRUCTIONS TAB ====== */}
               <Tab eventKey="instructions" title="Instructions">
                 <Form.Group className="mb-3">
-                  <Form.Label>Add Instruction</Form.Label>
+                  <Form.Label>Instructions</Form.Label>
                   <OptionTabs
                     activeOption={instructionActiveOption}
                     onOptionChange={handleInstructionActiveChange}

@@ -17,6 +17,46 @@ import Navbar from '../../Shared/Navbar/Navbar';
 import { baseurl } from '../../Api/Baseurl';
 import { Pencil, Trash } from 'react-bootstrap-icons';
 
+// ======================
+// OPTIONTABS – moved outside component to avoid losing input focus
+// ======================
+const OptionTabs = ({
+  activeOption,
+  onOptionChange,
+  option1Value,
+  option2Value,
+  onOption1Change,
+  onOption2Change,
+  placeholder
+}) => (
+  <div>
+    <Tabs
+      activeKey={activeOption}
+      onSelect={(k) => onOptionChange(k)}
+      className="mb-3"
+    >
+      <Tab eventKey="option1" title="Option 1">
+        <Form.Control
+          as="textarea"
+          rows={3}
+          value={option1Value}
+          onChange={(e) => onOption1Change(e.target.value)}
+          placeholder={placeholder || "Enter content for Option 1"}
+        />
+      </Tab>
+      <Tab eventKey="option2" title="Option 2">
+        <Form.Control
+          as="textarea"
+          rows={3}
+          value={option2Value}
+          onChange={(e) => onOption2Change(e.target.value)}
+          placeholder={placeholder || "Enter content for Option 2"}
+        />
+      </Tab>
+    </Tabs>
+  </div>
+);
+
 const AddLadiesTour = () => {
   const navigate = useNavigate();
   const { id } = useParams();
@@ -215,6 +255,10 @@ const AddLadiesTour = () => {
 
     const processedItem = {
       ...optionalTourItem,
+      optional_remarks: optionalTourRemarksActiveOption === 'option1' ? optionalTourRemarksOption1 : optionalTourRemarksOption2,
+      optional_remarks_option1: optionalTourRemarksOption1,
+      optional_remarks_option2: optionalTourRemarksOption2,
+      optional_remarks_active: optionalTourRemarksActiveOption
     };
 
     if (editingOptionalTourIndex !== -1) {
@@ -235,7 +279,11 @@ const AddLadiesTour = () => {
 
   const editOptionalTourRow = (idx) => {
     const item = optionalTours[idx];
-    setOptionalTourItem(item);
+    setOptionalTourItem({
+      tour_name: item.tour_name,
+      adult_price: item.adult_price,
+      child_price: item.child_price
+    });
     setEditingOptionalTourIndex(idx);
   };
 
@@ -432,12 +480,20 @@ const AddLadiesTour = () => {
       return;
     }
     
+    const newItem = {
+      ...hotelItem,
+      hotel_remarks: hotelRemarksActiveOption === 'option1' ? hotelRemarksOption1 : hotelRemarksOption2,
+      hotel_remarks_option1: hotelRemarksOption1,
+      hotel_remarks_option2: hotelRemarksOption2,
+      hotel_remarks_active: hotelRemarksActiveOption
+    };
+    
     if (editingType === 'hotel' && editIndex !== -1) {
       const updated = [...hotelRows];
-      updated[editIndex] = { ...hotelItem };
+      updated[editIndex] = newItem;
       setHotelRows(updated);
     } else {
-      setHotelRows(prev => [...prev, { ...hotelItem }]);
+      setHotelRows(prev => [...prev, newItem]);
     }
     
     setHotelItem({
@@ -454,14 +510,27 @@ const AddLadiesTour = () => {
 
   const editHotelRow = (idx) => {
     const item = hotelRows[idx];
-    setHotelItem(item);
+    setHotelItem({
+      city: item.city || '',
+      nights: item.nights || '',
+      standard_hotel_name: item.standard_hotel_name || '',
+      deluxe_hotel_name: item.deluxe_hotel_name || '',
+      executive_hotel_name: item.executive_hotel_name || '',
+      remarks: item.remarks || ''
+    });
     setEditingItem(item);
     setEditingType('hotel');
     setEditIndex(idx);
   };
 
   const removeHotelRow = (idx) => {
-    setHotelRows(prev => prev.filter((_, i) => i !== idx));
+    const confirmDelete = window.confirm('Are you sure you want to remove this hotel?');
+    if (confirmDelete) {
+      setHotelRows(prev => prev.filter((_, i) => i !== idx));
+      if (editIndex === idx) {
+        resetEditing();
+      }
+    }
   };
 
   const resetEditing = () => {
@@ -495,16 +564,25 @@ const AddLadiesTour = () => {
 
   const addTransportRow = () => {
     if (!transportItem.airline || !transportItem.flight_no || !transportItem.from_city || !transportItem.to_city) {
+      setError('Please fill in airline, flight number, from city, and to city');
       return;
     }
 
+    const newItem = {
+      ...transportItem,
+      flight_remarks: flightRemarksActiveOption === 'option1' ? flightRemarksOption1 : flightRemarksOption2,
+      flight_remarks_option1: flightRemarksOption1,
+      flight_remarks_option2: flightRemarksOption2,
+      flight_remarks_active: flightRemarksActiveOption
+    };
+
     if (editingTransportIndex !== -1) {
       const updated = [...transports];
-      updated[editingTransportIndex] = { ...transportItem, sort_order: transports[editingTransportIndex].sort_order };
+      updated[editingTransportIndex] = { ...newItem, sort_order: transports[editingTransportIndex].sort_order };
       setTransports(updated);
       setEditingTransportIndex(-1);
     } else {
-      setTransports(prev => [...prev, { ...transportItem, sort_order: prev.length + 1 }]);
+      setTransports(prev => [...prev, { ...newItem, sort_order: prev.length + 1 }]);
     }
 
     setTransportItem({
@@ -524,7 +602,19 @@ const AddLadiesTour = () => {
 
   const editTransportRow = (idx) => {
     const item = transports[idx];
-    setTransportItem(item);
+    setTransportItem({
+      description: item.description || '',
+      airline: item.airline || '',
+      flight_no: item.flight_no || '',
+      from_city: item.from_city || '',
+      from_date: item.from_date || '',
+      from_time: item.from_time || '',
+      to_city: item.to_city || '',
+      to_date: item.to_date || '',
+      to_time: item.to_time || '',
+      via: item.via || '',
+      sort_order: item.sort_order || idx + 1
+    });
     setEditingTransportIndex(idx);
   };
 
@@ -562,7 +652,15 @@ const AddLadiesTour = () => {
     const txt = poiText.trim();
     if (!txt) return;
     
-    const newPoi = { item: poiText, amount_details: poiAmount, sort_order: bookingPois.length + 1 };
+    const newPoi = { 
+      item: poiText, 
+      amount_details: poiAmount,
+      booking_remarks: bookingPoiRemarksActiveOption === 'option1' ? bookingPoiRemarksOption1 : bookingPoiRemarksOption2,
+      booking_remarks_option1: bookingPoiRemarksOption1,
+      booking_remarks_option2: bookingPoiRemarksOption2,
+      booking_remarks_active: bookingPoiRemarksActiveOption,
+      sort_order: bookingPois.length + 1 
+    };
     
     if (editingBookingPoiIndex !== -1) {
       const updated = [...bookingPois];
@@ -580,7 +678,7 @@ const AddLadiesTour = () => {
   const editPoi = (idx) => {
     const poi = bookingPois[idx];
     setPoiText(poi.item);
-    setPoiAmount(poi.amount_details);
+    setPoiAmount(poi.amount_details || "");
     setEditingBookingPoiIndex(idx);
   };
 
@@ -615,7 +713,14 @@ const AddLadiesTour = () => {
   const addCancelRow = () => {
     if (!cancelItem.cancellation_policy.trim()) return;
     
-    const newCancel = { ...cancelItem, sort_order: cancelPolicies.length + 1 };
+    const newCancel = { 
+      ...cancelItem,
+      cancellation_remarks: cancellationRemarksActiveOption === 'option1' ? cancellationRemarksOption1 : cancellationRemarksOption2,
+      cancellation_remarks_option1: cancellationRemarksOption1,
+      cancellation_remarks_option2: cancellationRemarksOption2,
+      cancellation_remarks_active: cancellationRemarksActiveOption,
+      sort_order: cancelPolicies.length + 1 
+    };
     
     if (editingCancellationIndex !== -1) {
       const updated = [...cancelPolicies];
@@ -631,7 +736,11 @@ const AddLadiesTour = () => {
 
   const editCancelRow = (idx) => {
     const policy = cancelPolicies[idx];
-    setCancelItem(policy);
+    setCancelItem({
+      cancellation_policy: policy.cancellation_policy,
+      charges: policy.charges || "",
+      sort_order: policy.sort_order || idx + 1
+    });
     setEditingCancellationIndex(idx);
   };
 
@@ -657,13 +766,20 @@ const AddLadiesTour = () => {
     const txt = currentInstruction.trim();
     if (!txt) return;
     
+    const instructionItem = {
+      item: txt,
+      item_option1: instructionOption1,
+      item_option2: instructionOption2,
+      item_active: instructionActiveOption
+    };
+    
     if (editingInstructionIndex !== -1) {
       const updated = [...instructions];
-      updated[editingInstructionIndex] = txt;
+      updated[editingInstructionIndex] = instructionItem;
       setInstructions(updated);
       setEditingInstructionIndex(-1);
     } else {
-      setInstructions(prev => [...prev, txt]);
+      setInstructions(prev => [...prev, instructionItem]);
     }
     
     setInstructionText('');
@@ -671,7 +787,8 @@ const AddLadiesTour = () => {
 
   const editInstruction = (idx) => {
     const instruction = instructions[idx];
-    setInstructionText(instruction);
+    const instructionTextValue = typeof instruction === 'string' ? instruction : instruction.item;
+    setInstructionText(instructionTextValue);
     setEditingInstructionIndex(idx);
   };
 
@@ -878,36 +995,6 @@ const AddLadiesTour = () => {
     const value = option === 'option1' ? instructionOption1 : instructionOption2;
     setFormData(prev => ({ ...prev, instruction_description: value }));
   };
-
-  // Helper component for Option Tabs
-  const OptionTabs = ({ activeOption, onOptionChange, option1Value, option2Value, onOption1Change, onOption2Change, placeholder }) => (
-    <div>
-      <Tabs
-        activeKey={activeOption}
-        onSelect={(k) => onOptionChange(k)}
-        className="mb-3"
-      >
-        <Tab eventKey="option1" title="Option 1">
-          <Form.Control
-            as="textarea"
-            rows={3}
-            value={option1Value}
-            onChange={(e) => onOption1Change(e.target.value)}
-            placeholder={placeholder || "Enter content for Option 1"}
-          />
-        </Tab>
-        <Tab eventKey="option2" title="Option 2">
-          <Form.Control
-            as="textarea"
-            rows={3}
-            value={option2Value}
-            onChange={(e) => onOption2Change(e.target.value)}
-            placeholder={placeholder || "Enter content for Option 2"}
-          />
-        </Tab>
-      </Tabs>
-    </div>
-  );
 
   // Fetch dropdowns and tour data
   useEffect(() => {
@@ -1276,7 +1363,7 @@ const AddLadiesTour = () => {
             item_option2: inst.item_option2 || '',
             item_active: inst.item_active || 'option1'
           }));
-          setInstructions(formattedInstructions.map(inst => inst.item));
+          setInstructions(formattedInstructions);
         }
 
         // Load images
@@ -1317,7 +1404,7 @@ const AddLadiesTour = () => {
   };
 
   // DEPARTURE FORM CHANGE
-  const handleGroupDepartureChange = (e) => {
+  const handleLadiesDepartureChange = (e) => {
     const { name, value } = e.target;
     const numericFields = [
       'total_seats', 'booked_seats',
@@ -1550,6 +1637,8 @@ const AddLadiesTour = () => {
   const handleImageChange = (e) => {
     const files = e.target.files ? Array.from(e.target.files) : [];
     setImageFiles(files);
+    const previews = files.map((file) => URL.createObjectURL(file));
+    setImagePreviews(previews);
   };
 
   const handleReplacementFileChange = (e) => {
@@ -1799,42 +1888,40 @@ const AddLadiesTour = () => {
         }
         break;
       case 'optionalTours':
-        if (optionalTourItem.tour_name && optionalTourItem.tour_name.trim()) {
+        if (optionalTourItem.tour_name && optionalTourItem.tour_name.trim() && editingOptionalTourIndex === -1) {
           addOptionalTourRow();
         }
         break;
       case 'hotels':
-        if (hotelItem.city.trim() && (hotelItem.standard_hotel_name.trim() || hotelItem.deluxe_hotel_name.trim() || hotelItem.executive_hotel_name.trim())) {
+        if (hotelItem.city.trim() && (hotelItem.standard_hotel_name.trim() || hotelItem.deluxe_hotel_name.trim() || hotelItem.executive_hotel_name.trim()) && editingType !== 'hotel') {
           addHotelRow();
         }
         break;
       case 'flights':
-        if (transportItem.airline && transportItem.flight_no) {
+        if (transportItem.airline && transportItem.flight_no && editingTransportIndex === -1) {
           addTransportRow();
         }
         break;
       case 'bookingPoi':
-        if (poiText && poiText.trim()) {
+        if (poiText && poiText.trim() && editingBookingPoiIndex === -1) {
           addPoi();
         }
         break;
       case 'cancellation':
-        if (cancelItem.cancellation_policy && cancelItem.cancellation_policy.trim()) {
+        if (cancelItem.cancellation_policy && cancelItem.cancellation_policy.trim() && editingCancellationIndex === -1) {
           addCancelRow();
         }
         break;
       case 'instructions':
-        if ((instructionActiveOption === 'option1' ? instructionOption1 : instructionOption2).trim()) {
-          addInstruction();
-        }
+        // Instructions are saved directly on main save - no auto-add needed
         break;
       case 'inclusions':
-        if (inclusionText && inclusionText.trim()) {
+        if (inclusionText && inclusionText.trim() && editingInclusionIndex === -1) {
           handleAddInclusion();
         }
         break;
       case 'exclusions':
-        if (exclusionText && exclusionText.trim()) {
+        if (exclusionText && exclusionText.trim() && editingExclusionIndex === -1) {
           handleAddExclusion();
         }
         break;
@@ -2094,10 +2181,10 @@ const AddLadiesTour = () => {
       // Save instructions with both options
       if (instructions.length > 0) {
         const instructionsWithBothOptions = instructions.map(inst => ({
-          item: instructionActiveOption === 'option1' ? instructionOption1 : instructionOption2,
-          item_option1: instructionOption1,
-          item_option2: instructionOption2,
-          item_active: instructionActiveOption
+          item: inst.item,
+          item_option1: inst.item_option1 || instructionOption1,
+          item_option2: inst.item_option2 || instructionOption2,
+          item_active: inst.item_active || instructionActiveOption
         }));
         await fetch(`${baseurl}/api/tour-instructions/bulk`, {
           method: 'POST',
@@ -2365,10 +2452,10 @@ const AddLadiesTour = () => {
       // Save instructions with both options
       if (instructions.length > 0) {
         const instructionsWithBothOptions = instructions.map(inst => ({
-          item: instructionActiveOption === 'option1' ? instructionOption1 : instructionOption2,
-          item_option1: instructionOption1,
-          item_option2: instructionOption2,
-          item_active: instructionActiveOption
+          item: inst.item,
+          item_option1: inst.item_option1 || instructionOption1,
+          item_option2: inst.item_option2 || instructionOption2,
+          item_active: inst.item_active || instructionActiveOption
         }));
         await fetch(`${baseurl}/api/tour-instructions/bulk`, {
           method: 'POST',
@@ -2493,16 +2580,20 @@ const AddLadiesTour = () => {
           onClick: addCancelRow 
         };
       case 'instructions':
-        return { 
-          label: editingInstructionIndex !== -1 ? '✓ Update Instruction' : '+ Add Instruction', 
-          onClick: addInstruction 
-        };
+        // No add button for Instructions - saved directly on main save
+        return null;
       default:
         return null;
     }
   };
 
   const addConfig = getAddConfigForTab(activeTab);
+
+  // Get label for add button
+  const getAddButtonLabel = () => {
+    if (!addConfig) return null;
+    return addConfig.label;
+  };
 
   return (
     <Navbar>
@@ -2535,7 +2626,7 @@ const AddLadiesTour = () => {
               onClick={addConfig.onClick}
               disabled={loading}
             >
-              {addConfig.label}
+              {getAddButtonLabel()}
             </Button>
           )}
 
@@ -2788,7 +2879,7 @@ const AddLadiesTour = () => {
                           type="date"
                           name="start_date"
                           value={ladiesDepartureForm.start_date}
-                          onChange={handleGroupDepartureChange}
+                          onChange={handleLadiesDepartureChange}
                         />
                       </Form.Group>
                     </Col>
@@ -2800,7 +2891,7 @@ const AddLadiesTour = () => {
                           type="date"
                           name="end_date"
                           value={ladiesDepartureForm.end_date}
-                          onChange={handleGroupDepartureChange}
+                          onChange={handleLadiesDepartureChange}
                         />
                       </Form.Group>
                     </Col>
@@ -2811,7 +2902,7 @@ const AddLadiesTour = () => {
                         <Form.Select
                           name="status"
                           value={ladiesDepartureForm.status}
-                          onChange={handleGroupDepartureChange}
+                          onChange={handleLadiesDepartureChange}
                         >
                           <option value="Available">Available</option>
                           <option value="Few Seats">Few Seats</option>
@@ -2828,7 +2919,7 @@ const AddLadiesTour = () => {
                           type="number"
                           name="total_seats"
                           value={ladiesDepartureForm.total_seats}
-                          onChange={handleGroupDepartureChange}
+                          onChange={handleLadiesDepartureChange}
                           placeholder="Total seats"
                         />
                       </Form.Group>
@@ -2841,7 +2932,7 @@ const AddLadiesTour = () => {
                           type="number"
                           name="booked_seats"
                           value={ladiesDepartureForm.booked_seats}
-                          onChange={handleGroupDepartureChange}
+                          onChange={handleLadiesDepartureChange}
                           placeholder="Booked seats"
                         />
                       </Form.Group>
@@ -2858,7 +2949,7 @@ const AddLadiesTour = () => {
                           type="number"
                           name="three_star_twin"
                           value={ladiesDepartureForm.three_star_twin || ''}
-                          onChange={handleGroupDepartureChange}
+                          onChange={handleLadiesDepartureChange}
                           placeholder="₹"
                         />
                       </Form.Group>
@@ -2870,7 +2961,7 @@ const AddLadiesTour = () => {
                           type="number"
                           name="three_star_triple"
                           value={ladiesDepartureForm.three_star_triple || ''}
-                          onChange={handleGroupDepartureChange}
+                          onChange={handleLadiesDepartureChange}
                           placeholder="₹"
                         />
                       </Form.Group>
@@ -2882,7 +2973,7 @@ const AddLadiesTour = () => {
                           type="number"
                           name="three_star_child_with_bed"
                           value={ladiesDepartureForm.three_star_child_with_bed || ''}
-                          onChange={handleGroupDepartureChange}
+                          onChange={handleLadiesDepartureChange}
                           placeholder="₹"
                         />
                       </Form.Group>
@@ -2894,7 +2985,7 @@ const AddLadiesTour = () => {
                           type="number"
                           name="three_star_child_without_bed"
                           value={ladiesDepartureForm.three_star_child_without_bed || ''}
-                          onChange={handleGroupDepartureChange}
+                          onChange={handleLadiesDepartureChange}
                           placeholder="₹"
                         />
                       </Form.Group>
@@ -2906,7 +2997,7 @@ const AddLadiesTour = () => {
                           type="number"
                           name="three_star_infant"
                           value={ladiesDepartureForm.three_star_infant || ''}
-                          onChange={handleGroupDepartureChange}
+                          onChange={handleLadiesDepartureChange}
                           placeholder="₹"
                         />
                       </Form.Group>
@@ -2918,7 +3009,7 @@ const AddLadiesTour = () => {
                           type="number"
                           name="three_star_single"
                           value={ladiesDepartureForm.three_star_single || ''}
-                          onChange={handleGroupDepartureChange}
+                          onChange={handleLadiesDepartureChange}
                           placeholder="₹"
                         />
                       </Form.Group>
@@ -2935,7 +3026,7 @@ const AddLadiesTour = () => {
                           type="number"
                           name="four_star_twin"
                           value={ladiesDepartureForm.four_star_twin || ''}
-                          onChange={handleGroupDepartureChange}
+                          onChange={handleLadiesDepartureChange}
                           placeholder="₹"
                         />
                       </Form.Group>
@@ -2947,7 +3038,7 @@ const AddLadiesTour = () => {
                           type="number"
                           name="four_star_triple"
                           value={ladiesDepartureForm.four_star_triple || ''}
-                          onChange={handleGroupDepartureChange}
+                          onChange={handleLadiesDepartureChange}
                           placeholder="₹"
                         />
                       </Form.Group>
@@ -2959,7 +3050,7 @@ const AddLadiesTour = () => {
                           type="number"
                           name="four_star_child_with_bed"
                           value={ladiesDepartureForm.four_star_child_with_bed || ''}
-                          onChange={handleGroupDepartureChange}
+                          onChange={handleLadiesDepartureChange}
                           placeholder="₹"
                         />
                       </Form.Group>
@@ -2971,7 +3062,7 @@ const AddLadiesTour = () => {
                           type="number"
                           name="four_star_child_without_bed"
                           value={ladiesDepartureForm.four_star_child_without_bed || ''}
-                          onChange={handleGroupDepartureChange}
+                          onChange={handleLadiesDepartureChange}
                           placeholder="₹"
                         />
                       </Form.Group>
@@ -2983,7 +3074,7 @@ const AddLadiesTour = () => {
                           type="number"
                           name="four_star_infant"
                           value={ladiesDepartureForm.four_star_infant || ''}
-                          onChange={handleGroupDepartureChange}
+                          onChange={handleLadiesDepartureChange}
                           placeholder="₹"
                         />
                       </Form.Group>
@@ -2995,7 +3086,7 @@ const AddLadiesTour = () => {
                           type="number"
                           name="four_star_single"
                           value={ladiesDepartureForm.four_star_single || ''}
-                          onChange={handleGroupDepartureChange}
+                          onChange={handleLadiesDepartureChange}
                           placeholder="₹"
                         />
                       </Form.Group>
@@ -3012,7 +3103,7 @@ const AddLadiesTour = () => {
                           type="number"
                           name="five_star_twin"
                           value={ladiesDepartureForm.five_star_twin || ''}
-                          onChange={handleGroupDepartureChange}
+                          onChange={handleLadiesDepartureChange}
                           placeholder="₹"
                         />
                       </Form.Group>
@@ -3024,7 +3115,7 @@ const AddLadiesTour = () => {
                           type="number"
                           name="five_star_triple"
                           value={ladiesDepartureForm.five_star_triple || ''}
-                          onChange={handleGroupDepartureChange}
+                          onChange={handleLadiesDepartureChange}
                           placeholder="₹"
                         />
                       </Form.Group>
@@ -3036,7 +3127,7 @@ const AddLadiesTour = () => {
                           type="number"
                           name="five_star_child_with_bed"
                           value={ladiesDepartureForm.five_star_child_with_bed || ''}
-                          onChange={handleGroupDepartureChange}
+                          onChange={handleLadiesDepartureChange}
                           placeholder="₹"
                         />
                       </Form.Group>
@@ -3048,7 +3139,7 @@ const AddLadiesTour = () => {
                           type="number"
                           name="five_star_child_without_bed"
                           value={ladiesDepartureForm.five_star_child_without_bed || ''}
-                          onChange={handleGroupDepartureChange}
+                          onChange={handleLadiesDepartureChange}
                           placeholder="₹"
                         />
                       </Form.Group>
@@ -3060,7 +3151,7 @@ const AddLadiesTour = () => {
                           type="number"
                           name="five_star_infant"
                           value={ladiesDepartureForm.five_star_infant || ''}
-                          onChange={handleGroupDepartureChange}
+                          onChange={handleLadiesDepartureChange}
                           placeholder="₹"
                         />
                       </Form.Group>
@@ -3072,7 +3163,7 @@ const AddLadiesTour = () => {
                           type="number"
                           name="five_star_single"
                           value={ladiesDepartureForm.five_star_single || ''}
-                          onChange={handleGroupDepartureChange}
+                          onChange={handleLadiesDepartureChange}
                           placeholder="₹"
                         />
                       </Form.Group>
@@ -4023,7 +4114,7 @@ const AddLadiesTour = () => {
               {/* ====== INSTRUCTIONS TAB ====== */}
               <Tab eventKey="instructions" title="Instructions">
                 <Form.Group className="mb-3">
-                  <Form.Label>Add Instruction</Form.Label>
+                  <Form.Label>Instructions</Form.Label>
                   <OptionTabs
                     activeOption={instructionActiveOption}
                     onOptionChange={handleInstructionActiveChange}
@@ -4045,32 +4136,35 @@ const AddLadiesTour = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {instructions.map((item, idx) => (
-                        <tr key={idx}>
-                          <td>{idx + 1}</td>
-                          <td>{item}</td>
-                          <td>
-                            <div className="d-flex gap-1">
-                              <Button
-                                variant="outline-warning"
-                                size="sm"
-                                onClick={() => editInstruction(idx)}
-                                title="Edit"
-                              >
-                                <Pencil size={14} />
-                              </Button>
-                              <Button
-                                variant="outline-danger"
-                                size="sm"
-                                onClick={() => removeInstruction(idx)}
-                                title="Remove"
-                              >
-                                <Trash size={14} />
-                              </Button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
+                      {instructions.map((item, idx) => {
+                        const instructionTextValue = typeof item === 'string' ? item : item.item;
+                        return (
+                          <tr key={idx}>
+                            <td>{idx + 1}</td>
+                            <td>{instructionTextValue}</td>
+                            <td>
+                              <div className="d-flex gap-1">
+                                <Button
+                                  variant="outline-warning"
+                                  size="sm"
+                                  onClick={() => editInstruction(idx)}
+                                  title="Edit"
+                                >
+                                  <Pencil size={14} />
+                                </Button>
+                                <Button
+                                  variant="outline-danger"
+                                  size="sm"
+                                  onClick={() => removeInstruction(idx)}
+                                  title="Remove"
+                                >
+                                  <Trash size={14} />
+                                </Button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </Table>
                 )}

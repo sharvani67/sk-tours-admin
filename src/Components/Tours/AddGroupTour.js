@@ -17,6 +17,46 @@ import Navbar from '../../Shared/Navbar/Navbar';
 import { baseurl } from '../../Api/Baseurl';
 import { Pencil, Trash } from 'react-bootstrap-icons';
 
+// ======================
+// OPTIONTABS – moved outside component to avoid losing input focus
+// ======================
+const OptionTabs = ({
+  activeOption,
+  onOptionChange,
+  option1Value,
+  option2Value,
+  onOption1Change,
+  onOption2Change,
+  placeholder
+}) => (
+  <div>
+    <Tabs
+      activeKey={activeOption}
+      onSelect={(k) => onOptionChange(k)}
+      className="mb-3"
+    >
+      <Tab eventKey="option1" title="Option 1">
+        <Form.Control
+          as="textarea"
+          rows={3}
+          value={option1Value}
+          onChange={(e) => onOption1Change(e.target.value)}
+          placeholder={placeholder || "Enter content for Option 1"}
+        />
+      </Tab>
+      <Tab eventKey="option2" title="Option 2">
+        <Form.Control
+          as="textarea"
+          rows={3}
+          value={option2Value}
+          onChange={(e) => onOption2Change(e.target.value)}
+          placeholder={placeholder || "Enter content for Option 2"}
+        />
+      </Tab>
+    </Tabs>
+  </div>
+);
+
 const AddGroupTour = () => {
   const navigate = useNavigate();
   const { id } = useParams();
@@ -48,7 +88,7 @@ const AddGroupTour = () => {
   // STATE FOR OPTION TABS (Option 1 / Option 2) - GROUP TOUR
   // ========================
   
-  // For Cost Remarks
+  // For Cost Remarks (stored in tour_departures)
   const [costRemarksActiveOption, setCostRemarksActiveOption] = useState('option1');
   const [costRemarksOption1, setCostRemarksOption1] = useState('');
   const [costRemarksOption2, setCostRemarksOption2] = useState('');
@@ -119,9 +159,6 @@ const AddGroupTour = () => {
     base_price_adult: '',
     emi_price: '',
     is_international: 0,
-    cost_remarks: "",
-    cost_remarks_option1: "",
-    cost_remarks_option2: "",
     hotel_remarks: "",
     hotel_remarks_option1: "",
     hotel_remarks_option2: "",
@@ -146,7 +183,7 @@ const AddGroupTour = () => {
   });
 
   // =======================
-  // DEPARTURES FOR GROUP TOURS
+  // DEPARTURES FOR GROUP TOURS (includes cost remarks)
   // =======================
   const [groupDepartureForm, setGroupDepartureForm] = useState({
     start_date: '',
@@ -155,6 +192,12 @@ const AddGroupTour = () => {
     total_seats: 40,
     booked_seats: 0,
     description: '',
+    // Cost remarks fields
+    cost_remarks: '',
+    cost_remarks_option1: '',
+    cost_remarks_option2: '',
+    cost_remarks_active: 'option1',
+    // Hotel price fields
     three_star_twin: '',
     three_star_triple: '',
     three_star_child_with_bed: '',
@@ -215,6 +258,10 @@ const AddGroupTour = () => {
 
     const processedItem = {
       ...optionalTourItem,
+      optional_remarks: optionalTourRemarksActiveOption === 'option1' ? optionalTourRemarksOption1 : optionalTourRemarksOption2,
+      optional_remarks_option1: optionalTourRemarksOption1,
+      optional_remarks_option2: optionalTourRemarksOption2,
+      optional_remarks_active: optionalTourRemarksActiveOption
     };
 
     if (editingOptionalTourIndex !== -1) {
@@ -235,7 +282,11 @@ const AddGroupTour = () => {
 
   const editOptionalTourRow = (idx) => {
     const item = optionalTours[idx];
-    setOptionalTourItem(item);
+    setOptionalTourItem({
+      tour_name: item.tour_name,
+      adult_price: item.adult_price,
+      child_price: item.child_price
+    });
     setEditingOptionalTourIndex(idx);
   };
 
@@ -347,9 +398,6 @@ const AddGroupTour = () => {
       // Set the main remarks fields (active content)
       setFormData(prev => ({
         ...prev,
-        cost_remarks: "Please note that while the tour price has been indicated, it may vary if you choose dates closer to departure or during periods when the season transitions from low to high. We therefore kindly request you to confirm the final tour price before proceeding with your booking and to mention the tour code when inquiring to receive the exact cost. Child pricing is calculated based on the standard hotel category, and if you choose Deluxe or Executive accommodations, child rates may be adjusted accordingly.",
-        cost_remarks_option1: "Please note that while the tour price has been indicated, it may vary if you choose dates closer to departure or during periods when the season transitions from low to high. We therefore kindly request you to confirm the final tour price before proceeding with your booking and to mention the tour code when inquiring to receive the exact cost. Child pricing is calculated based on the standard hotel category, and if you choose Deluxe or Executive accommodations, child rates may be adjusted accordingly.",
-        cost_remarks_option2: "Premium package includes all taxes and surcharges. Price guaranteed for next 30 days. Early bird discount available for bookings made 60 days in advance. Group discount applicable for 10+ persons. Customized itineraries available on request.",
         hotel_remarks: "Hotel categories are subject to availability. Standard, Deluxe, and Executive categories based on room types and amenities. Early check-in subject to availability. Check-out time 10 AM.",
         hotel_remarks_option1: "Hotel categories are subject to availability. Standard, Deluxe, and Executive categories based on room types and amenities. Early check-in subject to availability. Check-out time 10 AM.",
         hotel_remarks_option2: "Premium hotel collection with guaranteed upgrades. Welcome drinks and late checkout included. Complimentary breakfast and airport transfers. Best rate guarantee. 24/7 concierge service available.",
@@ -371,6 +419,15 @@ const AddGroupTour = () => {
         instruction_description: "Please carry valid ID proof. Reporting time is 2 hours before departure. Carry comfortable clothing and walking shoes. Follow the itinerary timings strictly. Carry necessary medications.",
         instruction_description_option1: "Please carry valid ID proof. Reporting time is 2 hours before departure. Carry comfortable clothing and walking shoes. Follow the itinerary timings strictly. Carry necessary medications.",
         instruction_description_option2: "Passport required for international travel. Visa assistance available. Travel insurance is mandatory. Medical fitness certificate required for adventure activities. Emergency contact numbers provided."
+      }));
+
+      // Set cost remarks in departure form
+      setGroupDepartureForm(prev => ({
+        ...prev,
+        cost_remarks: "Please note that while the tour price has been indicated, it may vary if you choose dates closer to departure or during periods when the season transitions from low to high. We therefore kindly request you to confirm the final tour price before proceeding with your booking and to mention the tour code when inquiring to receive the exact cost. Child pricing is calculated based on the standard hotel category, and if you choose Deluxe or Executive accommodations, child rates may be adjusted accordingly.",
+        cost_remarks_option1: "Please note that while the tour price has been indicated, it may vary if you choose dates closer to departure or during periods when the season transitions from low to high. We therefore kindly request you to confirm the final tour price before proceeding with your booking and to mention the tour code when inquiring to receive the exact cost. Child pricing is calculated based on the standard hotel category, and if you choose Deluxe or Executive accommodations, child rates may be adjusted accordingly.",
+        cost_remarks_option2: "Premium package includes all taxes and surcharges. Price guaranteed for next 30 days. Early bird discount available for bookings made 60 days in advance. Group discount applicable for 10+ persons. Customized itineraries available on request.",
+        cost_remarks_active: 'option1'
       }));
 
       // Prefill Booking Policy if empty
@@ -438,12 +495,20 @@ const AddGroupTour = () => {
       return;
     }
     
+    const newItem = {
+      ...hotelItem,
+      hotel_remarks: hotelRemarksActiveOption === 'option1' ? hotelRemarksOption1 : hotelRemarksOption2,
+      hotel_remarks_option1: hotelRemarksOption1,
+      hotel_remarks_option2: hotelRemarksOption2,
+      hotel_remarks_active: hotelRemarksActiveOption
+    };
+    
     if (editingType === 'hotel' && editIndex !== -1) {
       const updated = [...hotelRows];
-      updated[editIndex] = { ...hotelItem };
+      updated[editIndex] = newItem;
       setHotelRows(updated);
     } else {
-      setHotelRows(prev => [...prev, { ...hotelItem }]);
+      setHotelRows(prev => [...prev, newItem]);
     }
     
     setHotelItem({
@@ -460,14 +525,27 @@ const AddGroupTour = () => {
 
   const editHotelRow = (idx) => {
     const item = hotelRows[idx];
-    setHotelItem(item);
+    setHotelItem({
+      city: item.city || '',
+      nights: item.nights || '',
+      standard_hotel_name: item.standard_hotel_name || '',
+      deluxe_hotel_name: item.deluxe_hotel_name || '',
+      executive_hotel_name: item.executive_hotel_name || '',
+      remarks: item.remarks || ''
+    });
     setEditingItem(item);
     setEditingType('hotel');
     setEditIndex(idx);
   };
 
   const removeHotelRow = (idx) => {
-    setHotelRows(prev => prev.filter((_, i) => i !== idx));
+    const confirmDelete = window.confirm('Are you sure you want to remove this hotel?');
+    if (confirmDelete) {
+      setHotelRows(prev => prev.filter((_, i) => i !== idx));
+      if (editIndex === idx) {
+        resetEditing();
+      }
+    }
   };
 
   const resetEditing = () => {
@@ -501,16 +579,25 @@ const AddGroupTour = () => {
 
   const addTransportRow = () => {
     if (!transportItem.airline || !transportItem.flight_no || !transportItem.from_city || !transportItem.to_city) {
+      setError('Please fill in airline, flight number, from city, and to city');
       return;
     }
 
+    const newItem = {
+      ...transportItem,
+      flight_remarks: flightRemarksActiveOption === 'option1' ? flightRemarksOption1 : flightRemarksOption2,
+      flight_remarks_option1: flightRemarksOption1,
+      flight_remarks_option2: flightRemarksOption2,
+      flight_remarks_active: flightRemarksActiveOption
+    };
+
     if (editingTransportIndex !== -1) {
       const updated = [...transports];
-      updated[editingTransportIndex] = { ...transportItem, sort_order: transports[editingTransportIndex].sort_order };
+      updated[editingTransportIndex] = { ...newItem, sort_order: transports[editingTransportIndex].sort_order };
       setTransports(updated);
       setEditingTransportIndex(-1);
     } else {
-      setTransports(prev => [...prev, { ...transportItem, sort_order: prev.length + 1 }]);
+      setTransports(prev => [...prev, { ...newItem, sort_order: prev.length + 1 }]);
     }
 
     setTransportItem({
@@ -530,7 +617,19 @@ const AddGroupTour = () => {
 
   const editTransportRow = (idx) => {
     const item = transports[idx];
-    setTransportItem(item);
+    setTransportItem({
+      description: item.description || '',
+      airline: item.airline || '',
+      flight_no: item.flight_no || '',
+      from_city: item.from_city || '',
+      from_date: item.from_date || '',
+      from_time: item.from_time || '',
+      to_city: item.to_city || '',
+      to_date: item.to_date || '',
+      to_time: item.to_time || '',
+      via: item.via || '',
+      sort_order: item.sort_order || idx + 1
+    });
     setEditingTransportIndex(idx);
   };
 
@@ -568,7 +667,15 @@ const AddGroupTour = () => {
     const txt = poiText.trim();
     if (!txt) return;
     
-    const newPoi = { item: poiText, amount_details: poiAmount, sort_order: bookingPois.length + 1 };
+    const newPoi = { 
+      item: poiText, 
+      amount_details: poiAmount,
+      booking_remarks: bookingPoiRemarksActiveOption === 'option1' ? bookingPoiRemarksOption1 : bookingPoiRemarksOption2,
+      booking_remarks_option1: bookingPoiRemarksOption1,
+      booking_remarks_option2: bookingPoiRemarksOption2,
+      booking_remarks_active: bookingPoiRemarksActiveOption,
+      sort_order: bookingPois.length + 1 
+    };
     
     if (editingBookingPoiIndex !== -1) {
       const updated = [...bookingPois];
@@ -586,7 +693,7 @@ const AddGroupTour = () => {
   const editPoi = (idx) => {
     const poi = bookingPois[idx];
     setPoiText(poi.item);
-    setPoiAmount(poi.amount_details);
+    setPoiAmount(poi.amount_details || "");
     setEditingBookingPoiIndex(idx);
   };
 
@@ -621,7 +728,14 @@ const AddGroupTour = () => {
   const addCancelRow = () => {
     if (!cancelItem.cancellation_policy.trim()) return;
     
-    const newCancel = { ...cancelItem, sort_order: cancelPolicies.length + 1 };
+    const newCancel = { 
+      ...cancelItem,
+      cancellation_remarks: cancellationRemarksActiveOption === 'option1' ? cancellationRemarksOption1 : cancellationRemarksOption2,
+      cancellation_remarks_option1: cancellationRemarksOption1,
+      cancellation_remarks_option2: cancellationRemarksOption2,
+      cancellation_remarks_active: cancellationRemarksActiveOption,
+      sort_order: cancelPolicies.length + 1 
+    };
     
     if (editingCancellationIndex !== -1) {
       const updated = [...cancelPolicies];
@@ -637,7 +751,11 @@ const AddGroupTour = () => {
 
   const editCancelRow = (idx) => {
     const policy = cancelPolicies[idx];
-    setCancelItem(policy);
+    setCancelItem({
+      cancellation_policy: policy.cancellation_policy,
+      charges: policy.charges || "",
+      sort_order: policy.sort_order || idx + 1
+    });
     setEditingCancellationIndex(idx);
   };
 
@@ -663,13 +781,20 @@ const AddGroupTour = () => {
     const txt = currentInstruction.trim();
     if (!txt) return;
     
+    const instructionItem = {
+      item: txt,
+      item_option1: instructionOption1,
+      item_option2: instructionOption2,
+      item_active: instructionActiveOption
+    };
+    
     if (editingInstructionIndex !== -1) {
       const updated = [...instructions];
-      updated[editingInstructionIndex] = txt;
+      updated[editingInstructionIndex] = instructionItem;
       setInstructions(updated);
       setEditingInstructionIndex(-1);
     } else {
-      setInstructions(prev => [...prev, txt]);
+      setInstructions(prev => [...prev, instructionItem]);
     }
     
     setInstructionText('');
@@ -677,7 +802,8 @@ const AddGroupTour = () => {
 
   const editInstruction = (idx) => {
     const instruction = instructions[idx];
-    setInstructionText(instruction);
+    const instructionTextValue = typeof instruction === 'string' ? instruction : instruction.item;
+    setInstructionText(instructionTextValue);
     setEditingInstructionIndex(idx);
   };
 
@@ -724,17 +850,17 @@ const AddGroupTour = () => {
     setEditingItineraryIndex(idx);
   };
 
-  // Handlers for Option Tabs
+  // Handlers for Cost Remarks (stored in departure)
   const handleCostRemarksOptionChange = (option, value) => {
     if (option === 'option1') {
       setCostRemarksOption1(value);
       if (costRemarksActiveOption === 'option1') {
-        setFormData(prev => ({ ...prev, cost_remarks: value }));
+        setGroupDepartureForm(prev => ({ ...prev, cost_remarks: value }));
       }
     } else {
       setCostRemarksOption2(value);
       if (costRemarksActiveOption === 'option2') {
-        setFormData(prev => ({ ...prev, cost_remarks: value }));
+        setGroupDepartureForm(prev => ({ ...prev, cost_remarks: value }));
       }
     }
   };
@@ -742,9 +868,10 @@ const AddGroupTour = () => {
   const handleCostRemarksActiveChange = (option) => {
     setCostRemarksActiveOption(option);
     const value = option === 'option1' ? costRemarksOption1 : costRemarksOption2;
-    setFormData(prev => ({ ...prev, cost_remarks: value }));
+    setGroupDepartureForm(prev => ({ ...prev, cost_remarks: value, cost_remarks_active: option }));
   };
 
+  // Handlers for Other Option Tabs (stored in formData)
   const handleHotelRemarksOptionChange = (option, value) => {
     if (option === 'option1') {
       setHotelRemarksOption1(value);
@@ -885,36 +1012,6 @@ const AddGroupTour = () => {
     setFormData(prev => ({ ...prev, instruction_description: value }));
   };
 
-  // Helper component for Option Tabs
-  const OptionTabs = ({ activeOption, onOptionChange, option1Value, option2Value, onOption1Change, onOption2Change, placeholder }) => (
-    <div>
-      <Tabs
-        activeKey={activeOption}
-        onSelect={(k) => onOptionChange(k)}
-        className="mb-3"
-      >
-        <Tab eventKey="option1" title="Option 1">
-          <Form.Control
-            as="textarea"
-            rows={3}
-            value={option1Value}
-            onChange={(e) => onOption1Change(e.target.value)}
-            placeholder={placeholder || "Enter content for Option 1"}
-          />
-        </Tab>
-        <Tab eventKey="option2" title="Option 2">
-          <Form.Control
-            as="textarea"
-            rows={3}
-            value={option2Value}
-            onChange={(e) => onOption2Change(e.target.value)}
-            placeholder={placeholder || "Enter content for Option 2"}
-          />
-        </Tab>
-      </Tabs>
-    </div>
-  );
-
   // Fetch dropdowns and tour data
   useEffect(() => {
     const loadDropdownsAndTourCode = async () => {
@@ -975,21 +1072,7 @@ const AddGroupTour = () => {
       if (data.success) {
         const basic = data.basic_details;
         
-        // Load remarks with both options from child tables
-        // 1. Cost Remarks
-        let costRemarksValue = '';
-        let costRemarksOpt1 = '';
-        let costRemarksOpt2 = '';
-        let costRemarksActive = 'option1';
-        if (data.costs && data.costs.length > 0) {
-          const firstCost = data.costs[0];
-          costRemarksValue = firstCost.cost_remarks || '';
-          costRemarksOpt1 = firstCost.cost_remarks_option1 || '';
-          costRemarksOpt2 = firstCost.cost_remarks_option2 || '';
-          costRemarksActive = firstCost.cost_remarks_active || 'option1';
-        }
-        
-        // 2. Hotel Remarks
+        // Load Hotel Remarks
         let hotelRemarksValue = '';
         let hotelRemarksOpt1 = '';
         let hotelRemarksOpt2 = '';
@@ -1002,7 +1085,7 @@ const AddGroupTour = () => {
           hotelRemarksActive = firstHotel.hotel_remarks_active || 'option1';
         }
         
-        // 3. Transport/Flight Remarks
+        // Load Transport/Flight Remarks
         let transportRemarksValue = '';
         let transportRemarksOpt1 = '';
         let transportRemarksOpt2 = '';
@@ -1015,7 +1098,7 @@ const AddGroupTour = () => {
           transportRemarksActive = firstTransport.flight_remarks_active || 'option1';
         }
         
-        // 4. Booking POI Remarks
+        // Load Booking POI Remarks
         let bookingRemarksValue = '';
         let bookingRemarksOpt1 = '';
         let bookingRemarksOpt2 = '';
@@ -1028,7 +1111,7 @@ const AddGroupTour = () => {
           bookingRemarksActive = firstPoi.booking_remarks_active || 'option1';
         }
         
-        // 5. Cancellation Remarks
+        // Load Cancellation Remarks
         let cancellationRemarksValue = '';
         let cancellationRemarksOpt1 = '';
         let cancellationRemarksOpt2 = '';
@@ -1041,7 +1124,7 @@ const AddGroupTour = () => {
           cancellationRemarksActive = firstPolicy.cancellation_remarks_active || 'option1';
         }
         
-        // 6. Optional Tour Remarks
+        // Load Optional Tour Remarks
         let optionalRemarksValue = '';
         let optionalRemarksOpt1 = '';
         let optionalRemarksOpt2 = '';
@@ -1054,7 +1137,7 @@ const AddGroupTour = () => {
           optionalRemarksActive = firstOptional.optional_remarks_active || 'option1';
         }
         
-        // 7. EMI Remarks
+        // Load EMI Remarks
         let emiRemarksValue = '';
         let emiRemarksOpt1 = '';
         let emiRemarksOpt2 = '';
@@ -1067,7 +1150,7 @@ const AddGroupTour = () => {
           emiRemarksActive = firstEmi.emi_remarks_active || 'option1';
         }
         
-        // 8. Instructions
+        // Load Instructions
         let instructionDescValue = '';
         let instructionDescOpt1 = '';
         let instructionDescOpt2 = '';
@@ -1081,10 +1164,6 @@ const AddGroupTour = () => {
         }
         
         // Set state with both options
-        setCostRemarksOption1(costRemarksOpt1 || costRemarksValue);
-        setCostRemarksOption2(costRemarksOpt2 || costRemarksValue);
-        setCostRemarksActiveOption(costRemarksActive);
-        
         setHotelRemarksOption1(hotelRemarksOpt1 || hotelRemarksValue);
         setHotelRemarksOption2(hotelRemarksOpt2 || hotelRemarksValue);
         setHotelRemarksActiveOption(hotelRemarksActive);
@@ -1124,9 +1203,6 @@ const AddGroupTour = () => {
           base_price_adult: basic.base_price_adult || '',
           emi_price: basic.emi_price || '',
           is_international: basic.is_international || 0,
-          cost_remarks: costRemarksValue,
-          cost_remarks_option1: costRemarksOpt1 || costRemarksValue,
-          cost_remarks_option2: costRemarksOpt2 || costRemarksValue,
           hotel_remarks: hotelRemarksValue,
           hotel_remarks_option1: hotelRemarksOpt1 || hotelRemarksValue,
           hotel_remarks_option2: hotelRemarksOpt2 || hotelRemarksValue,
@@ -1161,7 +1237,7 @@ const AddGroupTour = () => {
           setItineraries(formattedItineraries);
         }
 
-        // Load departures
+        // Load departures (with cost remarks)
         if (data.departures && Array.isArray(data.departures)) {
           const formattedDepartures = data.departures.map(dept => ({
             start_date: dept.start_date ? dept.start_date.split('T')[0] : '',
@@ -1170,6 +1246,10 @@ const AddGroupTour = () => {
             total_seats: dept.total_seats || 40,
             booked_seats: dept.booked_seats || 0,
             description: dept.description || '',
+            cost_remarks: dept.cost_remarks || '',
+            cost_remarks_option1: dept.cost_remarks_option1 || '',
+            cost_remarks_option2: dept.cost_remarks_option2 || '',
+            cost_remarks_active: dept.cost_remarks_active || 'option1',
             three_star_twin: dept.three_star_twin || '',
             three_star_triple: dept.three_star_triple || '',
             three_star_child_with_bed: dept.three_star_child_with_bed || '',
@@ -1190,6 +1270,14 @@ const AddGroupTour = () => {
             five_star_single: dept.five_star_single || ''
           }));
           setDepartures(formattedDepartures);
+          
+          // If there are departures, set the cost remarks from the first departure
+          if (formattedDepartures.length > 0) {
+            const firstDep = formattedDepartures[0];
+            setCostRemarksOption1(firstDep.cost_remarks_option1 || firstDep.cost_remarks || '');
+            setCostRemarksOption2(firstDep.cost_remarks_option2 || firstDep.cost_remarks || '');
+            setCostRemarksActiveOption(firstDep.cost_remarks_active || 'option1');
+          }
         }
 
         // Load inclusions
@@ -1274,7 +1362,7 @@ const AddGroupTour = () => {
           setCancelPolicies(formattedPolicies);
         }
 
-        // Load instructions - with both options
+        // Load instructions
         if (data.instructions && Array.isArray(data.instructions)) {
           const formattedInstructions = data.instructions.map(inst => ({
             item: inst.item,
@@ -1282,7 +1370,7 @@ const AddGroupTour = () => {
             item_option2: inst.item_option2 || '',
             item_active: inst.item_active || 'option1'
           }));
-          setInstructions(formattedInstructions.map(inst => inst.item));
+          setInstructions(formattedInstructions);
         }
 
         // Load images
@@ -1357,6 +1445,10 @@ const AddGroupTour = () => {
       total_seats: groupDepartureForm.total_seats || 40,
       booked_seats: groupDepartureForm.booked_seats || 0,
       description: groupDepartureForm.description || '',
+      cost_remarks: groupDepartureForm.cost_remarks,
+      cost_remarks_option1: costRemarksOption1,
+      cost_remarks_option2: costRemarksOption2,
+      cost_remarks_active: costRemarksActiveOption,
       three_star_twin: groupDepartureForm.three_star_twin ? Number(groupDepartureForm.three_star_twin) : null,
       three_star_triple: groupDepartureForm.three_star_triple ? Number(groupDepartureForm.three_star_triple) : null,
       three_star_child_with_bed: groupDepartureForm.three_star_child_with_bed ? Number(groupDepartureForm.three_star_child_with_bed) : null,
@@ -1388,6 +1480,7 @@ const AddGroupTour = () => {
       setSuccess('Departure added successfully');
     }
 
+    // Reset form but keep cost remarks values
     setGroupDepartureForm({
       start_date: '',
       end_date: '',
@@ -1395,6 +1488,10 @@ const AddGroupTour = () => {
       total_seats: 40,
       booked_seats: 0,
       description: '',
+      cost_remarks: costRemarksOption1,
+      cost_remarks_option1: costRemarksOption1,
+      cost_remarks_option2: costRemarksOption2,
+      cost_remarks_active: costRemarksActiveOption,
       three_star_twin: '',
       three_star_triple: '',
       three_star_child_with_bed: '',
@@ -1425,6 +1522,10 @@ const AddGroupTour = () => {
       total_seats: departure.total_seats || 40,
       booked_seats: departure.booked_seats || 0,
       description: departure.description || '',
+      cost_remarks: departure.cost_remarks || '',
+      cost_remarks_option1: departure.cost_remarks_option1 || '',
+      cost_remarks_option2: departure.cost_remarks_option2 || '',
+      cost_remarks_active: departure.cost_remarks_active || 'option1',
       three_star_twin: departure.three_star_twin || '',
       three_star_triple: departure.three_star_triple || '',
       three_star_child_with_bed: departure.three_star_child_with_bed || '',
@@ -1445,6 +1546,11 @@ const AddGroupTour = () => {
       five_star_single: departure.five_star_single || ''
     });
     
+    // Set the cost remarks state for OptionTabs
+    setCostRemarksOption1(departure.cost_remarks_option1 || departure.cost_remarks || '');
+    setCostRemarksOption2(departure.cost_remarks_option2 || departure.cost_remarks || '');
+    setCostRemarksActiveOption(departure.cost_remarks_active || 'option1');
+    
     setEditingDepartureIndex(idx);
   };
 
@@ -1461,6 +1567,10 @@ const AddGroupTour = () => {
           total_seats: 40,
           booked_seats: 0,
           description: '',
+          cost_remarks: costRemarksOption1,
+          cost_remarks_option1: costRemarksOption1,
+          cost_remarks_option2: costRemarksOption2,
+          cost_remarks_active: costRemarksActiveOption,
           three_star_twin: '',
           three_star_triple: '',
           three_star_child_with_bed: '',
@@ -1556,6 +1666,8 @@ const AddGroupTour = () => {
   const handleImageChange = (e) => {
     const files = e.target.files ? Array.from(e.target.files) : [];
     setImageFiles(files);
+    const previews = files.map((file) => URL.createObjectURL(file));
+    setImagePreviews(previews);
   };
 
   const handleReplacementFileChange = (e) => {
@@ -1805,42 +1917,42 @@ const AddGroupTour = () => {
         }
         break;
       case 'optionalTours':
-        if (optionalTourItem.tour_name && optionalTourItem.tour_name.trim()) {
+        if (optionalTourItem.tour_name && optionalTourItem.tour_name.trim() && editingOptionalTourIndex === -1) {
           addOptionalTourRow();
         }
         break;
       case 'hotels':
-        if (hotelItem.city.trim() && (hotelItem.standard_hotel_name.trim() || hotelItem.deluxe_hotel_name.trim() || hotelItem.executive_hotel_name.trim())) {
+        if (hotelItem.city.trim() && (hotelItem.standard_hotel_name.trim() || hotelItem.deluxe_hotel_name.trim() || hotelItem.executive_hotel_name.trim()) && editingType !== 'hotel') {
           addHotelRow();
         }
         break;
       case 'flights':
-        if (transportItem.airline && transportItem.flight_no) {
+        if (transportItem.airline && transportItem.flight_no && editingTransportIndex === -1) {
           addTransportRow();
         }
         break;
       case 'bookingPoi':
-        if (poiText && poiText.trim()) {
+        if (poiText && poiText.trim() && editingBookingPoiIndex === -1) {
           addPoi();
         }
         break;
       case 'cancellation':
-        if (cancelItem.cancellation_policy && cancelItem.cancellation_policy.trim()) {
+        if (cancelItem.cancellation_policy && cancelItem.cancellation_policy.trim() && editingCancellationIndex === -1) {
           addCancelRow();
         }
         break;
       case 'instructions':
-        if ((instructionActiveOption === 'option1' ? instructionOption1 : instructionOption2).trim()) {
+        if ((instructionActiveOption === 'option1' ? instructionOption1 : instructionOption2).trim() && editingInstructionIndex === -1) {
           addInstruction();
         }
         break;
       case 'inclusions':
-        if (inclusionText && inclusionText.trim()) {
+        if (inclusionText && inclusionText.trim() && editingInclusionIndex === -1) {
           handleAddInclusion();
         }
         break;
       case 'exclusions':
-        if (exclusionText && exclusionText.trim()) {
+        if (exclusionText && exclusionText.trim() && editingExclusionIndex === -1) {
           handleAddExclusion();
         }
         break;
@@ -1889,7 +2001,6 @@ const AddGroupTour = () => {
         base_price_adult: Number(formData.base_price_adult) || 0,
         emi_price: Number(formData.emi_price) || 0,
         is_international: Number(formData.is_international) || 0,
-        cost_remarks_active: costRemarksActiveOption,
         hotel_remarks_active: hotelRemarksActiveOption,
         transport_remarks_active: flightRemarksActiveOption,
         emi_remarks_active: emiRemarksActiveOption,
@@ -1897,8 +2008,6 @@ const AddGroupTour = () => {
         cancellation_remarks_active: cancellationRemarksActiveOption,
         optional_tour_remarks_active: optionalTourRemarksActiveOption,
         instruction_description_active: instructionActiveOption,
-        cost_remarks_option1: costRemarksOption1,
-        cost_remarks_option2: costRemarksOption2,
         hotel_remarks_option1: hotelRemarksOption1,
         hotel_remarks_option2: hotelRemarksOption2,
         transport_remarks_option1: flightRemarksOption1,
@@ -1963,7 +2072,7 @@ const AddGroupTour = () => {
         });
       }
 
-      // Save departures
+      // Save departures with cost remarks
       if (departures.length > 0) {
         const formattedDepartures = departures.map(dept => ({
           tour_type: 'Group',
@@ -1973,7 +2082,10 @@ const AddGroupTour = () => {
           total_seats: dept.total_seats || 40,
           booked_seats: dept.booked_seats || 0,
           description: dept.description || null,
-          adult_price: dept.three_star_twin || 0,
+          cost_remarks: dept.cost_remarks,
+          cost_remarks_option1: dept.cost_remarks_option1,
+          cost_remarks_option2: dept.cost_remarks_option2,
+          cost_remarks_active: dept.cost_remarks_active || 'option1',
           three_star_twin: dept.three_star_twin || null,
           three_star_triple: dept.three_star_triple || null,
           three_star_child_with_bed: dept.three_star_child_with_bed || null,
@@ -2100,10 +2212,10 @@ const AddGroupTour = () => {
       // Save instructions with both options
       if (instructions.length > 0) {
         const instructionsWithBothOptions = instructions.map(inst => ({
-          item: instructionActiveOption === 'option1' ? instructionOption1 : instructionOption2,
-          item_option1: instructionOption1,
-          item_option2: instructionOption2,
-          item_active: instructionActiveOption
+          item: inst.item,
+          item_option1: inst.item_option1 || instructionOption1,
+          item_option2: inst.item_option2 || instructionOption2,
+          item_active: inst.item_active || instructionActiveOption
         }));
         await fetch(`${baseurl}/api/tour-instructions/bulk`, {
           method: 'POST',
@@ -2181,7 +2293,6 @@ const AddGroupTour = () => {
         emi_price: Number(formData.emi_price) || 0,
         is_international: Number(formData.is_international) || 0,
         status: 1,
-        cost_remarks_active: costRemarksActiveOption,
         hotel_remarks_active: hotelRemarksActiveOption,
         transport_remarks_active: flightRemarksActiveOption,
         emi_remarks_active: emiRemarksActiveOption,
@@ -2189,8 +2300,6 @@ const AddGroupTour = () => {
         cancellation_remarks_active: cancellationRemarksActiveOption,
         optional_tour_remarks_active: optionalTourRemarksActiveOption,
         instruction_description_active: instructionActiveOption,
-        cost_remarks_option1: costRemarksOption1,
-        cost_remarks_option2: costRemarksOption2,
         hotel_remarks_option1: hotelRemarksOption1,
         hotel_remarks_option2: hotelRemarksOption2,
         transport_remarks_option1: flightRemarksOption1,
@@ -2234,7 +2343,7 @@ const AddGroupTour = () => {
         });
       }
 
-      // Save departures
+      // Save departures with cost remarks
       if (departures.length > 0) {
         const formattedDepartures = departures.map(dept => ({
           tour_type: 'Group',
@@ -2244,7 +2353,10 @@ const AddGroupTour = () => {
           total_seats: dept.total_seats || 40,
           booked_seats: dept.booked_seats || 0,
           description: dept.description || null,
-          adult_price: dept.three_star_twin || 0,
+          cost_remarks: dept.cost_remarks,
+          cost_remarks_option1: dept.cost_remarks_option1,
+          cost_remarks_option2: dept.cost_remarks_option2,
+          cost_remarks_active: dept.cost_remarks_active || 'option1',
           three_star_twin: dept.three_star_twin || null,
           three_star_triple: dept.three_star_triple || null,
           three_star_child_with_bed: dept.three_star_child_with_bed || null,
@@ -2371,10 +2483,10 @@ const AddGroupTour = () => {
       // Save instructions with both options
       if (instructions.length > 0) {
         const instructionsWithBothOptions = instructions.map(inst => ({
-          item: instructionActiveOption === 'option1' ? instructionOption1 : instructionOption2,
-          item_option1: instructionOption1,
-          item_option2: instructionOption2,
-          item_active: instructionActiveOption
+          item: inst.item,
+          item_option1: inst.item_option1 || instructionOption1,
+          item_option2: inst.item_option2 || instructionOption2,
+          item_active: inst.item_active || instructionActiveOption
         }));
         await fetch(`${baseurl}/api/tour-instructions/bulk`, {
           method: 'POST',
@@ -2510,6 +2622,12 @@ const AddGroupTour = () => {
 
   const addConfig = getAddConfigForTab(activeTab);
 
+  // Get label for add button
+  const getAddButtonLabel = () => {
+    if (!addConfig) return null;
+    return addConfig.label;
+  };
+
   return (
     <Navbar>
       <Container>
@@ -2541,7 +2659,7 @@ const AddGroupTour = () => {
               onClick={addConfig.onClick}
               disabled={loading}
             >
-              {addConfig.label}
+              {getAddButtonLabel()}
             </Button>
           )}
 
@@ -3086,7 +3204,7 @@ const AddGroupTour = () => {
                   </Row>
                 </div>
 
-                {/* Cost Remarks with Option Tabs */}
+                {/* Cost Remarks with Option Tabs - Stored in tour_departures */}
                 <Form.Group className="mt-4">
                   <Form.Label>Cost Remarks</Form.Label>
                   <OptionTabs
@@ -3168,6 +3286,10 @@ const AddGroupTour = () => {
                         total_seats: 40,
                         booked_seats: 0,
                         description: '',
+                        cost_remarks: costRemarksOption1,
+                        cost_remarks_option1: costRemarksOption1,
+                        cost_remarks_option2: costRemarksOption2,
+                        cost_remarks_active: costRemarksActiveOption,
                         three_star_twin: '',
                         three_star_triple: '',
                         three_star_child_with_bed: '',
@@ -4029,7 +4151,7 @@ const AddGroupTour = () => {
               {/* ====== INSTRUCTIONS TAB ====== */}
               <Tab eventKey="instructions" title="Instructions">
                 <Form.Group className="mb-3">
-                  <Form.Label>Add Instruction</Form.Label>
+                  <Form.Label>Instructions</Form.Label>
                   <OptionTabs
                     activeOption={instructionActiveOption}
                     onOptionChange={handleInstructionActiveChange}
@@ -4051,32 +4173,35 @@ const AddGroupTour = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {instructions.map((item, idx) => (
-                        <tr key={idx}>
-                          <td>{idx + 1}</td>
-                          <td>{item}</td>
-                          <td>
-                            <div className="d-flex gap-1">
-                              <Button
-                                variant="outline-warning"
-                                size="sm"
-                                onClick={() => editInstruction(idx)}
-                                title="Edit"
-                              >
-                                <Pencil size={14} />
-                              </Button>
-                              <Button
-                                variant="outline-danger"
-                                size="sm"
-                                onClick={() => removeInstruction(idx)}
-                                title="Remove"
-                              >
-                                <Trash size={14} />
-                              </Button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
+                      {instructions.map((item, idx) => {
+                        const instructionTextValue = typeof item === 'string' ? item : item.item;
+                        return (
+                          <tr key={idx}>
+                            <td>{idx + 1}</td>
+                            <td>{instructionTextValue}</td>
+                            <td>
+                              <div className="d-flex gap-1">
+                                <Button
+                                  variant="outline-warning"
+                                  size="sm"
+                                  onClick={() => editInstruction(idx)}
+                                  title="Edit"
+                                >
+                                  <Pencil size={14} />
+                                </Button>
+                                <Button
+                                  variant="outline-danger"
+                                  size="sm"
+                                  onClick={() => removeInstruction(idx)}
+                                  title="Remove"
+                                >
+                                  <Trash size={14} />
+                                </Button>
+                              </div>
+                            </td>
+                           </tr>
+                        );
+                      })}
                     </tbody>
                   </Table>
                 )}
