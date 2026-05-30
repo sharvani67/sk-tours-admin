@@ -17,6 +17,46 @@ import Navbar from '../../Shared/Navbar/Navbar';
 import { baseurl } from '../../Api/Baseurl';
 import { Pencil, Trash } from 'react-bootstrap-icons';
 
+// ======================
+// OPTIONTABS – moved outside component to avoid losing input focus
+// ======================
+const OptionTabs = ({
+  activeOption,
+  onOptionChange,
+  option1Value,
+  option2Value,
+  onOption1Change,
+  onOption2Change,
+  placeholder
+}) => (
+  <div>
+    <Tabs
+      activeKey={activeOption}
+      onSelect={(k) => onOptionChange(k)}
+      className="mb-3"
+    >
+      <Tab eventKey="option1" title="Option 1">
+        <Form.Control
+          as="textarea"
+          rows={3}
+          value={option1Value}
+          onChange={(e) => onOption1Change(e.target.value)}
+          placeholder={placeholder || "Enter content for Option 1"}
+        />
+      </Tab>
+      <Tab eventKey="option2" title="Option 2">
+        <Form.Control
+          as="textarea"
+          rows={3}
+          value={option2Value}
+          onChange={(e) => onOption2Change(e.target.value)}
+          placeholder={placeholder || "Enter content for Option 2"}
+        />
+      </Tab>
+    </Tabs>
+  </div>
+);
+
 const AddSeniorTour = () => {
   const navigate = useNavigate();
   const { id } = useParams();
@@ -417,6 +457,94 @@ const AddSeniorTour = () => {
   });
 
   // =======================
+  // VISA HELPER FUNCTIONS
+  // =======================
+  const getFileUrl = (fileName) => {
+    if (!fileName || typeof fileName !== 'string') {
+      return null;
+    }
+    
+    if (fileName.startsWith('http')) {
+      return fileName;
+    }
+    
+    if (fileName.startsWith('/uploads/')) {
+      return `${baseurl}${fileName}`;
+    }
+    
+    return `${baseurl}/uploads/visa/${fileName}`;
+  };
+  
+  const openFileInNewTab = (url) => {
+    if (url) {
+      window.open(url, '_blank');
+    }
+  };
+
+  const handleVisaFormFileUpload = async (tourId, visaType, actionType, file) => {
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('visa_type', visaType);
+      formData.append('action_type', actionType);
+
+      const response = await fetch(`${baseurl}/api/visa/upload-file/${tourId}`, {
+        method: 'POST',
+        body: formData
+      });
+
+      const result = await response.json();
+      
+      if (result.success) {
+        return result.fileName;
+      } else {
+        console.error('File upload failed:', result.error);
+        return null;
+      }
+    } catch (err) {
+      console.error('Upload error:', err);
+      return null;
+    }
+  };
+
+  const uploadVisaFormFiles = async (tourId, visaForms) => {
+    const uploadedForms = [];
+
+    for (const form of visaForms) {
+      const formData = {
+        type: form.type,
+        download_text: form.download_text || '',
+        download_action: form.download_action || 'Download',
+        fill_action: form.fill_action || 'Fill Manually',
+        action1_file: null,
+        action2_file: null
+      };
+
+      if (form.action1_file && typeof form.action1_file === 'object') {
+        const fileName = await handleVisaFormFileUpload(tourId, form.type, 'action1', form.action1_file);
+        if (fileName) {
+          formData.action1_file = fileName;
+        }
+      } else if (form.action1_file && typeof form.action1_file === 'string') {
+        formData.action1_file = form.action1_file;
+      }
+
+      if (form.action2_file && typeof form.action2_file === 'object') {
+        const fileName = await handleVisaFormFileUpload(tourId, form.type, 'action2', form.action2_file);
+        if (fileName) {
+          formData.action2_file = fileName;
+        }
+      } else if (form.action2_file && typeof form.action2_file === 'string') {
+        formData.action2_file = form.action2_file;
+      }
+
+      uploadedForms.push(formData);
+    }
+
+    return uploadedForms;
+  };
+
+  // =======================
   // HOTELS
   // =======================
   const [hotelItem, setHotelItem] = useState({
@@ -672,70 +800,28 @@ const AddSeniorTour = () => {
   };
 
   // =======================
-  // INSTRUCTIONS
+  // INSTRUCTIONS - AUTO SAVE (no Add button needed)
   // =======================
-  const [instructionText, setInstructionText] = useState('');
   const [instructions, setInstructions] = useState([]);
+  // const [editingInstructionIndex, setEditingInstructionIndex] = useState(-1);
 
-  const addInstruction = () => {
+  // Auto-save instruction when OptionTabs content changes
+  useEffect(() => {
     const currentInstruction = instructionActiveOption === 'option1' ? instructionOption1 : instructionOption2;
-    const txt = currentInstruction.trim();
-    if (!txt) return;
-    
-    if (editingInstructionIndex !== -1) {
-      const updated = [...instructions];
-      updated[editingInstructionIndex] = txt;
-      setInstructions(updated);
-      setEditingInstructionIndex(-1);
-    } else {
-      setInstructions(prev => [...prev, txt]);
+    if (currentInstruction && currentInstruction.trim()) {
+      // Update formData
+      setFormData(prev => ({
+        ...prev,
+        instruction_description: currentInstruction,
+        instruction_description_option1: instructionOption1,
+        instruction_description_option2: instructionOption2
+      }));
     }
-    
-    setInstructionText('');
-  };
-
-  const editInstruction = (idx) => {
-    const instruction = instructions[idx];
-    setInstructionText(instruction);
-    setEditingInstructionIndex(idx);
-  };
-
-  const removeInstruction = (idx) => {
-    const confirmDelete = window.confirm('Are you sure you want to remove this instruction?');
-    if (confirmDelete) {
-      setInstructions(prev => prev.filter((_, i) => i !== idx));
-      if (editingInstructionIndex === idx) {
-        setEditingInstructionIndex(-1);
-        setInstructionText('');
-      }
-    }
-  };
+  }, [instructionOption1, instructionOption2, instructionActiveOption]);
 
   // =======================
   // VISA FUNCTIONS
   // =======================
-  const getFileUrl = (fileName) => {
-    if (!fileName || typeof fileName !== 'string') {
-      return null;
-    }
-    
-    if (fileName.startsWith('http')) {
-      return fileName;
-    }
-    
-    if (fileName.startsWith('/uploads/')) {
-      return `${baseurl}${fileName}`;
-    }
-    
-    return `${baseurl}/uploads/visa/${fileName}`;
-  };
-  
-  const openFileInNewTab = (url) => {
-    if (url) {
-      window.open(url, '_blank');
-    }
-  };
-
   // Tourist Visa Functions
   const addTouristVisa = () => {
     const trimmed = touristVisaForm.description.trim();
@@ -976,32 +1062,6 @@ const AddSeniorTour = () => {
   };
 
   // Visa Form Functions
-  const handleVisaFormFileUpload = async (tourId, visaType, actionType, file) => {
-    try {
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('visa_type', visaType);
-      formData.append('action_type', actionType);
-
-      const response = await fetch(`${baseurl}/api/visa/upload-file/${tourId}`, {
-        method: 'POST',
-        body: formData
-      });
-
-      const result = await response.json();
-      
-      if (result.success) {
-        return result.fileName;
-      } else {
-        console.error('File upload failed:', result.error);
-        return null;
-      }
-    } catch (err) {
-      console.error('Upload error:', err);
-      return null;
-    }
-  };
-
   const handleVisaFormFileChange = async (index, action, file) => {
     if (!file) return;
     
@@ -1099,154 +1159,8 @@ const AddSeniorTour = () => {
   };
 
   // ========================
-  // STATIC CONTENT PREFILL FOR NEW TOUR
+  // HANDLERS FOR OPTION TABS
   // ========================
-  useEffect(() => {
-    if (!isEditMode) {
-      // Cost Remarks
-      setCostRemarksOption1("Please note that while the tour price has been indicated, it may vary if you choose dates closer to departure or during periods when the season transitions from low to high. We therefore kindly request you to confirm the final tour price before proceeding with your booking and to mention the tour code when inquiring to receive the exact cost. Child pricing is calculated based on the standard hotel category, and if you choose Deluxe or Executive accommodations, child rates may be adjusted accordingly.");
-      setCostRemarksOption2("Premium package includes all taxes and surcharges. Price guaranteed for next 30 days. Early bird discount available for bookings made 60 days in advance. Group discount applicable for 10+ persons. Customized itineraries available on request.");
-      
-      // Hotel Remarks
-      setHotelRemarksOption1("Hotel categories are subject to availability. Standard, Deluxe, and Executive categories based on room types and amenities. Early check-in subject to availability. Check-out time 10 AM.");
-      setHotelRemarksOption2("Premium hotel collection with guaranteed upgrades. Welcome drinks and late checkout included. Complimentary breakfast and airport transfers. Best rate guarantee. 24/7 concierge service available.");
-      
-      // Flight Remarks
-      setFlightRemarksOption1("Flight prices are indicative and subject to change at the time of booking. Airline and timing subject to availability. Baggage allowance as per airline policy. Meals included as per airline standards.");
-      setFlightRemarksOption2("Guaranteed lowest airfare. Flexible cancellation up to 24 hours. Priority boarding and extra baggage included. Seat selection available complimentary. Lounge access at major airports.");
-      
-      // Booking Policy Remarks
-      setBookingPoiRemarksOption1("Booking amount is non-refundable. Balance payment to be made as per the payment schedule. 50% payment required 30 days before departure. 100% payment required 15 days before departure.");
-      setBookingPoiRemarksOption2("Flexible booking policy with free cancellation up to 15 days. Pay only 10% to book. Zero cancellation charges for COVID-related issues. Easy payment plans available.");
-      
-      // Cancellation Remarks
-      setCancellationRemarksOption1("Cancellation charges apply as per the policy mentioned above. No refunds for no-shows. 50% refund for cancellations made 30 days before departure. 25% refund for cancellations made 15 days before departure.");
-      setCancellationRemarksOption2("Full refund for cancellations 45+ days before departure. 75% refund for 30-44 days. 50% refund for 15-29 days. Travel credit available instead of refund. Free date change once allowed.");
-      
-      // EMI Remarks
-      setEmiRemarksOption1("EMI options available with 18% interest rate. Processing fee of 2% applicable. Terms and conditions apply. Credit cards from all major banks accepted. Minimum loan amount ₹10,000.");
-      setEmiRemarksOption2("No cost EMI available on select credit cards. Zero processing fee for limited period. Flexible tenure up to 36 months. Contact bank for pre-approved offers. Instant approval available.");
-      
-      // Optional Tour Remarks
-      setOptionalTourRemarksOption1("Optional tours are subject to availability and weather conditions. Prices are per person. Minimum 4 persons required for each optional tour. Book at least 2 days in advance. Cancellation 24 hours before for 50% refund.");
-      setOptionalTourRemarksOption2("Exclusive optional tours with private guide. Flexible timing available. Includes lunch and entry fees. Priority access to attractions. Cancel 24 hours before for full refund. Customized private tours available.");
-      
-      // Instructions
-      setInstructionOption1("Please carry valid ID proof. Reporting time is 2 hours before departure. Carry comfortable clothing and walking shoes. Follow the itinerary timings strictly. Carry necessary medications.");
-      setInstructionOption2("Passport required for international travel. Visa assistance available. Travel insurance is mandatory. Medical fitness certificate required for adventure activities. Emergency contact numbers provided.");
-      
-      // Tourist Visa Remarks
-      setTouristVisaRemarksOption1("Visa requirements are subject to change based on embassy regulations. Processing time may vary. It is recommended to apply at least 3-4 weeks before departure. All documents must be original and valid for at least 6 months from the date of return.");
-      setTouristVisaRemarksOption2("E-visa available for eligible nationalities. Visa on arrival options. Express processing available for additional fee. Multiple entry visa options. Visa assistance provided throughout the process.");
-      
-      // Set active options to option1 by default
-      setCostRemarksActiveOption('option1');
-      setHotelRemarksActiveOption('option1');
-      setFlightRemarksActiveOption('option1');
-      setBookingPoiRemarksActiveOption('option1');
-      setCancellationRemarksActiveOption('option1');
-      setEmiRemarksActiveOption('option1');
-      setOptionalTourRemarksActiveOption('option1');
-      setInstructionActiveOption('option1');
-      setTouristVisaRemarksActiveOption('option1');
-      
-      setFormData(prev => ({
-        ...prev,
-        cost_remarks: "Please note that while the tour price has been indicated, it may vary if you choose dates closer to departure or during periods when the season transitions from low to high. We therefore kindly request you to confirm the final tour price before proceeding with your booking and to mention the tour code when inquiring to receive the exact cost. Child pricing is calculated based on the standard hotel category, and if you choose Deluxe or Executive accommodations, child rates may be adjusted accordingly.",
-        cost_remarks_option1: "Please note that while the tour price has been indicated, it may vary if you choose dates closer to departure or during periods when the season transitions from low to high. We therefore kindly request you to confirm the final tour price before proceeding with your booking and to mention the tour code when inquiring to receive the exact cost. Child pricing is calculated based on the standard hotel category, and if you choose Deluxe or Executive accommodations, child rates may be adjusted accordingly.",
-        cost_remarks_option2: "Premium package includes all taxes and surcharges. Price guaranteed for next 30 days. Early bird discount available for bookings made 60 days in advance. Group discount applicable for 10+ persons. Customized itineraries available on request.",
-        hotel_remarks: "Hotel categories are subject to availability. Standard, Deluxe, and Executive categories based on room types and amenities. Early check-in subject to availability. Check-out time 10 AM.",
-        hotel_remarks_option1: "Hotel categories are subject to availability. Standard, Deluxe, and Executive categories based on room types and amenities. Early check-in subject to availability. Check-out time 10 AM.",
-        hotel_remarks_option2: "Premium hotel collection with guaranteed upgrades. Welcome drinks and late checkout included. Complimentary breakfast and airport transfers. Best rate guarantee. 24/7 concierge service available.",
-        transport_remarks: "Flight prices are indicative and subject to change at the time of booking. Airline and timing subject to availability. Baggage allowance as per airline policy. Meals included as per airline standards.",
-        transport_remarks_option1: "Flight prices are indicative and subject to change at the time of booking. Airline and timing subject to availability. Baggage allowance as per airline policy. Meals included as per airline standards.",
-        transport_remarks_option2: "Guaranteed lowest airfare. Flexible cancellation up to 24 hours. Priority boarding and extra baggage included. Seat selection available complimentary. Lounge access at major airports.",
-        booking_poi_remarks: "Booking amount is non-refundable. Balance payment to be made as per the payment schedule. 50% payment required 30 days before departure. 100% payment required 15 days before departure.",
-        booking_poi_remarks_option1: "Booking amount is non-refundable. Balance payment to be made as per the payment schedule. 50% payment required 30 days before departure. 100% payment required 15 days before departure.",
-        booking_poi_remarks_option2: "Flexible booking policy with free cancellation up to 15 days. Pay only 10% to book. Zero cancellation charges for COVID-related issues. Easy payment plans available.",
-        cancellation_remarks: "Cancellation charges apply as per the policy mentioned above. No refunds for no-shows. 50% refund for cancellations made 30 days before departure. 25% refund for cancellations made 15 days before departure.",
-        cancellation_remarks_option1: "Cancellation charges apply as per the policy mentioned above. No refunds for no-shows. 50% refund for cancellations made 30 days before departure. 25% refund for cancellations made 15 days before departure.",
-        cancellation_remarks_option2: "Full refund for cancellations 45+ days before departure. 75% refund for 30-44 days. 50% refund for 15-29 days. Travel credit available instead of refund. Free date change once allowed.",
-        emi_remarks: "EMI options available with 18% interest rate. Processing fee of 2% applicable. Terms and conditions apply. Credit cards from all major banks accepted. Minimum loan amount ₹10,000.",
-        emi_remarks_option1: "EMI options available with 18% interest rate. Processing fee of 2% applicable. Terms and conditions apply. Credit cards from all major banks accepted. Minimum loan amount ₹10,000.",
-        emi_remarks_option2: "No cost EMI available on select credit cards. Zero processing fee for limited period. Flexible tenure up to 36 months. Contact bank for pre-approved offers. Instant approval available.",
-        optional_tour_remarks: "Optional tours are subject to availability and weather conditions. Prices are per person. Minimum 4 persons required for each optional tour. Book at least 2 days in advance. Cancellation 24 hours before for 50% refund.",
-        optional_tour_remarks_option1: "Optional tours are subject to availability and weather conditions. Prices are per person. Minimum 4 persons required for each optional tour. Book at least 2 days in advance. Cancellation 24 hours before for 50% refund.",
-        optional_tour_remarks_option2: "Exclusive optional tours with private guide. Flexible timing available. Includes lunch and entry fees. Priority access to attractions. Cancel 24 hours before for full refund. Customized private tours available.",
-        instruction_description: "Please carry valid ID proof. Reporting time is 2 hours before departure. Carry comfortable clothing and walking shoes. Follow the itinerary timings strictly. Carry necessary medications.",
-        instruction_description_option1: "Please carry valid ID proof. Reporting time is 2 hours before departure. Carry comfortable clothing and walking shoes. Follow the itinerary timings strictly. Carry necessary medications.",
-        instruction_description_option2: "Passport required for international travel. Visa assistance available. Travel insurance is mandatory. Medical fitness certificate required for adventure activities. Emergency contact numbers provided."
-      }));
-
-      if (bookingPois.length === 0) {
-        setBookingPois([
-          {
-            item: "Per Person Booking Amount",
-            amount_details: ""
-          },
-          {
-            item: "30 Days Prior Per person cost ",
-            amount_details: "50 % of the tour cost"
-          },
-          {
-            item: "21 Days Prior Per person cost",
-            amount_details: "Balance amount to pay"
-          }
-        ]);
-      }
-
-      if (cancelPolicies.length === 0) {
-        setCancelPolicies([
-          {
-            cancellation_policy: "45 Days to 30 Days Cost per person ",
-            charges: ""
-          },
-          {
-            cancellation_policy: "30 Days to 21 Days Cost per person ",
-            charges: "50% of tour cost"
-          },
-          {
-            cancellation_policy: "21 Days till Departure date Cost per person",
-            charges: "100 % Cancellation applies"
-          }
-        ]);
-      }
-    }
-  }, [isEditMode]);
-
-  // ITINERARIES
-  const [itineraryItem, setItineraryItem] = useState({
-    day: '',
-    title: '',
-    description: '',
-    meals: {
-      breakfast: false,
-      lunch: false,
-      dinner: false
-    }
-  });
-  const [itineraries, setItineraries] = useState([]);
-
-  const editItinerary = (idx) => {
-    const item = itineraries[idx];
-    const mealsArray = item.meals ? item.meals.split(', ') : [];
-    const meals = {
-      breakfast: mealsArray.includes('Breakfast'),
-      lunch: mealsArray.includes('Lunch'),
-      dinner: mealsArray.includes('Dinner')
-    };
-    
-    setItineraryItem({
-      day: item.day,
-      title: item.title,
-      description: item.description || '',
-      meals: meals
-    });
-    
-    setEditingItineraryIndex(idx);
-  };
-
-  // Handlers for Option Tabs
   const handleCostRemarksOptionChange = (option, value) => {
     if (option === 'option1') {
       setCostRemarksOption1(value);
@@ -1419,35 +1333,153 @@ const AddSeniorTour = () => {
     setTouristVisaRemarksActiveOption(option);
   };
 
-  // Helper component for Option Tabs
-  const OptionTabs = ({ activeOption, onOptionChange, option1Value, option2Value, onOption1Change, onOption2Change, placeholder }) => (
-    <div>
-      <Tabs
-        activeKey={activeOption}
-        onSelect={(k) => onOptionChange(k)}
-        className="mb-3"
-      >
-        <Tab eventKey="option1" title="Option 1">
-          <Form.Control
-            as="textarea"
-            rows={3}
-            value={option1Value}
-            onChange={(e) => onOption1Change(e.target.value)}
-            placeholder={placeholder || "Enter content for Option 1"}
-          />
-        </Tab>
-        <Tab eventKey="option2" title="Option 2">
-          <Form.Control
-            as="textarea"
-            rows={3}
-            value={option2Value}
-            onChange={(e) => onOption2Change(e.target.value)}
-            placeholder={placeholder || "Enter content for Option 2"}
-          />
-        </Tab>
-      </Tabs>
-    </div>
-  );
+  // ========================
+  // STATIC CONTENT PREFILL FOR NEW TOUR
+  // ========================
+  useEffect(() => {
+    if (!isEditMode) {
+      // Cost Remarks
+      setCostRemarksOption1("Please note that while the tour price has been indicated, it may vary if you choose dates closer to departure or during periods when the season transitions from low to high. We therefore kindly request you to confirm the final tour price before proceeding with your booking and to mention the tour code when inquiring to receive the exact cost. Child pricing is calculated based on the standard hotel category, and if you choose Deluxe or Executive accommodations, child rates may be adjusted accordingly.");
+      setCostRemarksOption2("Premium package includes all taxes and surcharges. Price guaranteed for next 30 days. Early bird discount available for bookings made 60 days in advance. Group discount applicable for 10+ persons. Customized itineraries available on request.");
+      
+      // Hotel Remarks
+      setHotelRemarksOption1("Hotel categories are subject to availability. Standard, Deluxe, and Executive categories based on room types and amenities. Early check-in subject to availability. Check-out time 10 AM.");
+      setHotelRemarksOption2("Premium hotel collection with guaranteed upgrades. Welcome drinks and late checkout included. Complimentary breakfast and airport transfers. Best rate guarantee. 24/7 concierge service available.");
+      
+      // Flight Remarks
+      setFlightRemarksOption1("Flight prices are indicative and subject to change at the time of booking. Airline and timing subject to availability. Baggage allowance as per airline policy. Meals included as per airline standards.");
+      setFlightRemarksOption2("Guaranteed lowest airfare. Flexible cancellation up to 24 hours. Priority boarding and extra baggage included. Seat selection available complimentary. Lounge access at major airports.");
+      
+      // Booking Policy Remarks
+      setBookingPoiRemarksOption1("Booking amount is non-refundable. Balance payment to be made as per the payment schedule. 50% payment required 30 days before departure. 100% payment required 15 days before departure.");
+      setBookingPoiRemarksOption2("Flexible booking policy with free cancellation up to 15 days. Pay only 10% to book. Zero cancellation charges for COVID-related issues. Easy payment plans available.");
+      
+      // Cancellation Remarks
+      setCancellationRemarksOption1("Cancellation charges apply as per the policy mentioned above. No refunds for no-shows. 50% refund for cancellations made 30 days before departure. 25% refund for cancellations made 15 days before departure.");
+      setCancellationRemarksOption2("Full refund for cancellations 45+ days before departure. 75% refund for 30-44 days. 50% refund for 15-29 days. Travel credit available instead of refund. Free date change once allowed.");
+      
+      // EMI Remarks
+      setEmiRemarksOption1("EMI options available with 18% interest rate. Processing fee of 2% applicable. Terms and conditions apply. Credit cards from all major banks accepted. Minimum loan amount ₹10,000.");
+      setEmiRemarksOption2("No cost EMI available on select credit cards. Zero processing fee for limited period. Flexible tenure up to 36 months. Contact bank for pre-approved offers. Instant approval available.");
+      
+      // Optional Tour Remarks
+      setOptionalTourRemarksOption1("Optional tours are subject to availability and weather conditions. Prices are per person. Minimum 4 persons required for each optional tour. Book at least 2 days in advance. Cancellation 24 hours before for 50% refund.");
+      setOptionalTourRemarksOption2("Exclusive optional tours with private guide. Flexible timing available. Includes lunch and entry fees. Priority access to attractions. Cancel 24 hours before for full refund. Customized private tours available.");
+      
+      // Instructions - Auto-save so no need for Add button
+      setInstructionOption1("Please carry valid ID proof. Reporting time is 2 hours before departure. Carry comfortable clothing and walking shoes. Follow the itinerary timings strictly. Carry necessary medications.");
+      setInstructionOption2("Passport required for international travel. Visa assistance available. Travel insurance is mandatory. Medical fitness certificate required for adventure activities. Emergency contact numbers provided.");
+      
+      // Tourist Visa Remarks
+      setTouristVisaRemarksOption1("Visa requirements are subject to change based on embassy regulations. Processing time may vary. It is recommended to apply at least 3-4 weeks before departure. All documents must be original and valid for at least 6 months from the date of return.");
+      setTouristVisaRemarksOption2("E-visa available for eligible nationalities. Visa on arrival options. Express processing available for additional fee. Multiple entry visa options. Visa assistance provided throughout the process.");
+      
+      // Set active options to option1 by default
+      setCostRemarksActiveOption('option1');
+      setHotelRemarksActiveOption('option1');
+      setFlightRemarksActiveOption('option1');
+      setBookingPoiRemarksActiveOption('option1');
+      setCancellationRemarksActiveOption('option1');
+      setEmiRemarksActiveOption('option1');
+      setOptionalTourRemarksActiveOption('option1');
+      setInstructionActiveOption('option1');
+      setTouristVisaRemarksActiveOption('option1');
+      
+      setFormData(prev => ({
+        ...prev,
+        cost_remarks: "Please note that while the tour price has been indicated, it may vary if you choose dates closer to departure or during periods when the season transitions from low to high. We therefore kindly request you to confirm the final tour price before proceeding with your booking and to mention the tour code when inquiring to receive the exact cost. Child pricing is calculated based on the standard hotel category, and if you choose Deluxe or Executive accommodations, child rates may be adjusted accordingly.",
+        cost_remarks_option1: "Please note that while the tour price has been indicated, it may vary if you choose dates closer to departure or during periods when the season transitions from low to high. We therefore kindly request you to confirm the final tour price before proceeding with your booking and to mention the tour code when inquiring to receive the exact cost. Child pricing is calculated based on the standard hotel category, and if you choose Deluxe or Executive accommodations, child rates may be adjusted accordingly.",
+        cost_remarks_option2: "Premium package includes all taxes and surcharges. Price guaranteed for next 30 days. Early bird discount available for bookings made 60 days in advance. Group discount applicable for 10+ persons. Customized itineraries available on request.",
+        hotel_remarks: "Hotel categories are subject to availability. Standard, Deluxe, and Executive categories based on room types and amenities. Early check-in subject to availability. Check-out time 10 AM.",
+        hotel_remarks_option1: "Hotel categories are subject to availability. Standard, Deluxe, and Executive categories based on room types and amenities. Early check-in subject to availability. Check-out time 10 AM.",
+        hotel_remarks_option2: "Premium hotel collection with guaranteed upgrades. Welcome drinks and late checkout included. Complimentary breakfast and airport transfers. Best rate guarantee. 24/7 concierge service available.",
+        transport_remarks: "Flight prices are indicative and subject to change at the time of booking. Airline and timing subject to availability. Baggage allowance as per airline policy. Meals included as per airline standards.",
+        transport_remarks_option1: "Flight prices are indicative and subject to change at the time of booking. Airline and timing subject to availability. Baggage allowance as per airline policy. Meals included as per airline standards.",
+        transport_remarks_option2: "Guaranteed lowest airfare. Flexible cancellation up to 24 hours. Priority boarding and extra baggage included. Seat selection available complimentary. Lounge access at major airports.",
+        booking_poi_remarks: "Booking amount is non-refundable. Balance payment to be made as per the payment schedule. 50% payment required 30 days before departure. 100% payment required 15 days before departure.",
+        booking_poi_remarks_option1: "Booking amount is non-refundable. Balance payment to be made as per the payment schedule. 50% payment required 30 days before departure. 100% payment required 15 days before departure.",
+        booking_poi_remarks_option2: "Flexible booking policy with free cancellation up to 15 days. Pay only 10% to book. Zero cancellation charges for COVID-related issues. Easy payment plans available.",
+        cancellation_remarks: "Cancellation charges apply as per the policy mentioned above. No refunds for no-shows. 50% refund for cancellations made 30 days before departure. 25% refund for cancellations made 15 days before departure.",
+        cancellation_remarks_option1: "Cancellation charges apply as per the policy mentioned above. No refunds for no-shows. 50% refund for cancellations made 30 days before departure. 25% refund for cancellations made 15 days before departure.",
+        cancellation_remarks_option2: "Full refund for cancellations 45+ days before departure. 75% refund for 30-44 days. 50% refund for 15-29 days. Travel credit available instead of refund. Free date change once allowed.",
+        emi_remarks: "EMI options available with 18% interest rate. Processing fee of 2% applicable. Terms and conditions apply. Credit cards from all major banks accepted. Minimum loan amount ₹10,000.",
+        emi_remarks_option1: "EMI options available with 18% interest rate. Processing fee of 2% applicable. Terms and conditions apply. Credit cards from all major banks accepted. Minimum loan amount ₹10,000.",
+        emi_remarks_option2: "No cost EMI available on select credit cards. Zero processing fee for limited period. Flexible tenure up to 36 months. Contact bank for pre-approved offers. Instant approval available.",
+        optional_tour_remarks: "Optional tours are subject to availability and weather conditions. Prices are per person. Minimum 4 persons required for each optional tour. Book at least 2 days in advance. Cancellation 24 hours before for 50% refund.",
+        optional_tour_remarks_option1: "Optional tours are subject to availability and weather conditions. Prices are per person. Minimum 4 persons required for each optional tour. Book at least 2 days in advance. Cancellation 24 hours before for 50% refund.",
+        optional_tour_remarks_option2: "Exclusive optional tours with private guide. Flexible timing available. Includes lunch and entry fees. Priority access to attractions. Cancel 24 hours before for full refund. Customized private tours available.",
+        instruction_description: "Please carry valid ID proof. Reporting time is 2 hours before departure. Carry comfortable clothing and walking shoes. Follow the itinerary timings strictly. Carry necessary medications.",
+        instruction_description_option1: "Please carry valid ID proof. Reporting time is 2 hours before departure. Carry comfortable clothing and walking shoes. Follow the itinerary timings strictly. Carry necessary medications.",
+        instruction_description_option2: "Passport required for international travel. Visa assistance available. Travel insurance is mandatory. Medical fitness certificate required for adventure activities. Emergency contact numbers provided."
+      }));
+
+      if (bookingPois.length === 0) {
+        setBookingPois([
+          {
+            item: "Per Person Booking Amount",
+            amount_details: ""
+          },
+          {
+            item: "30 Days Prior Per person cost ",
+            amount_details: "50 % of the tour cost"
+          },
+          {
+            item: "21 Days Prior Per person cost",
+            amount_details: "Balance amount to pay"
+          }
+        ]);
+      }
+
+      if (cancelPolicies.length === 0) {
+        setCancelPolicies([
+          {
+            cancellation_policy: "45 Days to 30 Days Cost per person ",
+            charges: ""
+          },
+          {
+            cancellation_policy: "30 Days to 21 Days Cost per person ",
+            charges: "50% of tour cost"
+          },
+          {
+            cancellation_policy: "21 Days till Departure date Cost per person",
+            charges: "100 % Cancellation applies"
+          }
+        ]);
+      }
+    }
+  }, [isEditMode]);
+
+  // ITINERARIES
+  const [itineraryItem, setItineraryItem] = useState({
+    day: '',
+    title: '',
+    description: '',
+    meals: {
+      breakfast: false,
+      lunch: false,
+      dinner: false
+    }
+  });
+  const [itineraries, setItineraries] = useState([]);
+
+  const editItinerary = (idx) => {
+    const item = itineraries[idx];
+    const mealsArray = item.meals ? item.meals.split(', ') : [];
+    const meals = {
+      breakfast: mealsArray.includes('Breakfast'),
+      lunch: mealsArray.includes('Lunch'),
+      dinner: mealsArray.includes('Dinner')
+    };
+    
+    setItineraryItem({
+      day: item.day,
+      title: item.title,
+      description: item.description || '',
+      meals: meals
+    });
+    
+    setEditingItineraryIndex(idx);
+  };
 
   // Fetch dropdowns and tour data
   useEffect(() => {
@@ -2164,6 +2196,8 @@ const AddSeniorTour = () => {
   const handleImageChange = (e) => {
     const files = e.target.files ? Array.from(e.target.files) : [];
     setImageFiles(files);
+    const previews = files.map((file) => URL.createObjectURL(file));
+    setImagePreviews(previews);
   };
 
   const handleReplacementFileChange = (e) => {
@@ -2466,9 +2500,7 @@ const AddSeniorTour = () => {
         }
         break;
       case 'instructions':
-        if ((instructionActiveOption === 'option1' ? instructionOption1 : instructionOption2).trim()) {
-          addInstruction();
-        }
+        // Instructions auto-save via useEffect, no need to add anything here
         break;
       case 'inclusions':
         if (inclusionText && inclusionText.trim()) {
@@ -2507,44 +2539,6 @@ const AddSeniorTour = () => {
       }));
       setEmiOptions(updatedOptions);
     }
-  };
-
-  // UPLOAD VISA FORM FILES
-  const uploadVisaFormFiles = async (tourId, visaForms) => {
-    const uploadedForms = [];
-
-    for (const form of visaForms) {
-      const formData = {
-        type: form.type,
-        download_text: form.download_text || '',
-        download_action: form.download_action || 'Download',
-        fill_action: form.fill_action || 'Fill Manually',
-        action1_file: null,
-        action2_file: null
-      };
-
-      if (form.action1_file && typeof form.action1_file === 'object') {
-        const fileName = await handleVisaFormFileUpload(tourId, form.type, 'action1', form.action1_file);
-        if (fileName) {
-          formData.action1_file = fileName;
-        }
-      } else if (form.action1_file && typeof form.action1_file === 'string') {
-        formData.action1_file = form.action1_file;
-      }
-
-      if (form.action2_file && typeof form.action2_file === 'object') {
-        const fileName = await handleVisaFormFileUpload(tourId, form.type, 'action2', form.action2_file);
-        if (fileName) {
-          formData.action2_file = fileName;
-        }
-      } else if (form.action2_file && typeof form.action2_file === 'string') {
-        formData.action2_file = form.action2_file;
-      }
-
-      uploadedForms.push(formData);
-    }
-
-    return uploadedForms;
   };
 
   // UPDATE EXISTING TOUR
@@ -2787,14 +2781,15 @@ const AddSeniorTour = () => {
         });
       }
 
-      // Save instructions with both options
-      if (instructions.length > 0) {
-        const instructionsWithBothOptions = instructions.map(inst => ({
-          item: instructionActiveOption === 'option1' ? instructionOption1 : instructionOption2,
+      // Save instructions with both options - single instruction saved as one item
+      const currentInstruction = instructionActiveOption === 'option1' ? instructionOption1 : instructionOption2;
+      if (currentInstruction && currentInstruction.trim()) {
+        const instructionsWithBothOptions = [{
+          item: currentInstruction,
           item_option1: instructionOption1,
           item_option2: instructionOption2,
           item_active: instructionActiveOption
-        }));
+        }];
         await fetch(`${baseurl}/api/tour-instructions/bulk`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -3096,14 +3091,15 @@ const AddSeniorTour = () => {
         });
       }
 
-      // Save instructions with both options
-      if (instructions.length > 0) {
-        const instructionsWithBothOptions = instructions.map(inst => ({
-          item: instructionActiveOption === 'option1' ? instructionOption1 : instructionOption2,
+      // Save instructions with both options - single instruction saved as one item
+      const currentInstruction = instructionActiveOption === 'option1' ? instructionOption1 : instructionOption2;
+      if (currentInstruction && currentInstruction.trim()) {
+        const instructionsWithBothOptions = [{
+          item: currentInstruction,
           item_option1: instructionOption1,
           item_option2: instructionOption2,
           item_active: instructionActiveOption
-        }));
+        }];
         await fetch(`${baseurl}/api/tour-instructions/bulk`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -3261,10 +3257,8 @@ const AddSeniorTour = () => {
           onClick: addCancelRow 
         };
       case 'instructions':
-        return { 
-          label: editingInstructionIndex !== -1 ? '✓ Update Instruction' : '+ Add Instruction', 
-          onClick: addInstruction 
-        };
+        // No add button for Instructions - auto-save via OptionTabs
+        return null;
       case 'visa':
         if (activeVisaSubTab === 'tourist') {
           return { 
@@ -3302,6 +3296,12 @@ const AddSeniorTour = () => {
 
   const addConfig = getAddConfigForTab(activeTab);
 
+  // Get label for add button
+  const getAddButtonLabel = () => {
+    if (!addConfig) return null;
+    return addConfig.label;
+  };
+
   return (
     <Navbar>
       <Container>
@@ -3333,7 +3333,7 @@ const AddSeniorTour = () => {
               onClick={addConfig.onClick}
               disabled={loading}
             >
-              {addConfig.label}
+              {getAddButtonLabel()}
             </Button>
           )}
 
@@ -5449,10 +5449,10 @@ const AddSeniorTour = () => {
                 )}
               </Tab>
 
-              {/* ====== INSTRUCTIONS TAB ====== */}
+              {/* ====== INSTRUCTIONS TAB - AUTO SAVE VIA OPTION TABS ====== */}
               <Tab eventKey="instructions" title="Instructions">
                 <Form.Group className="mb-3">
-                  <Form.Label>Add Instruction</Form.Label>
+                  <Form.Label>Instructions</Form.Label>
                   <OptionTabs
                     activeOption={instructionActiveOption}
                     onOptionChange={handleInstructionActiveChange}
@@ -5462,47 +5462,10 @@ const AddSeniorTour = () => {
                     onOption2Change={(val) => handleInstructionOptionChange('option2', val)}
                     placeholder="Enter instruction for Option 1"
                   />
+                  {/* <Form.Text className="text-muted">
+                    Instructions are automatically saved when you type. No need to click an Add button.
+                  </Form.Text> */}
                 </Form.Group>
-
-                {instructions.length > 0 && (
-                  <Table striped bordered hover size="sm">
-                    <thead>
-                      <tr>
-                        <th>#</th>
-                        <th>Instruction</th>
-                        <th>Action</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {instructions.map((item, idx) => (
-                        <tr key={idx}>
-                          <td>{idx + 1}</td>
-                          <td>{item}</td>
-                          <td>
-                            <div className="d-flex gap-1">
-                              <Button
-                                variant="outline-warning"
-                                size="sm"
-                                onClick={() => editInstruction(idx)}
-                                title="Edit"
-                              >
-                                <Pencil size={14} />
-                              </Button>
-                              <Button
-                                variant="outline-danger"
-                                size="sm"
-                                onClick={() => removeInstruction(idx)}
-                                title="Remove"
-                              >
-                                <Trash size={14} />
-                              </Button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </Table>
-                )}
               </Tab>
 
               {/* ====== IMAGES TAB ====== */}

@@ -1370,40 +1370,50 @@ const AddGroupTour = () => {
   }, [isEditMode]);
 
   // =======================
-  // INSTRUCTIONS
+  // INSTRUCTIONS - AUTOMATICALLY SAVE TO LIST
   // =======================
-  const [instructionText, setInstructionText] = useState('');
   const [instructions, setInstructions] = useState([]);
-
-  const addInstruction = () => {
+  
+  // Update the instructions list whenever instructionOption1 or instructionOption2 changes
+  useEffect(() => {
+    // Get the current active instruction text
     const currentInstruction = instructionActiveOption === 'option1' ? instructionOption1 : instructionOption2;
-    const txt = currentInstruction.trim();
-    if (!txt) return;
     
-    if (editingInstructionIndex !== -1) {
-      const updatedInstructions = [...instructions];
-      updatedInstructions[editingInstructionIndex] = txt;
-      setInstructions(updatedInstructions);
-      setEditingInstructionIndex(-1);
-      setSuccess('Instruction updated successfully');
-    } else {
-      setInstructions(prev => [...prev, txt]);
-      setSuccess('Instruction added successfully');
+    // If instructions array is empty, add the current instruction
+    if (instructions.length === 0 && currentInstruction.trim()) {
+      setInstructions([currentInstruction]);
+    } 
+    // If instructions array has content, update the first item (since we only maintain one instruction)
+    else if (instructions.length === 1 && currentInstruction.trim()) {
+      // Only update if the value has changed to avoid unnecessary re-renders
+      if (instructions[0] !== currentInstruction) {
+        setInstructions([currentInstruction]);
+      }
     }
-    
-    setInstructionText('');
-  };
+    // If current instruction is empty and we have instructions, clear them
+    else if (!currentInstruction.trim() && instructions.length > 0) {
+      setInstructions([]);
+    }
+  }, [instructionOption1, instructionOption2, instructionActiveOption]);
 
+  // Edit instruction (for consistency with other sections, though maybe not needed)
   const editInstruction = (idx) => {
-    const instruction = instructions[idx];
-    setInstructionText(instruction);
-    setEditingInstructionIndex(idx);
+    // Since we only have one instruction, we can just set the active option
+    // This is a placeholder for compatibility
+    console.log('Edit instruction', idx);
   };
 
+  // Remove instruction (clear the instruction text)
   const removeInstruction = (idx) => {
     const confirmDelete = window.confirm('Are you sure you want to remove this instruction?');
     if (confirmDelete) {
-      setInstructions(prev => prev.filter((_, i) => i !== idx));
+      // Clear the active instruction text
+      if (instructionActiveOption === 'option1') {
+        setInstructionOption1('');
+      } else {
+        setInstructionOption2('');
+      }
+      setInstructions([]);
     }
   };
 
@@ -1697,6 +1707,13 @@ const AddGroupTour = () => {
           visa_remarks_option2: visaRemarksOpt2 || visaRemarksValue
         });
 
+        // Set instructions list for editing
+        if (instructionDescValue) {
+          setInstructions([instructionDescValue]);
+        } else {
+          setInstructions([]);
+        }
+
         // Load itineraries
         if (data.itinerary && Array.isArray(data.itinerary)) {
           const formattedItineraries = data.itinerary.map(item => ({
@@ -1903,17 +1920,6 @@ const AddGroupTour = () => {
             cancellation_remarks_active: policy.cancellation_remarks_active || 'option1'
           }));
           setCancelPolicies(formattedPolicies);
-        }
-
-        // Load instructions
-        if (data.instructions && Array.isArray(data.instructions)) {
-          const formattedInstructions = data.instructions.map(inst => ({
-            item: inst.item,
-            item_option1: inst.item_option1 || '',
-            item_option2: inst.item_option2 || '',
-            item_active: inst.item_active || 'option1'
-          }));
-          setInstructions(formattedInstructions.map(inst => inst.item));
         }
 
         // Load images
@@ -2621,9 +2627,7 @@ const AddGroupTour = () => {
         }
         break;
       case 'instructions':
-        if ((instructionActiveOption === 'option1' ? instructionOption1 : instructionOption2).trim()) {
-          addInstruction();
-        }
+        // Instructions are automatically saved via useEffect, no need to add manually
         break;
       case 'inclusions':
         if (inclusionText && inclusionText.trim()) {
@@ -2638,6 +2642,7 @@ const AddGroupTour = () => {
       default:
         break;
     }
+    return true;
   };
 
   // UPDATE EXISTING TOUR
@@ -2943,13 +2948,13 @@ const AddGroupTour = () => {
       }
 
       // Save instructions with both options
-      if (instructions.length > 0) {
-        const instructionsWithBothOptions = instructions.map(inst => ({
-          item: instructionActiveOption === 'option1' ? instructionOption1 : instructionOption2,
+      if (instructions.length > 0 && instructions[0].trim()) {
+        const instructionsWithBothOptions = [{
+          item: instructions[0],
           item_option1: instructionOption1,
           item_option2: instructionOption2,
           item_active: instructionActiveOption
-        }));
+        }];
         await fetch(`${baseurl}/api/tour-instructions/bulk`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -3277,13 +3282,13 @@ const AddGroupTour = () => {
       }
 
       // Save instructions with both options
-      if (instructions.length > 0) {
-        const instructionsWithBothOptions = instructions.map(inst => ({
-          item: instructionActiveOption === 'option1' ? instructionOption1 : instructionOption2,
+      if (instructions.length > 0 && instructions[0].trim()) {
+        const instructionsWithBothOptions = [{
+          item: instructions[0],
           item_option1: instructionOption1,
           item_option2: instructionOption2,
           item_active: instructionActiveOption
-        }));
+        }];
         await fetch(`${baseurl}/api/tour-instructions/bulk`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -3374,7 +3379,8 @@ const AddGroupTour = () => {
   };
 
   const handleSaveClick = () => {
-    autoAddBeforeNext();
+    const continueSave = autoAddBeforeNext();
+    if (!continueSave) return;
 
     if (isLastTab) {
       const confirmMessage = isEditMode 
@@ -3534,10 +3540,8 @@ const AddGroupTour = () => {
           onClick: addCancelRow 
         };
       case 'instructions':
-        return { 
-          label: editingInstructionIndex !== -1 ? '✓ Update Instruction' : '+ Add Instruction', 
-          onClick: addInstruction 
-        };
+        // No add button for instructions since it auto-saves
+        return null;
       default:
         return null;
     }
@@ -5688,7 +5692,7 @@ const AddGroupTour = () => {
                 )}
               </Tab>
 
-              {/* ====== INSTRUCTIONS TAB ====== */}
+              {/* ====== INSTRUCTIONS TAB - AUTO SAVE ====== */}
               <Tab eventKey="instructions" title="Instructions">
                 <Form.Group className="mb-3">
                   <OptionTabs

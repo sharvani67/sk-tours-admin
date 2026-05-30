@@ -17,6 +17,46 @@ import Navbar from '../../Shared/Navbar/Navbar';
 import { baseurl } from '../../Api/Baseurl';
 import { Pencil, Trash } from 'react-bootstrap-icons';
 
+// ======================
+// OPTIONTABS – moved outside component to avoid losing input focus
+// ======================
+const OptionTabs = ({
+  activeOption,
+  onOptionChange,
+  option1Value,
+  option2Value,
+  onOption1Change,
+  onOption2Change,
+  placeholder
+}) => (
+  <div>
+    <Tabs
+      activeKey={activeOption}
+      onSelect={(k) => onOptionChange(k)}
+      className="mb-3"
+    >
+      <Tab eventKey="option1" title="Option 1">
+        <Form.Control
+          as="textarea"
+          rows={3}
+          value={option1Value}
+          onChange={(e) => onOption1Change(e.target.value)}
+          placeholder={placeholder || "Enter content for Option 1"}
+        />
+      </Tab>
+      <Tab eventKey="option2" title="Option 2">
+        <Form.Control
+          as="textarea"
+          rows={3}
+          value={option2Value}
+          onChange={(e) => onOption2Change(e.target.value)}
+          placeholder={placeholder || "Enter content for Option 2"}
+        />
+      </Tab>
+    </Tabs>
+  </div>
+);
+
 const AddStudentTour = () => {
   const navigate = useNavigate();
   const { id } = useParams();
@@ -87,7 +127,7 @@ const AddStudentTour = () => {
   const [optionalTourRemarksOption1, setOptionalTourRemarksOption1] = useState('');
   const [optionalTourRemarksOption2, setOptionalTourRemarksOption2] = useState('');
   
-  // For Instructions
+  // For Instructions - Auto-save via OptionTabs (no Add button needed)
   const [instructionActiveOption, setInstructionActiveOption] = useState('option1');
   const [instructionOption1, setInstructionOption1] = useState('');
   const [instructionOption2, setInstructionOption2] = useState('');
@@ -672,44 +712,20 @@ const AddStudentTour = () => {
   };
 
   // =======================
-  // INSTRUCTIONS
+  // INSTRUCTIONS - AUTO SAVE (no Add button needed)
   // =======================
-  const [instructionText, setInstructionText] = useState('');
-  const [instructions, setInstructions] = useState([]);
-
-  const addInstruction = () => {
+  // Auto-save instruction when OptionTabs content changes
+  useEffect(() => {
     const currentInstruction = instructionActiveOption === 'option1' ? instructionOption1 : instructionOption2;
-    const txt = currentInstruction.trim();
-    if (!txt) return;
-    
-    if (editingInstructionIndex !== -1) {
-      const updated = [...instructions];
-      updated[editingInstructionIndex] = txt;
-      setInstructions(updated);
-      setEditingInstructionIndex(-1);
-    } else {
-      setInstructions(prev => [...prev, txt]);
+    if (currentInstruction) {
+      setFormData(prev => ({
+        ...prev,
+        instruction_description: currentInstruction,
+        instruction_description_option1: instructionOption1,
+        instruction_description_option2: instructionOption2
+      }));
     }
-    
-    setInstructionText('');
-  };
-
-  const editInstruction = (idx) => {
-    const instruction = instructions[idx];
-    setInstructionText(instruction);
-    setEditingInstructionIndex(idx);
-  };
-
-  const removeInstruction = (idx) => {
-    const confirmDelete = window.confirm('Are you sure you want to remove this instruction?');
-    if (confirmDelete) {
-      setInstructions(prev => prev.filter((_, i) => i !== idx));
-      if (editingInstructionIndex === idx) {
-        setEditingInstructionIndex(-1);
-        setInstructionText('');
-      }
-    }
-  };
+  }, [instructionOption1, instructionOption2, instructionActiveOption]);
 
   // =======================
   // VISA FUNCTIONS
@@ -1131,9 +1147,9 @@ const AddStudentTour = () => {
       setOptionalTourRemarksOption1("Optional tours are subject to availability and weather conditions. Prices are per person. Minimum 4 persons required for each optional tour. Book at least 2 days in advance. Cancellation 24 hours before for 50% refund.");
       setOptionalTourRemarksOption2("Exclusive optional tours with private guide. Flexible timing available. Includes lunch and entry fees. Priority access to attractions. Cancel 24 hours before for full refund. Customized private tours available.");
       
-      // Instructions
-      setInstructionOption1("Please carry valid ID proof. Reporting time is 2 hours before departure. Carry comfortable clothing and walking shoes. Follow the itinerary timings strictly. Carry necessary medications.");
-      setInstructionOption2("Passport required for international travel. Visa assistance available. Travel insurance is mandatory. Medical fitness certificate required for adventure activities. Emergency contact numbers provided.");
+      // Instructions - Auto-save so no Add button needed
+      setInstructionOption1("Please carry valid ID proof. Reporting time is 2 hours before departure. Carry comfortable clothing and walking shoes. Follow the itinerary timings strictly. Carry necessary medications. Student ID card mandatory for discounts.");
+      setInstructionOption2("Passport required for international travel. Student visa assistance available. Travel insurance is mandatory. Medical fitness certificate required for adventure activities. Parental consent form required for minors. Emergency contact numbers provided.");
       
       // Tourist Visa Remarks
       setTouristVisaRemarksOption1("Student visa requirements: Valid passport with at least 6 months validity. Acceptance letter from educational institution. Proof of financial support. Medical insurance mandatory. Processing time 4-6 weeks.");
@@ -1173,9 +1189,9 @@ const AddStudentTour = () => {
         optional_tour_remarks: "Optional tours are subject to availability and weather conditions. Prices are per person. Minimum 4 persons required for each optional tour. Book at least 2 days in advance. Cancellation 24 hours before for 50% refund.",
         optional_tour_remarks_option1: "Optional tours are subject to availability and weather conditions. Prices are per person. Minimum 4 persons required for each optional tour. Book at least 2 days in advance. Cancellation 24 hours before for 50% refund.",
         optional_tour_remarks_option2: "Exclusive optional tours with private guide. Flexible timing available. Includes lunch and entry fees. Priority access to attractions. Cancel 24 hours before for full refund. Customized private tours available.",
-        instruction_description: "Please carry valid ID proof. Reporting time is 2 hours before departure. Carry comfortable clothing and walking shoes. Follow the itinerary timings strictly. Carry necessary medications.",
-        instruction_description_option1: "Please carry valid ID proof. Reporting time is 2 hours before departure. Carry comfortable clothing and walking shoes. Follow the itinerary timings strictly. Carry necessary medications.",
-        instruction_description_option2: "Passport required for international travel. Visa assistance available. Travel insurance is mandatory. Medical fitness certificate required for adventure activities. Emergency contact numbers provided."
+        instruction_description: "Please carry valid ID proof. Reporting time is 2 hours before departure. Carry comfortable clothing and walking shoes. Follow the itinerary timings strictly. Carry necessary medications. Student ID card mandatory for discounts.",
+        instruction_description_option1: "Please carry valid ID proof. Reporting time is 2 hours before departure. Carry comfortable clothing and walking shoes. Follow the itinerary timings strictly. Carry necessary medications. Student ID card mandatory for discounts.",
+        instruction_description_option2: "Passport required for international travel. Student visa assistance available. Travel insurance is mandatory. Medical fitness certificate required for adventure activities. Parental consent form required for minors. Emergency contact numbers provided."
       }));
 
       if (bookingPois.length === 0) {
@@ -1390,14 +1406,8 @@ const AddStudentTour = () => {
   const handleInstructionOptionChange = (option, value) => {
     if (option === 'option1') {
       setInstructionOption1(value);
-      if (instructionActiveOption === 'option1') {
-        setFormData(prev => ({ ...prev, instruction_description: value }));
-      }
     } else {
       setInstructionOption2(value);
-      if (instructionActiveOption === 'option2') {
-        setFormData(prev => ({ ...prev, instruction_description: value }));
-      }
     }
   };
 
@@ -1418,36 +1428,6 @@ const AddStudentTour = () => {
   const handleTouristVisaRemarksActiveChange = (option) => {
     setTouristVisaRemarksActiveOption(option);
   };
-
-  // Helper component for Option Tabs
-  const OptionTabs = ({ activeOption, onOptionChange, option1Value, option2Value, onOption1Change, onOption2Change, placeholder }) => (
-    <div>
-      <Tabs
-        activeKey={activeOption}
-        onSelect={(k) => onOptionChange(k)}
-        className="mb-3"
-      >
-        <Tab eventKey="option1" title="Option 1">
-          <Form.Control
-            as="textarea"
-            rows={3}
-            value={option1Value}
-            onChange={(e) => onOption1Change(e.target.value)}
-            placeholder={placeholder || "Enter content for Option 1"}
-          />
-        </Tab>
-        <Tab eventKey="option2" title="Option 2">
-          <Form.Control
-            as="textarea"
-            rows={3}
-            value={option2Value}
-            onChange={(e) => onOption2Change(e.target.value)}
-            placeholder={placeholder || "Enter content for Option 2"}
-          />
-        </Tab>
-      </Tabs>
-    </div>
-  );
 
   // Fetch dropdowns and tour data
   useEffect(() => {
@@ -1827,15 +1807,18 @@ const AddStudentTour = () => {
           setCancelPolicies(formattedPolicies);
         }
 
-        // Load instructions - with both options
-        if (data.instructions && Array.isArray(data.instructions)) {
-          const formattedInstructions = data.instructions.map(inst => ({
-            item: inst.item,
-            item_option1: inst.item_option1 || '',
-            item_option2: inst.item_option2 || '',
-            item_active: inst.item_active || 'option1'
+        // Load instructions - with both options (single instruction only)
+        if (data.instructions && Array.isArray(data.instructions) && data.instructions.length > 0) {
+          const firstInstruction = data.instructions[0];
+          setInstructionOption1(firstInstruction.item_option1 || firstInstruction.item);
+          setInstructionOption2(firstInstruction.item_option2 || firstInstruction.item);
+          setInstructionActiveOption(firstInstruction.item_active || 'option1');
+          setFormData(prev => ({
+            ...prev,
+            instruction_description: firstInstruction.item,
+            instruction_description_option1: firstInstruction.item_option1 || firstInstruction.item,
+            instruction_description_option2: firstInstruction.item_option2 || firstInstruction.item
           }));
-          setInstructions(formattedInstructions.map(inst => inst.item));
         }
 
         // Load Visa Data
@@ -2164,6 +2147,8 @@ const AddStudentTour = () => {
   const handleImageChange = (e) => {
     const files = e.target.files ? Array.from(e.target.files) : [];
     setImageFiles(files);
+    const previews = files.map((file) => URL.createObjectURL(file));
+    setImagePreviews(previews);
   };
 
   const handleReplacementFileChange = (e) => {
@@ -2466,9 +2451,7 @@ const AddStudentTour = () => {
         }
         break;
       case 'instructions':
-        if ((instructionActiveOption === 'option1' ? instructionOption1 : instructionOption2).trim()) {
-          addInstruction();
-        }
+        // Instructions auto-save via useEffect, no need to add anything here
         break;
       case 'inclusions':
         if (inclusionText && inclusionText.trim()) {
@@ -2787,14 +2770,15 @@ const AddStudentTour = () => {
         });
       }
 
-      // Save instructions with both options
-      if (instructions.length > 0) {
-        const instructionsWithBothOptions = instructions.map(inst => ({
-          item: instructionActiveOption === 'option1' ? instructionOption1 : instructionOption2,
+      // Save instructions with both options - single instruction only
+      const currentInstruction = instructionActiveOption === 'option1' ? instructionOption1 : instructionOption2;
+      if (currentInstruction && currentInstruction.trim()) {
+        const instructionsWithBothOptions = [{
+          item: currentInstruction,
           item_option1: instructionOption1,
           item_option2: instructionOption2,
           item_active: instructionActiveOption
-        }));
+        }];
         await fetch(`${baseurl}/api/tour-instructions/bulk`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -3096,14 +3080,15 @@ const AddStudentTour = () => {
         });
       }
 
-      // Save instructions with both options
-      if (instructions.length > 0) {
-        const instructionsWithBothOptions = instructions.map(inst => ({
-          item: instructionActiveOption === 'option1' ? instructionOption1 : instructionOption2,
+      // Save instructions with both options - single instruction only
+      const currentInstruction = instructionActiveOption === 'option1' ? instructionOption1 : instructionOption2;
+      if (currentInstruction && currentInstruction.trim()) {
+        const instructionsWithBothOptions = [{
+          item: currentInstruction,
           item_option1: instructionOption1,
           item_option2: instructionOption2,
           item_active: instructionActiveOption
-        }));
+        }];
         await fetch(`${baseurl}/api/tour-instructions/bulk`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -3261,10 +3246,8 @@ const AddStudentTour = () => {
           onClick: addCancelRow 
         };
       case 'instructions':
-        return { 
-          label: editingInstructionIndex !== -1 ? '✓ Update Instruction' : '+ Add Instruction', 
-          onClick: addInstruction 
-        };
+        // No add button for Instructions - auto-save via OptionTabs
+        return null;
       case 'visa':
         if (activeVisaSubTab === 'tourist') {
           return { 
@@ -3346,9 +3329,9 @@ const AddStudentTour = () => {
           </Button>
         </div>
 
-        {/* ====== MAIN CARD - REST OF THE JSX (Same as before but with OptionTabs components) ====== */}
-        {/* Note: The JSX portion remains largely the same as the previous International Senior Citizen Tour component */}
-        {/* with all OptionTabs components placed in their respective tabs (departures, optionalTours, emiOptions, hotels, transport, bookingPoi, cancellation, instructions, visa) */}
+        {/* ====== MAIN CARD - REST OF THE JSX ====== */}
+        {/* Note: The JSX portion is identical to the previous component with all OptionTabs components */}
+        {/* and the Instructions tab now only shows OptionTabs without the Add button or table */}
         
         <Card>
           <Card.Body>
@@ -3357,7 +3340,7 @@ const AddStudentTour = () => {
               onSelect={(k) => setActiveTab(k)}
               className="mb-4"
             >
-              {/* BASIC DETAILS TAB */}
+              {/* BASIC DETAILS TAB - keep as is */}
               <Tab eventKey="basic" title="Basic Details">
                 <Row>
                   <Col md={6}>
@@ -3452,7 +3435,7 @@ const AddStudentTour = () => {
                 </Row>
               </Tab>
 
-              {/* ITINERARIES TAB */}
+              {/* ITINERARIES TAB - keep as is */}
               <Tab eventKey="itineraries" title="Itineraries">
                 <Row>
                   <Col md={2}>
@@ -3587,7 +3570,7 @@ const AddStudentTour = () => {
                 )}
               </Tab>
 
-              {/* DEPARTURES & COSTS TAB */}
+              {/* DEPARTURES & COSTS TAB - keep as is with OptionTabs for Cost Remarks */}
               <Tab eventKey="departures" title="Departures & Costs">
                 <div>
                   <Row className="mb-4">
@@ -3659,7 +3642,7 @@ const AddStudentTour = () => {
                     </Col>
                   </Row>
 
-                  {/* 3-Star Hotel Prices */}
+                  {/* 3-Star, 4-Star, 5-Star Hotel Prices rows - keep as is */}
                   <Row className="mb-4">
                     <h6>Standard Hotel Prices</h6>
                     <Col md={2}>
@@ -3736,7 +3719,6 @@ const AddStudentTour = () => {
                     </Col>
                   </Row>
 
-                  {/* 4-Star Hotel Prices */}
                   <Row className="mb-4">
                     <h6>Deluxe Hotel Prices</h6>
                     <Col md={2}>
@@ -3813,7 +3795,6 @@ const AddStudentTour = () => {
                     </Col>
                   </Row>
 
-                  {/* 5-Star Hotel Prices */}
                   <Row className="mb-4">
                     <h6>Luxury Hotel Prices</h6>
                     <Col md={2}>
@@ -4000,7 +3981,7 @@ const AddStudentTour = () => {
                 )}
               </Tab>
 
-              {/* OPTIONAL TOURS TAB */}
+              {/* OPTIONAL TOURS TAB - keep as is with OptionTabs */}
               <Tab eventKey="optionalTours" title="Optional Tour">
                 <Row className="align-items-end">
                   <Col md={4}>
@@ -4102,7 +4083,7 @@ const AddStudentTour = () => {
                 )}
               </Tab>
 
-              {/* EMI OPTIONS TAB */}
+              {/* EMI OPTIONS TAB - keep as is with OptionTabs */}
               <Tab eventKey="emiOptions" title="EMI Options">
                 <Card className="mb-4">
                   <Card.Body>
@@ -4237,7 +4218,7 @@ const AddStudentTour = () => {
                 </Form.Group>
               </Tab>
 
-              {/* INCLUSIONS TAB */}
+              {/* INCLUSIONS TAB - keep as is */}
               <Tab eventKey="inclusions" title="Inclusions">
                 <Form.Group className="mb-3">
                   <Form.Label>Inclusion</Form.Label>
@@ -4291,7 +4272,7 @@ const AddStudentTour = () => {
                 )}
               </Tab>
 
-              {/* EXCLUSIONS TAB */}
+              {/* EXCLUSIONS TAB - keep as is */}
               <Tab eventKey="exclusions" title="Exclusions">
                 <Form.Group className="mb-3">
                   <Form.Label>Exclusion</Form.Label>
@@ -4345,7 +4326,7 @@ const AddStudentTour = () => {
                 )}
               </Tab>
 
-              {/* FLIGHTS TAB */}
+              {/* FLIGHTS TAB - keep as is with OptionTabs for Flight Remarks */}
               <Tab eventKey="transport" title="Flights">
                 <Row className="mt-3">
                   <Col md={4}>
@@ -4527,7 +4508,7 @@ const AddStudentTour = () => {
                 )}
               </Tab>
 
-              {/* HOTELS TAB */}
+              {/* HOTELS TAB - keep as is with OptionTabs for Hotel Remarks */}
               <Tab eventKey="hotels" title="Hotels">
                 <Row className="align-items-end">
                   <Col md={6}>
@@ -4658,7 +4639,7 @@ const AddStudentTour = () => {
                 )}
               </Tab>
 
-              {/* VISA TAB */}
+              {/* VISA TAB - keep as is with OptionTabs for Tourist Visa Remarks */}
               <Tab eventKey="visa" title="Visa">
                 <Tabs
                   activeKey={activeVisaSubTab}
@@ -5279,7 +5260,7 @@ const AddStudentTour = () => {
                 </Tabs>
               </Tab>
 
-              {/* BOOKING POI TAB */}
+              {/* BOOKING POI TAB - keep as is with OptionTabs for Booking Policy Remarks */}
               <Tab eventKey="bookingPoi" title="Booking POI">
                 <Form.Group className="mb-3">
                   <Row>
@@ -5363,7 +5344,7 @@ const AddStudentTour = () => {
                 )}
               </Tab>
 
-              {/* CANCELLATION POLICY TAB */}
+              {/* CANCELLATION POLICY TAB - keep as is with OptionTabs for Cancellation Remarks */}
               <Tab eventKey="cancellation" title="Cancellation Policy">
                 <Row>
                   <Col md={8}>
@@ -5452,10 +5433,10 @@ const AddStudentTour = () => {
                 )}
               </Tab>
 
-              {/* INSTRUCTIONS TAB */}
+              {/* INSTRUCTIONS TAB - Only OptionTabs, no Add button, auto-saves */}
               <Tab eventKey="instructions" title="Instructions">
                 <Form.Group className="mb-3">
-                  <Form.Label>Add Instruction</Form.Label>
+                  <Form.Label>Instructions</Form.Label>
                   <OptionTabs
                     activeOption={instructionActiveOption}
                     onOptionChange={handleInstructionActiveChange}
@@ -5465,50 +5446,13 @@ const AddStudentTour = () => {
                     onOption2Change={(val) => handleInstructionOptionChange('option2', val)}
                     placeholder="Enter instruction for Option 1"
                   />
+                  {/* <Form.Text className="text-muted">
+                    Instructions are automatically saved when you type. No need to click an Add button.
+                  </Form.Text> */}
                 </Form.Group>
-
-                {instructions.length > 0 && (
-                  <Table striped bordered hover size="sm">
-                    <thead>
-                      <tr>
-                        <th>#</th>
-                        <th>Instruction</th>
-                        <th>Action</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {instructions.map((item, idx) => (
-                        <tr key={idx}>
-                          <td>{idx + 1}</td>
-                          <td>{item}</td>
-                          <td>
-                            <div className="d-flex gap-1">
-                              <Button
-                                variant="outline-warning"
-                                size="sm"
-                                onClick={() => editInstruction(idx)}
-                                title="Edit"
-                              >
-                                <Pencil size={14} />
-                              </Button>
-                              <Button
-                                variant="outline-danger"
-                                size="sm"
-                                onClick={() => removeInstruction(idx)}
-                                title="Remove"
-                              >
-                                <Trash size={14} />
-                              </Button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </Table>
-                )}
               </Tab>
 
-              {/* IMAGES TAB */}
+              {/* IMAGES TAB - keep as is */}
               <Tab eventKey="images" title="Images">
                 <Card className="mb-4">
                   <Card.Header>New Images</Card.Header>

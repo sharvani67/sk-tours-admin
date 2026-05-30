@@ -119,131 +119,39 @@ const INTLAddTour = () => {
   const [visaRemarksOption1, setVisaRemarksOption1] = useState('');
   const [visaRemarksOption2, setVisaRemarksOption2] = useState('');
 
-// Add these state variables near your other state declarations
-const [editingVisaItemId, setEditingVisaItemId] = useState(null);
-const [editingVisaFormIndex, setEditingVisaFormIndex] = useState(null);
-const [visaFormEditData, setVisaFormEditData] = useState({
-  type: '',
-  download_action: '',
-  fill_action: '',
-  action1_file: null,
-  action2_file: null
-});
-
-// Edit Visa Form Item
-const editVisaFormItem = (index) => {
-  const formItem = visaFormItems[index];
-  setVisaFormEditData({
-    type: formItem.type,
-    download_action: formItem.download_action,
-    fill_action: formItem.fill_action,
-    action1_file: formItem.action1_file,
-    action2_file: formItem.action2_file
-  });
-  setEditingVisaFormIndex(index);
-  setActiveVisaSubTab('form');
-};
-
-// Update Visa Form Item
-const updateVisaFormItem = () => {
-  if (editingVisaFormIndex === null) return;
-  
-  const updated = [...visaFormItems];
-  updated[editingVisaFormIndex] = {
-    ...updated[editingVisaFormIndex],
-    ...visaFormEditData
-  };
-  
-  setVisaFormItems(updated);
-  resetVisaFormEdit();
-};
-
-// Reset Visa Form Edit
-const resetVisaFormEdit = () => {
-  setEditingVisaFormIndex(null);
-  setVisaFormEditData({
+  // Edit state for visa form
+  const [editingVisaItemId, setEditingVisaItemId] = useState(null);
+  const [editingVisaFormIndex, setEditingVisaFormIndex] = useState(null);
+  const [visaFormEditData, setVisaFormEditData] = useState({
     type: '',
     download_action: '',
     fill_action: '',
     action1_file: null,
     action2_file: null
   });
-};
 
-// Reset editing context for visa items
-const resetVisaEditing = () => {
-  setEditingItem(null);
-  setEditingType('');
-  setEditIndex(-1);
-  setEditingVisaItemId(null);
-  setEditingVisaFormIndex(null);
-  
-  // Also reset form fields
-  setTouristVisaForm({ description: '' });
-  setTransitVisaForm({ description: '' });
-  setBusinessVisaForm({ description: '' });
-  setPhotoForm({ description: '' });
-  setFreeFlowPhotoText('');
-  
-  // Reset visa form edit data
-  setVisaFormEditData({
-    type: '',
-    download_action: '',
-    fill_action: '',
-    action1_file: null,
-    action2_file: null
-  });
-};
-
-// Handle Visa Form Edit Change
-const handleVisaFormEditChange = (e) => {
-  const { name, value } = e.target;
-  setVisaFormEditData(prev => ({
-    ...prev,
-    [name]: value
-  }));
-};
-
-// Handle Visa Form File Change with Edit Support
-const handleVisaFormFileChangeWithEdit = async (index, action, file) => {
-  if (!file) return;
-  
-  if (editingVisaFormIndex !== null && editingVisaFormIndex === index) {
-    // If editing, update the edit data - store as File object
-    setVisaFormEditData(prev => ({
-      ...prev,
-      [action === 'action1' ? 'action1_file' : 'action2_file']: file
-    }));
-  } else {
-    // If not editing, update the main list
-    const updated = [...visaFormItems];
-    updated[index][action === 'action1' ? 'action1_file' : 'action2_file'] = file;
-    setVisaFormItems(updated);
-  }
-  
-  // Upload file if in edit mode (only upload when editing existing tour)
-  if (isEditMode && id) {
-    const visaType = editingVisaFormIndex !== null 
-      ? visaFormEditData.type 
-      : visaFormItems[index].type;
+  // Reset editing context for visa items
+  const resetVisaEditing = () => {
+    setEditingItem(null);
+    setEditingType('');
+    setEditIndex(-1);
+    setEditingVisaItemId(null);
+    setEditingVisaFormIndex(null);
     
-    const uploadedFileName = await handleVisaFormFileUpload(id, visaType, action, file);
-    if (uploadedFileName) {
-      if (editingVisaFormIndex !== null && editingVisaFormIndex === index) {
-        // Update edit data with filename string
-        setVisaFormEditData(prev => ({
-          ...prev,
-          [action === 'action1' ? 'action1_file' : 'action2_file']: uploadedFileName
-        }));
-      } else {
-        // Update main list with filename string
-        const updatedWithFilename = [...visaFormItems];
-        updatedWithFilename[index][action === 'action1' ? 'action1_file' : 'action2_file'] = uploadedFileName;
-        setVisaFormItems(updatedWithFilename);
-      }
-    }
-  }
-};
+    setTouristVisaForm({ description: '' });
+    setTransitVisaForm({ description: '' });
+    setBusinessVisaForm({ description: '' });
+    setPhotoForm({ description: '' });
+    setFreeFlowPhotoText('');
+    
+    setVisaFormEditData({
+      type: '',
+      download_action: '',
+      fill_action: '',
+      action1_file: null,
+      action2_file: null
+    });
+  };
 
   // Dropdowns
   const [categories, setCategories] = useState([]);
@@ -261,59 +169,29 @@ const handleVisaFormFileChangeWithEdit = async (index, action, file) => {
     overview: '',
     base_price_adult: '',
     emi_price: '',
-    is_international: 1,
-    cost_remarks: "",
-    cost_remarks_option1: "",
-    cost_remarks_option2: "",
-    hotel_remarks: "",
-    hotel_remarks_option1: "",
-    hotel_remarks_option2: "",
-    transport_remarks: "",
-    transport_remarks_option1: "",
-    transport_remarks_option2: "",
-    booking_poi_remarks: "",
-    booking_poi_remarks_option1: "",
-    booking_poi_remarks_option2: "",
-    cancellation_remarks: "",
-    cancellation_remarks_option1: "",
-    cancellation_remarks_option2: "",
-    emi_remarks: "",
-    emi_remarks_option1: "",
-    emi_remarks_option2: "",
-    optional_tour_remarks: "",
-    optional_tour_remarks_option1: "",
-    optional_tour_remarks_option2: "",
-    departure_description: "",
-    departure_description_option1: "",
-    departure_description_option2: "",
-    instruction_description: "",
-    instruction_description_option1: "",
-    instruction_description_option2: "",
-    visa_remarks: "",
-    visa_remarks_option1: "",
-    visa_remarks_option2: ""
+    is_international: 1
   });
 
-  
-const visaSubTabs = ['tourist', 'transit', 'business', 'form', 'photo', 'fees', 'submission'];
+  const visaSubTabs = ['tourist', 'transit', 'business', 'form', 'photo', 'fees', 'submission'];
 
-const TAB_LIST = [
-  'basic',
-  'itineraries',
-  'departures',
-  'costs',
-  'optionalTours',
-  'emiOptions',
-  'inclusions',
-  'exclusions',
-  'transport',
-  'hotels',
-  ...(formData.is_international === 1 ? ['visa'] : []),
-  'bookingPoi',
-  'cancellation',
-  'instructions',
-  'images'
-];
+  const TAB_LIST = [
+    'basic',
+    'itineraries',
+    'departures',
+    'costs',
+    'optionalTours',
+    'emiOptions',
+    'inclusions',
+    'exclusions',
+    'transport',
+    'hotels',
+    ...(formData.is_international === 1 ? ['visa'] : []),
+    'bookingPoi',
+    'cancellation',
+    'instructions',
+    'images'
+  ];
+  
   // DEPARTURES
   const [departureForm, setDepartureForm] = useState({
     departure_date: '',
@@ -338,8 +216,6 @@ const TAB_LIST = [
   const [imageFiles, setImageFiles] = useState([]);
   const [imagePreviews, setImagePreviews] = useState([]);
   const [imageCaption, setImageCaption] = useState('');
-
-  // Add these for image management:
   const [existingImages, setExistingImages] = useState([]);
   const [editingImageId, setEditingImageId] = useState(null);
   const [replacementFile, setReplacementFile] = useState(null);
@@ -376,11 +252,9 @@ const TAB_LIST = [
     { particulars: 'Per Month Payment', loan_amount: '', months: 48, emi: '' }
   ]);
 
-  // Add this state for EMI
   const [emiLoanAmount, setEmiLoanAmount] = useState('');
   const [emiInterestRate, setEmiInterestRate] = useState(18);
 
-  // Add this function to calculate EMI
   const calculateEMI = (loanAmount, months, interestRate = 18) => {
     const principal = parseFloat(loanAmount);
     const monthlyRate = (interestRate / 100) / 12;
@@ -394,7 +268,6 @@ const TAB_LIST = [
     return Math.round(emi * 100) / 100;
   };
 
-  // Add this effect to update EMI values when loan amount changes
   useEffect(() => {
     if (emiLoanAmount && !isNaN(emiLoanAmount) && emiLoanAmount > 0) {
       const updatedOptions = emiOptions.map(option => ({
@@ -443,12 +316,128 @@ const TAB_LIST = [
   });
   const [cancelPolicies, setCancelPolicies] = useState([]);
 
-  // Add this useEffect to set initial prefilled content for international tours
+  // INSTRUCTIONS
+  const [instructionText, setInstructionText] = useState('');
+  const [instructions, setInstructions] = useState([]);
+
+  // ITINERARIES
+  const [itineraryItem, setItineraryItem] = useState({
+    day: '',
+    title: '',
+    description: '',
+    meals: {
+      breakfast: false,
+      lunch: false,
+      dinner: false
+    }
+  });
+  const [itineraries, setItineraries] = useState([]);
+
+  // ========================
+  // VISA STATE
+  // ========================
+
+  // Tourist Visa
+  const [touristVisaItems, setTouristVisaItems] = useState([]);
+  const [touristVisaForm, setTouristVisaForm] = useState({ description: '' });
+  const [activeVisaSubTab, setActiveVisaSubTab] = useState('tourist');
+
+  // Transit Visa
+  const [transitVisaItems, setTransitVisaItems] = useState([]);
+  const [transitVisaForm, setTransitVisaForm] = useState({ description: '' });
+
+  // Business Visa
+  const [businessVisaItems, setBusinessVisaItems] = useState([]);
+  const [businessVisaForm, setBusinessVisaForm] = useState({ description: '' });
+
+  // Visa Form
+  const [visaFormItems, setVisaFormItems] = useState([]);
+
+  // Photo
+  const [photoItems, setPhotoItems] = useState([]);
+  const [photoForm, setPhotoForm] = useState({ description: '' });
+  const [freeFlowPhotoEntries, setFreeFlowPhotoEntries] = useState([]);
+  const [freeFlowPhotoText, setFreeFlowPhotoText] = useState('');
+
+  // Visa Fees
+  const [visaFeesRows, setVisaFeesRows] = useState([
+    { 
+      id: 1,
+      type: 'Visa Fee', 
+      tourist: '', 
+      transit: '', 
+      business: '', 
+      tourist_charges: '',
+      transit_charges: '',
+      business_charges: ''
+    },
+    { 
+      id: 2,
+      type: 'VFS Fee', 
+      tourist: '', 
+      transit: '', 
+      business: '', 
+      tourist_charges: '',
+      transit_charges: '',
+      business_charges: ''
+    },
+    { 
+      id: 3,
+      type: 'Other Charges', 
+      tourist: '', 
+      transit: '', 
+      business: '', 
+      tourist_charges: '',
+      transit_charges: '',
+      business_charges: ''
+    }
+  ]);
+
+  // Submission & Pick Up
+  const [submissionRows, setSubmissionRows] = useState([
+    { 
+      id: 1,
+      label: 'Passport Submission Day', 
+      tourist: '', 
+      transit: '', 
+      business: '' 
+    },
+    { 
+      id: 2,
+      label: 'Passport Submission Time', 
+      tourist: '', 
+      transit: '', 
+      business: '' 
+    },
+    { 
+      id: 3,
+      label: 'Passport pick up Days', 
+      tourist: '', 
+      transit: '', 
+      business: '' 
+    },
+    { 
+      id: 4,
+      label: 'Passport Pick Up Time', 
+      tourist: '', 
+      transit: '', 
+      business: '' 
+    },
+    { 
+      id: 5,
+      label: 'Biometric requirement', 
+      tourist: '', 
+      transit: '', 
+      business: '' 
+    }
+  ]);
+
+  // ========================
+  // DEFAULT CONTENT SETUP - ONLY FOR NEW TOURS (NOT EDIT MODE)
+  // ========================
+
   useEffect(() => {
-    // Only set default content if it's a new tour (not edit mode)
     if (!isEditMode) {
-      // Prefill all remarks fields with Option 1 and Option 2 content
-      
       // Cost Remarks
       setCostRemarksOption1("Please note that while the tour price has been indicated, it may vary if you choose dates closer to departure or during periods when the season transitions from low to high. We therefore kindly request you to confirm the final tour price before proceeding with your booking and to mention the tour code when inquiring to receive the exact cost. Child pricing is calculated based on the standard hotel category, and if you choose Deluxe or Executive accommodations, child rates may be adjusted accordingly.");
       setCostRemarksOption2("Premium package includes all taxes and surcharges. Price guaranteed for next 30 days. Early bird discount available for bookings made 60 days in advance. Group discount applicable for 10+ persons.");
@@ -538,280 +527,23 @@ const TAB_LIST = [
       }
     }
   }, [isEditMode]);
-  
-  // Add these after your other state declarations
-  
-  // Static content for Booking Policy
-  const bookingPolicyTemplates = [
-    {
-      title: "Booking Policy",
-      content: `Per Person Booking Amount : `
-    }
-  ];
 
-  // Static content for Cancellation Policy
-  const cancellationPolicyTemplates = [
-    {
-      title: "Cancellation Policy",
-      content: `45 Days to 30 Days Cost per person : `,
-    }
-  ];
-
-  // Add state for showing/hiding templates
-  const [showBookingTemplates, setShowBookingTemplates] = useState(false);
-  const [showCancellationTemplates, setShowCancellationTemplates] = useState(false);
-  
-  // Add these functions after your other handler functions
-  
-  const handleBookingTemplateSelect = (template) => {
-    setPoiText(template.content);
-    setShowBookingTemplates(false);
-  };
-  
-  const handleCancellationTemplateSelect = (template) => {
-    setCancelItem({
-      ...cancelItem,
-      cancellation_policy: `${template.content}\n\n`
-    });
-    setShowCancellationTemplates(false);
-  };
-
-  // INSTRUCTIONS
-  const [instructionText, setInstructionText] = useState('');
-  const [instructions, setInstructions] = useState([]);
-
-  // ITINERARIES
-  const [itineraryItem, setItineraryItem] = useState({
-    day: '',
-    title: '',
-    description: '',
-    meals: {
-      breakfast: false,
-      lunch: false,
-      dinner: false
-    }
-  });
-  const [itineraries, setItineraries] = useState([]);
-
-  // ========================
-  // VISA STATE
-  // ========================
-
-  // Tourist Visa
-  const [touristVisaItems, setTouristVisaItems] = useState([]);
-  const [touristVisaForm, setTouristVisaForm] = useState({ description: '' });
-
-  // Add this near other state declarations
-  const [activeVisaSubTab, setActiveVisaSubTab] = useState('tourist');
-
-  // Transit Visa
-  const [transitVisaItems, setTransitVisaItems] = useState([]);
-  const [transitVisaForm, setTransitVisaForm] = useState({ description: '' });
-
-  // Business Visa
-  const [businessVisaItems, setBusinessVisaItems] = useState([]);
-  const [businessVisaForm, setBusinessVisaForm] = useState({ description: '' });
-
-  // Visa Form
-  const [visaFormItems, setVisaFormItems] = useState([]);
-
-  // Photo
-  const [photoItems, setPhotoItems] = useState([]);
-  const [photoForm, setPhotoForm] = useState({ description: '' });
-
-  // Add this near your other state declarations
-  const [freeFlowPhotoEntries, setFreeFlowPhotoEntries] = useState([]);
-  const [freeFlowPhotoText, setFreeFlowPhotoText] = useState('');
-
-  // Add this function to handle file viewing
+  // Helper function for file URLs
   const getFileUrl = (fileName) => {
-    if (!fileName || typeof fileName !== 'string') {
-      return null;
-    }
-    
-    if (fileName.startsWith('http')) {
-      return fileName;
-    }
-    
-    if (fileName.startsWith('/uploads/')) {
-      return `${baseurl}${fileName}`;
-    }
-    
+    if (!fileName || typeof fileName !== 'string') return null;
+    if (fileName.startsWith('http')) return fileName;
+    if (fileName.startsWith('/uploads/')) return `${baseurl}${fileName}`;
     return `${baseurl}/uploads/visa/${fileName}`;
   };
 
-  // Also add a helper function to download files
-  const downloadFile = (url, filename) => {
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = filename || 'file';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
-  // Function to open file in new tab (for viewing)
   const openFileInNewTab = (url) => {
-    if (url) {
-      window.open(url, '_blank');
-    }
-  };
-
-  // Add these functions near your other handler functions
-
-  // Remove Free Flow Photo Entry
-  const removeFreeFlowPhotoEntry = (idx) => {
-    setFreeFlowPhotoEntries(prev => prev.filter((_, i) => i !== idx));
-  };
-
-  // Handle Free Flow Photo Text Change
-  const handleFreeFlowPhotoChange = (e) => {
-    setFreeFlowPhotoText(e.target.value);
-  };
-
-  // Visa Fees
-  const [visaFeesRows, setVisaFeesRows] = useState([
-    { 
-      id: 1,
-      type: 'Visa Fee', 
-      tourist: '', 
-      transit: '', 
-      business: '', 
-      tourist_charges: '',
-      transit_charges: '',
-      business_charges: ''
-    },
-    { 
-      id: 2,
-      type: 'VFS Fee', 
-      tourist: '', 
-      transit: '', 
-      business: '', 
-      tourist_charges: '',
-      transit_charges: '',
-      business_charges: ''
-    },
-    { 
-      id: 3,
-      type: 'Other Charges', 
-      tourist: '', 
-      transit: '', 
-      business: '', 
-      tourist_charges: '',
-      transit_charges: '',
-      business_charges: ''
-    }
-  ]);
-
-  const [extendableRow, setExtendableRow] = useState({
-    type: 'Extendable as per requirement',
-    tourist: '',
-    transit: '',
-    business: '',
-    tourist_charges: '',
-    transit_charges: '',
-    business_charges: ''
-  });
-
-  // Function to add new free flow entry
-  const addVisaFeesRow = () => {
-    const newId = visaFeesRows.length > 0 
-      ? Math.max(...visaFeesRows.map(row => row.id)) + 1 
-      : 1;
-    
-    setVisaFeesRows([
-      ...visaFeesRows,
-      { 
-        id: newId,
-        type: 'Free Flow Entry', 
-        tourist: '', 
-        transit: '', 
-        business: '', 
-        tourist_charges: '',
-        transit_charges: '',
-        business_charges: ''
-      }
-    ]);
-  };
-
-  // Submission & Pick Up
-  const [submissionRows, setSubmissionRows] = useState([
-    { 
-      id: 1,
-      label: 'Passport Submission Day', 
-      tourist: '', 
-      transit: '', 
-      business: '' 
-    },
-    { 
-      id: 2,
-      label: 'Passport Submission Time', 
-      tourist: '', 
-      transit: '', 
-      business: '' 
-    },
-    { 
-      id: 3,
-      label: 'Passport pick up Days', 
-      tourist: '', 
-      transit: '', 
-      business: '' 
-    },
-    { 
-      id: 4,
-      label: 'Passport Pick Up Time', 
-      tourist: '', 
-      transit: '', 
-      business: '' 
-    },
-    { 
-      id: 5,
-      label: 'Biometric requirement', 
-      tourist: '', 
-      transit: '', 
-      business: '' 
-    }
-  ]);
-
-  // Function to add new free flow entry in Submission & Pick Up
-  const addSubmissionRow = () => {
-    const newId = submissionRows.length > 0 
-      ? Math.max(...submissionRows.map(row => row.id)) + 1 
-      : 1;
-    
-    setSubmissionRows([
-      ...submissionRows,
-      { 
-        id: newId,
-        label: 'Free Flow Entry', 
-        tourist: '', 
-        transit: '', 
-        business: '' 
-      }
-    ]);
-  };
-
-  // Function to handle label change in Submission & Pick Up
-  const handleSubmissionLabelChange = (id, value) => {
-    const updated = submissionRows.map(row => 
-      row.id === id ? { ...row, label: value } : row
-    );
-    setSubmissionRows(updated);
-  };
-
-  // Function to handle value change in Submission & Pick Up
-  const handleSubmissionValueChange = (id, field, value) => {
-    const updated = submissionRows.map(row => 
-      row.id === id ? { ...row, [field]: value } : row
-    );
-    setSubmissionRows(updated);
+    if (url) window.open(url, '_blank');
   };
 
   // ========================
-  // EDIT FUNCTIONS - FIXED
+  // EDIT FUNCTIONS
   // ========================
 
-  // Edit itinerary
   const editItinerary = (idx) => {
     const item = itineraries[idx];
     const mealsArray = item.meals ? item.meals.split(', ') : [];
@@ -830,7 +562,6 @@ const TAB_LIST = [
     setEditIndex(idx);
   };
 
-  // Edit departure
   const editDeparture = (idx) => {
     const departure = departures[idx];
     setDepartureForm(departure);
@@ -839,7 +570,6 @@ const TAB_LIST = [
     setEditIndex(idx);
   };
 
-  // Edit cost row
   const editCostRow = (idx) => {
     const item = tourCosts[idx];
     setTourCostItem(item);
@@ -848,7 +578,6 @@ const TAB_LIST = [
     setEditIndex(idx);
   };
 
-  // Edit optional tour
   const editOptionalTourRow = (idx) => {
     const item = optionalTours[idx];
     setOptionalTourItem(item);
@@ -857,7 +586,6 @@ const TAB_LIST = [
     setEditIndex(idx);
   };
 
-  // Edit hotel row
   const editHotelRow = (idx) => {
     const item = hotelRows[idx];
     setHotelItem(item);
@@ -866,7 +594,6 @@ const TAB_LIST = [
     setEditIndex(idx);
   };
 
-  // Edit transport row
   const editTransportRow = (idx) => {
     const item = transports[idx];
     setTransportItem(item);
@@ -875,7 +602,6 @@ const TAB_LIST = [
     setEditIndex(idx);
   };
 
-  // Edit inclusion
   const editInclusion = (idx) => {
     const inclusion = inclusions[idx];
     setInclusionText(inclusion);
@@ -884,7 +610,6 @@ const TAB_LIST = [
     setEditIndex(idx);
   };
 
-  // Edit exclusion
   const editExclusion = (idx) => {
     const exclusion = exclusions[idx];
     setExclusionText(exclusion);
@@ -893,7 +618,6 @@ const TAB_LIST = [
     setEditIndex(idx);
   };
 
-  // Edit POI
   const editPoi = (idx) => {
     const poi = bookingPois[idx];
     setPoiText(poi.item);
@@ -903,7 +627,6 @@ const TAB_LIST = [
     setEditIndex(idx);
   };
 
-  // Edit cancel policy
   const editCancelRow = (idx) => {
     const policy = cancelPolicies[idx];
     setCancelItem(policy);
@@ -912,7 +635,6 @@ const TAB_LIST = [
     setEditIndex(idx);
   };
 
-  // Edit instruction
   const editInstruction = (idx) => {
     const instruction = instructions[idx];
     setInstructionText(instruction);
@@ -921,7 +643,6 @@ const TAB_LIST = [
     setEditIndex(idx);
   };
 
-  // Edit Tourist Visa
   const editTouristVisa = (idx) => {
     const item = touristVisaItems[idx];
     setTouristVisaForm({ description: item.description });
@@ -931,7 +652,6 @@ const TAB_LIST = [
     setEditingVisaItemId(idx);
   };
 
-  // Edit Transit Visa
   const editTransitVisa = (idx) => {
     const item = transitVisaItems[idx];
     setTransitVisaForm({ description: item.description });
@@ -941,7 +661,6 @@ const TAB_LIST = [
     setEditingVisaItemId(idx);
   };
 
-  // Edit Business Visa
   const editBusinessVisa = (idx) => {
     const item = businessVisaItems[idx];
     setBusinessVisaForm({ description: item.description });
@@ -951,7 +670,6 @@ const TAB_LIST = [
     setEditingVisaItemId(idx);
   };
 
-  // Edit Photo
   const editPhoto = (idx) => {
     const item = photoItems[idx];
     setPhotoForm({ description: item.description });
@@ -961,18 +679,8 @@ const TAB_LIST = [
     setEditingVisaItemId(idx);
   };
 
-  // Edit Free Flow Photo Entry
-  const editFreeFlowPhotoEntry = (idx) => {
-    const item = freeFlowPhotoEntries[idx];
-    setFreeFlowPhotoText(item.description);
-    setEditingItem(item);
-    setEditingType('freeFlowPhoto');
-    setEditIndex(idx);
-    setEditingVisaItemId(idx);
-  };
-
   // ========================
-  // ADD FUNCTIONS - FIXED
+  // ADD FUNCTIONS
   // ========================
 
   const handleAddItinerary = () => {
@@ -1009,37 +717,7 @@ const TAB_LIST = [
     resetEditing();
   };
 
-  // UPDATED: handleAddDeparture - saves based on active option tab
-  const handleAddDeparture = () => {
-    const currentDescription = departureActiveOption === 'option1' ? departureOption1 : departureOption2;
-    
-    if (!currentDescription.trim()) return;
-    
-    const newItem = { 
-      ...departureForm, 
-      description: currentDescription,
-      description_option: departureActiveOption
-    };
-    
-    if (editingType === 'departure' && editIndex !== -1) {
-      const updated = [...departures];
-      updated[editIndex] = newItem;
-      setDepartures(updated);
-    } else {
-      setDepartures(prev => [...prev, newItem]);
-    }
-
-    setDepartureForm({
-      departure_date: '',
-      return_date: '',
-      adult_price: '',
-      child_price: '',
-      infant_price: '',
-      description: '',
-      total_seats: ''
-    });
-    resetEditing();
-  };
+  // Note: handleAddDeparture is removed - data is saved on main save only
 
   const addCostRow = () => {
     if (!tourCostItem.pax) return;
@@ -1205,25 +883,8 @@ const TAB_LIST = [
     resetEditing();
   };
 
-  // UPDATED: addInstruction - saves based on active option tab
-  const addInstruction = () => {
-    const currentInstruction = instructionActiveOption === 'option1' ? instructionOption1 : instructionOption2;
-    const txt = currentInstruction.trim();
-    if (!txt) return;
-    
-    if (editingType === 'instruction' && editIndex !== -1) {
-      const updated = [...instructions];
-      updated[editIndex] = txt;
-      setInstructions(updated);
-    } else {
-      setInstructions(prev => [...prev, txt]);
-    }
-    
-    setInstructionText('');
-    resetEditing();
-  };
+  // Note: addInstruction is removed - data is saved on main save only
 
-  // Add/Update Tourist Visa
   const addTouristVisa = () => {
     const trimmed = touristVisaForm.description.trim();
     if (!trimmed) return;
@@ -1242,7 +903,6 @@ const TAB_LIST = [
     resetVisaEditing();
   };
 
-  // Add/Update Transit Visa
   const addTransitVisa = () => {
     const trimmed = transitVisaForm.description.trim();
     if (!trimmed) return;
@@ -1261,7 +921,6 @@ const TAB_LIST = [
     resetVisaEditing();
   };
 
-  // Add/Update Business Visa
   const addBusinessVisa = () => {
     const trimmed = businessVisaForm.description.trim();
     if (!trimmed) return;
@@ -1280,7 +939,6 @@ const TAB_LIST = [
     resetVisaEditing();
   };
 
-  // Add/Update Photo
   const addPhoto = () => {
     const trimmed = photoForm.description.trim();
     if (!trimmed) return;
@@ -1299,23 +957,107 @@ const TAB_LIST = [
     resetVisaEditing();
   };
 
-  // Add Free Flow Photo Entry
-  const addFreeFlowPhotoEntry = () => {
-    const trimmed = freeFlowPhotoText.trim();
-    if (!trimmed) return;
+  const editVisaFormItem = (index) => {
+    const formItem = visaFormItems[index];
+    setVisaFormEditData({
+      type: formItem.type,
+      download_action: formItem.download_action,
+      fill_action: formItem.fill_action,
+      action1_file: formItem.action1_file,
+      action2_file: formItem.action2_file
+    });
+    setEditingVisaFormIndex(index);
+    setActiveVisaSubTab('form');
+  };
+
+  const updateVisaFormItem = () => {
+    if (editingVisaFormIndex === null) return;
     
-    const newItem = { description: trimmed };
+    const updated = [...visaFormItems];
+    updated[editingVisaFormIndex] = {
+      ...updated[editingVisaFormIndex],
+      ...visaFormEditData
+    };
     
-    if (editingType === 'freeFlowPhoto' && editIndex !== -1) {
-      const updated = [...freeFlowPhotoEntries];
-      updated[editIndex] = newItem;
-      setFreeFlowPhotoEntries(updated);
+    setVisaFormItems(updated);
+    resetVisaFormEdit();
+  };
+
+  const resetVisaFormEdit = () => {
+    setEditingVisaFormIndex(null);
+    setVisaFormEditData({
+      type: '',
+      download_action: '',
+      fill_action: '',
+      action1_file: null,
+      action2_file: null
+    });
+  };
+
+  const handleVisaFormFileChange = async (index, action, file) => {
+    if (!file) return;
+    
+    if (editingVisaFormIndex !== null && editingVisaFormIndex === index) {
+      setVisaFormEditData(prev => ({
+        ...prev,
+        [action === 'action1' ? 'action1_file' : 'action2_file']: file
+      }));
     } else {
-      setFreeFlowPhotoEntries(prev => [...prev, newItem]);
+      const updated = [...visaFormItems];
+      if (action === 'action1') {
+        updated[index].action1_file = file;
+      } else {
+        updated[index].action2_file = file;
+      }
+      setVisaFormItems(updated);
     }
     
-    setFreeFlowPhotoText('');
-    resetVisaEditing();
+    if (isEditMode && id) {
+      const visaType = editingVisaFormIndex !== null 
+        ? visaFormEditData.type 
+        : visaFormItems[index].type;
+      
+      const uploadedFileName = await handleVisaFormFileUpload(id, visaType, action, file);
+      if (uploadedFileName) {
+        if (editingVisaFormIndex !== null && editingVisaFormIndex === index) {
+          setVisaFormEditData(prev => ({
+            ...prev,
+            [action === 'action1' ? 'action1_file' : 'action2_file']: uploadedFileName
+          }));
+        } else {
+          const updatedWithFilename = [...visaFormItems];
+          if (action === 'action1') {
+            updatedWithFilename[index].action1_file = uploadedFileName;
+          } else {
+            updatedWithFilename[index].action2_file = uploadedFileName;
+          }
+          setVisaFormItems(updatedWithFilename);
+        }
+      }
+    }
+  };
+
+  const handleVisaFormFileUpload = async (tourId, visaType, actionType, file) => {
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('visa_type', visaType);
+      formData.append('action_type', actionType);
+
+      const response = await fetch(`${baseurl}/api/visa/upload-file/${tourId}`, {
+        method: 'POST',
+        body: formData
+      });
+
+      const result = await response.json();
+      
+      if (result.success) {
+        return result.fileName;
+      }
+      return null;
+    } catch (err) {
+      return null;
+    }
   };
 
   // Reset editing context
@@ -1326,32 +1068,23 @@ const TAB_LIST = [
     setEditingVisaItemId(null);
     setEditingVisaFormIndex(null);
     
-    if (editingType === 'touristVisa') {
-      setTouristVisaForm({ description: '' });
-    } else if (editingType === 'transitVisa') {
-      setTransitVisaForm({ description: '' });
-    } else if (editingType === 'businessVisa') {
-      setBusinessVisaForm({ description: '' });
-    } else if (editingType === 'photo') {
-      setPhotoForm({ description: '' });
-    } else if (editingType === 'freeFlowPhoto') {
-      setFreeFlowPhotoText('');
-    }
+    setTouristVisaForm({ description: '' });
+    setTransitVisaForm({ description: '' });
+    setBusinessVisaForm({ description: '' });
+    setPhotoForm({ description: '' });
+    setFreeFlowPhotoText('');
     
-    if (editingVisaFormIndex !== null) {
-      setVisaFormEditData({
-        type: '',
-        download_action: '',
-        fill_action: '',
-        action1_file: null,
-        action2_file: null
-      });
-      setEditingVisaFormIndex(null);
-    }
+    setVisaFormEditData({
+      type: '',
+      download_action: '',
+      fill_action: '',
+      action1_file: null,
+      action2_file: null
+    });
   };
 
   // ========================
-  // REMOVE FUNCTIONS WITH CONFIRMATION ALERTS
+  // REMOVE FUNCTIONS
   // ========================
 
   const handleRemoveItinerary = (idx) => {
@@ -1431,7 +1164,6 @@ const TAB_LIST = [
     }
   };
 
-  // Remove Tourist Visa
   const removeTouristVisa = (idx) => {
     const confirmDelete = window.confirm('Are you sure you want to remove this tourist visa item?');
     if (confirmDelete) {
@@ -1439,7 +1171,6 @@ const TAB_LIST = [
     }
   };
 
-  // Remove Transit Visa
   const removeTransitVisa = (idx) => {
     const confirmDelete = window.confirm('Are you sure you want to remove this transit visa item?');
     if (confirmDelete) {
@@ -1447,7 +1178,6 @@ const TAB_LIST = [
     }
   };
 
-  // Remove Business Visa
   const removeBusinessVisa = (idx) => {
     const confirmDelete = window.confirm('Are you sure you want to remove this business visa item?');
     if (confirmDelete) {
@@ -1455,7 +1185,6 @@ const TAB_LIST = [
     }
   };
 
-  // Remove Photo
   const removePhoto = (idx) => {
     const confirmDelete = window.confirm('Are you sure you want to remove this photo item?');
     if (confirmDelete) {
@@ -1463,7 +1192,13 @@ const TAB_LIST = [
     }
   };
 
-  // Function to remove a row from Submission & Pick Up
+  const removeVisaFeesRow = (id) => {
+    const confirmDelete = window.confirm('Are you sure you want to remove this visa fee row?');
+    if (confirmDelete) {
+      setVisaFeesRows(visaFeesRows.filter(row => row.id !== id));
+    }
+  };
+
   const removeSubmissionRow = (id) => {
     const confirmDelete = window.confirm('Are you sure you want to remove this submission row?');
     if (confirmDelete) {
@@ -1471,12 +1206,62 @@ const TAB_LIST = [
     }
   };
 
-  // Function to remove a row
-  const removeVisaFeesRow = (id) => {
-    const confirmDelete = window.confirm('Are you sure you want to remove this visa fee row?');
-    if (confirmDelete) {
-      setVisaFeesRows(visaFeesRows.filter(row => row.id !== id));
-    }
+  const addVisaFeesRow = () => {
+    const newId = visaFeesRows.length > 0 
+      ? Math.max(...visaFeesRows.map(row => row.id)) + 1 
+      : 1;
+    
+    setVisaFeesRows([
+      ...visaFeesRows,
+      { 
+        id: newId,
+        type: 'Free Flow Entry', 
+        tourist: '', 
+        transit: '', 
+        business: '', 
+        tourist_charges: '',
+        transit_charges: '',
+        business_charges: ''
+      }
+    ]);
+  };
+
+  const addSubmissionRow = () => {
+    const newId = submissionRows.length > 0 
+      ? Math.max(...submissionRows.map(row => row.id)) + 1 
+      : 1;
+    
+    setSubmissionRows([
+      ...submissionRows,
+      { 
+        id: newId,
+        label: 'Free Flow Entry', 
+        tourist: '', 
+        transit: '', 
+        business: '' 
+      }
+    ]);
+  };
+
+  const handleVisaFeesChange = (id, field, value) => {
+    const updated = visaFeesRows.map(row => 
+      row.id === id ? { ...row, [field]: value } : row
+    );
+    setVisaFeesRows(updated);
+  };
+
+  const handleSubmissionLabelChange = (id, value) => {
+    const updated = submissionRows.map(row => 
+      row.id === id ? { ...row, label: value } : row
+    );
+    setSubmissionRows(updated);
+  };
+
+  const handleSubmissionValueChange = (id, field, value) => {
+    const updated = submissionRows.map(row => 
+      row.id === id ? { ...row, [field]: value } : row
+    );
+    setSubmissionRows(updated);
   };
 
   // ========================
@@ -1521,7 +1306,6 @@ const TAB_LIST = [
     setCancelItem(prev => ({ ...prev, [name]: value }));
   };
 
-  // BASIC DETAILS CHANGE - UPDATED to handle option fields
   const handleBasicChange = (e) => {
     const { name, value } = e.target;
     const numericFields = [
@@ -1542,154 +1326,98 @@ const TAB_LIST = [
     }));
   };
 
-  // Handlers for Cost Remarks with option tabs
+  // Handlers for Cost Remarks
   const handleCostRemarksOptionChange = (option, value) => {
     if (option === 'option1') {
       setCostRemarksOption1(value);
-      if (costRemarksActiveOption === 'option1') {
-        setFormData(prev => ({ ...prev, cost_remarks: value }));
-      }
     } else {
       setCostRemarksOption2(value);
-      if (costRemarksActiveOption === 'option2') {
-        setFormData(prev => ({ ...prev, cost_remarks: value }));
-      }
     }
   };
 
   const handleCostRemarksActiveChange = (option) => {
     setCostRemarksActiveOption(option);
-    const value = option === 'option1' ? costRemarksOption1 : costRemarksOption2;
-    setFormData(prev => ({ ...prev, cost_remarks: value }));
   };
 
-  // Handlers for Hotel Remarks with option tabs
+  // Handlers for Hotel Remarks
   const handleHotelRemarksOptionChange = (option, value) => {
     if (option === 'option1') {
       setHotelRemarksOption1(value);
-      if (hotelRemarksActiveOption === 'option1') {
-        setFormData(prev => ({ ...prev, hotel_remarks: value }));
-      }
     } else {
       setHotelRemarksOption2(value);
-      if (hotelRemarksActiveOption === 'option2') {
-        setFormData(prev => ({ ...prev, hotel_remarks: value }));
-      }
     }
   };
 
   const handleHotelRemarksActiveChange = (option) => {
     setHotelRemarksActiveOption(option);
-    const value = option === 'option1' ? hotelRemarksOption1 : hotelRemarksOption2;
-    setFormData(prev => ({ ...prev, hotel_remarks: value }));
   };
 
-  // Handlers for Flight Remarks with option tabs
+  // Handlers for Flight Remarks
   const handleFlightRemarksOptionChange = (option, value) => {
     if (option === 'option1') {
       setFlightRemarksOption1(value);
-      if (flightRemarksActiveOption === 'option1') {
-        setFormData(prev => ({ ...prev, transport_remarks: value }));
-      }
     } else {
       setFlightRemarksOption2(value);
-      if (flightRemarksActiveOption === 'option2') {
-        setFormData(prev => ({ ...prev, transport_remarks: value }));
-      }
     }
   };
 
   const handleFlightRemarksActiveChange = (option) => {
     setFlightRemarksActiveOption(option);
-    const value = option === 'option1' ? flightRemarksOption1 : flightRemarksOption2;
-    setFormData(prev => ({ ...prev, transport_remarks: value }));
   };
 
-  // Handlers for EMI Remarks with option tabs
+  // Handlers for EMI Remarks
   const handleEmiRemarksOptionChange = (option, value) => {
     if (option === 'option1') {
       setEmiRemarksOption1(value);
-      if (emiRemarksActiveOption === 'option1') {
-        setFormData(prev => ({ ...prev, emi_remarks: value }));
-      }
     } else {
       setEmiRemarksOption2(value);
-      if (emiRemarksActiveOption === 'option2') {
-        setFormData(prev => ({ ...prev, emi_remarks: value }));
-      }
     }
   };
 
   const handleEmiRemarksActiveChange = (option) => {
     setEmiRemarksActiveOption(option);
-    const value = option === 'option1' ? emiRemarksOption1 : emiRemarksOption2;
-    setFormData(prev => ({ ...prev, emi_remarks: value }));
   };
 
-  // Handlers for Booking POI Remarks with option tabs
+  // Handlers for Booking POI Remarks
   const handleBookingPoiRemarksOptionChange = (option, value) => {
     if (option === 'option1') {
       setBookingPoiRemarksOption1(value);
-      if (bookingPoiRemarksActiveOption === 'option1') {
-        setFormData(prev => ({ ...prev, booking_poi_remarks: value }));
-      }
     } else {
       setBookingPoiRemarksOption2(value);
-      if (bookingPoiRemarksActiveOption === 'option2') {
-        setFormData(prev => ({ ...prev, booking_poi_remarks: value }));
-      }
     }
   };
 
   const handleBookingPoiRemarksActiveChange = (option) => {
     setBookingPoiRemarksActiveOption(option);
-    const value = option === 'option1' ? bookingPoiRemarksOption1 : bookingPoiRemarksOption2;
-    setFormData(prev => ({ ...prev, booking_poi_remarks: value }));
   };
 
-  // Handlers for Cancellation Remarks with option tabs
+  // Handlers for Cancellation Remarks
   const handleCancellationRemarksOptionChange = (option, value) => {
     if (option === 'option1') {
       setCancellationRemarksOption1(value);
-      if (cancellationRemarksActiveOption === 'option1') {
-        setFormData(prev => ({ ...prev, cancellation_remarks: value }));
-      }
     } else {
       setCancellationRemarksOption2(value);
-      if (cancellationRemarksActiveOption === 'option2') {
-        setFormData(prev => ({ ...prev, cancellation_remarks: value }));
-      }
     }
   };
 
   const handleCancellationRemarksActiveChange = (option) => {
     setCancellationRemarksActiveOption(option);
-    const value = option === 'option1' ? cancellationRemarksOption1 : cancellationRemarksOption2;
-    setFormData(prev => ({ ...prev, cancellation_remarks: value }));
   };
 
-  // Handlers for Optional Tour Remarks with option tabs
+  // Handlers for Optional Tour Remarks
   const handleOptionalTourRemarksOptionChange = (option, value) => {
     if (option === 'option1') {
       setOptionalTourRemarksOption1(value);
-      if (optionalTourRemarksActiveOption === 'option1') {
-        setFormData(prev => ({ ...prev, optional_tour_remarks: value }));
-      }
     } else {
       setOptionalTourRemarksOption2(value);
-      if (optionalTourRemarksActiveOption === 'option2') {
-        setFormData(prev => ({ ...prev, optional_tour_remarks: value }));
-      }
     }
   };
 
   const handleOptionalTourRemarksActiveChange = (option) => {
     setOptionalTourRemarksActiveOption(option);
-    const value = option === 'option1' ? optionalTourRemarksOption1 : optionalTourRemarksOption2;
-    setFormData(prev => ({ ...prev, optional_tour_remarks: value }));
   };
 
-  // Handlers for Departure Description with option tabs
+  // Handlers for Departure Description
   const handleDepartureDescriptionOptionChange = (option, value) => {
     if (option === 'option1') {
       setDepartureOption1(value);
@@ -1698,7 +1426,7 @@ const TAB_LIST = [
     }
   };
 
-  // Handlers for Instructions with option tabs
+  // Handlers for Instructions
   const handleInstructionOptionChange = (option, value) => {
     if (option === 'option1') {
       setInstructionOption1(value);
@@ -1707,28 +1435,19 @@ const TAB_LIST = [
     }
   };
 
-  // Handlers for Visa Remarks with option tabs
+  // Handlers for Visa Remarks
   const handleVisaRemarksOptionChange = (option, value) => {
     if (option === 'option1') {
       setVisaRemarksOption1(value);
-      if (visaRemarksActiveOption === 'option1') {
-        setFormData(prev => ({ ...prev, visa_remarks: value }));
-      }
     } else {
       setVisaRemarksOption2(value);
-      if (visaRemarksActiveOption === 'option2') {
-        setFormData(prev => ({ ...prev, visa_remarks: value }));
-      }
     }
   };
 
   const handleVisaRemarksActiveChange = (option) => {
     setVisaRemarksActiveOption(option);
-    const value = option === 'option1' ? visaRemarksOption1 : visaRemarksOption2;
-    setFormData(prev => ({ ...prev, visa_remarks: value }));
   };
 
-  // DEPARTURE FORM CHANGE
   const handleDepartureChange = (e) => {
     const { name, value } = e.target;
     const numericFields = ['adult_price', 'child_price', 'total_seats', 'infant_price'];
@@ -1740,7 +1459,6 @@ const TAB_LIST = [
     }));
   };
 
-  // ITINERARY CHANGE
   const handleItineraryChange = (e) => {
     const { name, value } = e.target;
     setItineraryItem((prev) => ({
@@ -1760,7 +1478,27 @@ const TAB_LIST = [
     }));
   };
 
-  // Handle image upload/selection for new images
+  const handleTouristVisaChange = (e) => {
+    const { name, value } = e.target;
+    setTouristVisaForm(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleTransitVisaChange = (e) => {
+    const { name, value } = e.target;
+    setTransitVisaForm(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleBusinessVisaChange = (e) => {
+    const { name, value } = e.target;
+    setBusinessVisaForm(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handlePhotoChange = (e) => {
+    const { name, value } = e.target;
+    setPhotoForm(prev => ({ ...prev, [name]: value }));
+  };
+
+  // IMAGE HANDLERS
   const handleImageChange = (e) => {
     const files = e.target.files ? Array.from(e.target.files) : [];
     setImageFiles(files);
@@ -1768,7 +1506,6 @@ const TAB_LIST = [
     setImagePreviews(previews);
   };
 
-  // Handle file selection for replacement
   const handleReplacementFileChange = (e) => {
     const file = e.target.files ? e.target.files[0] : null;
     setReplacementFile(file);
@@ -1778,14 +1515,12 @@ const TAB_LIST = [
     }
   };
 
-  // Start editing an image
   const startEditImage = (image) => {
     setEditingImageId(image.image_id);
     setReplacementFile(null);
     setReplacementPreview(null);
   };
 
-  // Cancel editing
   const cancelEditImage = () => {
     setEditingImageId(null);
     setReplacementFile(null);
@@ -1794,7 +1529,6 @@ const TAB_LIST = [
     if (fileInput) fileInput.value = '';
   };
 
-  // Update existing image (replace with new file)
   const updateImage = async (imageId) => {
     if (!replacementFile) {
       alert('Please select a new image file to replace the existing one');
@@ -1815,9 +1549,6 @@ const TAB_LIST = [
 
       const formData = new FormData();
       formData.append('images', replacementFile);
-      if (imageCaption.trim()) {
-        formData.append('caption', imageCaption.trim());
-      }
       
       const uploadResponse = await fetch(`${baseurl}/api/images/upload/${id}`, {
         method: 'POST',
@@ -1839,7 +1570,6 @@ const TAB_LIST = [
     }
   };
 
-  // Delete image
   const deleteImage = async (imageId) => {
     const confirmDelete = window.confirm('Are you sure you want to delete this image?');
     if (!confirmDelete) return;
@@ -1866,7 +1596,6 @@ const TAB_LIST = [
     }
   };
 
-  // Set cover image
   const setCoverImage = async (imageId) => {
     try {
       setLoading(true);
@@ -1893,91 +1622,6 @@ const TAB_LIST = [
     } finally {
       setLoading(false);
     }
-  };
-
-  // Visa Form Change Handlers
-  const handleTouristVisaChange = (e) => {
-    const { name, value } = e.target;
-    setTouristVisaForm(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleTransitVisaChange = (e) => {
-    const { name, value } = e.target;
-    setTransitVisaForm(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleBusinessVisaChange = (e) => {
-    const { name, value } = e.target;
-    setBusinessVisaForm(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handlePhotoChange = (e) => {
-    const { name, value } = e.target;
-    setPhotoForm(prev => ({ ...prev, [name]: value }));
-  };
-
-  // Add this function to handle file uploads for visa forms
-  const handleVisaFormFileChange = async (index, action, file) => {
-    if (!file) return;
-    
-    const updated = [...visaFormItems];
-    if (action === 'action1') {
-      updated[index].action1_file = file;
-    } else {
-      updated[index].action2_file = file;
-    }
-    setVisaFormItems(updated);
-    
-    if (isEditMode && id) {
-      const uploadedFileName = await handleVisaFormFileUpload(id, visaFormItems[index].type, action, file);
-      if (uploadedFileName) {
-        const updatedWithFilename = [...visaFormItems];
-        if (action === 'action1') {
-          updatedWithFilename[index].action1_file = uploadedFileName;
-        } else {
-          updatedWithFilename[index].action2_file = uploadedFileName;
-        }
-        setVisaFormItems(updatedWithFilename);
-      }
-    }
-  };
-
-  // Add this function to your frontend component
-  const handleVisaFormFileUpload = async (tourId, visaType, actionType, file) => {
-    try {
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('visa_type', visaType);
-      formData.append('action_type', actionType);
-
-      const response = await fetch(`${baseurl}/api/visa/upload-file/${tourId}`, {
-        method: 'POST',
-        body: formData
-      });
-
-      const result = await response.json();
-      
-      if (result.success) {
-        return result.fileName;
-      } else {
-        return null;
-      }
-    } catch (err) {
-      return null;
-    }
-  };
-
-  const handleVisaFeesChange = (id, field, value) => {
-    const updated = visaFeesRows.map(row => 
-      row.id === id ? { ...row, [field]: value } : row
-    );
-    setVisaFeesRows(updated);
-  };
-
-  const handleSubmissionChange = (index, field, value) => {
-    const updated = [...submissionRows];
-    updated[index][field] = value;
-    setSubmissionRows(updated);
   };
 
   useEffect(() => {
@@ -2011,7 +1655,6 @@ const TAB_LIST = [
         const sortedDestinations = internationalDestinations.sort((a, b) => {
           const nameA = a.name ? a.name.toLowerCase() : '';
           const nameB = b.name ? b.name.toLowerCase() : '';
-          
           if (nameA < nameB) return -1;
           if (nameA > nameB) return 1;
           return 0;
@@ -2022,14 +1665,12 @@ const TAB_LIST = [
         if (isEditMode) {
           await loadTourData();
         } else {
-          const isInternational = window.location.pathname.includes('intl') ? 1 : 0;
-
           setFormData(prev => ({
             ...prev,
             is_international: 1
           }));
           
-          const tourCodeRes = await fetch(`${baseurl}/api/tours/next-tour-code?tour_type=individual&is_international=${isInternational}`);
+          const tourCodeRes = await fetch(`${baseurl}/api/tours/next-tour-code?tour_type=individual&is_international=1`);
           if (tourCodeRes.ok) {
             const tourCodeData = await tourCodeRes.json();
             setFormData(prev => ({
@@ -2047,7 +1688,6 @@ const TAB_LIST = [
     loadDropdownsAndTourCode();
   }, [id]);
 
-  // Load tour data for editing
   const loadTourData = async () => {
     try {
       setLoading(true);
@@ -2061,190 +1701,78 @@ const TAB_LIST = [
       if (data.success) {
         const basic = data.basic_details;
         
-        // ========================
-        // LOAD REMARKS WITH BOTH OPTIONS FROM CHILD TABLES
-        // ========================
-        
-        // 1. Cost Remarks - Get both options from tour_costs table
-        let costRemarksValue = '';
-        let costRemarksOpt1 = '';
-        let costRemarksOpt2 = '';
-        let costRemarksActive = 'option1';
-        
+        // Load remarks from child tables
         if (data.costs && data.costs.length > 0) {
           const firstCost = data.costs[0];
-          costRemarksValue = firstCost.cost_remarks || '';
-          costRemarksOpt1 = firstCost.cost_remarks_option1 || '';
-          costRemarksOpt2 = firstCost.cost_remarks_option2 || '';
-          costRemarksActive = firstCost.cost_remarks_active || 'option1';
+          setCostRemarksOption1(firstCost.cost_remarks_option1 || '');
+          setCostRemarksOption2(firstCost.cost_remarks_option2 || '');
+          setCostRemarksActiveOption(firstCost.cost_remarks_active || 'option1');
         }
-        
-        // 2. Hotel Remarks - Get both options from tour_hotels table
-        let hotelRemarksValue = '';
-        let hotelRemarksOpt1 = '';
-        let hotelRemarksOpt2 = '';
-        let hotelRemarksActive = 'option1';
         
         if (data.hotels && data.hotels.length > 0) {
           const firstHotel = data.hotels[0];
-          hotelRemarksValue = firstHotel.hotel_remarks || '';
-          hotelRemarksOpt1 = firstHotel.hotel_remarks_option1 || '';
-          hotelRemarksOpt2 = firstHotel.hotel_remarks_option2 || '';
-          hotelRemarksActive = firstHotel.hotel_remarks_active || 'option1';
+          setHotelRemarksOption1(firstHotel.hotel_remarks_option1 || '');
+          setHotelRemarksOption2(firstHotel.hotel_remarks_option2 || '');
+          setHotelRemarksActiveOption(firstHotel.hotel_remarks_active || 'option1');
         }
-        
-        // 3. Transport Remarks - Get both options from tour_transports table
-        let transportRemarksValue = '';
-        let transportRemarksOpt1 = '';
-        let transportRemarksOpt2 = '';
-        let transportRemarksActive = 'option1';
         
         if (data.transport && data.transport.length > 0) {
           const firstTransport = data.transport[0];
-          transportRemarksValue = firstTransport.flight_remarks || '';
-          transportRemarksOpt1 = firstTransport.flight_remarks_option1 || '';
-          transportRemarksOpt2 = firstTransport.flight_remarks_option2 || '';
-          transportRemarksActive = firstTransport.flight_remarks_active || 'option1';
+          setFlightRemarksOption1(firstTransport.flight_remarks_option1 || '');
+          setFlightRemarksOption2(firstTransport.flight_remarks_option2 || '');
+          setFlightRemarksActiveOption(firstTransport.flight_remarks_active || 'option1');
         }
-        
-        // 4. Booking POI Remarks - Get both options from tour_booking_poi table
-        let bookingRemarksValue = '';
-        let bookingRemarksOpt1 = '';
-        let bookingRemarksOpt2 = '';
-        let bookingRemarksActive = 'option1';
-        
-        if (data.booking_poi && data.booking_poi.length > 0) {
-          const firstPoi = data.booking_poi[0];
-          bookingRemarksValue = firstPoi.booking_remarks || '';
-          bookingRemarksOpt1 = firstPoi.booking_remarks_option1 || '';
-          bookingRemarksOpt2 = firstPoi.booking_remarks_option2 || '';
-          bookingRemarksActive = firstPoi.booking_remarks_active || 'option1';
-        }
-        
-        // 5. Cancellation Remarks - Get both options from tour_cancellation_policies table
-        let cancellationRemarksValue = '';
-        let cancellationRemarksOpt1 = '';
-        let cancellationRemarksOpt2 = '';
-        let cancellationRemarksActive = 'option1';
-        
-        if (data.cancellation_policies && data.cancellation_policies.length > 0) {
-          const firstPolicy = data.cancellation_policies[0];
-          cancellationRemarksValue = firstPolicy.cancellation_remarks || '';
-          cancellationRemarksOpt1 = firstPolicy.cancellation_remarks_option1 || '';
-          cancellationRemarksOpt2 = firstPolicy.cancellation_remarks_option2 || '';
-          cancellationRemarksActive = firstPolicy.cancellation_remarks_active || 'option1';
-        }
-        
-        // 6. Optional Tour Remarks - Get both options from optional_tours table
-        let optionalRemarksValue = '';
-        let optionalRemarksOpt1 = '';
-        let optionalRemarksOpt2 = '';
-        let optionalRemarksActive = 'option1';
-        
-        if (data.optional_tours && data.optional_tours.length > 0) {
-          const firstOptional = data.optional_tours[0];
-          optionalRemarksValue = firstOptional.optional_remarks || '';
-          optionalRemarksOpt1 = firstOptional.optional_remarks_option1 || '';
-          optionalRemarksOpt2 = firstOptional.optional_remarks_option2 || '';
-          optionalRemarksActive = firstOptional.optional_remarks_active || 'option1';
-        }
-        
-        // 7. EMI Remarks - Get both options from emi_options table
-        let emiRemarksValue = '';
-        let emiRemarksOpt1 = '';
-        let emiRemarksOpt2 = '';
-        let emiRemarksActive = 'option1';
         
         if (data.emi_options && data.emi_options.length > 0) {
           const firstEmi = data.emi_options[0];
-          emiRemarksValue = firstEmi.emi_remarks || '';
-          emiRemarksOpt1 = firstEmi.emi_remarks_option1 || '';
-          emiRemarksOpt2 = firstEmi.emi_remarks_option2 || '';
-          emiRemarksActive = firstEmi.emi_remarks_active || 'option1';
+          setEmiRemarksOption1(firstEmi.emi_remarks_option1 || '');
+          setEmiRemarksOption2(firstEmi.emi_remarks_option2 || '');
+          setEmiRemarksActiveOption(firstEmi.emi_remarks_active || 'option1');
         }
         
-        // 8. Departure Description - Get both options from tour_departures table
-        let departureDescValue = '';
-        let departureDescOpt1 = '';
-        let departureDescOpt2 = '';
-        let departureDescActive = 'option1';
+        if (data.booking_poi && data.booking_poi.length > 0) {
+          const firstPoi = data.booking_poi[0];
+          setBookingPoiRemarksOption1(firstPoi.booking_remarks_option1 || '');
+          setBookingPoiRemarksOption2(firstPoi.booking_remarks_option2 || '');
+          setBookingPoiRemarksActiveOption(firstPoi.booking_remarks_active || 'option1');
+        }
+        
+        if (data.cancellation_policies && data.cancellation_policies.length > 0) {
+          const firstPolicy = data.cancellation_policies[0];
+          setCancellationRemarksOption1(firstPolicy.cancellation_remarks_option1 || '');
+          setCancellationRemarksOption2(firstPolicy.cancellation_remarks_option2 || '');
+          setCancellationRemarksActiveOption(firstPolicy.cancellation_remarks_active || 'option1');
+        }
+        
+        if (data.optional_tours && data.optional_tours.length > 0) {
+          const firstOptional = data.optional_tours[0];
+          setOptionalTourRemarksOption1(firstOptional.optional_remarks_option1 || '');
+          setOptionalTourRemarksOption2(firstOptional.optional_remarks_option2 || '');
+          setOptionalTourRemarksActiveOption(firstOptional.optional_remarks_active || 'option1');
+        }
         
         if (data.departures && data.departures.length > 0) {
           const firstDeparture = data.departures[0];
-          departureDescValue = firstDeparture.description || '';
-          departureDescOpt1 = firstDeparture.description_option1 || '';
-          departureDescOpt2 = firstDeparture.description_option2 || '';
-          departureDescActive = firstDeparture.description_active || 'option1';
+          setDepartureOption1(firstDeparture.description_option1 || '');
+          setDepartureOption2(firstDeparture.description_option2 || '');
+          setDepartureActiveOption(firstDeparture.description_active || 'option1');
+          setDepartures(data.departures);
         }
-        
-        // 9. Instruction Description - Get both options from tour_instructions table
-        let instructionDescValue = '';
-        let instructionDescOpt1 = '';
-        let instructionDescOpt2 = '';
-        let instructionDescActive = 'option1';
         
         if (data.instructions && data.instructions.length > 0) {
           const firstInstruction = data.instructions[0];
-          instructionDescValue = firstInstruction.item || '';
-          instructionDescOpt1 = firstInstruction.item_option1 || '';
-          instructionDescOpt2 = firstInstruction.item_option2 || '';
-          instructionDescActive = firstInstruction.item_active || 'option1';
+          setInstructionOption1(firstInstruction.item_option1 || '');
+          setInstructionOption2(firstInstruction.item_option2 || '');
+          setInstructionActiveOption(firstInstruction.item_active || 'option1');
+          setInstructions(data.instructions.map(inst => inst.item));
         }
-        
-        // 10. Visa Remarks - Get both options from visa_forms table
-        let visaRemarksValue = '';
-        let visaRemarksOpt1 = '';
-        let visaRemarksOpt2 = '';
-        let visaRemarksActive = 'option1';
         
         if (data.visa_forms && data.visa_forms.length > 0) {
           const firstVisaForm = data.visa_forms[0];
-          visaRemarksValue = firstVisaForm.remarks || '';
-          visaRemarksOpt1 = firstVisaForm.remarks_option1 || '';
-          visaRemarksOpt2 = firstVisaForm.remarks_option2 || '';
-          visaRemarksActive = firstVisaForm.remarks_active || 'option1';
+          setVisaRemarksOption1(firstVisaForm.remarks_option1 || '');
+          setVisaRemarksOption2(firstVisaForm.remarks_option2 || '');
+          setVisaRemarksActiveOption(firstVisaForm.remarks_active || 'option1');
         }
-        
-        // Set state with both options
-        setCostRemarksOption1(costRemarksOpt1 || costRemarksValue);
-        setCostRemarksOption2(costRemarksOpt2 || costRemarksValue);
-        setCostRemarksActiveOption(costRemarksActive);
-        
-        setHotelRemarksOption1(hotelRemarksOpt1 || hotelRemarksValue);
-        setHotelRemarksOption2(hotelRemarksOpt2 || hotelRemarksValue);
-        setHotelRemarksActiveOption(hotelRemarksActive);
-        
-        setFlightRemarksOption1(transportRemarksOpt1 || transportRemarksValue);
-        setFlightRemarksOption2(transportRemarksOpt2 || transportRemarksValue);
-        setFlightRemarksActiveOption(transportRemarksActive);
-        
-        setEmiRemarksOption1(emiRemarksOpt1 || emiRemarksValue);
-        setEmiRemarksOption2(emiRemarksOpt2 || emiRemarksValue);
-        setEmiRemarksActiveOption(emiRemarksActive);
-        
-        setBookingPoiRemarksOption1(bookingRemarksOpt1 || bookingRemarksValue);
-        setBookingPoiRemarksOption2(bookingRemarksOpt2 || bookingRemarksValue);
-        setBookingPoiRemarksActiveOption(bookingRemarksActive);
-        
-        setCancellationRemarksOption1(cancellationRemarksOpt1 || cancellationRemarksValue);
-        setCancellationRemarksOption2(cancellationRemarksOpt2 || cancellationRemarksValue);
-        setCancellationRemarksActiveOption(cancellationRemarksActive);
-        
-        setOptionalTourRemarksOption1(optionalRemarksOpt1 || optionalRemarksValue);
-        setOptionalTourRemarksOption2(optionalRemarksOpt2 || optionalRemarksValue);
-        setOptionalTourRemarksActiveOption(optionalRemarksActive);
-        
-        setDepartureOption1(departureDescOpt1 || departureDescValue);
-        setDepartureOption2(departureDescOpt2 || departureDescValue);
-        setDepartureActiveOption(departureDescActive);
-        
-        setInstructionOption1(instructionDescOpt1 || instructionDescValue);
-        setInstructionOption2(instructionDescOpt2 || instructionDescValue);
-        setInstructionActiveOption(instructionDescActive);
-        
-        setVisaRemarksOption1(visaRemarksOpt1 || visaRemarksValue);
-        setVisaRemarksOption2(visaRemarksOpt2 || visaRemarksValue);
-        setVisaRemarksActiveOption(visaRemarksActive);
         
         setFormData({
           tour_code: basic.tour_code || '',
@@ -2257,40 +1785,9 @@ const TAB_LIST = [
           overview: basic.overview || '',
           base_price_adult: basic.base_price_adult || '',
           emi_price: basic.emi_price || '',
-          is_international: basic.is_international || 0,
-          cost_remarks: costRemarksValue,
-          cost_remarks_option1: costRemarksOpt1 || costRemarksValue,
-          cost_remarks_option2: costRemarksOpt2 || costRemarksValue,
-          hotel_remarks: hotelRemarksValue,
-          hotel_remarks_option1: hotelRemarksOpt1 || hotelRemarksValue,
-          hotel_remarks_option2: hotelRemarksOpt2 || hotelRemarksValue,
-          transport_remarks: transportRemarksValue,
-          transport_remarks_option1: transportRemarksOpt1 || transportRemarksValue,
-          transport_remarks_option2: transportRemarksOpt2 || transportRemarksValue,
-          booking_poi_remarks: bookingRemarksValue,
-          booking_poi_remarks_option1: bookingRemarksOpt1 || bookingRemarksValue,
-          booking_poi_remarks_option2: bookingRemarksOpt2 || bookingRemarksValue,
-          cancellation_remarks: cancellationRemarksValue,
-          cancellation_remarks_option1: cancellationRemarksOpt1 || cancellationRemarksValue,
-          cancellation_remarks_option2: cancellationRemarksOpt2 || cancellationRemarksValue,
-          emi_remarks: emiRemarksValue,
-          emi_remarks_option1: emiRemarksOpt1 || emiRemarksValue,
-          emi_remarks_option2: emiRemarksOpt2 || emiRemarksValue,
-          optional_tour_remarks: optionalRemarksValue,
-          optional_tour_remarks_option1: optionalRemarksOpt1 || optionalRemarksValue,
-          optional_tour_remarks_option2: optionalRemarksOpt2 || optionalRemarksValue,
-          departure_description: departureDescValue,
-          departure_description_option1: departureDescOpt1 || departureDescValue,
-          departure_description_option2: departureDescOpt2 || departureDescValue,
-          instruction_description: instructionDescValue,
-          instruction_description_option1: instructionDescOpt1 || instructionDescValue,
-          instruction_description_option2: instructionDescOpt2 || instructionDescValue,
-          visa_remarks: visaRemarksValue,
-          visa_remarks_option1: visaRemarksOpt1 || visaRemarksValue,
-          visa_remarks_option2: visaRemarksOpt2 || visaRemarksValue
+          is_international: basic.is_international || 0
         });
 
-        // Set itineraries
         if (data.itinerary && Array.isArray(data.itinerary)) {
           const formattedItineraries = data.itinerary.map(item => ({
             day: item.day,
@@ -2301,46 +1798,22 @@ const TAB_LIST = [
           setItineraries(formattedItineraries);
         }
 
-        // Set departures with both options
-        if (data.departures && Array.isArray(data.departures)) {
-          const formattedDepartures = data.departures.map(dept => ({
-            departure_date: dept.departure_date || '',
-            return_date: dept.return_date || '',
-            adult_price: dept.adult_price || '',
-            child_price: dept.child_price || '',
-            infant_price: dept.infant_price || '',
-            description: dept.description || '',
-            description_option1: dept.description_option1 || '',
-            description_option2: dept.description_option2 || '',
-            description_active: dept.description_active || 'option1',
-            total_seats: dept.total_seats || ''
-          }));
-          setDepartures(formattedDepartures);
-        }
-
-        // Set inclusions
         if (data.inclusions && Array.isArray(data.inclusions)) {
-          const inclusionItems = data.inclusions.map(inc => inc.item);
-          setInclusions(inclusionItems);
+          setInclusions(data.inclusions.map(inc => inc.item));
         }
 
-        // Set exclusions
         if (data.exclusions && Array.isArray(data.exclusions)) {
-          const exclusionItems = data.exclusions.map(exc => exc.item);
-          setExclusions(exclusionItems);
+          setExclusions(data.exclusions.map(exc => exc.item));
         }
 
-        // Set tour costs with both options
         if (data.costs && Array.isArray(data.costs)) {
           setTourCosts(data.costs);
         }
 
-        // Set optional tours with both options
         if (data.optional_tours && Array.isArray(data.optional_tours)) {
           setOptionalTours(data.optional_tours);
         }
 
-        // Set EMI options
         if (data.emi_options && Array.isArray(data.emi_options)) {
           const defaultOptions = [
             { particulars: 'Per Month Payment', months: 6, loan_amount: '', emi: '' },
@@ -2357,11 +1830,7 @@ const TAB_LIST = [
             return existingOption ? {
               ...option,
               loan_amount: existingOption.loan_amount || '',
-              emi: existingOption.emi || '',
-              emi_remarks: existingOption.emi_remarks || '',
-              emi_remarks_option1: existingOption.emi_remarks_option1 || '',
-              emi_remarks_option2: existingOption.emi_remarks_option2 || '',
-              emi_remarks_active: existingOption.emi_remarks_active || 'option1'
+              emi: existingOption.emi || ''
             } : option;
           });
 
@@ -2373,34 +1842,23 @@ const TAB_LIST = [
           }
         }
 
-        // Set hotels with both options
         if (data.hotels && Array.isArray(data.hotels)) {
           const formattedHotels = data.hotels.map(hotel => ({
             ...hotel,
             standard_hotel_name: hotel.standard_hotel_name || '',
             deluxe_hotel_name: hotel.deluxe_hotel_name || '',
-            executive_hotel_name: hotel.executive_hotel_name || '',
-            hotel_remarks: hotel.hotel_remarks || '',
-            hotel_remarks_option1: hotel.hotel_remarks_option1 || '',
-            hotel_remarks_option2: hotel.hotel_remarks_option2 || '',
-            hotel_remarks_active: hotel.hotel_remarks_active || 'option1'
+            executive_hotel_name: hotel.executive_hotel_name || ''
           }));
           setHotelRows(formattedHotels);
         }
 
-        // Set transport with both options
         if (data.transport && Array.isArray(data.transport)) {
           const formattedTransports = data.transport.map(t => ({
-            description: t.description || '',
-            flight_remarks: t.flight_remarks || '',
-            flight_remarks_option1: t.flight_remarks_option1 || '',
-            flight_remarks_option2: t.flight_remarks_option2 || '',
-            flight_remarks_active: t.flight_remarks_active || 'option1'
+            description: t.description || ''
           }));
           setTransports(formattedTransports);
         }
 
-        // Load Visa Data
         if (data.visa_details && Array.isArray(data.visa_details)) {
           const touristVisaData = data.visa_details.filter(item => item.type === 'tourist');
           setTouristVisaItems(touristVisaData.map(item => ({ description: item.description })));
@@ -2415,21 +1873,17 @@ const TAB_LIST = [
           setPhotoItems(photoData.map(item => ({ description: item.description })));
         }
         
-        // Load Visa Forms
         if (data.visa_forms && Array.isArray(data.visa_forms)) {
           const formattedForms = data.visa_forms.map(form => ({
             type: form.visa_type,
             download_action: form.download_action,
             fill_action: form.fill_action,
             action1_file: form.action1_file,
-            action2_file: form.action2_file,
-            action1_file_url: form.action1_file_url || null,
-            action2_file_url: form.action2_file_url || null
+            action2_file: form.action2_file
           }));
           setVisaFormItems(formattedForms);
         }
         
-        // Load Visa Fees
         if (data.visa_fees && Array.isArray(data.visa_fees)) {
           const visaFeeRows = data.visa_fees.map(fee => ({
             id: fee.fee_id || fee.id,
@@ -2444,7 +1898,6 @@ const TAB_LIST = [
           setVisaFeesRows(visaFeeRows);
         }
         
-        // Load Submission Data
         if (data.visa_submission && Array.isArray(data.visa_submission)) {
           const submissionRowsData = data.visa_submission.map(item => ({
             id: item.submission_id || item.id,
@@ -2456,47 +1909,24 @@ const TAB_LIST = [
           setSubmissionRows(submissionRowsData);
         }
 
-        // Set booking POI with both options
         if (data.booking_poi && Array.isArray(data.booking_poi)) {
           const formattedPois = data.booking_poi.map(poi => ({
             item: poi.item,
-            amount_details: poi.amount_details || '',
-            booking_remarks: poi.booking_remarks || '',
-            booking_remarks_option1: poi.booking_remarks_option1 || '',
-            booking_remarks_option2: poi.booking_remarks_option2 || '',
-            booking_remarks_active: poi.booking_remarks_active || 'option1'
+            amount_details: poi.amount_details || ''
           }));
           setBookingPois(formattedPois);
         }
 
-        // Set cancellation policies with both options
         if (data.cancellation_policies && Array.isArray(data.cancellation_policies)) {
           const formattedPolicies = data.cancellation_policies.map(policy => ({
             cancellation_policy: policy.cancellation_policy,
-            charges: policy.charges || '',
-            cancellation_remarks: policy.cancellation_remarks || '',
-            cancellation_remarks_option1: policy.cancellation_remarks_option1 || '',
-            cancellation_remarks_option2: policy.cancellation_remarks_option2 || '',
-            cancellation_remarks_active: policy.cancellation_remarks_active || 'option1'
+            charges: policy.charges || ''
           }));
           setCancelPolicies(formattedPolicies);
         }
 
-        // Set instructions with both options
-        if (data.instructions && Array.isArray(data.instructions)) {
-          const formattedInstructions = data.instructions.map(inst => ({
-            item: inst.item,
-            item_option1: inst.item_option1 || '',
-            item_option2: inst.item_option2 || '',
-            item_active: inst.item_active || 'option1'
-          }));
-          setInstructions(formattedInstructions.map(inst => inst.item));
-        }
-
-        // Set images
         if (data.images && Array.isArray(data.images)) {
           setExistingImages(data.images);
-          setImagePreviews([]);
         }
 
         setSuccess('Tour data loaded successfully');
@@ -2566,7 +1996,38 @@ const TAB_LIST = [
   // SAVE FUNCTIONS
   // ========================
 
-  // CREATE NEW TOUR (POST)
+  const uploadVisaFormFiles = async (tourId, visaForms) => {
+    const uploadedForms = [];
+
+    for (const form of visaForms) {
+      const formData = {
+        type: form.type,
+        download_action: form.download_action,
+        fill_action: form.fill_action,
+        action1_file: null,
+        action2_file: null
+      };
+
+      if (form.action1_file && typeof form.action1_file === 'object' && form.action1_file instanceof File) {
+        const fileName = await handleVisaFormFileUpload(tourId, form.type, 'action1', form.action1_file);
+        if (fileName) formData.action1_file = fileName;
+      } else if (typeof form.action1_file === 'string') {
+        formData.action1_file = form.action1_file;
+      }
+
+      if (form.action2_file && typeof form.action2_file === 'object' && form.action2_file instanceof File) {
+        const fileName = await handleVisaFormFileUpload(tourId, form.type, 'action2', form.action2_file);
+        if (fileName) formData.action2_file = fileName;
+      } else if (typeof form.action2_file === 'string') {
+        formData.action2_file = form.action2_file;
+      }
+
+      uploadedForms.push(formData);
+    }
+
+    return uploadedForms;
+  };
+
   const createTour = async () => {
     if (!formData.tour_code.trim()) {
       setError('Tour code is required');
@@ -2584,7 +2045,6 @@ const TAB_LIST = [
       setError('');
       setSuccess('');
 
-      // Prepare tour payload with all option fields
       const completeFormData = {
         tour_code: formData.tour_code,
         title: formData.title,
@@ -2596,40 +2056,9 @@ const TAB_LIST = [
         base_price_adult: Number(formData.base_price_adult) || 0,
         emi_price: formData.emi_price ? Number(formData.emi_price) : null,
         is_international: 1,
-        status: 1,
-        cost_remarks_active: costRemarksActiveOption,
-        hotel_remarks_active: hotelRemarksActiveOption,
-        transport_remarks_active: flightRemarksActiveOption,
-        emi_remarks_active: emiRemarksActiveOption,
-        booking_poi_remarks_active: bookingPoiRemarksActiveOption,
-        cancellation_remarks_active: cancellationRemarksActiveOption,
-        optional_tour_remarks_active: optionalTourRemarksActiveOption,
-        departure_description_active: departureActiveOption,
-        instruction_description_active: instructionActiveOption,
-        visa_remarks_active: visaRemarksActiveOption,
-        cost_remarks_option1: costRemarksOption1,
-        cost_remarks_option2: costRemarksOption2,
-        hotel_remarks_option1: hotelRemarksOption1,
-        hotel_remarks_option2: hotelRemarksOption2,
-        transport_remarks_option1: flightRemarksOption1,
-        transport_remarks_option2: flightRemarksOption2,
-        emi_remarks_option1: emiRemarksOption1,
-        emi_remarks_option2: emiRemarksOption2,
-        booking_poi_remarks_option1: bookingPoiRemarksOption1,
-        booking_poi_remarks_option2: bookingPoiRemarksOption2,
-        cancellation_remarks_option1: cancellationRemarksOption1,
-        cancellation_remarks_option2: cancellationRemarksOption2,
-        optional_tour_remarks_option1: optionalTourRemarksOption1,
-        optional_tour_remarks_option2: optionalTourRemarksOption2,
-        departure_description_option1: departureOption1,
-        departure_description_option2: departureOption2,
-        instruction_description_option1: instructionOption1,
-        instruction_description_option2: instructionOption2,
-        visa_remarks_option1: visaRemarksOption1,
-        visa_remarks_option2: visaRemarksOption2
+        status: 1
       };
 
-      // 1) CREATE TOUR
       const tourRes = await fetch(`${baseurl}/api/tours`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -2644,16 +2073,13 @@ const TAB_LIST = [
       const tourData = await tourRes.json();
       const tourId = tourData.tour_id || tourData.id || tourData.insertId;
 
-      // Upload visa form files FIRST
       const uploadedVisaForms = await uploadVisaFormFiles(tourId, visaFormItems);
 
-      // 2) ITINERARIES
       if (itineraries.length > 0) {
         const itineraryPayload = itineraries.map((item) => ({
           ...item,
           tour_id: tourId
         }));
-
         await fetch(`${baseurl}/api/itineraries/bulk`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -2661,7 +2087,6 @@ const TAB_LIST = [
         });
       }
 
-      // 3) DEPARTURES with both options
       if (departures.length > 0) {
         const departuresWithOptions = departures.map(dep => ({
           ...dep,
@@ -2678,7 +2103,6 @@ const TAB_LIST = [
         });
       }
 
-      // 4) TOUR COSTS with both options
       if (tourCosts.length > 0) {
         const costsWithBothOptions = tourCosts.map(cost => ({
           ...cost,
@@ -2694,7 +2118,6 @@ const TAB_LIST = [
         });
       }
 
-      // 5) OPTIONAL TOURS with both options
       if (optionalTours.length > 0) {
         const optionalWithBothOptions = optionalTours.map(opt => ({
           ...opt,
@@ -2710,7 +2133,6 @@ const TAB_LIST = [
         });
       }
 
-      // 6) EMI OPTIONS with both options
       if (emiLoanAmount && !isNaN(emiLoanAmount) && emiLoanAmount > 0) {
         await fetch(`${baseurl}/api/emi-options/emi/bulk`, {
           method: 'POST',
@@ -2726,7 +2148,6 @@ const TAB_LIST = [
         });
       }
 
-      // 7) HOTELS with both options
       if (hotelRows.length > 0) {
         const hotelsWithBothOptions = hotelRows.map(hotel => ({
           ...hotel,
@@ -2758,8 +2179,8 @@ const TAB_LIST = [
           remarks_option2: visaRemarksOption2,
           remarks_active: visaRemarksActiveOption
         })),
-        photo: [...photoItems, ...freeFlowPhotoEntries],
-        visa_fees: [...visaFeesRows].map((row, index) => ({
+        photo: [...photoItems],
+        visa_fees: visaFeesRows.map((row, index) => ({
           type: row.type,
           tourist: row.tourist || '',
           transit: row.transit || '',
@@ -2791,7 +2212,6 @@ const TAB_LIST = [
         }
       }
 
-      // 8) TRANSPORT with both options
       if (transports.length > 0) {
         const transportsWithBothOptions = transports.map(transport => ({
           ...transport,
@@ -2807,7 +2227,6 @@ const TAB_LIST = [
         });
       }
 
-      // 9) INCLUSIONS
       if (inclusions.length > 0) {
         await fetch(`${baseurl}/api/inclusions/bulk`, {
           method: 'POST',
@@ -2816,7 +2235,6 @@ const TAB_LIST = [
         });
       }
 
-      // 10) EXCLUSIONS
       if (exclusions.length > 0) {
         await fetch(`${baseurl}/api/exclusions/bulk`, {
           method: 'POST',
@@ -2825,7 +2243,6 @@ const TAB_LIST = [
         });
       }
 
-      // 11) BOOKING POI with both options
       if (bookingPois.length > 0) {
         const poisWithBothOptions = bookingPois.map(poi => ({
           ...poi,
@@ -2841,7 +2258,6 @@ const TAB_LIST = [
         });
       }
 
-      // 12) CANCELLATION with both options
       if (cancelPolicies.length > 0) {
         const policiesWithBothOptions = cancelPolicies.map(policy => ({
           ...policy,
@@ -2857,7 +2273,6 @@ const TAB_LIST = [
         });
       }
 
-      // 13) INSTRUCTIONS with both options
       if (instructions.length > 0) {
         const instructionsWithBothOptions = instructions.map(inst => ({
           item: instructionActiveOption === 'option1' ? instructionOption1 : instructionOption2,
@@ -2872,15 +2287,11 @@ const TAB_LIST = [
         });
       }
 
-      // 14) IMAGES
       if (imageFiles.length > 0) {
         const formDataImages = new FormData();
         imageFiles.forEach((file) => {
           formDataImages.append('images', file);
         });
-        if (imageCaption.trim()) {
-          formDataImages.append('caption', imageCaption.trim());
-        }
         await fetch(`${baseurl}/api/images/upload/${tourId}`, {
           method: 'POST',
           body: formDataImages
@@ -2896,7 +2307,6 @@ const TAB_LIST = [
     }
   };
 
-  // UPDATE EXISTING TOUR (PUT)
   const updateTour = async () => {
     if (!formData.tour_code.trim()) {
       setError('Tour code is required');
@@ -2914,7 +2324,6 @@ const TAB_LIST = [
       setError('');
       setSuccess('');
 
-      // 1) UPDATE TOUR BASIC DETAILS with all option fields
       const tourUpdateData = {
         title: formData.title.trim(),
         tour_type: formData.tour_type || 'individual',
@@ -2924,37 +2333,7 @@ const TAB_LIST = [
         overview: formData.overview || '',
         base_price_adult: Number(formData.base_price_adult) || 0,
         emi_price: formData.emi_price ? Number(formData.emi_price) : null,
-        is_international: 1,
-        cost_remarks_active: costRemarksActiveOption,
-        hotel_remarks_active: hotelRemarksActiveOption,
-        transport_remarks_active: flightRemarksActiveOption,
-        emi_remarks_active: emiRemarksActiveOption,
-        booking_poi_remarks_active: bookingPoiRemarksActiveOption,
-        cancellation_remarks_active: cancellationRemarksActiveOption,
-        optional_tour_remarks_active: optionalTourRemarksActiveOption,
-        departure_description_active: departureActiveOption,
-        instruction_description_active: instructionActiveOption,
-        visa_remarks_active: visaRemarksActiveOption,
-        cost_remarks_option1: costRemarksOption1,
-        cost_remarks_option2: costRemarksOption2,
-        hotel_remarks_option1: hotelRemarksOption1,
-        hotel_remarks_option2: hotelRemarksOption2,
-        transport_remarks_option1: flightRemarksOption1,
-        transport_remarks_option2: flightRemarksOption2,
-        emi_remarks_option1: emiRemarksOption1,
-        emi_remarks_option2: emiRemarksOption2,
-        booking_poi_remarks_option1: bookingPoiRemarksOption1,
-        booking_poi_remarks_option2: bookingPoiRemarksOption2,
-        cancellation_remarks_option1: cancellationRemarksOption1,
-        cancellation_remarks_option2: cancellationRemarksOption2,
-        optional_tour_remarks_option1: optionalTourRemarksOption1,
-        optional_tour_remarks_option2: optionalTourRemarksOption2,
-        departure_description_option1: departureOption1,
-        departure_description_option2: departureOption2,
-        instruction_description_option1: instructionOption1,
-        instruction_description_option2: instructionOption2,
-        visa_remarks_option1: visaRemarksOption1,
-        visa_remarks_option2: visaRemarksOption2
+        is_international: 1
       };
 
       const tourRes = await fetch(`${baseurl}/api/tours/${id}`, {
@@ -2968,7 +2347,6 @@ const TAB_LIST = [
         throw new Error(tourResponse.error || tourResponse.message || 'Failed to update tour');
       }
 
-      // 2) DELETE ALL EXISTING DATA
       const deleteEndpoints = [
         `${baseurl}/api/departures/bulk/${id}`,
         `${baseurl}/api/tour-costs/tour/${id}`,
@@ -2992,8 +2370,6 @@ const TAB_LIST = [
         }
       }
 
-      // 3) RE-ADD ALL UPDATED DATA
-      // Itineraries
       if (itineraries.length > 0) {
         const itineraryPayload = itineraries.map((item) => ({
           ...item,
@@ -3006,7 +2382,6 @@ const TAB_LIST = [
         });
       }
 
-      // Departures with both options
       if (departures.length > 0) {
         const departuresWithOptions = departures.map(dep => ({
           ...dep,
@@ -3023,7 +2398,6 @@ const TAB_LIST = [
         });
       }
 
-      // Tour Costs with both options
       if (tourCosts.length > 0) {
         const costsWithBothOptions = tourCosts.map(cost => ({
           ...cost,
@@ -3039,7 +2413,6 @@ const TAB_LIST = [
         });
       }
 
-      // Optional Tours with both options
       if (optionalTours.length > 0) {
         const optionalWithBothOptions = optionalTours.map(opt => ({
           ...opt,
@@ -3055,7 +2428,6 @@ const TAB_LIST = [
         });
       }
 
-      // EMI Options with both options
       if (emiLoanAmount && !isNaN(emiLoanAmount) && emiLoanAmount > 0) {
         await fetch(`${baseurl}/api/emi-options/emi/bulk`, {
           method: 'POST',
@@ -3071,7 +2443,6 @@ const TAB_LIST = [
         });
       }
 
-      // Hotels with both options
       if (hotelRows.length > 0) {
         const hotelsWithBothOptions = hotelRows.map(hotel => ({
           ...hotel,
@@ -3087,14 +2458,12 @@ const TAB_LIST = [
         });
       }
 
-      // Delete existing visa data
       try {
         await fetch(`${baseurl}/api/visa/tour/${id}`, { method: 'DELETE' });
       } catch (err) {
         console.warn('Failed to delete visa data:', err.message);
       }
 
-      // Upload visa form files
       const uploadedVisaForms = await uploadVisaFormFiles(id, visaFormItems);
 
       const visaData = {
@@ -3113,8 +2482,8 @@ const TAB_LIST = [
           remarks_option2: visaRemarksOption2,
           remarks_active: visaRemarksActiveOption
         })),
-        photo: [...photoItems, ...freeFlowPhotoEntries],
-        visa_fees: [...visaFeesRows].map((row, index) => ({
+        photo: [...photoItems],
+        visa_fees: visaFeesRows.map((row, index) => ({
           type: row.type,
           tourist: row.tourist || '',
           transit: row.transit || '',
@@ -3146,7 +2515,6 @@ const TAB_LIST = [
         }
       }
 
-      // Transport with both options
       if (transports.length > 0) {
         const transportsWithBothOptions = transports.map(transport => ({
           ...transport,
@@ -3162,7 +2530,6 @@ const TAB_LIST = [
         });
       }
 
-      // Inclusions
       if (inclusions.length > 0) {
         await fetch(`${baseurl}/api/inclusions/bulk`, {
           method: 'POST',
@@ -3171,7 +2538,6 @@ const TAB_LIST = [
         });
       }
 
-      // Exclusions
       if (exclusions.length > 0) {
         await fetch(`${baseurl}/api/exclusions/bulk`, {
           method: 'POST',
@@ -3180,7 +2546,6 @@ const TAB_LIST = [
         });
       }
 
-      // Booking POI with both options
       if (bookingPois.length > 0) {
         const poisWithBothOptions = bookingPois.map(poi => ({
           ...poi,
@@ -3196,7 +2561,6 @@ const TAB_LIST = [
         });
       }
 
-      // Cancellation with both options
       if (cancelPolicies.length > 0) {
         const policiesWithBothOptions = cancelPolicies.map(policy => ({
           ...policy,
@@ -3212,7 +2576,6 @@ const TAB_LIST = [
         });
       }
 
-      // Instructions with both options
       if (instructions.length > 0) {
         const instructionsWithBothOptions = instructions.map(inst => ({
           item: instructionActiveOption === 'option1' ? instructionOption1 : instructionOption2,
@@ -3227,15 +2590,11 @@ const TAB_LIST = [
         });
       }
 
-      // Images (only if new files added)
       if (imageFiles.length > 0) {
         const formDataImages = new FormData();
         imageFiles.forEach((file) => {
           formDataImages.append('images', file);
         });
-        if (imageCaption.trim()) {
-          formDataImages.append('caption', imageCaption.trim());
-        }
         await fetch(`${baseurl}/api/images/upload/${id}`, {
           method: 'POST',
           body: formDataImages
@@ -3250,48 +2609,6 @@ const TAB_LIST = [
     } finally {
       setLoading(false);
     }
-  };
-
-  const uploadVisaFormFiles = async (tourId, visaForms) => {
-    const uploadedForms = [];
-
-    for (const form of visaForms) {
-      const formData = {
-        type: form.type,
-        download_action: form.download_action,
-        fill_action: form.fill_action,
-        action1_file: null,
-        action2_file: null
-      };
-
-      // Upload action1_file (PDF) if exists
-      if (form.action1_file) {
-        if (typeof form.action1_file === 'object' && form.action1_file instanceof File) {
-          const fileName = await handleVisaFormFileUpload(tourId, form.type, 'action1', form.action1_file);
-          if (fileName) {
-            formData.action1_file = fileName;
-          }
-        } else if (typeof form.action1_file === 'string') {
-          formData.action1_file = form.action1_file;
-        }
-      }
-
-      // Upload action2_file (Word) if exists
-      if (form.action2_file) {
-        if (typeof form.action2_file === 'object' && form.action2_file instanceof File) {
-          const fileName = await handleVisaFormFileUpload(tourId, form.type, 'action2', form.action2_file);
-          if (fileName) {
-            formData.action2_file = fileName;
-          }
-        } else if (typeof form.action2_file === 'string') {
-          formData.action2_file = form.action2_file;
-        }
-      }
-
-      uploadedForms.push(formData);
-    }
-
-    return uploadedForms;
   };
 
   const handleSaveClick = () => {
@@ -3310,74 +2627,20 @@ const TAB_LIST = [
         }
       }
     } else {
-      let currentTabName = '';
-      let nextTabName = 'Next';
-      
+      // Automatic navigation - no confirmation popup
       if (activeTab === 'visa') {
         const currentSubTabIndex = visaSubTabs.indexOf(activeVisaSubTab);
-        if (currentSubTabIndex >= 0) {
-          const visaTabNames = {
-            'tourist': 'Tourist Visa',
-            'transit': 'Transit Visa',
-            'business': 'Business Visa',
-            'form': 'Visa Form',
-            'photo': 'Photo',
-            'fees': 'Visa Fees',
-            'submission': 'Submission & Pick Up'
-          };
-          currentTabName = visaTabNames[activeVisaSubTab] || activeVisaSubTab;
-          
-          if (currentSubTabIndex < visaSubTabs.length - 1) {
-            nextTabName = visaTabNames[visaSubTabs[currentSubTabIndex + 1]] || 'Next';
-          } else {
-            nextTabName = 'Booking POI';
+        
+        if (currentSubTabIndex < visaSubTabs.length - 1) {
+          setActiveVisaSubTab(visaSubTabs[currentSubTabIndex + 1]);
+        } else {
+          const currentIndex = TAB_LIST.indexOf(activeTab);
+          if (currentIndex < TAB_LIST.length - 1) {
+            setActiveTab(TAB_LIST[currentIndex + 1]);
           }
         }
       } else {
-        const tabNames = {
-          'basic': 'Basic Details',
-          'itineraries': 'Itineraries',
-          'departures': 'Departures',
-          'costs': 'Tour Cost',
-          'optionalTours': 'Optional Tours',
-          'emiOptions': 'EMI Options',
-          'inclusions': 'Inclusions',
-          'exclusions': 'Exclusions',
-          'transport': 'Transport',
-          'hotels': 'Hotels',
-          'visa': 'Visa',
-          'bookingPoi': 'Booking POI',
-          'cancellation': 'Cancellation Policy',
-          'instructions': 'Instructions',
-          'images': 'Images'
-        };
-        
-        currentTabName = tabNames[activeTab] || activeTab;
-        
-        const nextTabIndex = TAB_LIST.indexOf(activeTab) + 1;
-        if (nextTabIndex < TAB_LIST.length) {
-          nextTabName = tabNames[TAB_LIST[nextTabIndex]] || 'Next';
-        }
-      }
-      
-      const confirmMessage = `Do you want to save the ${currentTabName} data and continue to ${nextTabName}?`;
-      const confirmed = window.confirm(confirmMessage);
-      
-      if (confirmed) {
-        if (activeTab === 'visa') {
-          const currentSubTabIndex = visaSubTabs.indexOf(activeVisaSubTab);
-          
-          if (currentSubTabIndex < visaSubTabs.length - 1) {
-            setActiveVisaSubTab(visaSubTabs[currentSubTabIndex + 1]);
-          } else {
-            const currentIndex = TAB_LIST.indexOf(activeTab);
-            if (currentIndex < TAB_LIST.length - 1) {
-              setActiveTab(TAB_LIST[currentIndex + 1]);
-            }
-          }
-        } else {
-          goNext();
-        }
+        goNext();
       }
     }
   };
@@ -3394,10 +2657,8 @@ const TAB_LIST = [
           onClick: handleAddItinerary 
         };
       case 'departures':
-        return { 
-          label: editingType === 'departure' ? 'Update Departure' : '+ Add Departure', 
-          onClick: handleAddDeparture 
-        };
+        // No add button for Departures - data saved on main save only
+        return null;
       case 'costs':
         return { 
           label: editingType === 'cost' ? 'Update Cost Row' : '+ Add Cost Row', 
@@ -3469,10 +2730,8 @@ const TAB_LIST = [
           onClick: addCancelRow 
         };
       case 'instructions':
-        return { 
-          label: editingType === 'instruction' ? 'Update Instruction' : '+ Add Instruction', 
-          onClick: addInstruction 
-        };
+        // No add button for Instructions - data saved on main save only
+        return null;
       default:
         return null;
     }
@@ -3488,7 +2747,6 @@ const TAB_LIST = [
         {error && <Alert variant="danger">{error}</Alert>}
         {success && <Alert variant="success">{success}</Alert>}
 
-        {/* ======== BUTTONS ======== */}
         <div className="d-flex justify-content-end gap-2 mt-4 mb-4">
           <Button
             variant="secondary"
@@ -3523,7 +2781,7 @@ const TAB_LIST = [
           >
             {loading ? 'Saving...' : 
             isLastTab ? (isEditMode ? 'Update All' : 'Save All') : 
-            activeTab === 'visa' ? `Save & Next (${visaSubTabs.indexOf(activeVisaSubTab) + 1}/${visaSubTabs.length})` : 
+            activeTab === 'visa' ? `Next (${visaSubTabs.indexOf(activeVisaSubTab) + 1}/${visaSubTabs.length})` : 
             'Save & Continue'}
           </Button>
         </div>
@@ -3630,6 +2888,7 @@ const TAB_LIST = [
                 </Row>
               </Tab>
 
+              {/* ====== ITINERARIES TAB ====== */}
               <Tab eventKey="itineraries" title="Itineraries">
                 <Row>
                   <Col md={2}>
@@ -3746,9 +3005,9 @@ const TAB_LIST = [
                 )}
               </Tab>
 
+              {/* ====== DEPARTURES TAB ====== */}
               <Tab eventKey="departures" title="Departures">
                 <Form.Group className="mb-3">
-                  {/* <Form.Label>Departures Description</Form.Label> */}
                   <OptionTabs
                     activeOption={departureActiveOption}
                     onOptionChange={setDepartureActiveOption}
@@ -3802,6 +3061,7 @@ const TAB_LIST = [
                 )}
               </Tab>
 
+              {/* ====== COSTS TAB ====== */}
               <Tab eventKey="costs" title="Tour Cost">
                 <Row className="align-items-end">
                   <Col md={2}>
@@ -3878,7 +3138,6 @@ const TAB_LIST = [
                 </Row>
 
                 <Form.Group className="mt-3">
-                  {/* <Form.Label>Cost Remarks</Form.Label> */}
                   <OptionTabs
                     activeOption={costRemarksActiveOption}
                     onOptionChange={handleCostRemarksActiveChange}
@@ -3942,6 +3201,7 @@ const TAB_LIST = [
                 )}
               </Tab>
 
+              {/* ====== OPTIONAL TOURS TAB ====== */}
               <Tab eventKey="optionalTours" title="Optional Tour">
                 <Row className="align-items-end">
                   <Col md={4}>
@@ -3985,7 +3245,6 @@ const TAB_LIST = [
                 </Row>
 
                 <Form.Group className="mt-3">
-                  {/* <Form.Label>Optional Tour Remarks</Form.Label> */}
                   <OptionTabs
                     activeOption={optionalTourRemarksActiveOption}
                     onOptionChange={handleOptionalTourRemarksActiveChange}
@@ -4043,6 +3302,7 @@ const TAB_LIST = [
                 )}
               </Tab>
 
+              {/* ====== EMI OPTIONS TAB ====== */}
               <Tab eventKey="emiOptions" title="EMI Options">
                 <Card className="mb-4">
                   <Card.Body>
@@ -4163,7 +3423,6 @@ const TAB_LIST = [
                 </Table>
 
                 <Form.Group className="mt-4">
-                  {/* <Form.Label>EMI Remarks</Form.Label> */}
                   <OptionTabs
                     activeOption={emiRemarksActiveOption}
                     onOptionChange={handleEmiRemarksActiveChange}
@@ -4177,6 +3436,7 @@ const TAB_LIST = [
                 </Form.Group>
               </Tab>
 
+              {/* ====== INCLUSIONS TAB ====== */}
               <Tab eventKey="inclusions" title="Inclusions">
                 <Form.Group className="mb-3">
                   <Form.Label>Add Inclusion</Form.Label>
@@ -4230,6 +3490,7 @@ const TAB_LIST = [
                 )}
               </Tab>
 
+              {/* ====== EXCLUSIONS TAB ====== */}
               <Tab eventKey="exclusions" title="Exclusions">
                 <Form.Group className="mb-3">
                   <Form.Label>Add Exclusion</Form.Label>
@@ -4283,6 +3544,7 @@ const TAB_LIST = [
                 )}
               </Tab>
 
+              {/* ====== TRANSPORT TAB ====== */}
               <Tab eventKey="transport" title="Flights">
                 <Row className="mt-3">
                   <Col md={12}>
@@ -4300,7 +3562,6 @@ const TAB_LIST = [
                 </Row>
 
                 <Form.Group className="mt-3">
-                  {/* <Form.Label>Flights Remarks</Form.Label> */}
                   <OptionTabs
                     activeOption={flightRemarksActiveOption}
                     onOptionChange={handleFlightRemarksActiveChange}
@@ -4354,6 +3615,7 @@ const TAB_LIST = [
                 )}
               </Tab>
 
+              {/* ====== HOTELS TAB ====== */}
               <Tab eventKey="hotels" title="Hotels">
                 <Row className="align-items-end">
                   <Col md={6}>
@@ -4422,7 +3684,6 @@ const TAB_LIST = [
                 </Row>
 
                 <Form.Group className="mt-3">
-                  {/* <Form.Label>Hotel Remarks</Form.Label> */}
                   <OptionTabs
                     activeOption={hotelRemarksActiveOption}
                     onOptionChange={handleHotelRemarksActiveChange}
@@ -4484,6 +3745,7 @@ const TAB_LIST = [
                 )}
               </Tab>
 
+              {/* ====== VISA TAB ====== */}
               <Tab eventKey="visa" title="Visa">
                 <Tabs
                   activeKey={activeVisaSubTab}
@@ -4738,7 +4000,7 @@ const TAB_LIST = [
                                             <strong>✓ Uploaded:</strong>
                                           </small>
                                           <small className="text-muted d-block">
-                                            {typeof pdfFile === 'string' ? pdfFile : pdfFile.name}
+                                            {typeof pdfFile === 'string' ? pdfFile.substring(pdfFile.lastIndexOf('/') + 1) : pdfFile.name}
                                           </small>
                                         </div>
                                         
@@ -4786,7 +4048,7 @@ const TAB_LIST = [
                                             <strong>✓ Uploaded:</strong>
                                           </small>
                                           <small className="text-muted d-block">
-                                            {typeof wordFile === 'string' ? wordFile : wordFile.name}
+                                            {typeof wordFile === 'string' ? wordFile.substring(wordFile.lastIndexOf('/') + 1) : wordFile.name}
                                           </small>
                                         </div>
                                         
@@ -4809,6 +4071,23 @@ const TAB_LIST = [
                                 </td>
                                 <td>
                                   <div className="d-flex flex-column gap-1">
+                                    {editingVisaFormIndex === idx ? (
+                                      <Button
+                                        variant="success"
+                                        size="sm"
+                                        onClick={updateVisaFormItem}
+                                      >
+                                        Save
+                                      </Button>
+                                    ) : (
+                                      <Button
+                                        variant="outline-warning"
+                                        size="sm"
+                                        onClick={() => editVisaFormItem(idx)}
+                                      >
+                                        <Pencil size={14} />
+                                      </Button>
+                                    )}
                                     <Button
                                       variant="outline-danger"
                                       size="sm"
@@ -4830,11 +4109,9 @@ const TAB_LIST = [
                       </Table>
                     )}
 
-                    {/* Visa Remarks Section */}
                     <Card className="mt-3">
                       <Card.Body>
                         <Form.Group>
-                          {/* <Form.Label>Visa Remarks</Form.Label> */}
                           <OptionTabs
                             activeOption={visaRemarksActiveOption}
                             onOptionChange={handleVisaRemarksActiveChange}
@@ -5099,6 +4376,7 @@ const TAB_LIST = [
                 </Tabs>
               </Tab>
 
+              {/* ====== BOOKING POI TAB ====== */}
               <Tab eventKey="bookingPoi" title="Booking POI">
                 <Form.Group className="mb-3">
                   <Row>
@@ -5125,7 +4403,6 @@ const TAB_LIST = [
                   </Row>
 
                   <Form.Group className="mt-3">
-                    {/* <Form.Label>Booking Policy Remarks</Form.Label> */}
                     <OptionTabs
                       activeOption={bookingPoiRemarksActiveOption}
                       onOptionChange={handleBookingPoiRemarksActiveChange}
@@ -5182,6 +4459,7 @@ const TAB_LIST = [
                 )}
               </Tab>
 
+              {/* ====== CANCELLATION POLICY TAB ====== */}
               <Tab eventKey="cancellation" title="Cancellation Policy">
                 <Row>
                   <Col md={8}>
@@ -5210,7 +4488,6 @@ const TAB_LIST = [
                 </Row>
 
                 <Form.Group className="mt-3">
-                  {/* <Form.Label>Cancellation Remarks</Form.Label> */}
                   <OptionTabs
                     activeOption={cancellationRemarksActiveOption}
                     onOptionChange={handleCancellationRemarksActiveChange}
@@ -5241,7 +4518,7 @@ const TAB_LIST = [
                             <div style={{ maxHeight: '100px', overflowY: 'auto' }}>
                               {c.cancellation_policy}
                             </div>
-                          </td>
+                           </td>
                           <td>{c.charges || "-"}</td>
                           <td>
                             <div className="d-flex gap-1">
@@ -5270,9 +4547,9 @@ const TAB_LIST = [
                 )}
               </Tab>
 
+              {/* ====== INSTRUCTIONS TAB ====== */}
               <Tab eventKey="instructions" title="Instructions">
                 <Form.Group className="mb-3">
-                  {/* <Form.Label>Add Instruction</Form.Label> */}
                   <OptionTabs
                     activeOption={instructionActiveOption}
                     onOptionChange={setInstructionActiveOption}
@@ -5326,8 +4603,8 @@ const TAB_LIST = [
                 )}
               </Tab>
 
+              {/* ====== IMAGES TAB ====== */}
               <Tab eventKey="images" title="Images">
-                {/* Section for adding NEW images */}
                 <Card className="mb-4">
                   <Card.Header>Add New Images</Card.Header>
                   <Card.Body>
@@ -5342,16 +4619,6 @@ const TAB_LIST = [
                       <Form.Text className="text-muted">
                         You can select multiple images (JPEG, PNG, WebP). Max 5MB per image.
                       </Form.Text>
-                    </Form.Group>
-                    
-                    <Form.Group className="mb-3">
-                      <Form.Label>Caption (optional - applies to all new images)</Form.Label>
-                      <Form.Control
-                        type="text"
-                        value={imageCaption}
-                        onChange={(e) => setImageCaption(e.target.value)}
-                        placeholder="Enter a caption for the new images"
-                      />
                     </Form.Group>
                     
                     {imagePreviews.length > 0 && (
@@ -5385,7 +4652,6 @@ const TAB_LIST = [
                   </Card.Body>
                 </Card>
 
-                {/* Section for EXISTING images with edit/delete */}
                 <Card>
                   <Card.Header>Existing Images</Card.Header>
                   <Card.Body>

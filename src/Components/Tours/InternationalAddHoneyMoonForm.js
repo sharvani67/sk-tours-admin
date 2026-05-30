@@ -18,6 +18,46 @@ import Navbar from '../../Shared/Navbar/Navbar';
 import { baseurl } from '../../Api/Baseurl';
 import { Pencil, Trash } from 'react-bootstrap-icons';
 
+// ======================
+// OPTIONTABS – moved outside component to avoid losing input focus
+// ======================
+const OptionTabs = ({
+  activeOption,
+  onOptionChange,
+  option1Value,
+  option2Value,
+  onOption1Change,
+  onOption2Change,
+  placeholder
+}) => (
+  <div>
+    <Tabs
+      activeKey={activeOption}
+      onSelect={(k) => onOptionChange(k)}
+      className="mb-3"
+    >
+      <Tab eventKey="option1" title="Option 1">
+        <Form.Control
+          as="textarea"
+          rows={3}
+          value={option1Value}
+          onChange={(e) => onOption1Change(e.target.value)}
+          placeholder={placeholder || "Enter content for Option 1"}
+        />
+      </Tab>
+      <Tab eventKey="option2" title="Option 2">
+        <Form.Control
+          as="textarea"
+          rows={3}
+          value={option2Value}
+          onChange={(e) => onOption2Change(e.target.value)}
+          placeholder={placeholder || "Enter content for Option 2"}
+        />
+      </Tab>
+    </Tabs>
+  </div>
+);
+
 const AddHoneyMoonTour = () => {
   const navigate = useNavigate();
   const { id } = useParams();
@@ -58,12 +98,12 @@ const AddHoneyMoonTour = () => {
   // STATE FOR OPTION TABS (Option 1 / Option 2)
   // ========================
   
-  // For Departures Description
+  // For Departures Description - Auto-save via OptionTabs (no Add button needed)
   const [departureActiveOption, setDepartureActiveOption] = useState('option1');
   const [departureOption1, setDepartureOption1] = useState('');
   const [departureOption2, setDepartureOption2] = useState('');
   
-  // For Instructions (Add Instruction)
+  // For Instructions - Auto-save via OptionTabs (no Add button needed)
   const [instructionActiveOption, setInstructionActiveOption] = useState('option1');
   const [instructionOption1, setInstructionOption1] = useState('');
   const [instructionOption2, setInstructionOption2] = useState('');
@@ -107,6 +147,28 @@ const AddHoneyMoonTour = () => {
   const [touristVisaRemarksActiveOption, setTouristVisaRemarksActiveOption] = useState('option1');
   const [touristVisaRemarksOption1, setTouristVisaRemarksOption1] = useState('');
   const [touristVisaRemarksOption2, setTouristVisaRemarksOption2] = useState('');
+
+  // Auto-save departure description when OptionTabs content changes
+  useEffect(() => {
+    const currentDepartureDescription = departureActiveOption === 'option1' ? departureOption1 : departureOption2;
+    setFormData(prev => ({
+      ...prev,
+      departure_description: currentDepartureDescription,
+      departure_description_option1: departureOption1,
+      departure_description_option2: departureOption2
+    }));
+  }, [departureOption1, departureOption2, departureActiveOption]);
+
+  // Auto-save instruction when OptionTabs content changes
+  useEffect(() => {
+    const currentInstruction = instructionActiveOption === 'option1' ? instructionOption1 : instructionOption2;
+    setFormData(prev => ({
+      ...prev,
+      instruction_description: currentInstruction,
+      instruction_description_option1: instructionOption1,
+      instruction_description_option2: instructionOption2
+    }));
+  }, [instructionOption1, instructionOption2, instructionActiveOption]);
 
   // Dropdowns
   const [categories, setCategories] = useState([]);
@@ -157,16 +219,7 @@ const AddHoneyMoonTour = () => {
     tourist_visa_remarks_option2: ""
   });
 
-  // DEPARTURES
-  const [departureForm, setDepartureForm] = useState({
-    departure_date: '',
-    return_date: '',
-    adult_price: '',
-    child_price: '',
-    infant_price: '',
-    description: '',
-    total_seats: ''
-  });
+  // DEPARTURES - No longer needed as separate items (auto-saved via OptionTabs)
   const [departures, setDepartures] = useState([]);
 
   // EXCLUSIONS
@@ -249,9 +302,8 @@ const AddHoneyMoonTour = () => {
   });
   const [cancelPolicies, setCancelPolicies] = useState([]);
 
-  // INSTRUCTIONS
-  const [instructionText, setInstructionText] = useState('');
-  const [instructions, setInstructions] = useState([]);
+  // INSTRUCTIONS - No longer needed as separate items (auto-saved via OptionTabs)
+  // The instructions are now directly in formData
 
   // ITINERARIES
   const [itineraryItem, setItineraryItem] = useState({
@@ -332,26 +384,35 @@ const AddHoneyMoonTour = () => {
   useEffect(() => {
     if (!isEditMode) {
       // Prefill content for Option 1 and Option 2
-      setDepartureOption1("Standard departure with regular transfers and shared sightseeing.");
-      setDepartureOption2("Premium departure with private transfers and exclusive sightseeing.");
-      setInstructionOption1("Please carry valid ID proof. Reporting time is 2 hours before departure.");
-      setInstructionOption2("Passport required for international travel. Visa assistance available.");
-      setCostRemarksOption1("Please note that while the tour price has been indicated, it may vary.");
-      setCostRemarksOption2("Premium package includes all taxes and surcharges.");
-      setOptionalTourRemarksOption1("Optional tours are subject to availability and weather conditions.");
-      setOptionalTourRemarksOption2("Exclusive optional tours with private guide.");
-      setEmiRemarksOption1("EMI options available with 18% interest rate.");
-      setEmiRemarksOption2("No cost EMI available on select credit cards.");
-      setFlightRemarksOption1("Flight prices are indicative and subject to change.");
-      setFlightRemarksOption2("Guaranteed lowest airfare. Flexible cancellation.");
-      setHotelRemarksOption1("Hotel categories are subject to availability.");
-      setHotelRemarksOption2("Premium hotel collection with guaranteed upgrades.");
-      setBookingPoiRemarksOption1("Booking amount is non-refundable.");
-      setBookingPoiRemarksOption2("Flexible booking policy with free cancellation.");
-      setCancellationRemarksOption1("Cancellation charges apply as per the policy.");
-      setCancellationRemarksOption2("Full refund for cancellations 45+ days before departure.");
-      setTouristVisaRemarksOption1("Visa requirements are subject to change based on embassy regulations.");
-      setTouristVisaRemarksOption2("Premium visa service with express processing.");
+      setDepartureOption1("Standard departure with regular transfers and shared sightseeing. Departure dates are fixed and subject to minimum group size of 6 persons. Check-in time 12 PM and check-out time 10 AM.");
+      setDepartureOption2("Premium departure with private transfers and exclusive sightseeing. Flexible departure dates available for minimum 2 persons. Early check-in and late check-out available on request.");
+      
+      setInstructionOption1("Please carry valid ID proof. Reporting time is 2 hours before departure. Carry comfortable clothing and walking shoes. Follow the itinerary timings strictly. Carry necessary medications.");
+      setInstructionOption2("Passport required for international travel. Visa assistance available. Travel insurance is mandatory. Medical fitness certificate required for adventure activities. Emergency contact numbers provided.");
+      
+      setCostRemarksOption1("Please note that while the tour price has been indicated, it may vary if you choose dates closer to departure or during periods when the season transitions from low to high. We therefore kindly request you to confirm the final tour price before proceeding with your booking and to mention the tour code when inquiring to receive the exact cost. Child pricing is calculated based on the standard hotel category, and if you choose Deluxe or Executive accommodations, child rates may be adjusted accordingly.");
+      setCostRemarksOption2("Premium package includes all taxes and surcharges. Price guaranteed for next 30 days. Early bird discount available for bookings made 60 days in advance. Group discount applicable for 10+ persons. Customized itineraries available on request.");
+      
+      setOptionalTourRemarksOption1("Optional tours are subject to availability and weather conditions. Prices are per person. Minimum 4 persons required for each optional tour. Book at least 2 days in advance. Cancellation 24 hours before for 50% refund.");
+      setOptionalTourRemarksOption2("Exclusive optional tours with private guide. Flexible timing available. Includes lunch and entry fees. Priority access to attractions. Cancel 24 hours before for full refund. Customized private tours available.");
+      
+      setEmiRemarksOption1("EMI options available with 18% interest rate. Processing fee of 2% applicable. Terms and conditions apply. Credit cards from all major banks accepted. Minimum loan amount ₹10,000.");
+      setEmiRemarksOption2("No cost EMI available on select credit cards. Zero processing fee for limited period. Flexible tenure up to 36 months. Contact bank for pre-approved offers. Instant approval available.");
+      
+      setFlightRemarksOption1("Flight prices are indicative and subject to change at the time of booking. Airline and timing subject to availability. Baggage allowance as per airline policy. Meals included as per airline standards.");
+      setFlightRemarksOption2("Guaranteed lowest airfare. Flexible cancellation up to 24 hours. Priority boarding and extra baggage included. Seat selection available complimentary. Lounge access at major airports.");
+      
+      setHotelRemarksOption1("Hotel categories are subject to availability. Standard, Deluxe, and Executive categories based on room types and amenities. Early check-in subject to availability. Check-out time 10 AM.");
+      setHotelRemarksOption2("Premium hotel collection with guaranteed upgrades. Welcome drinks and late checkout included. Complimentary breakfast and airport transfers. Best rate guarantee. 24/7 concierge service available.");
+      
+      setBookingPoiRemarksOption1("Booking amount is non-refundable. Balance payment to be made as per the payment schedule. 50% payment required 30 days before departure. 100% payment required 15 days before departure.");
+      setBookingPoiRemarksOption2("Flexible booking policy with free cancellation up to 15 days. Pay only 10% to book. Zero cancellation charges for COVID-related issues. Easy payment plans available.");
+      
+      setCancellationRemarksOption1("Cancellation charges apply as per the policy mentioned above. No refunds for no-shows. 50% refund for cancellations made 30 days before departure. 25% refund for cancellations made 15 days before departure.");
+      setCancellationRemarksOption2("Full refund for cancellations 45+ days before departure. 75% refund for 30-44 days. 50% refund for 15-29 days. Travel credit available instead of refund. Free date change once allowed.");
+      
+      setTouristVisaRemarksOption1("Visa requirements are subject to change based on embassy regulations. Processing time may vary. It is recommended to apply at least 3-4 weeks before departure. All documents must be original and valid for at least 6 months from the date of return.");
+      setTouristVisaRemarksOption2("E-visa available for eligible nationalities. Visa on arrival options. Express processing available for additional fee. Multiple entry visa options. Visa assistance provided throughout the process.");
 
       // Set default active options
       setDepartureActiveOption('option1');
@@ -364,6 +425,41 @@ const AddHoneyMoonTour = () => {
       setBookingPoiRemarksActiveOption('option1');
       setCancellationRemarksActiveOption('option1');
       setTouristVisaRemarksActiveOption('option1');
+
+      // Set formData with prefill values
+      setFormData(prev => ({
+        ...prev,
+        departure_description: departureActiveOption === 'option1' ? departureOption1 : departureOption2,
+        departure_description_option1: departureOption1,
+        departure_description_option2: departureOption2,
+        instruction_description: instructionActiveOption === 'option1' ? instructionOption1 : instructionOption2,
+        instruction_description_option1: instructionOption1,
+        instruction_description_option2: instructionOption2,
+        cost_remarks: costRemarksActiveOption === 'option1' ? costRemarksOption1 : costRemarksOption2,
+        cost_remarks_option1: costRemarksOption1,
+        cost_remarks_option2: costRemarksOption2,
+        optional_tour_remarks: optionalTourRemarksActiveOption === 'option1' ? optionalTourRemarksOption1 : optionalTourRemarksOption2,
+        optional_tour_remarks_option1: optionalTourRemarksOption1,
+        optional_tour_remarks_option2: optionalTourRemarksOption2,
+        emi_remarks: emiRemarksActiveOption === 'option1' ? emiRemarksOption1 : emiRemarksOption2,
+        emi_remarks_option1: emiRemarksOption1,
+        emi_remarks_option2: emiRemarksOption2,
+        transport_remarks: flightRemarksActiveOption === 'option1' ? flightRemarksOption1 : flightRemarksOption2,
+        transport_remarks_option1: flightRemarksOption1,
+        transport_remarks_option2: flightRemarksOption2,
+        hotel_remarks: hotelRemarksActiveOption === 'option1' ? hotelRemarksOption1 : hotelRemarksOption2,
+        hotel_remarks_option1: hotelRemarksOption1,
+        hotel_remarks_option2: hotelRemarksOption2,
+        booking_poi_remarks: bookingPoiRemarksActiveOption === 'option1' ? bookingPoiRemarksOption1 : bookingPoiRemarksOption2,
+        booking_poi_remarks_option1: bookingPoiRemarksOption1,
+        booking_poi_remarks_option2: bookingPoiRemarksOption2,
+        cancellation_remarks: cancellationRemarksActiveOption === 'option1' ? cancellationRemarksOption1 : cancellationRemarksOption2,
+        cancellation_remarks_option1: cancellationRemarksOption1,
+        cancellation_remarks_option2: cancellationRemarksOption2,
+        tourist_visa_remarks: touristVisaRemarksActiveOption === 'option1' ? touristVisaRemarksOption1 : touristVisaRemarksOption2,
+        tourist_visa_remarks_option1: touristVisaRemarksOption1,
+        tourist_visa_remarks_option2: touristVisaRemarksOption2
+      }));
 
       // Prefill Booking Policy if empty
       if (bookingPois.length === 0) {
@@ -423,14 +519,6 @@ const AddHoneyMoonTour = () => {
     });
     setEditingItem(item);
     setEditingType('itinerary');
-    setEditIndex(idx);
-  };
-
-  const editDeparture = (idx) => {
-    const departure = departures[idx];
-    setDepartureForm(departure);
-    setEditingItem(departure);
-    setEditingType('departure');
     setEditIndex(idx);
   };
 
@@ -496,14 +584,6 @@ const AddHoneyMoonTour = () => {
     setCancelItem(policy);
     setEditingItem(policy);
     setEditingType('cancellation');
-    setEditIndex(idx);
-  };
-
-  const editInstruction = (idx) => {
-    const instruction = instructions[idx];
-    setInstructionText(instruction);
-    setEditingItem(instruction);
-    setEditingType('instruction');
     setEditIndex(idx);
   };
 
@@ -600,37 +680,6 @@ const AddHoneyMoonTour = () => {
       title: '',
       description: '',
       meals: { breakfast: false, lunch: false, dinner: false }
-    });
-    resetEditing();
-  };
-
-  const handleAddDeparture = () => {
-    const currentDescription = departureActiveOption === 'option1' ? departureOption1 : departureOption2;
-    
-    if (!currentDescription.trim()) return;
-    
-    const newItem = { 
-      ...departureForm, 
-      description: currentDescription,
-      description_option: departureActiveOption
-    };
-    
-    if (editingType === 'departure' && editIndex !== -1) {
-      const updated = [...departures];
-      updated[editIndex] = newItem;
-      setDepartures(updated);
-    } else {
-      setDepartures(prev => [...prev, newItem]);
-    }
-
-    setDepartureForm({
-      departure_date: '',
-      return_date: '',
-      adult_price: '',
-      child_price: '',
-      infant_price: '',
-      description: '',
-      total_seats: ''
     });
     resetEditing();
   };
@@ -781,23 +830,6 @@ const AddHoneyMoonTour = () => {
     }
     
     setCancelItem({ cancellation_policy: "", charges: "" });
-    resetEditing();
-  };
-
-  const addInstruction = () => {
-    const currentInstruction = instructionActiveOption === 'option1' ? instructionOption1 : instructionOption2;
-    const txt = currentInstruction.trim();
-    if (!txt) return;
-    
-    if (editingType === 'instruction' && editIndex !== -1) {
-      const updated = [...instructions];
-      updated[editIndex] = txt;
-      setInstructions(updated);
-    } else {
-      setInstructions(prev => [...prev, txt]);
-    }
-    
-    setInstructionText('');
     resetEditing();
   };
 
@@ -986,13 +1018,6 @@ const AddHoneyMoonTour = () => {
     }
   };
 
-  const handleRemoveDeparture = (idx) => {
-    const confirmDelete = window.confirm('Are you sure you want to remove this departure?');
-    if (confirmDelete) {
-      setDepartures(prev => prev.filter((_, i) => i !== idx));
-    }
-  };
-
   const removeCostRow = (idx) => {
     const confirmDelete = window.confirm('Are you sure you want to remove this cost row?');
     if (confirmDelete) {
@@ -1046,13 +1071,6 @@ const AddHoneyMoonTour = () => {
     const confirmDelete = window.confirm('Are you sure you want to remove this cancellation policy?');
     if (confirmDelete) {
       setCancelPolicies(prev => prev.filter((_, i) => i !== idx));
-    }
-  };
-
-  const removeInstruction = (idx) => {
-    const confirmDelete = window.confirm('Are you sure you want to remove this instruction?');
-    if (confirmDelete) {
-      setInstructions(prev => prev.filter((_, i) => i !== idx));
     }
   };
 
@@ -1164,17 +1182,6 @@ const AddHoneyMoonTour = () => {
     setFormData((prev) => ({
       ...prev,
       [name]: finalValue
-    }));
-  };
-
-  const handleDepartureChange = (e) => {
-    const { name, value } = e.target;
-    const numericFields = ['adult_price', 'child_price', 'total_seats', 'infant_price'];
-    setDepartureForm((prev) => ({
-      ...prev,
-      [name]: numericFields.includes(name)
-        ? value === '' ? '' : Number(value)
-        : value
     }));
   };
 
@@ -1825,7 +1832,12 @@ const AddHoneyMoonTour = () => {
         let departureDescOpt2 = '';
         let departureDescActive = 'option1';
         
-        if (data.departures && data.departures.length > 0) {
+        if (basic.departure_description) {
+          departureDescValue = basic.departure_description;
+          departureDescOpt1 = basic.departure_description_option1 || '';
+          departureDescOpt2 = basic.departure_description_option2 || '';
+          departureDescActive = basic.departure_description_active || 'option1';
+        } else if (data.departures && data.departures.length > 0) {
           const firstDeparture = data.departures[0];
           departureDescValue = firstDeparture.description || '';
           departureDescOpt1 = firstDeparture.description_option1 || '';
@@ -1838,7 +1850,12 @@ const AddHoneyMoonTour = () => {
         let instructionDescOpt2 = '';
         let instructionDescActive = 'option1';
         
-        if (data.instructions && data.instructions.length > 0) {
+        if (basic.instruction_description) {
+          instructionDescValue = basic.instruction_description;
+          instructionDescOpt1 = basic.instruction_description_option1 || '';
+          instructionDescOpt2 = basic.instruction_description_option2 || '';
+          instructionDescActive = basic.instruction_description_active || 'option1';
+        } else if (data.instructions && data.instructions.length > 0) {
           const firstInstruction = data.instructions[0];
           instructionDescValue = firstInstruction.item || '';
           instructionDescOpt1 = firstInstruction.item_option1 || '';
@@ -1851,7 +1868,12 @@ const AddHoneyMoonTour = () => {
         let touristVisaRemarksOpt2 = '';
         let touristVisaRemarksActive = 'option1';
         
-        if (data.visa_forms && data.visa_forms.length > 0) {
+        if (basic.tourist_visa_remarks) {
+          touristVisaRemarksValue = basic.tourist_visa_remarks;
+          touristVisaRemarksOpt1 = basic.tourist_visa_remarks_option1 || '';
+          touristVisaRemarksOpt2 = basic.tourist_visa_remarks_option2 || '';
+          touristVisaRemarksActive = basic.tourist_visa_remarks_active || 'option1';
+        } else if (data.visa_forms && data.visa_forms.length > 0) {
           const firstVisaForm = data.visa_forms[0];
           touristVisaRemarksValue = firstVisaForm.remarks || '';
           touristVisaRemarksOpt1 = firstVisaForm.remarks_option1 || '';
@@ -1953,22 +1975,6 @@ const AddHoneyMoonTour = () => {
           setItineraries(formattedItineraries);
         }
 
-        if (data.departures && Array.isArray(data.departures)) {
-          const formattedDepartures = data.departures.map(dept => ({
-            departure_date: dept.departure_date || '',
-            return_date: dept.return_date || '',
-            adult_price: dept.adult_price || '',
-            child_price: dept.child_price || '',
-            infant_price: dept.infant_price || '',
-            description: dept.description || '',
-            description_option1: dept.description_option1 || '',
-            description_option2: dept.description_option2 || '',
-            description_active: dept.description_active || 'option1',
-            total_seats: dept.total_seats || ''
-          }));
-          setDepartures(formattedDepartures);
-        }
-
         if (data.inclusions && Array.isArray(data.inclusions)) {
           const inclusionItems = data.inclusions.map(inc => inc.item);
           setInclusions(inclusionItems);
@@ -2066,16 +2072,6 @@ const AddHoneyMoonTour = () => {
             cancellation_remarks_active: policy.cancellation_remarks_active || 'option1'
           }));
           setCancelPolicies(formattedPolicies);
-        }
-
-        if (data.instructions && Array.isArray(data.instructions)) {
-          const formattedInstructions = data.instructions.map(inst => ({
-            item: inst.item,
-            item_option1: inst.item_option1 || '',
-            item_option2: inst.item_option2 || '',
-            item_active: inst.item_active || 'option1'
-          }));
-          setInstructions(formattedInstructions.map(inst => inst.item));
         }
 
         // Load Visa Data
@@ -2331,22 +2327,6 @@ const AddHoneyMoonTour = () => {
         });
       }
 
-      if (departures.length > 0) {
-        const departuresWithOptions = departures.map(dep => ({
-          ...dep,
-          tour_type: 'Honeymoon',
-          description_option1: departureOption1,
-          description_option2: departureOption2,
-          description_active: departureActiveOption,
-          description: departureActiveOption === 'option1' ? departureOption1 : departureOption2
-        }));
-        await fetch(`${baseurl}/api/departures/bulk`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ tour_id: tourId, departures: departuresWithOptions })
-        });
-      }
-
       if (tourCosts.length > 0) {
         const costsWithBothOptions = tourCosts.map(cost => ({
           ...cost,
@@ -2468,18 +2448,37 @@ const AddHoneyMoonTour = () => {
         });
       }
 
-      if (instructions.length > 0) {
-        const instructionsWithBothOptions = instructions.map(inst => ({
-          item: instructionActiveOption === 'option1' ? instructionOption1 : instructionOption2,
-          item_option1: instructionOption1,
-          item_option2: instructionOption2,
-          item_active: instructionActiveOption
-        }));
+      // Save departure description as separate API call
+      const currentDepartureDescription = departureActiveOption === 'option1' ? departureOption1 : departureOption2;
+      if (currentDepartureDescription.trim()) {
+        await fetch(`${baseurl}/api/tour-departures/description/${tourId}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            description: currentDepartureDescription,
+            description_option1: departureOption1,
+            description_option2: departureOption2,
+            description_active: departureActiveOption
+          })
+        }).catch(err => console.warn('Failed to save departure description:', err));
+      }
+
+      // Save instruction as separate API call (single instruction)
+      const currentInstruction = instructionActiveOption === 'option1' ? instructionOption1 : instructionOption2;
+      if (currentInstruction.trim()) {
         await fetch(`${baseurl}/api/tour-instructions/bulk`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ tour_id: tourId, items: instructionsWithBothOptions })
-        });
+          body: JSON.stringify({ 
+            tour_id: tourId, 
+            items: [{
+              item: currentInstruction,
+              item_option1: instructionOption1,
+              item_option2: instructionOption2,
+              item_active: instructionActiveOption
+            }] 
+          })
+        }).catch(err => console.warn('Failed to save instruction:', err));
       }
 
       // Visa Data
@@ -2616,7 +2615,6 @@ const AddHoneyMoonTour = () => {
       }
 
       const deleteEndpoints = [
-        `${baseurl}/api/departures/bulk/${id}`,
         `${baseurl}/api/tour-costs/tour/${id}`,
         `${baseurl}/api/optional-tours/tour/${id}`,
         `${baseurl}/api/emi-options/tour/${id}`,
@@ -2628,7 +2626,8 @@ const AddHoneyMoonTour = () => {
         `${baseurl}/api/exclusions/tour/${id}`,
         `${baseurl}/api/inclusions/tour/${id}`,
         `${baseurl}/api/itineraries/tour/${id}`,
-        `${baseurl}/api/visa/tour/${id}`
+        `${baseurl}/api/visa/tour/${id}`,
+        `${baseurl}/api/tour-departures/description/${id}`
       ];
 
       for (const endpoint of deleteEndpoints) {
@@ -2650,22 +2649,6 @@ const AddHoneyMoonTour = () => {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(itineraryPayload)
-        });
-      }
-
-      if (departures.length > 0) {
-        const departuresWithOptions = departures.map(dep => ({
-          ...dep,
-          tour_type: 'Honeymoon',
-          description_option1: departureOption1,
-          description_option2: departureOption2,
-          description_active: departureActiveOption,
-          description: departureActiveOption === 'option1' ? departureOption1 : departureOption2
-        }));
-        await fetch(`${baseurl}/api/departures/bulk`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ tour_id: id, departures: departuresWithOptions })
         });
       }
 
@@ -2790,18 +2773,37 @@ const AddHoneyMoonTour = () => {
         });
       }
 
-      if (instructions.length > 0) {
-        const instructionsWithBothOptions = instructions.map(inst => ({
-          item: instructionActiveOption === 'option1' ? instructionOption1 : instructionOption2,
-          item_option1: instructionOption1,
-          item_option2: instructionOption2,
-          item_active: instructionActiveOption
-        }));
+      // Save departure description as separate API call
+      const currentDepartureDescription = departureActiveOption === 'option1' ? departureOption1 : departureOption2;
+      if (currentDepartureDescription.trim()) {
+        await fetch(`${baseurl}/api/tour-departures/description/${id}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            description: currentDepartureDescription,
+            description_option1: departureOption1,
+            description_option2: departureOption2,
+            description_active: departureActiveOption
+          })
+        }).catch(err => console.warn('Failed to save departure description:', err));
+      }
+
+      // Save instruction as separate API call (single instruction)
+      const currentInstruction = instructionActiveOption === 'option1' ? instructionOption1 : instructionOption2;
+      if (currentInstruction.trim()) {
         await fetch(`${baseurl}/api/tour-instructions/bulk`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ tour_id: id, items: instructionsWithBothOptions })
-        });
+          body: JSON.stringify({ 
+            tour_id: id, 
+            items: [{
+              item: currentInstruction,
+              item_option1: instructionOption1,
+              item_option2: instructionOption2,
+              item_active: instructionActiveOption
+            }] 
+          })
+        }).catch(err => console.warn('Failed to save instruction:', err));
       }
 
       // Visa Data
@@ -2956,10 +2958,8 @@ const AddHoneyMoonTour = () => {
           onClick: handleAddItinerary 
         };
       case 'departures':
-        return { 
-          label: editingType === 'departure' ? 'Update Departure' : '+ Add Departure', 
-          onClick: handleAddDeparture 
-        };
+        // Removed the Add Departure button - auto-saves via OptionTabs
+        return null;
       case 'costs':
         return { 
           label: editingType === 'cost' ? 'Update Cost Row' : '+ Add Cost Row', 
@@ -3001,10 +3001,8 @@ const AddHoneyMoonTour = () => {
           onClick: addCancelRow 
         };
       case 'instructions':
-        return { 
-          label: editingType === 'instruction' ? 'Update Instruction' : '+ Add Instruction', 
-          onClick: addInstruction 
-        };
+        // Removed the Add Instruction button - auto-saves via OptionTabs
+        return null;
       case 'visa':
         if (activeVisaSubTab === 'tourist') {
           return { 
@@ -3042,39 +3040,10 @@ const AddHoneyMoonTour = () => {
 
   const addConfig = getAddConfigForTab(activeTab);
 
-  const OptionTabs = ({ activeOption, onOptionChange, option1Value, option2Value, onOption1Change, onOption2Change, placeholder }) => (
-    <div>
-      <Tabs
-        activeKey={activeOption}
-        onSelect={(k) => onOptionChange(k)}
-        className="mb-3"
-      >
-        <Tab eventKey="option1" title="Option 1">
-          <Form.Control
-            as="textarea"
-            rows={3}
-            value={option1Value}
-            onChange={(e) => onOption1Change(e.target.value)}
-            placeholder={placeholder || "Enter content for Option 1"}
-          />
-        </Tab>
-        <Tab eventKey="option2" title="Option 2">
-          <Form.Control
-            as="textarea"
-            rows={3}
-            value={option2Value}
-            onChange={(e) => onOption2Change(e.target.value)}
-            placeholder={placeholder || "Enter content for Option 2"}
-          />
-        </Tab>
-      </Tabs>
-    </div>
-  );
-
   return (
     <Navbar>
       <Container>
-        <h2 className="mb-4">{isEditMode ? 'Edit Honeymoon Tour' : 'Add Honeymoon Tour'}</h2>
+        <h2 className="mb-4">{isEditMode ? 'Edit International Honeymoon Tour' : 'Add International Honeymoon Tour'}</h2>
 
         {error && <Alert variant="danger">{error}</Alert>}
         {success && <Alert variant="success">{success}</Alert>}
@@ -3217,6 +3186,7 @@ const AddHoneyMoonTour = () => {
                 </Row>
               </Tab>
 
+              {/* ======== TAB 2: ITINERARIES ======== */}
               <Tab eventKey="itineraries" title="Itineraries">
                 <Row>
                   <Col md={2}>
@@ -3333,6 +3303,7 @@ const AddHoneyMoonTour = () => {
                 )}
               </Tab>
 
+              {/* ======== TAB 3: DEPARTURES - Auto-save via OptionTabs ======== */}
               <Tab eventKey="departures" title="Departures">
                 <Form.Group className="mb-3">
                   <Form.Label>Departures Description</Form.Label>
@@ -3345,49 +3316,13 @@ const AddHoneyMoonTour = () => {
                     onOption2Change={(val) => handleDepartureDescriptionOptionChange('option2', val)}
                     placeholder="Enter departure description for Option 1"
                   />
+                  <Form.Text className="text-muted">
+                    Departure description is automatically saved when you type. No need to click an Add button.
+                  </Form.Text>
                 </Form.Group>
-
-                {departures.length > 0 && (
-                  <Table striped bordered hover size="sm">
-                    <thead>
-                      <tr>
-                        <th>#</th>
-                        <th>Description</th>
-                        <th>Action</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {departures.map((dep, idx) => (
-                        <tr key={idx}>
-                          <td>{idx + 1}</td>
-                          <td>{dep.description || '-'}</td>
-                          <td>
-                            <div className="d-flex gap-1">
-                              <Button
-                                variant="outline-warning"
-                                size="sm"
-                                onClick={() => editDeparture(idx)}
-                                title="Edit"
-                              >
-                                <Pencil size={14} />
-                              </Button>
-                              <Button
-                                variant="outline-danger"
-                                size="sm"
-                                onClick={() => handleRemoveDeparture(idx)}
-                                title="Remove"
-                              >
-                                <Trash size={14} />
-                              </Button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </Table>
-                )}
               </Tab>
 
+              {/* ======== TAB 4: TOUR COST ======== */}
               <Tab eventKey="costs" title="Tour Cost">
                 <Row className="align-items-end">
                   <Col md={2}>
@@ -3527,6 +3462,7 @@ const AddHoneyMoonTour = () => {
                 )}
               </Tab>
 
+              {/* ======== TAB 5: OPTIONAL TOURS ======== */}
               <Tab eventKey="optionalTours" title="Optional Tour">
                 <Row className="align-items-end">
                   <Col md={4}>
@@ -3627,6 +3563,7 @@ const AddHoneyMoonTour = () => {
                 )}
               </Tab>
 
+              {/* ======== TAB 6: EMI OPTIONS ======== */}
               <Tab eventKey="emiOptions" title="EMI Options">
                 <Card className="mb-4">
                   <Card.Body>
@@ -3768,6 +3705,7 @@ const AddHoneyMoonTour = () => {
                 </Form.Group>
               </Tab>
 
+              {/* ======== TAB 7: INCLUSIONS ======== */}
               <Tab eventKey="inclusions" title="Inclusions">
                 <Form.Group className="mb-3">
                   <Form.Label>Add Inclusion</Form.Label>
@@ -3821,6 +3759,7 @@ const AddHoneyMoonTour = () => {
                 )}
               </Tab>
 
+              {/* ======== TAB 8: EXCLUSIONS ======== */}
               <Tab eventKey="exclusions" title="Exclusions">
                 <Form.Group className="mb-3">
                   <Form.Label>Add Exclusion</Form.Label>
@@ -3874,6 +3813,7 @@ const AddHoneyMoonTour = () => {
                 )}
               </Tab>
 
+              {/* ======== TAB 9: FLIGHTS ======== */}
               <Tab eventKey="transport" title="Flights">
                 <Row className="mt-3">
                   <Col md={12}>
@@ -3945,6 +3885,7 @@ const AddHoneyMoonTour = () => {
                 )}
               </Tab>
 
+              {/* ======== TAB 10: HOTELS ======== */}
               <Tab eventKey="hotels" title="Hotels">
                 <Row className="align-items-end">
                   <Col md={6}>
@@ -4074,7 +4015,7 @@ const AddHoneyMoonTour = () => {
                 )}
               </Tab>
 
-              {/* ======== VISA TAB ======== */}
+              {/* ======== TAB 11: VISA ======== */}
               <Tab eventKey="visa" title="Visa">
                 <Tabs
                   activeKey={activeVisaSubTab}
@@ -4545,11 +4486,11 @@ const AddHoneyMoonTour = () => {
                         {freeFlowPhotoEntries.length > 0 && (
                           <Table striped bordered hover size="sm" className="mt-3">
                             <thead>
-                              <td>
+                              <tr>
                                 <th>#</th>
                                 <th>Description</th>
                                 <th>Action</th>
-                              </td>
+                              </tr>
                             </thead>
                             <tbody>
                               {freeFlowPhotoEntries.map((item, idx) => (
@@ -4762,6 +4703,7 @@ const AddHoneyMoonTour = () => {
                 </Tabs>
               </Tab>
 
+              {/* ======== TAB 12: BOOKING POI ======== */}
               <Tab eventKey="bookingPoi" title="Booking POI">
                 <Form.Group className="mb-3">
                   <Row>
@@ -4844,6 +4786,7 @@ const AddHoneyMoonTour = () => {
                 )}
               </Tab>
 
+              {/* ======== TAB 13: CANCELLATION POLICY ======== */}
               <Tab eventKey="cancellation" title="Cancellation Policy">
                 <Row>
                   <Col md={8}>
@@ -4931,9 +4874,10 @@ const AddHoneyMoonTour = () => {
                 )}
               </Tab>
 
+              {/* ======== TAB 14: INSTRUCTIONS - Auto-save via OptionTabs ======== */}
               <Tab eventKey="instructions" title="Instructions">
                 <Form.Group className="mb-3">
-                  <Form.Label>Add Instruction</Form.Label>
+                  <Form.Label>Instructions</Form.Label>
                   <OptionTabs
                     activeOption={instructionActiveOption}
                     onOptionChange={setInstructionActiveOption}
@@ -4943,49 +4887,13 @@ const AddHoneyMoonTour = () => {
                     onOption2Change={(val) => handleInstructionOptionChange('option2', val)}
                     placeholder="Enter instruction for Option 1"
                   />
+                  <Form.Text className="text-muted">
+                    Instructions are automatically saved when you type. No need to click an Add button.
+                  </Form.Text>
                 </Form.Group>
-
-                {instructions.length > 0 && (
-                  <Table striped bordered hover size="sm">
-                    <thead>
-                      <tr>
-                        <th>#</th>
-                        <th>Instruction</th>
-                        <th>Action</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {instructions.map((item, idx) => (
-                        <tr key={idx}>
-                          <td>{idx + 1}</td>
-                          <td>{item}</td>
-                          <td>
-                            <div className="d-flex gap-1">
-                              <Button
-                                variant="outline-warning"
-                                size="sm"
-                                onClick={() => editInstruction(idx)}
-                                title="Edit"
-                              >
-                                <Pencil size={14} />
-                              </Button>
-                              <Button
-                                variant="outline-danger"
-                                size="sm"
-                                onClick={() => removeInstruction(idx)}
-                                title="Remove"
-                              >
-                                <Trash size={14} />
-                              </Button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </Table>
-                )}
               </Tab>
 
+              {/* ======== TAB 15: IMAGES ======== */}
               <Tab eventKey="images" title="Images">
                 <Card className="mb-4">
                   <Card.Header>Add New Images</Card.Header>

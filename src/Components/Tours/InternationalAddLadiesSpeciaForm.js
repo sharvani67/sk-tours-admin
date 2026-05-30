@@ -1342,40 +1342,54 @@ const AddLadiesTour = () => {
   };
 
   // =======================
-  // INSTRUCTIONS
+  // INSTRUCTIONS - AUTOMATICALLY SAVE TO LIST
   // =======================
-  const [instructionText, setInstructionText] = useState('');
   const [instructions, setInstructions] = useState([]);
-
-  const addInstruction = () => {
+  
+  // Update the instructions list whenever instructionOption1 or instructionOption2 changes
+  useEffect(() => {
+    // Get the current active instruction text
     const currentInstruction = instructionActiveOption === 'option1' ? instructionOption1 : instructionOption2;
-    const txt = currentInstruction.trim();
-    if (!txt) return;
     
-    if (editingInstructionIndex !== -1) {
-      const updatedInstructions = [...instructions];
-      updatedInstructions[editingInstructionIndex] = txt;
-      setInstructions(updatedInstructions);
-      setEditingInstructionIndex(-1);
-      setSuccess('Instruction updated successfully');
-    } else {
-      setInstructions(prev => [...prev, txt]);
-      setSuccess('Instruction added successfully');
+    // If current instruction has content, update the instructions array (keep as single item)
+    if (currentInstruction.trim()) {
+      // Only update if the value has changed to avoid unnecessary re-renders
+      if (instructions.length === 0 || instructions[0] !== currentInstruction) {
+        setInstructions([currentInstruction]);
+      }
+    } 
+    // If current instruction is empty and we have instructions, clear them
+    else if (!currentInstruction.trim() && instructions.length > 0) {
+      setInstructions([]);
     }
-    
-    setInstructionText('');
-  };
+  }, [instructionOption1, instructionOption2, instructionActiveOption]);
 
+  // Edit instruction (for compatibility with table)
   const editInstruction = (idx) => {
+    // Set the active instruction text to the selected instruction
     const instruction = instructions[idx];
-    setInstructionText(instruction);
+    if (instruction) {
+      if (instructionActiveOption === 'option1') {
+        setInstructionOption1(instruction);
+      } else {
+        setInstructionOption2(instruction);
+      }
+    }
     setEditingInstructionIndex(idx);
   };
 
+  // Remove instruction (clear the instruction text)
   const removeInstruction = (idx) => {
     const confirmDelete = window.confirm('Are you sure you want to remove this instruction?');
     if (confirmDelete) {
-      setInstructions(prev => prev.filter((_, i) => i !== idx));
+      // Clear the active instruction text
+      if (instructionActiveOption === 'option1') {
+        setInstructionOption1('');
+      } else {
+        setInstructionOption2('');
+      }
+      setInstructions([]);
+      setEditingInstructionIndex(-1);
     }
   };
 
@@ -1528,7 +1542,7 @@ const AddLadiesTour = () => {
       setInstructionActiveOption('option1');
       setVisaRemarksActiveOption('option1');
       
-      // Set form data with prefilled values - REMOVED departure_description fields
+      // Set form data with prefilled values
       setFormData(prev => ({
         ...prev,
         cost_remarks: "Please note that while the tour price has been indicated, it may vary if you choose dates closer to departure or during periods when the season transitions from low to high. We therefore kindly request you to confirm the final tour price before proceeding with your booking and to mention the tour code when inquiring to receive the exact cost. Child pricing is calculated based on the standard hotel category, and if you choose Deluxe or Executive accommodations, child rates may be adjusted accordingly.",
@@ -1559,6 +1573,9 @@ const AddLadiesTour = () => {
         visa_remarks_option1: "Visa requirements are subject to change based on embassy regulations. Processing time may vary. It is recommended to apply at least 3-4 weeks before departure. All documents must be original and valid for at least 6 months from the date of return.",
         visa_remarks_option2: "Express visa processing available for additional fee. Visa on arrival available for eligible nationalities. E-visa facility available online. 24/7 visa support available. Dedicated visa concierge service."
       }));
+
+      // Set initial instructions list
+      setInstructions(["Please carry valid ID proof. Reporting time is 2 hours before departure. Carry comfortable clothing and walking shoes. Follow the itinerary timings strictly. Carry necessary medications."]);
 
       // Prefill tourist visa remarks
       setTouristVisaRemarks(
@@ -1861,6 +1878,13 @@ const AddLadiesTour = () => {
           visa_remarks_option2: visaRemarksOpt2 || visaRemarksValue
         });
 
+        // Set instructions for editing
+        if (instructionDescValue) {
+          setInstructions([instructionDescValue]);
+        } else {
+          setInstructions([]);
+        }
+
         // Load itineraries
         if (data.itinerary && Array.isArray(data.itinerary)) {
           const formattedItineraries = data.itinerary.map(item => ({
@@ -1872,7 +1896,7 @@ const AddLadiesTour = () => {
           setItineraries(formattedItineraries);
         }
 
-        // Load departures - NO DESCRIPTION FIELD
+        // Load departures
         if (data.departures && Array.isArray(data.departures)) {
           const formattedDepartures = data.departures.map(dept => ({
             start_date: dept.start_date ? dept.start_date.split('T')[0] : '',
@@ -2067,17 +2091,6 @@ const AddLadiesTour = () => {
             cancellation_remarks_active: policy.cancellation_remarks_active || 'option1'
           }));
           setCancelPolicies(formattedPolicies);
-        }
-
-        // Load instructions
-        if (data.instructions && Array.isArray(data.instructions)) {
-          const formattedInstructions = data.instructions.map(inst => ({
-            item: inst.item,
-            item_option1: inst.item_option1 || '',
-            item_option2: inst.item_option2 || '',
-            item_active: inst.item_active || 'option1'
-          }));
-          setInstructions(formattedInstructions.map(inst => inst.item));
         }
 
         // Load images
@@ -2300,7 +2313,7 @@ const AddLadiesTour = () => {
     setFormData(prev => ({ ...prev, visa_remarks: value }));
   };
 
-  // DEPARTURE FORM CHANGE - NO DESCRIPTION FIELD
+  // DEPARTURE FORM CHANGE
   const handleGroupDepartureChange = (e) => {
     const { name, value } = e.target;
     const numericFields = [
@@ -2321,7 +2334,7 @@ const AddLadiesTour = () => {
     }));
   };
 
-  // UPDATED: handleAddDeparture - NO DESCRIPTION FIELD
+  // UPDATED: handleAddDeparture
   const handleAddDeparture = () => {
     if (!ladiesDepartureForm.start_date || !ladiesDepartureForm.end_date) {
       setError('Please enter both start and end dates');
@@ -2618,9 +2631,7 @@ const AddLadiesTour = () => {
         }
         break;
       case 'instructions':
-        if ((instructionActiveOption === 'option1' ? instructionOption1 : instructionOption2).trim()) {
-          addInstruction();
-        }
+        // Instructions are automatically saved via useEffect, no action needed
         break;
       case 'inclusions':
         if (inclusionText && inclusionText.trim()) {
@@ -2635,6 +2646,7 @@ const AddLadiesTour = () => {
       default:
         break;
     }
+    return true;
   };
 
   // UPDATE EXISTING TOUR
@@ -2742,7 +2754,7 @@ const AddLadiesTour = () => {
         });
       }
 
-      // Save departures - NO DESCRIPTION FIELD
+      // Save departures
       if (departures.length > 0) {
         const formattedDepartures = departures.map(dept => ({
           tour_type: 'ladiesspecial',
@@ -2940,13 +2952,13 @@ const AddLadiesTour = () => {
       }
 
       // Save instructions with both options
-      if (instructions.length > 0) {
-        const instructionsWithBothOptions = instructions.map(inst => ({
-          item: instructionActiveOption === 'option1' ? instructionOption1 : instructionOption2,
+      if (instructions.length > 0 && instructions[0].trim()) {
+        const instructionsWithBothOptions = [{
+          item: instructions[0],
           item_option1: instructionOption1,
           item_option2: instructionOption2,
           item_active: instructionActiveOption
-        }));
+        }];
         await fetch(`${baseurl}/api/tour-instructions/bulk`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -3083,7 +3095,7 @@ const AddLadiesTour = () => {
         });
       }
 
-      // Save departures - NO DESCRIPTION FIELD
+      // Save departures
       if (departures.length > 0) {
         const formattedDepartures = departures.map(dept => ({
           tour_type: 'ladiesspecial',
@@ -3274,13 +3286,13 @@ const AddLadiesTour = () => {
       }
 
       // Save instructions with both options
-      if (instructions.length > 0) {
-        const instructionsWithBothOptions = instructions.map(inst => ({
-          item: instructionActiveOption === 'option1' ? instructionOption1 : instructionOption2,
+      if (instructions.length > 0 && instructions[0].trim()) {
+        const instructionsWithBothOptions = [{
+          item: instructions[0],
           item_option1: instructionOption1,
           item_option2: instructionOption2,
           item_active: instructionActiveOption
-        }));
+        }];
         await fetch(`${baseurl}/api/tour-instructions/bulk`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -3371,7 +3383,8 @@ const AddLadiesTour = () => {
   };
 
   const handleSaveClick = () => {
-    autoAddBeforeNext();
+    const continueSave = autoAddBeforeNext();
+    if (!continueSave) return;
 
     if (isLastTab) {
       const confirmMessage = isEditMode 
@@ -3531,10 +3544,8 @@ const AddLadiesTour = () => {
           onClick: addCancelRow 
         };
       case 'instructions':
-        return { 
-          label: editingInstructionIndex !== -1 ? '✓ Update Instruction' : '+ Add Instruction', 
-          onClick: addInstruction 
-        };
+        // No add button for Instructions - auto-saves via useEffect
+        return null;
       default:
         return null;
     }
@@ -3827,10 +3838,9 @@ const AddLadiesTour = () => {
                 )}
               </Tab>
 
-              {/* ====== DEPARTURES & COSTS TAB ====== - NO DESCRIPTION FIELD */}
+              {/* ====== DEPARTURES & COSTS TAB ====== */}
               <Tab eventKey="departures" title="Departures & Costs">
                 <div>
-                  {/* Departure Dates Section */}
                   <Row className="mb-4">
                     <h5>Add Departure with Costs</h5>
                     <Col md={3}>
@@ -3844,7 +3854,7 @@ const AddLadiesTour = () => {
                         />
                       </Form.Group>
                     </Col>
-                  
+
                     <Col md={3}>
                       <Form.Group className="mb-3">
                         <Form.Label>End Date *</Form.Label>
@@ -3856,7 +3866,7 @@ const AddLadiesTour = () => {
                         />
                       </Form.Group>
                     </Col>
-                  
+
                     <Col md={2}>
                       <Form.Group className="mb-3">
                         <Form.Label>Status *</Form.Label>
@@ -3872,7 +3882,7 @@ const AddLadiesTour = () => {
                         </Form.Select>
                       </Form.Group>
                     </Col>
-                  
+
                     <Col md={2}>
                       <Form.Group className="mb-3">
                         <Form.Label>Total Seats</Form.Label>
@@ -3885,7 +3895,7 @@ const AddLadiesTour = () => {
                         />
                       </Form.Group>
                     </Col>
-                  
+
                     <Col md={2}>
                       <Form.Group className="mb-3">
                         <Form.Label>Booked Seats</Form.Label>
@@ -3899,7 +3909,7 @@ const AddLadiesTour = () => {
                       </Form.Group>
                     </Col>
                   </Row>
-                  
+
                   {/* 3-Star Hotel Prices */}
                   <Row className="mb-4">
                     <h6>Standard Hotel Prices</h6>
@@ -3976,7 +3986,7 @@ const AddLadiesTour = () => {
                       </Form.Group>
                     </Col>
                   </Row>
-                  
+
                   {/* 4-Star Hotel Prices */}
                   <Row className="mb-4">
                     <h6>Deluxe Hotel Prices</h6>
@@ -4053,7 +4063,7 @@ const AddLadiesTour = () => {
                       </Form.Group>
                     </Col>
                   </Row>
-                  
+
                   {/* 5-Star Hotel Prices */}
                   <Row className="mb-4">
                     <h6>Luxury Hotel Prices</h6>
@@ -4131,7 +4141,7 @@ const AddLadiesTour = () => {
                     </Col>
                   </Row>
                 </div>
-              
+
                 {/* Cost Remarks with Option Tabs */}
                 <Form.Group className="mt-4">
                   <OptionTabs
@@ -4145,7 +4155,7 @@ const AddLadiesTour = () => {
                     label="Cost Remarks"
                   />
                 </Form.Group>
-              
+
                 {/* Display Added Departures with Costs */}
                 {departures.length > 0 && (
                   <div className="mt-4">
@@ -4201,8 +4211,7 @@ const AddLadiesTour = () => {
                     </Table>
                   </div>
                 )}
-              
-                {/* Cancel edit button */}
+
                 {editingDepartureIndex !== -1 && (
                   <Button
                     variant="outline-secondary"
@@ -5176,7 +5185,7 @@ const AddLadiesTour = () => {
                                   </div>
                                 </td>
                                 
-                                <td>
+                                <tr>
                                   <div className="d-flex flex-column gap-2">
                                     <div>
                                       <Button 
@@ -5222,7 +5231,7 @@ const AddLadiesTour = () => {
                                       </div>
                                     )}
                                   </div>
-                                </td>
+                                </tr>
                                 <td>
                                   <div className="d-flex flex-column gap-1">
                                     <Button
@@ -5685,7 +5694,7 @@ const AddLadiesTour = () => {
                 )}
               </Tab>
 
-              {/* ====== INSTRUCTIONS TAB ====== */}
+              {/* ====== INSTRUCTIONS TAB - AUTO SAVE ====== */}
               <Tab eventKey="instructions" title="Instructions">
                 <Form.Group className="mb-3">
                   <OptionTabs
