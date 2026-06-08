@@ -137,10 +137,10 @@ function OfflineFlights() {
       setError('Please enter departure city');
       return false;
     }
-    if (!flightDetails.fromAirport) {
-      setError('Please enter departure airport');
-      return false;
-    }
+    // if (!flightDetails.fromAirport) {
+    //   setError('Please enter departure airport');
+    //   return false;
+    // }
     if (!flightDetails.fromAirportCode) {
       setError('Please enter departure airport code');
       return false;
@@ -153,10 +153,10 @@ function OfflineFlights() {
       setError('Please enter arrival city');
       return false;
     }
-    if (!flightDetails.toAirport) {
-      setError('Please enter arrival airport');
-      return false;
-    }
+    // if (!flightDetails.toAirport) {
+    //   setError('Please enter arrival airport');
+    //   return false;
+    // }
     if (!flightDetails.toAirportCode) {
       setError('Please enter arrival airport code');
       return false;
@@ -425,14 +425,13 @@ function OfflineFlights() {
                 </Col>
                 <Col md={4}>
                   <Form.Group>
-                    <Form.Label>Airport Name <span className="text-danger">*</span></Form.Label>
+                    <Form.Label>Airport Name <span className="text-muted">(optional)</span></Form.Label>
                     <Form.Control
                       type="text"
                       name="fromAirport"
                       placeholder="e.g., Chhatrapati Shivaji International Airport"
                       value={flightDetails.fromAirport}
                       onChange={handleFlightDetailChange}
-                      required
                     />
                   </Form.Group>
                 </Col>
@@ -482,14 +481,13 @@ function OfflineFlights() {
                 </Col>
                 <Col md={4}>
                   <Form.Group>
-                    <Form.Label>Airport Name <span className="text-danger">*</span></Form.Label>
+                    <Form.Label>Airport Name <span className="text-muted">(optional)</span></Form.Label>
                     <Form.Control
                       type="text"
                       name="toAirport"
                       placeholder="e.g., Indira Gandhi International Airport"
                       value={flightDetails.toAirport}
                       onChange={handleFlightDetailChange}
-                      required
                     />
                   </Form.Group>
                 </Col>
